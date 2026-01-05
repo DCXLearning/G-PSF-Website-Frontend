@@ -1,0 +1,11 @@
+services:
+  web:
+    container_name: gpsf-website
+    image: gpsf-website
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    environment:
+      NODE_ENV: production
