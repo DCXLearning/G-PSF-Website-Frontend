@@ -1,5 +1,5 @@
 "use client";
-//taa
+
 import { useState, useEffect, type FC } from "react";
 import Image from "next/image";
 import { Menu, X, Search, Globe } from "lucide-react";
