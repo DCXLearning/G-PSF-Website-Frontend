@@ -23,49 +23,97 @@ const workGroups: WorkGroup[] = [
         id: 1,
         nameEn: "Agriculture & Agro-Industry",
         nameKh: "កសិកម្ម និងឧស្សាហកម្មកសិកម្ម",
-        icon: "🌿",
+        icon: "/icon/Agriculture & Agro industry.png",
     },
     {
         id: 2,
         nameEn: "Tourism",
         nameKh: "ទេសចរណ៍",
-        icon: "🧳",
+        icon: "/icon/Tourisum.png",
     },
     {
         id: 3,
         nameEn: "Manufacturing & SMEs",
         nameKh: "ផលិតកម្ម និងសហគ្រាសតូច និងមធ្យម",
-        icon: "🏭",
+        icon: "/icon/Manfacturing & SMEs.png",
     },
     {
         id: 4,
         nameEn: "Law, Tax & Governance",
         nameKh: "ច្បាប់ ពន្ធ និងការគ្រប់គ្រងរដ្ឋបាល",
-        icon: "⚖️",
+        icon: "/icon/Law-Tax & Governance.png",
     },
     {
         id: 5,
         nameEn: "Banking & Financial Services",
         nameKh: "ធនាគារ និងសេវាហិរញ្ញវត្ថុ",
-        icon: "🏦",
+        icon: "/icon/Banking & Financial Service.png",
     },
     {
         id: 6,
         nameEn: "Transportation & Infrastructure",
         nameKh: "ដឹកជញ្ជូន និងហេដ្ឋារចនាសម្ព័ន្ធ",
-        icon: "🚌",
+        icon: "/icon/Transportation & Infrastructure.png",
     },
     {
         id: 7,
         nameEn: "Healthcare",
         nameKh: "សុខាភិបាល",
-        icon: "🏥",
+        icon: "/icon/Export Processing & Trade Facilitation.png",
     },
     {
         id: 8,
         nameEn: "Education",
         nameKh: "អប់រំ",
-        icon: "🎓",
+        icon: "/icon/Industrial Relations.png",
+    },
+    {
+        id: 9,
+        nameEn: "Agriculture & Agro-Industry",
+        nameKh: "កសិកម្ម និងឧស្សាហកម្មកសិកម្ម",
+        icon: "/icon/Paddy-Rice.png",
+    },
+    {
+        id: 10,
+        nameEn: "Tourism",
+        nameKh: "ទេសចរណ៍",
+        icon: "/icon/Energy & Mineral Resources.png",
+    },
+    {
+        id: 11,
+        nameEn: "Manufacturing & SMEs",
+        nameKh: "ផលិតកម្ម និងសហគ្រាសតូច និងមធ្យម",
+        icon: "/icon/Education.png",
+    },
+    {
+        id: 12,
+        nameEn: "Law, Tax & Governance",
+        nameKh: "ច្បាប់ ពន្ធ និងការគ្រប់គ្រងរដ្ឋបាល",
+        icon: "/icon/Health.png",
+    },
+    {
+        id: 13,
+        nameEn: "Banking & Financial Services",
+        nameKh: "ធនាគារ និងសេវាហិរញ្ញវត្ថុ",
+        icon: "/icon/Constuction & Real Estate.png",
+    },
+    {
+        id: 14,
+        nameEn: "Transportation & Infrastructure",
+        nameKh: "ដឹកជញ្ជូន និងហេដ្ឋារចនាសម្ព័ន្ធ",
+        icon: "/icon/Non-Banking Financial Services.png",
+    },
+    {
+        id: 15,
+        nameEn: "Healthcare",
+        nameKh: "សុខាភិបាល",
+        icon: "/icon/Digital Economy Society & Telecommunications.png",
+    },
+    {
+        id: 16,
+        nameEn: "Education",
+        nameKh: "អប់រំ",
+        icon: "/icon/Land Administration Security & Public Order.png",
     },
 ];
 
@@ -171,12 +219,8 @@ const WorkGroupsCarousel: React.FC = () => {
                                         group.id % 2 === 0 ? "#F5F6F7" : "#E9ECF0",
                                 }}
                             >
-                                <div
-                                    className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4 p-2 transition-transform duration-500 transform group-hover:rotate-12 group-hover:scale-110"
-                                    style={{ backgroundColor: ICON_BG }}
-                                >
-                                    {group.icon}
-                                </div>
+                                <img src={group.icon} alt="" className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4 p-2 transition-transform duration-500 transform group-hover:rotate-12 group-hover:scale-110"
+                                    style={{ backgroundColor: ICON_BG }}/>
                                 <p
                                     className={`text-base text-center font-semibold text-gray-800 leading-snug px-2 ${isKhmer ? "khmer-font" : ""
                                         }`}
