@@ -1,112 +1,118 @@
+"use client"; // Required for Next.js App Router
+
 import React from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/pagination";
 
 interface NewsItem {
     id: number;
     date: string;
-    group: string;
     headline: string;
     excerpt: string;
+    group: string;
 }
 
 const newsData: NewsItem[] = [
-    {
-        id: 1,
-        date: "23 November 2025",
-        group: "WORKING GROUP NAME",
-        headline: "NEWS HEADLINE",
-        excerpt:
-            "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy.",
-    },
-    {
-        id: 2,
-        date: "10 October 2025",
-        group: "WORKING GROUP NAME",
-        headline: "NEWS HEADLINE",
-        excerpt:
-            "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy.",
-    },
-    {
-        id: 3,
-        date: "06 October 2025",
-        group: "WORKING GROUP NAME",
-        headline: "NEWS HEADLINE",
-        excerpt:
-            "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy.",
-    },
+    { id: 1, date: "23 November 2025", group: "WORKING GROUP NAME", headline: "NEWS HEADLINE", excerpt: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy." },
+    { id: 2, date: "10 October 2025",group: "WORKING GROUP NAME", headline: "NEWS HEADLINE", excerpt: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy." },
+    { id: 3, date: "06 October 2025",group: "WORKING GROUP NAME", headline: "NEWS HEADLINE", excerpt: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy." },
+    { id: 4, date: "03 October 2025",group: "WORKING GROUP NAME", headline: "NEWS HEADLINE", excerpt: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy." },
+    { id: 5, date: "02 August 2025",group: "WORKING GROUP NAME", headline: "NEWS HEADLINE", excerpt: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy." },
+    // { id: 6, date: "February 2024", headline: "Policy Headline", excerpt: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy." },
 ];
 
 const NewUpdateSection = () => {
     return (
-        <section className="relative bg-white font-sans overflow-hidden">
+        <section className="relative bg-white font-sans overflow-hidden py-16">
             {/* Header */}
-            <div className="max-w-7xl mx-auto px-4 pt-16 pb-24 relative z-10">
-                <p className="text-gray-900 font-bold text-xl mb-1">Latest</p>
-                <h2 className="text-gray-900 text-5xl font-extrabold mb-4">
+            <div className="max-w-7xl mx-auto px-4 mb-16 relative z-10">
+                <p className="text-gray-900 font-bold text-3xl md:text-4xl mb-1">Latest</p>
+                <h2 className="text-[#1a2b4b] text-5xl md:text-6xl font-extrabold mb-4">
                     News & Updates
                 </h2>
-                <div className="w-40 h-1 bg-orange-400"></div>
+
             </div>
 
-            {/* BLUE BACKGROUND (only bottom part) */}
-            <div className="absolute bottom-10 left-0 w-full h-[30%] bg-[#3b5998]"></div>
+            {/* BLUE BACKGROUND DECORATION */}
+            <div className="absolute bottom-0 left-0 w-full h-[350px] bg-[#3b5998] z-0"></div>
 
-            {/* CARDS */}
-            <div className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* SLIDER CONTAINER */}
+            <div className="relative z-10 max-w-7xl mx-auto px-4">
+                <Swiper
+                    modules={[Pagination, Autoplay]}
+                    spaceBetween={30}
+                    slidesPerView={1}
+                    autoplay={{ delay: 5000 }}
+                    pagination={{
+                        clickable: true,
+                        el: ".custom-pagination",
+                    }}
+                    breakpoints={{
+                        640: { slidesPerView: 1 },
+                        768: { slidesPerView: 2 },
+                        1024: { slidesPerView: 3 },
+                    }}
+                    className="pb-20"
+                >
                     {newsData.map((item) => (
-                        <div
-                            key={item.id}
-                            className="bg-[#e9ecef] flex flex-col shadow-xl"
-                        >
-                            {/* Image */}
-                            <div className="bg-white m-4 aspect-square flex flex-col items-center justify-center">
-                                <div className="w-20 h-20 text-gray-300">
-                                    <svg
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z" />
-                                    </svg>
-                                </div>
-                                <span className="text-gray-500 font-medium text-lg mt-2 uppercase">
-                                    Related Photo
-                                </span>
-                            </div>
-
-                            {/* Content */}
-                            <div className="px-6 pb-8 pt-2 flex flex-col grow">
-                                <span className="text-[#1a2b4b] text-xs font-semibold mb-3">
-                                    {item.date}
-                                </span>
-
-                                <div className="inline-block bg-[#1a2b4b] text-white text-[10px] font-bold px-3 py-1 rounded-full w-fit mb-4">
-                                    [ {item.group} ]
+                        <SwiperSlide key={item.id} className="h-full">
+                            <div className="bg-[#e9ecef] flex flex-col shadow-xl h-full min-h-[500px]">
+                                {/* Image / Placeholder */}
+                                <div className="bg-white m-4 aspect-square flex flex-col items-center justify-center border border-gray-100">
+                                    <div className="w-35 h-35 text-gray-300">
+                                        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z" />
+                                        </svg>
+                                    </div>
+                                    <span className="text-gray-500 font-medium text-lg mt-2 w-45 text-center px-4">
+                                        RELATED PHOTO
+                                    </span>
                                 </div>
 
-                                <h3 className="text-[#1a2b4b] text-2xl font-bold mb-3 uppercase">
-                                    {item.headline}
-                                </h3>
-
-                                <p className="text-gray-700 text-sm mb-6">
-                                    {item.excerpt}
-                                </p>
-
-                                <button className="mt-auto text-[#1a2b4b] text-xs font-bold flex items-center hover:underline">
-                                    View details <span className="ml-1">›</span>
-                                </button>
+                                {/* Content */}
+                                <div className="px-6 pb-8 pt-2 flex flex-col grow">
+                                    <span className="text-[#1a2b4b] text-xs font-semibold mb-3">
+                                        {item.date}
+                                    </span>
+                                    <p className="inline-block bg-[#1a2b4b] text-white text-[10px] font-bold px-3 py-1 rounded-full w-fit mb-4">
+                                        [ {item.group} ]
+                                    </p>
+                                    <h3 className="text-[#1a2b4b] text-2xl font-bold mb-3 uppercase">
+                                        {item.headline}
+                                    </h3>
+                                    <p className="text-gray-700 text-sm mb-6 flex-grow">
+                                        {item.excerpt}
+                                    </p>
+                                    <button className="text-[#1a2b4b] cursor-pointer text-xs font-bold flex items-center tracking-wider">
+                                        <span className="hover:underline">View details</span> <span className="ml-1 text-lg">›</span>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        </SwiperSlide>
                     ))}
-                </div>
+                </Swiper>
 
-                {/* Pagination dots */}
-                <div className="flex justify-center mt-12 gap-3">
-                    <span className="w-4 h-4 rounded-full bg-orange-400"></span>
-                    <span className="w-4 h-4 rounded-full bg-orange-400 opacity-60"></span>
-                    <span className="w-4 h-4 rounded-full bg-orange-400 opacity-60"></span>
-                </div>
+                {/* Custom Pagination Dots */}
+                <div className="custom-pagination flex justify-center gap-3 mt-4"></div>
             </div>
+
+            {/* Global CSS for Custom Pagination (Add to globals.css or use style tag) */}
+            <style jsx global>{`
+                .custom-pagination .swiper-pagination-bullet {
+                width: 16px;
+                height: 16px;
+                background-color: #fb923c !important; /* orange-400 */
+                opacity: 0.6;
+                margin: 0 6px;
+                }
+                .custom-pagination .swiper-pagination-bullet-active {
+                opacity: 1;
+                }
+            `}</style>
         </section>
     );
 };

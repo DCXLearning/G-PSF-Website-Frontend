@@ -1,111 +1,90 @@
-// components/HeroBanner.tsx
 "use client";
 
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
-
-interface Stat {
-  value: string;
-  labelEn: string;
-  labelKh: string;
-}
-
-const stats: Stat[] = [
-  { value: "1,200", labelEn: "TOTAL MEMBERS", labelKh: "សមាជិកសរុប" },
-  { value: "90%", labelEn: "RESOLUTION RATE", labelKh: "អត្រាដោះស្រាយបញ្ហា" },
-  { value: "63", labelEn: "POLICY REFORMS", labelKh: "កំណែទម្រង់នយោបាយ" },
-];
 
 const PLACEHOLDER_IMAGE_URL = "/image/Banner.bmp";
 
-const HeroBanner: React.FC = () => {
-  const { language } = useLanguage(); // get current language
+export default function HeroBanner() {
+  const { language } = useLanguage();
+  const [post, setPost] = useState<any>(null);
 
-  const topLine =
-    language === "en"
-      ? "Your seat at Cambodia’s highest reform table."
-      : "កន្លែងរបស់អ្នកនៅលើតុពិភាក្សាការកែទម្រង់កំពូលរបស់កម្ពុជា។";
+  useEffect(() => {
+    fetch("/api/home-post")
+      .then((res) => res.json())
+      .then(setPost)
+      .catch(console.error);
+  }, []);
 
-  const titleLine1 =
-    language === "en" ? "Cambodia Works" : "កម្ពុជាដំណើរការល្អ";
-  const titleLine2 =
-    language === "en" ? "Better Together" : "នៅពេលធ្វើការរួមគ្នា";
+  if (!post) return null;
 
-  const paragraph =
-    language === "en"
-      ? "Join 1,200+ voices driving Cambodia’s economic transformation while turning conversation into action through the trusted G-PSF mechanism."
-      : "ចូលរួមជាមួយសំឡេងជាង ១,២០០ ដើម្បីជំរុញការផ្លាស់ប្តូរសេដ្ឋកិច្ចកម្ពុជា ហើយបម្លែងការពិភាក្សាឲ្យក្លាយជាចលនា តាមរយៈមេកានិ즘 G-PSF ដែលអាចទុកចិត្តបាន។";
+  const c = post.content.content;
 
-  const buttonLabel =
-    language === "en"
-      ? "Latest Digital Reforms"
-      : "កំណែទម្រង់ឌីជីថលចុងក្រោយ";
+  // CMS → UI
+  const topLine = c[0]?.content?.[0]?.text || "";
+  const titleLine1 = c[1]?.content?.[0]?.text || "";
+  const titleLine2 = c[1]?.content?.[2]?.text || "";
+  const paragraph = c[2]?.content?.[0]?.text || "";
+
+  const stats = [
+    {
+      value: c[3]?.content?.[0]?.text,
+      labelEn: c[4]?.content?.[0]?.text,
+      labelKh: c[4]?.content?.[0]?.text, // later you can add Khmer in CMS
+    },
+    {
+      value: c[5]?.content?.[0]?.text,
+      labelEn: c[6]?.content?.[0]?.text,
+      labelKh: c[6]?.content?.[0]?.text,
+    },
+    {
+      value: c[7]?.content?.[0]?.text,
+      labelEn: c[8]?.content?.[0]?.text,
+      labelKh: c[8]?.content?.[0]?.text,
+    },
+  ];
+
+  const bgImage = post.images?.[0]?.url || PLACEHOLDER_IMAGE_URL;
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden bg-gray-100">
-      {/* Background Image */}
+      {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${PLACEHOLDER_IMAGE_URL})` }}
+        style={{ backgroundImage: `url(${bgImage})` }}
       >
         <div className="absolute inset-0 bg-gray-900/50"></div>
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-16 pb-36 sm:pb-44 max-w-5xl w-full">
-        {/* Top line */}
-        <p
-          className={`text-base sm:text-lg md:text-3xl text-white font-light tracking-wide mb-4 sm:mb-6 ${
-            language === "kh" ? "khmer-font" : ""
-          }`}
-        >
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-16 pb-36 max-w-5xl w-full">
+        <p className="text-base sm:text-lg md:text-3xl text-white mb-6">
           {topLine}
         </p>
 
-        {/* Title */}
-        <h1
-          className={`text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-4 sm:mb-6 leading-snug ${
-            language === "kh" ? "khmer-font" : ""
-          }`}
-        >
+        <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-6">
           {titleLine1}
           <br />
           {titleLine2}
         </h1>
 
-        {/* Paragraph */}
-        <p
-          className={`text-sm sm:text-base md:text-lg text-white font-light max-w-3xl mb-8 sm:mb-12 ${
-            language === "kh" ? "khmer-font" : ""
-          }`}
-        >
+        <p className="text-sm sm:text-base md:text-lg text-white max-w-3xl mb-12">
           {paragraph}
         </p>
 
-        {/* Button */}
-        <button
-          className={`bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-8 md:px-12 rounded-2xl shadow-xl transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50 text-sm sm:text-base md:text-lg ${
-            language === "kh" ? "khmer-font" : ""
-          }`}
-          onClick={() => console.log("CTA Clicked")}
-        >
-          {buttonLabel}
+        <button className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-white py-3 px-10 rounded-2xl shadow-xl">
+          {post.title}
         </button>
       </div>
 
-      {/* Statistics Bar */}
-      <div className="max-w-[1120px] mx-auto absolute bottom-0 w-full py-4 sm:py-6 border-t-[5px] border-white px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-8 text-white">
+      {/* Stats */}
+      <div className="max-w-[1120px] mx-auto absolute bottom-0 w-full py-6 border-t-[5px] border-white px-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center text-white">
           {stats.map((stat, index) => (
-            <div key={index} className="flex flex-col items-center w-full sm:w-auto">
-              <div className="border-t-2 border-white w-12 mb-2 sm:mb-3"></div>
-              <p className="text-lg sm:text-xl md:text-2xl font-extrabold mb-1">
-                {stat.value}
-              </p>
-              <p
-                className={`text-xs sm:text-sm md:text-base tracking-widest uppercase ${
-                  language === "kh" ? "khmer-font" : ""
-                }`}
-              >
+            <div key={index} className="flex flex-col items-center">
+              <div className="border-t-2 border-white w-12 mb-3"></div>
+              <p className="text-2xl font-extrabold">{stat.value}</p>
+              <p className="text-sm tracking-widest uppercase">
                 {language === "en" ? stat.labelEn : stat.labelKh}
               </p>
             </div>
@@ -114,6 +93,4 @@ const HeroBanner: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default HeroBanner;
+}

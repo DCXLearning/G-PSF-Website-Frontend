@@ -128,7 +128,7 @@ const LinkSection = ({ group, isKhmer }: { group: LinkGroup; isKhmer: boolean })
                 <li key={link.nameEn} >
                     <a
                         href={link.href}
-                        className={`text-xl text-gray-700 hover:text-[#00008b] transition ${isKhmer ? "khmer-font" : ""
+                        className={`text-lg underline text-gray-700 hover:text-[#0808e1] transition ${isKhmer ? "khmer-font" : ""
                             }`}
                     >
                         {isKhmer ? link.nameKh : link.nameEn}

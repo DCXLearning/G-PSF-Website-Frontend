@@ -80,6 +80,34 @@ const slides: Slide[] = [
         shortTextKh: "សូមបញ្ចូលសេចក្តីសង្ខេបអំពីបទពិសោធន៍សមាជិក។",
         icon: Trophy,
     },
+    {
+        rating: "5.0",
+        titleEn: "Digital Reforms",
+        titleKh: "កំណែទម្រង់ឌីជីថល",
+        subtitleEn: "Digital Reforms",
+        subtitleKh: "កំណែទម្រង់ឌីជីថល",
+        descriptionEn:
+            "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
+        descriptionKh:
+            "អត្ថបទគំរូសម្រាប់ពិពណ៌នាកំណែទម្រង់ឌីជីថល។ សូមបញ្ចូលមាតិកាពិតរបស់អ្នកនៅទីនេះ។",
+        shortTextEn: "Lorem ipsum dolor sit amet,",
+        shortTextKh: "អត្ថបទគំរូសម្រាប់ពិពណ៌នាក្រៅប្រធានបទ។",
+        icon: Trophy,
+    },
+    {
+        rating: "5.0",
+        titleEn: "Digital Reform",
+        titleKh: "កំណែទម្រង់ឌីជីថល",
+        subtitleEn: "Digital Reform",
+        subtitleKh: "កំណែទម្រង់ឌីជីថល",
+        descriptionEn:
+            "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
+        descriptionKh:
+            "អត្ថបទគំរូសម្រាប់ការចែករំលែកបទពិសោធន៍អំពីកំណែទម្រង់ឌីជីថល។",
+        shortTextEn: "Lorem ipsum dolor sit amet,",
+        shortTextKh: "សូមបញ្ចូលសេចក្តីសង្ខេបពិតរបស់អ្នកនៅទីនេះ។",
+        icon: DollarSign,
+    },
 ];
 
 const MembersSaySwiperSlider: React.FC = () => {

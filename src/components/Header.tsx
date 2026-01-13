@@ -26,7 +26,7 @@ const Header: FC = () => {
             { label: "Working Groups (WGs)", href: "/working-groups" },
             { label: "Resources", href: "/resources" },
             { label: "News & Updates", href: "/new-update" },
-            { label: "MIS Dashboard", href: "/mis-dashboard" },
+            { label: "MIS Dashboard", href: "/mis-dashboards" },
             { label: "Contact Us", href: "/contact-us" },
         ],
         kh: [
@@ -35,7 +35,7 @@ const Header: FC = () => {
             { label: "ក្រុមការងារ (WGs)", href: "/working-groups" },
             { label: "ធនធាន", href: "/resources" },
             { label: "ព័ត៌មាន និងបច្ចុប្បន្នភាព", href: "/new-update" },
-            { label: "ផ្ទាំង MIS", href: "/mis-dashboard" },
+            { label: "ផ្ទាំង MIS", href: "/mis-dashboards" },
             { label: "ទាក់ទងមកពួកយើង", href: "/contact-us" },
         ],
     };
@@ -169,7 +169,7 @@ const Header: FC = () => {
 
                                     <button
                                         onClick={toggleLanguage}
-                                        className="flex items-center gap-1 px-2 py-1 cursor-pointer border rounded-md text-sm hover:bg-gray-50"
+                                        className="flex items-center font-medium gap-1 px-2 py-1 cursor-pointer border rounded-md text-sm hover:bg-gray-50"
                                         type="button"
                                         aria-label="Language"
                                     >

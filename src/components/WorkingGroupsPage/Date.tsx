@@ -105,7 +105,7 @@ export default function Date() {
 
     return (
         <section className="bg-white py-4 sm:py-4 lg:py-1 px-4">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl px-4 mx-auto">
                 {/* Header */}
                 <div className="mb-10 sm:mb-14">
                     <p
