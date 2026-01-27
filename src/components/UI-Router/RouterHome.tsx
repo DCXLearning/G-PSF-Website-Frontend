@@ -12,6 +12,7 @@ import TrustedByCarousel from '../HomePage/TrustedBy';
 function RouterHome() {
   return (
     <>
+    {/* banner error */}
       {/* <HeroBanner /> */}
       <Benefits />
       <Update_News />
