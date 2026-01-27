@@ -2,20 +2,13 @@
 "use client";
 
 import React from "react";
-import {
-    FaChartLine,
-    FaPencilAlt,
-    FaPuzzlePiece,
-    FaBriefcase,
-    FaCog,
-    FaDesktop,
-} from "react-icons/fa";
+
 import { useLanguage } from "@/app/context/LanguageContext";
 
 interface GrowthVisionItem {
     titleEn: string;
     titleKh: string;
-    icon: React.ElementType;
+    icon: string;
     descriptionEn: string;
     descriptionKh: string;
     colorClass?: string;
@@ -26,7 +19,7 @@ const growthVisionData: GrowthVisionItem[] = [
     {
         titleEn: "Market Data",
         titleKh: "ទិន្នន័យទីផ្សារ",
-        icon: FaChartLine,
+        icon: "/icon_home_page/Growth_Vision3.svg",
         descriptionEn:
             "Access practical insights and trends to support better business and policy decisions.",
         descriptionKh:
@@ -36,7 +29,7 @@ const growthVisionData: GrowthVisionItem[] = [
     {
         titleEn: "Engagement",
         titleKh: "ការចូលរួមពិភាក្សា",
-        icon: FaPencilAlt,
+        icon: "/icon_home_page/Growth_Vision1.svg",
         descriptionEn:
             "Connect directly with Working Groups and share private sector perspectives.",
         descriptionKh:
@@ -46,7 +39,7 @@ const growthVisionData: GrowthVisionItem[] = [
     {
         titleEn: "Policy Updates",
         titleKh: "ព័ត៌មានកំណែទម្រង់នយោបាយ",
-        icon: FaPuzzlePiece,
+        icon: "/icon_home_page/Growth_Vision2.svg",
         descriptionEn:
             "Stay informed on ongoing reforms, new regulations, and implementation progress.",
         descriptionKh:
@@ -56,7 +49,7 @@ const growthVisionData: GrowthVisionItem[] = [
     {
         titleEn: "Labor Law & Visa",
         titleKh: "ច្បាប់ការងារ និងវីសា",
-        icon: FaBriefcase,
+        icon: "/icon_home_page/Growth_Vision5.svg",
         descriptionEn:
             "Understand key provisions on labor, employment, and entry requirements for workers.",
         descriptionKh:
@@ -66,7 +59,7 @@ const growthVisionData: GrowthVisionItem[] = [
     {
         titleEn: "G-PSF Training",
         titleKh: "ការបណ្តុះបណ្តាល G-PSF",
-        icon: FaCog,
+        icon: "/icon_home_page/Growth_Vision4.svg",
         descriptionEn:
             "Build capacity to participate effectively in public–private dialogue.",
         descriptionKh:
@@ -76,7 +69,7 @@ const growthVisionData: GrowthVisionItem[] = [
     {
         titleEn: "Tourism Toolkit",
         titleKh: "ឧបករណ៍គាំទ្របទពិសោធន៍ទេសចរណ៍",
-        icon: FaDesktop,
+        icon: "/icon_home_page/Growth_Vision6.svg",
         descriptionEn:
             "Use practical tools and templates to strengthen tourism-related services.",
         descriptionKh:
@@ -87,7 +80,7 @@ const growthVisionData: GrowthVisionItem[] = [
 
 interface CardProps {
     title: string;
-    icon: React.ElementType;
+    icon: string;
     description: string;
     isPrimary?: boolean;
     isKhmer?: boolean;
@@ -95,7 +88,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({
     title,
-    icon: Icon,
+    icon,
     description,
     isPrimary,
     isKhmer,
@@ -104,24 +97,35 @@ const Card: React.FC<CardProps> = ({
         return (
             <div className="p-8 rounded-tl-[120px] rounded-br-[120px] bg-blue-950 shadow-2xl text-white min-h-[300px] flex flex-col justify-between transform hover:scale-[1.02] transition duration-300 ease-in-out">
                 <div className="text-center mb-4">
-                    {Icon && <Icon className="w-12 h-12 mx-auto mb-4 p-2 rounded-lg" />}
+                    {/* ICON */}
+                    <img
+                        src={icon}
+                        alt={title}
+                        className="w-14 h-14 mx-auto mb-4 filter brightness-0 invert"
+                    />
+
                     <h3
-                        className={`text-2xl font-bold mb-2 ${isKhmer ? "khmer-font" : ""
-                            }`}
+                        className={`text-2xl font-bold mb-2 ${
+                            isKhmer ? "khmer-font" : ""
+                        }`}
                     >
                         {title}
                     </h3>
+
                     <p
-                        className={`text-lg opacity-90 ${isKhmer ? "khmer-font" : ""
-                            }`}
+                        className={`text-lg opacity-90 ${
+                            isKhmer ? "khmer-font" : ""
+                        }`}
                     >
                         {description}
                     </p>
                 </div>
+
                 <div className="text-center mt-4">
                     <button
-                        className={`flex items-center justify-center mx-auto text-sm font-semibold opacity-80 hover:opacity-100 ${isKhmer ? "khmer-font" : ""
-                            }`}
+                        className={`flex items-center justify-center mx-auto text-sm font-semibold opacity-80 hover:opacity-100 ${
+                            isKhmer ? "khmer-font" : ""
+                        }`}
                     >
                         {isKhmer ? "ស្វែងយល់បន្ថែម" : "LEARN MORE"}
                     </button>
@@ -130,27 +134,39 @@ const Card: React.FC<CardProps> = ({
         );
     }
 
+    // NORMAL CARD
     return (
         <div className="p-8 rounded-tl-[120px] rounded-br-[120px] shadow-xl border border-gray-100 min-h-[280px] flex flex-col justify-between relative overflow-hidden transform hover:scale-[1.02] transition duration-300 ease-in-out">
             <div className="pt-4 text-center mb-4">
-                {Icon && <Icon className="w-8 h-8 mx-auto mb-4 text-indigo-900" />}
+                {/* ICON */}
+                <img
+                    src={icon}
+                    alt={title}
+                    className="w-12 h-12 mx-auto mb-4"
+                />
+
                 <h3
-                    className={`text-2xl font-bold mb-2 ${isKhmer ? "khmer-font" : ""
-                        }`}
+                    className={`text-2xl font-bold mb-2 ${
+                        isKhmer ? "khmer-font" : ""
+                    }`}
                 >
                     {title}
                 </h3>
+
                 <p
-                    className={`text-lg text-gray-600 ${isKhmer ? "khmer-font" : ""
-                        }`}
+                    className={`text-lg text-gray-600 ${
+                        isKhmer ? "khmer-font" : ""
+                    }`}
                 >
                     {description}
                 </p>
             </div>
+
             <div className="text-center mt-4">
                 <button
-                    className={`flex items-center justify-center mx-auto text-sm font-semibold text-indigo-900 hover:text-indigo-700 ${isKhmer ? "khmer-font" : ""
-                        }`}
+                    className={`flex items-center justify-center mx-auto text-sm font-semibold text-indigo-900 hover:text-indigo-700 ${
+                        isKhmer ? "khmer-font" : ""
+                    }`}
                 >
                     {isKhmer ? "ស្វែងយល់បន្ថែម" : "LEARN MORE"}
                 </button>
@@ -158,6 +174,7 @@ const Card: React.FC<CardProps> = ({
         </div>
     );
 };
+
 
 const GrowthVision: React.FC = () => {
     const { language } = useLanguage();

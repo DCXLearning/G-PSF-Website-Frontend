@@ -27,7 +27,7 @@ const contentItems: ContentItem[] = [
       "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
     contentKh:
       "អត្ថបទគំរូសម្រាប់បង្ហាញមាតិកាដោយសង្ខេប សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-    icon: "📊",
+    icon: "/icon_home_page/News_Updates1.svg",
   },
   {
     titleEn: "Digital Reforms",
@@ -36,7 +36,7 @@ const contentItems: ContentItem[] = [
       "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
     contentKh:
       "អត្ថបទគំរូសម្រាប់បង្ហាញមាតិកាដោយសង្ខេប សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-    icon: "💡",
+    icon: "/icon_home_page/News_Updates2.svg",
   },
   {
     titleEn: "Policy Reform Tracker",
@@ -45,7 +45,7 @@ const contentItems: ContentItem[] = [
       "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
     contentKh:
       "អត្ថបទគំរូសម្រាប់បង្ហាញមាតិកាដោយសង្ខេប សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-    icon: "💼",
+    icon: "/icon_home_page/News_Updates3.svg",
   },
   {
     titleEn: "Work Group Meetings",
@@ -54,7 +54,7 @@ const contentItems: ContentItem[] = [
       "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
     contentKh:
       "អត្ថបទគំរូសម្រាប់បង្ហាញមាតិកាដោយសង្ខេប សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-    icon: "🤝",
+    icon: "/icon_home_page/News_Updates4.svg",
   },
   {
     titleEn: "News & Updates",
@@ -63,7 +63,7 @@ const contentItems: ContentItem[] = [
       "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
     contentKh:
       "អត្ថបទគំរូសម្រាប់បង្ហាញមាតិកាដោយសង្ខេប សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-    icon: "📰",
+    icon: "/icon_WorkingGroups_page/WorkingGroups1.svg",
   },
   {
     titleEn: "Results & Achievements",
@@ -72,7 +72,7 @@ const contentItems: ContentItem[] = [
       "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
     contentKh:
       "អត្ថបទគំរូសម្រាប់បង្ហាញមាតិកាដោយសង្ខេប សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-    icon: "📊",
+    icon: "/icon_WorkingGroups_page/WorkingGroups2.svg",
   },
 ];
 
@@ -136,7 +136,7 @@ const Update_News: React.FC = () => {
                     style={{ backgroundColor: DARK_BLUE }}
                   >
                     <div className="flex items-center justify-center w-full h-[160px] text-white text-4xl">
-                      {item.icon}
+                      <img src={item.icon} alt="" className="w-13 h-13 filter brightness-0 invert"/>
                     </div>
                   </div>
 

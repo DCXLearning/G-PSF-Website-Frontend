@@ -28,8 +28,7 @@ const Navbar = () => {
     return (
         <nav ref={navRef} className="bg-white shadow-md">
             <div className="max-w-7xl mx-auto px-4 py-4">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-
+                <div className="flex flex-col md:flex-wrap md:flex-row md:items-center md:justify-between gap-4">
                     {/* Left */}
                     <button className="bg-orange-500 text-white px-6 py-2 rounded-md font-semibold w-fit">
                         All

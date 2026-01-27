@@ -4,26 +4,28 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
     try {
-        const res = await fetch(`${API_URL}/posts`, {
-            cache: 'no-store', // always get fresh data
+        const res = await fetch(`${API_URL}/pages/home/section`, {
+            cache: 'no-store',
         });
 
         const json = await res.json();
 
-        // Find post with id = 1
-        const post = json.data.find((item: any) => item.id === 1);
+        // get hero banner block
+        const heroBlock = json?.data?.blocks?.find(
+            (b: any) => b.type === 'hero-banner' && b.enabled
+        );
 
-        if (!post) {
+        if (!heroBlock) {
             return NextResponse.json(
-                { error: 'Post id=1 not found' },
+                { error: 'Hero banner not found' },
                 { status: 404 }
             );
         }
 
-        return NextResponse.json(post);
-    } catch (err) {
+        return NextResponse.json(heroBlock);
+    } catch (error) {
         return NextResponse.json(
-            { error: 'Failed to fetch home post' },
+            { error: 'Failed to fetch home hero banner' },
             { status: 500 }
         );
     }

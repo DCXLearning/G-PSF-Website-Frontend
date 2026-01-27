@@ -2,12 +2,11 @@
 "use client";
 
 import React from "react";
-import { Trophy, DollarSign, BarChart, LucideIcon } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 // Define the type for each benefit item
 interface Benefit {
-    icon: LucideIcon;
+    icon: string;
     titleEn: string;
     titleKh: string;
     descriptionEn: string;
@@ -17,7 +16,7 @@ interface Benefit {
 // Data for the benefits section (EN + KH)
 const benefitsData: Benefit[] = [
     {
-        icon: Trophy,
+        icon: "/icon_home_page/Benefits1.svg",
         titleEn: "Direct Access to Policymakers",
         titleKh: "ចូលដំណើរការទៅកាន់អ្នកកំណត់នយោបាយដោយផ្ទាល់",
         descriptionEn:
@@ -26,7 +25,7 @@ const benefitsData: Benefit[] = [
             "ចូលរួមបង្កើតច្បាប់ និងបទបញ្ជាដែលគាំទ្រដល់អាជីវកម្ម តាមរយៈការចូលរួមក្នុងក្រុមការងារជាក់លាក់តាមវិស័យ និងក្រុមការងារប្រសព្វវិស័យ។",
     },
     {
-        icon: DollarSign,
+        icon: "/icon_home_page/Benefits2.svg",
         titleEn: "Gateway for Foreign Investors",
         titleKh: "ទ្វារសម្រាប់វិនិយោគិនបរទេស",
         descriptionEn:
@@ -35,7 +34,7 @@ const benefitsData: Benefit[] = [
             "ចូលរួមពិភាក្សាដែលដឹកនាំដោយនាយករដ្ឋមន្ត្រី បើកឱកាសឲ្យអាជីវកម្មចូលដំណើរការទៅកាន់អ្នកសម្រេចចិត្ត។",
     },
     {
-        icon: BarChart,
+        icon: "/icon_home_page/Benefits3.svg",
         titleEn: "Access to Reliable Information",
         titleKh: "ការចូលដំណើរការទិន្នន័យគួរឱ្យទុកចិត្ត",
         descriptionEn:
@@ -47,21 +46,25 @@ const benefitsData: Benefit[] = [
 
 // BenefitCard component to display individual benefit items
 interface BenefitCardProps {
-    icon: LucideIcon;
+    icon: string;
     title: string;
     description: string;
     isKhmer: boolean;
 }
 
 const BenefitCard: React.FC<BenefitCardProps> = ({
-    icon: Icon,
+    icon,
     title,
     description,
     isKhmer,
 }) => (
     <div className="flex flex-col md:flex-row items-start gap-4 md:gap-10">
-        <div className="p-4 md:p-3 mt-6 rounded-full border border-blue-900/30 text-blue-800 flex-shrink-0">
-            <Icon className="w-10 h-10 text-blue-800" strokeWidth={1.5} />
+        <div className="p-4 md:p-3 mt-6 text-blue-800 flex-shrink-0">
+           <img
+                src={icon}
+                alt={title}
+                className="w-16 h-16 object-contain"
+            />
         </div>
 
         <div>

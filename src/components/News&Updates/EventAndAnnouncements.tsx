@@ -53,20 +53,33 @@ const EventsAndAnnouncements = () => {
 
                     <div className="space-y-6">
                         {[1, 2].map((item) => (
-                            <div key={item} className="border border-gray-200 p-8 flex gap-6 hover:shadow-md transition-shadow">
-                                <div className="mt-1">
-                                    <Megaphone className="w-8 h-8 text-gray-500 rotate-[-20deg]" />
+                            <div
+                                key={item}
+                                className="border border-gray-200 p-8 flex gap-6 hover:shadow-md transition-shadow items-start"
+                            >
+                                {/* Icon Image */}
+                                <div className="flex-shrink-0 mt-2">
+                                    <img
+                                        src="/icon_NewUpdate_page/icon1.svg"
+                                        alt="icon"
+                                        className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
+                                    />
                                 </div>
+
+                                {/* Content */}
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-bold uppercase tracking-wider mb-1">
                                         Lorem ipsum dolor sit amet
                                     </span>
+
                                     <h3 className="text-2xl font-bold mb-3 leading-tight">
                                         Lorem ipsum dolor sit amet
                                     </h3>
+
                                     <p className="text-xs text-gray-600 leading-relaxed mb-4">
                                         Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
                                     </p>
+
                                     <button className="text-[10px] font-bold flex items-center mt-auto uppercase tracking-tighter">
                                         Download <span className="ml-1 text-lg">›</span>
                                     </button>
@@ -75,7 +88,6 @@ const EventsAndAnnouncements = () => {
                         ))}
                     </div>
                 </div>
-
             </div>
         </div>
     );

@@ -1,5 +1,5 @@
 import React from 'react'
-import HeroBanner from '../HomePage/Banner';
+// import HeroBanner from '../HomePage/Banner';
 import Benefits from '../HomePage/Benefits';
 import Update_News from '../HomePage/Update&News';
 import DigitalReforms from '../HomePage/DigitalReforms';
@@ -12,7 +12,7 @@ import TrustedByCarousel from '../HomePage/TrustedBy';
 function RouterHome() {
   return (
     <>
-      <HeroBanner />
+      {/* <HeroBanner /> */}
       <Benefits />
       <Update_News />
       <StatsBar />

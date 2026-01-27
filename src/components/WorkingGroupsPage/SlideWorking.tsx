@@ -23,7 +23,7 @@ const topRowData: CoChair[] = [
     { id: 2, type: "empty" },
     { id: 3, type: "empty" },
     { id: 4, type: "empty" },
-    { id: 5, type: "photo", name: "Mr. Orngkea Sela" }, // បន្ថែមឈ្មោះដើម្បីបង្ហាញក្រោម Icon
+    { id: 5, type: "photo", name: "PHOTO OF CO-CHAIRPERSON" }, // បន្ថែមឈ្មោះដើម្បីបង្ហាញក្រោម Icon
     { id: 6, type: "empty" },
     { id: 7, type: "empty" },
 ];

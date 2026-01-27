@@ -28,7 +28,7 @@ const contentItems: ContentItem[] = [
             "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
         contentKh:
             "អត្ថបទគំរូសម្រាប់បង្ហាញលទ្ធផល និងសមិទ្ធិផល។ សូមបញ្ចូលមាតិកាពិតរបស់អ្នកនៅទីនេះ។",
-        icon: "📊",
+        icon: "",
     },
     {
         titleEn: "Digital Reforms",
@@ -37,7 +37,7 @@ const contentItems: ContentItem[] = [
             "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
         contentKh:
             "អត្ថបទគំរូសម្រាប់ពិពណ៌នាកំណែទម្រង់ឌីជីថល។ សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-        icon: "💡",
+        icon: "",
     },
     {
         titleEn: "Policy Reform Tracker",
@@ -46,7 +46,7 @@ const contentItems: ContentItem[] = [
             "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
         contentKh:
             "អត្ថបទគំរូសម្រាប់តាមដានវឌ្ឍនភាពកំណែទម្រង់នយោបាយ។ សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-        icon: "💼",
+        icon: "",
     },
     {
         titleEn: "Work Group Meetings",
@@ -55,7 +55,7 @@ const contentItems: ContentItem[] = [
             "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
         contentKh:
             "អត្ថបទគំរូសម្រាប់ពិពណ៌នាការប្រជុំក្រុមការងារ។ សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-        icon: "🤝",
+        icon: "",
     },
     {
         titleEn: "News & Updates",
@@ -64,7 +64,7 @@ const contentItems: ContentItem[] = [
             "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore.",
         contentKh:
             "អត្ថបទគំរូសម្រាប់ព័ត៌មាន និងបច្ចុប្បន្នភាព។ សូមបញ្ចូលមាតិកាពិតនៅទីនេះ។",
-        icon: "📰",
+        icon: "",
     },
 ];
 

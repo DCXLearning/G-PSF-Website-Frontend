@@ -3,7 +3,7 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import { Trophy, DollarSign, BarChart, LucideIcon } from "lucide-react";
+// import { Trophy, DollarSign, BarChart, LucideIcon } from "lucide-react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -20,7 +20,7 @@ interface Slide {
     descriptionKh: string;
     shortTextEn: string;
     shortTextKh: string;
-    icon: LucideIcon;
+    icon: string;
 }
 
 const slides: Slide[] = [
@@ -36,7 +36,7 @@ const slides: Slide[] = [
             "អត្ថបទគំរូសម្រាប់ពិពណ៌នាកំណែទម្រង់ឌីជីថល។ សូមបញ្ចូលមាតិកាពិតរបស់អ្នកនៅទីនេះ។",
         shortTextEn: "Lorem ipsum dolor sit amet,",
         shortTextKh: "អត្ថបទគំរូសម្រាប់ពិពណ៌នាក្រៅប្រធានបទ។",
-        icon: Trophy,
+        icon: "",
     },
     {
         rating: "5.0",
@@ -50,7 +50,7 @@ const slides: Slide[] = [
             "អត្ថបទគំរូសម្រាប់ការចែករំលែកបទពិសោធន៍អំពីកំណែទម្រង់ឌីជីថល។",
         shortTextEn: "Lorem ipsum dolor sit amet,",
         shortTextKh: "សូមបញ្ចូលសេចក្តីសង្ខេបពិតរបស់អ្នកនៅទីនេះ។",
-        icon: DollarSign,
+        icon: "",
     },
     {
         rating: "5.0",
@@ -64,7 +64,7 @@ const slides: Slide[] = [
             "អត្ថបទគំរូសម្រាប់បង្ហាញចំណេះដឹង និងទស្សនៈរបស់សមាជិកអំពីកំណែទម្រង់។",
         shortTextEn: "Lorem ipsum dolor sit amet,",
         shortTextKh: "អត្ថបទគំរូបង្ហាញសេចក្តីសង្ខេប។",
-        icon: BarChart,
+        icon: "",
     },
     {
         rating: "5.0",
@@ -78,7 +78,7 @@ const slides: Slide[] = [
             "អត្ថបទគំរូសម្រាប់បង្ហាញបទពិសោធន៍ពិតរបស់សមាជិក G-PSF។",
         shortTextEn: "Lorem ipsum dolor sit amet,",
         shortTextKh: "សូមបញ្ចូលសេចក្តីសង្ខេបអំពីបទពិសោធន៍សមាជិក។",
-        icon: Trophy,
+        icon: "",
     },
     {
         rating: "5.0",
@@ -92,7 +92,7 @@ const slides: Slide[] = [
             "អត្ថបទគំរូសម្រាប់ពិពណ៌នាកំណែទម្រង់ឌីជីថល។ សូមបញ្ចូលមាតិកាពិតរបស់អ្នកនៅទីនេះ។",
         shortTextEn: "Lorem ipsum dolor sit amet,",
         shortTextKh: "អត្ថបទគំរូសម្រាប់ពិពណ៌នាក្រៅប្រធានបទ។",
-        icon: Trophy,
+        icon: "",
     },
     {
         rating: "5.0",
@@ -106,7 +106,7 @@ const slides: Slide[] = [
             "អត្ថបទគំរូសម្រាប់ការចែករំលែកបទពិសោធន៍អំពីកំណែទម្រង់ឌីជីថល។",
         shortTextEn: "Lorem ipsum dolor sit amet,",
         shortTextKh: "សូមបញ្ចូលសេចក្តីសង្ខេបពិតរបស់អ្នកនៅទីនេះ។",
-        icon: DollarSign,
+        icon: "",
     },
 ];
 
@@ -193,8 +193,8 @@ const MembersSaySwiperSlider: React.FC = () => {
 
                             {/* Footer – icon + subtitle + short text */}
                             <div className="pt-6 flex items-center gap-4">
-                                <div className="bg-gray-500 p-4 rounded-full flex items-center justify-center">
-                                    <slide.icon className="text-4xl text-blue-600" />
+                                <div className="bg-gray-500 w-12 h-12 p-4 rounded-full flex items-center justify-center">
+                                    {/* add icon */}
                                 </div>
                                 <div>
                                     <p

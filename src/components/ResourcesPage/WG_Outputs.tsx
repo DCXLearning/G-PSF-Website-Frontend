@@ -1,6 +1,8 @@
-import React from 'react';
-import Image from 'next/image';
-import { ChevronRight } from 'lucide-react';
+"use client";
+
+import React from "react";
+import Image from "next/image";
+import { ChevronRight } from "lucide-react";
 
 const WGOutputs = () => {
     return (
@@ -38,22 +40,33 @@ const WGOutputs = () => {
                     {/* Content */}
                     <div className="relative z-10 max-w-md">
                         <div className="bg-[#1e2756] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            {/* Replace with your specific SVG icon */}
-                            <div className="text-white text-3xl">⚙️</div>
+                            {/* Example icon image */}
+                            <Image
+                                src="/icon_Resources_page/icon1.png"
+                                alt="Icon"
+                                width={45}
+                                height={45}
+                            />
                         </div>
+
                         <p className="text-[#1e2756] font-bold uppercase tracking-wider mb-2">
                             Manufacturing & SMEs
                         </p>
+
                         <h4 className="text-[#1e2756] text-4xl font-extrabold mb-4">
                             Featured Report Headline
                         </h4>
+
                         <p className="text-gray-800 mb-8 font-medium">
-                            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
+                            nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
                         </p>
+
                         <div className="flex flex-wrap justify-center gap-6 items-center">
                             <button className="bg-[#f39c32] hover:bg-[#e68a1e] text-[#1e2756] cursor-pointer font-bold py-2 px-6 rounded flex items-center gap-2 transition-all">
                                 Download <ChevronRight size={16} />
                             </button>
+
                             <button className="text-[#1e2756] cursor-pointer font-bold flex items-center gap-1 hover:underline underline-offset-4">
                                 WG Profile <ChevronRight size={16} />
                             </button>
@@ -63,15 +76,14 @@ const WGOutputs = () => {
 
                 {/* Right: Article Column */}
                 <div className="flex flex-col gap-8">
-                    {/* Top Article Card */}
                     <ArticleCard
-                        icon="🏦"
+                        icon="/icon_Resources_page/icon2.png"
                         category="Banking & Financial Services"
                         headline="Article Headline"
                     />
-                    {/* Bottom Article Card */}
+
                     <ArticleCard
-                        icon="⚖️"
+                        icon="/icon_Resources_page/icon3.png"
                         category="Law, Tax & Governance"
                         headline="Article Headline"
                     />
@@ -82,20 +94,33 @@ const WGOutputs = () => {
 };
 
 /* Reusable Article Card Component */
-const ArticleCard = ({ icon, category, headline }: { icon: string, category: string, headline: string }) => (
+const ArticleCard = ({ icon, category, headline }) => (
     <div className="border border-gray-200 p-10 flex flex-col items-center justify-center text-center flex-1">
-        <div className="bg-[#1e2756] w-12 h-12 rounded-full flex items-center justify-center mb-4">
-            <span className="text-white text-xl">{icon}</span>
+
+        {/* ICON FIXED HERE */}
+        <div className="bg-[#1e2756] w-13 h-13 rounded-full flex items-center justify-center mb-4">
+            <Image
+                src={icon}
+                alt={category}
+                width={60}
+                height={60}
+                className="object-contain"
+            />
         </div>
+
         <p className="text-[#1e2756] text-sm font-bold uppercase tracking-widest mb-1">
             {category}
         </p>
+
         <h4 className="text-[#1e2756] text-3xl font-bold mb-3">
             {headline}
         </h4>
+
         <p className="text-gray-700 text-sm max-w-sm mb-6">
-            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod
+            tincidunt ut laoreet dolore magna aliquam erat volutpat.
         </p>
+
         <button className="text-[#1e2756] cursor-pointer font-bold text-xs flex items-center gap-1 hover:underline">
             Download <ChevronRight size={14} />
         </button>

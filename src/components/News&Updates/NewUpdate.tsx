@@ -34,7 +34,7 @@ const NewUpdateSection = () => {
                 <h2 className="text-[#1a2b4b] text-5xl md:text-6xl font-extrabold mb-4">
                     News & Updates
                 </h2>
-
+                <div className="mt-5 mb-12 h-1.5 apsolute left- top-0 bg-orange-500 w-3/4 sm:w-full max-w-[360px] sm:ml-8 md:ml-50" />
             </div>
 
             {/* BLUE BACKGROUND DECORATION */}

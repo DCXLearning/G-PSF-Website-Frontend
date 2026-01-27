@@ -65,7 +65,7 @@ const AnnualReports = () => {
                                             Annual Report
                                         </p>
 
-                                        <ul className="space-y-2 md:space-y-3">
+                                        <ul className="space-y-2 md:space-y-3 ml-22">
                                             {report.points.map((point, i) => (
                                                 <li key={i} className="flex items-center text-gray-700 text-xs md:text-sm font-medium">
                                                     <Hexagon className="w-3 h-3 mr-2 text-[#3b5998] fill-[#3b5998]/10 shrink-0" />

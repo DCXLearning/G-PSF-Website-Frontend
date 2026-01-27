@@ -2,14 +2,13 @@
 
 import React from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { Building2, UserCircle2, Landmark, Users2 } from "lucide-react";
 
 type Lang = "en" | "kh";
 
 type Stakeholder = {
     title: string;
     description: string;
-    icon: React.ReactNode;
+    icon: string;
 };
 
 const stakeholdersByLang: Record<Lang, Stakeholder[]> = {
@@ -18,25 +17,25 @@ const stakeholdersByLang: Record<Lang, Stakeholder[]> = {
             title: "Line ministries & government agencies relevant to the sector",
             description:
                 "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore",
-            icon: <Building2 className="w-10 h-10 text-white" />,
+            icon: "/icon_WorkingGroups_page/WorkingGroups1.svg",
         },
         {
             title: "Private sector co-chairs & Working Group members",
             description:
                 "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore",
-            icon: <UserCircle2 className="w-10 h-10 text-white" />,
+            icon: "/icon_WorkingGroups_page/WorkingGroups2.svg",
         },
         {
             title: "Business Membership Organisations & chambers of commerce",
             description:
                 "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore",
-            icon: <Landmark className="w-10 h-10 text-white" />,
+            icon: "/icon_WorkingGroups_page/WorkingGroups3.svg",
         },
         {
             title: "Technical experts, sub-committees, or task forces",
             description:
                 "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore",
-            icon: <Users2 className="w-10 h-10 text-white" />,
+            icon: "/icon_WorkingGroups_page/WorkingGroups4.svg",
         },
     ],
     kh: [
@@ -44,25 +43,25 @@ const stakeholdersByLang: Record<Lang, Stakeholder[]> = {
             title: "ក្រសួង/ស្ថាប័នរដ្ឋដែលពាក់ព័ន្ធនឹងវិស័យ",
             description:
                 "សេចក្ដីពណ៌នាគំរូ (Khmer) — សូមប្ដូរទៅអត្ថបទពិតរបស់អ្នក។",
-            icon: <Building2 className="w-10 h-10 text-white" />,
+            icon: "/icon_WorkingGroups_page/WorkingGroups1.svg",
         },
         {
             title: "សហអធិបតីវិស័យឯកជន និងសមាជិកក្រុមការងារ",
             description:
                 "សេចក្ដីពណ៌នាគំរូ (Khmer) — សូមប្ដូរទៅអត្ថបទពិតរបស់អ្នក។",
-            icon: <UserCircle2 className="w-10 h-10 text-white" />,
+            icon: "/icon_WorkingGroups_page/WorkingGroups2.svg",
         },
         {
             title: "អង្គការសមាជិកធុរកិច្ច និងសភាពាណិជ្ជកម្ម",
             description:
                 "សេចក្ដីពណ៌នាគំរូ (Khmer) — សូមប្ដូរទៅអត្ថបទពិតរបស់អ្នក។",
-            icon: <Landmark className="w-10 h-10 text-white" />,
+            icon: "/icon_WorkingGroups_page/WorkingGroups3.svg",
         },
         {
             title: "អ្នកជំនាញបច្ចេកទេស អនុគណៈកម្មការ ឬក្រុមការងារពិសេស",
             description:
                 "សេចក្ដីពណ៌នាគំរូ (Khmer) — សូមប្ដូរទៅអត្ថបទពិតរបស់អ្នក។",
-            icon: <Users2 className="w-10 h-10 text-white" />,
+            icon: "/icon_WorkingGroups_page/WorkingGroups4.svg",
         },
     ],
 };
@@ -117,7 +116,7 @@ const Participates: React.FC = () => {
                                 {/* Icon Container */}
                                 <div className="w-full h-25 flex justify-center -mt-12 mb-10">
                                     <div className="bg-[#1e234a] p-8 rounded-b-[100px] rounded-t-sm shadow-md">
-                                        {item.icon}
+                                        <img src={item.icon} alt="icon" className="w-14 h-14 filter brightness-0 invert"/>
                                     </div>
                                 </div>
 
