@@ -1,23 +1,11 @@
 // app/api/home-post/route.ts
-import { API_URL } from "@/config/api";
 import { NextResponse } from "next/server";
+import { fetchHomeSection } from "@/app/lib/homeSection";
 
 export async function GET() {
     try {
-        const res = await fetch(`${API_URL}/pages/home/section`, {
-            cache: "no-store",
-        });
+        const json = await fetchHomeSection();
 
-        if (!res.ok) {
-            return NextResponse.json(
-                { error: "Failed to fetch home sections" },
-                { status: res.status }
-            );
-        }
-
-        const json = await res.json();
-
-        // ✅ find hero banner block
         const heroBlock = json?.data?.blocks?.find(
             (b: any) =>
                 b?.enabled === true &&
@@ -28,7 +16,6 @@ export async function GET() {
             return NextResponse.json({ error: "Hero banner not found" }, { status: 404 });
         }
 
-        // ✅ choose published first, else first post
         const heroPost =
             heroBlock?.posts?.find((p: any) => p?.status === "published") ??
             heroBlock?.posts?.[0];
@@ -51,15 +38,11 @@ export async function GET() {
             createdAt: heroPost.createdAt,
             updatedAt: heroPost.updatedAt,
 
-            // ✅ multilingual text
             title: content.title ?? heroPost.title ?? { en: "", km: "" },
             subtitle: content.subtitle ?? { en: "", km: "" },
             description: content.description ?? { en: "", km: "" },
 
-            // ✅ normalized background (string)
             background,
-
-            // ✅ keep CTAs as array
             ctas: content.ctas ?? [],
         });
     } catch (error) {
