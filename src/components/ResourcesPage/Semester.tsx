@@ -95,7 +95,7 @@ export default function FullWidthSwiperLayout() {
                 <h3 className={`text-lg md:text-2xl font-medium mb-2 text-[#1e1e4b] ${lang === "kh" ? "khmer-font" : ""}`}>
                     {lang === "kh" ? "សហអធិបតីក្រុមការងារ" : "Biannual Term Progress"}
                 </h3>
-                <h1 className="text-3xl md:text-5xl font-black mb-4 text-[#1e1e4b]">Semester Reports</h1>
+                <h1 className="text-3xl md:text-5xl font-semibold mb-4 text-[#1e1e4b]">Semester Reports</h1>
                 <p className="text-sm md:text-lg text-gray-600 max-w-2xl mx-auto">
                     Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt.
                 </p>

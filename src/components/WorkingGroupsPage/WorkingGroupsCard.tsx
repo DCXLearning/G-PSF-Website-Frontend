@@ -114,14 +114,14 @@ export default function WorkGroupsGrid() {
             {/* Responsive title section */}
             <div className="max-w-7xl mx-auto px-4 md:px-4 py-8">
                 <p
-                    className={`text-xs md:text-sm font-semibold text-gray-500 mb-3 uppercase tracking-[0.2em] ${isKh ? "khmer-font normal-case" : ""
+                    className={`text-lg md:text-2xl font-semibold text-gray-900 mb-3 ${isKh ? "khmer-font normal-case" : ""
                         }`}
                 >
                     {flexLabel}
                 </p>
 
                 <h2
-                    className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-[1.2] max-w-[850px] ${isKh ? "khmer-font" : ""
+                    className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-[1.2] max-w-[850px] ${isKh ? "khmer-font" : ""
                         }`}
                 >
                     {flexTitle}

@@ -30,7 +30,7 @@ const Policy_Documents = () => {
             {/* Header */}
             <div className="max-w-5xl mx-auto text-center px-4 mb-16 relative z-10">
                 <p className="text-gray-900 font-bold text-3xl md:text-4xl mb-1">Core Policies & Frameworks</p>
-                <h2 className="text-[#1a2b4b] text-5xl md:text-6xl font-extrabold mb-4">
+                <h2 className="text-[#1a2b4b] text-5xl md:text-6xl font-semibold mb-4">
                     Policy Documents
                 </h2>
                 <p className="text-gray-900 font-semibold text-xl md:text-2xl">
