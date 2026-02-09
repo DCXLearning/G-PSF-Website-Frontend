@@ -101,7 +101,7 @@ const Benefits: React.FC = () => {
                 {/* LEFT */}
                 <div className="mb-32 sm:mb-10 md:mb-0">
                     <h2
-                        className={`text-3xl w-50 sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-gray-900 leading-tight ${isKhmer ? "khmer-font" : ""
+                        className={`text-3xl w-70 sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-gray-900 leading-tight ${isKhmer ? "khmer-font" : ""
                             }`}
                     >
                         {heading1}

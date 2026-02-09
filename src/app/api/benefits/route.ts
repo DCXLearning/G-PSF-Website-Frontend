@@ -1,6 +1,7 @@
-// app/api/benefits/route.ts
 import { API_URL } from "@/config/api";
 import { NextResponse } from "next/server";
+
+/* ---------- helpers ---------- */
 
 function cleanText(v: any): string {
     const s = typeof v === "string" ? v.trim() : "";
@@ -8,25 +9,12 @@ function cleanText(v: any): string {
     return s;
 }
 
-// km "." => fallback to en
 function cleanI18n(obj: any) {
     const en = cleanText(obj?.en);
     const kmRaw = cleanText(obj?.km);
     return { en, km: kmRaw || en };
 }
 
-// make EN heading always "G-PSF" + "Benefits"
-function makeBenefitsHeading(enTitle: string) {
-    // if backend has "G-PSF Benefits ..." => force clean
-    const lower = enTitle.toLowerCase();
-    if (lower.includes("g-psf") && lower.includes("benefit")) {
-        return { line1: "G-PSF", line2: "Benefits" };
-    }
-    // fallback (if backend title different)
-    return { line1: "G-PSF", line2: "Benefits" };
-}
-
-// TipTap JSON -> plain text
 function tiptapToText(doc: any): string {
     if (!doc || typeof doc !== "object") return "";
 
@@ -39,7 +27,7 @@ function tiptapToText(doc: any): string {
 
     if (Array.isArray(doc.content)) {
         return doc.content
-            .map((block: any) => walk(block).trim())
+            .map((b: any) => walk(b).trim())
             .filter(Boolean)
             .join("\n");
     }
@@ -47,9 +35,13 @@ function tiptapToText(doc: any): string {
     return walk(doc).trim();
 }
 
+/* ---------- route ---------- */
+
 export async function GET() {
     try {
-        const res = await fetch(`${API_URL}/pages/home/section`, { cache: "no-store" });
+        const res = await fetch(`${API_URL}/pages/home/section`, {
+            cache: "no-store",
+        });
 
         if (!res.ok) {
             return NextResponse.json(
@@ -61,36 +53,36 @@ export async function GET() {
         const json = await res.json();
         const blocks = json?.data?.blocks ?? [];
 
-        const benefitsBlock =
-            blocks.find((b: any) => b?.enabled && b?.id === 2) ||
-            blocks.find(
-                (b: any) =>
-                    b?.enabled === true &&
-                    b?.type === "post_list" &&
-                    Array.isArray(b?.settings?.categoryIds) &&
-                    b.settings.categoryIds.includes(2)
-            );
+        // ✅ find benefits block safely
+        const benefitsBlock = blocks.find(
+            (b: any) =>
+                b?.enabled === true &&
+                b?.type === "post_list" &&
+                b?.settings?.categoryIds?.includes(2)
+        );
 
         if (!benefitsBlock) {
             return NextResponse.json({ error: "Benefits block not found" }, { status: 404 });
         }
 
-        // ✅ original cleaned title/description from backend
         const title = cleanI18n(benefitsBlock?.title);
         const description = cleanI18n(benefitsBlock?.description);
 
-        // ✅ EN heading fixed to G-PSF / Benefits
-        const { line1, line2 } = makeBenefitsHeading(title.en);
+        // ✅ fixed heading
+        const headingLine1 = { en: "G-PSF", km: title.km };
+        const headingLine2 = { en: "Benefits", km: "" };
 
-        const items = (benefitsBlock?.posts ?? [])
+        const items = (benefitsBlock.posts ?? [])
             .filter((p: any) => p?.status === "published")
             .map((p: any) => {
                 const postTitle = cleanI18n(p?.title);
 
-                const descText = tiptapToText(p?.content);
+                const descEn = tiptapToText(p?.content?.en);
+                const descKm = tiptapToText(p?.content?.km);
+
                 const postDesc = {
-                    en: cleanText(descText),
-                    km: cleanText(descText),
+                    en: cleanText(descEn),
+                    km: cleanText(descKm || descEn),
                 };
 
                 return {
@@ -102,14 +94,14 @@ export async function GET() {
                 };
             });
 
-        // ✅ return headingLine1/2 for frontend
         return NextResponse.json({
-            headingLine1: { en: title.en, km: "" },
-            // headingLine2: { en: line2, km: "" },
+            headingLine1,
+            headingLine2,
             description,
             items,
         });
-    } catch (error) {
+    } catch (e) {
+        console.error(e);
         return NextResponse.json({ error: "Failed to fetch benefits" }, { status: 500 });
     }
 }
