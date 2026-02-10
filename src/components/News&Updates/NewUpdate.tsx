@@ -51,7 +51,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
             </div>
 
             {/* Blue background */}
-            <div className="absolute bottom-0 left-0 w-full h-[420px] bg-[#3b5998]" />
+            <div className="absolute bottom-0 left-0 w-full h-[350px] bg-[#3b5998]" />
 
             <div className="relative z-10 max-w-7xl mx-auto px-4">
 
@@ -61,24 +61,12 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                         spaceBetween={30}
                         slidesPerView={1}
                         autoplay={{ delay: 5000 }}
-                        pagination={{
-                            clickable: true,
-                            dynamicBullets: true,
-                        }}
+                        pagination={{ clickable: true, el: ".custom-pagination" }}
                         breakpoints={{
                             768: { slidesPerView: 2 },
                             1024: { slidesPerView: 3 },
                         }}
-                        className="pb-32 relative
-            [&_.swiper-pagination]:!absolute
-            [&_.swiper-pagination]:!-bottom-0
-            [&_.swiper-pagination]:!left-1/2
-            [&_.swiper-pagination]:!-translate-x-1/2
-            [&_.swiper-pagination-bullet]:!w-4
-            [&_.swiper-pagination-bullet]:!h-4
-            [&_.swiper-pagination-bullet]:!bg-orange-400
-            [&_.swiper-pagination-bullet]:!opacity-40
-            [&_.swiper-pagination-bullet-active]:!opacity-100"
+                        className="pb-20"
                     >
 
                         {data.map((item) => (
@@ -113,12 +101,12 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                             {item.group || "PRESS"}
                                         </span>
 
-                                        {/* Title */}
+                                        {/* TITLE 1 ROW */}
                                         <h3 className="text-[#1a2b4b] text-xl font-bold uppercase mb-3 line-clamp-1 min-h-[28px]">
                                             {item.title}
                                         </h3>
 
-                                        {/* Description */}
+                                        {/* DESCRIPTION 2 ROW */}
                                         <p className="text-gray-700 text-sm mb-6 line-clamp-2 min-h-[40px]">
                                             {item.excerpt || "No description available."}
                                         </p>
@@ -141,7 +129,22 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                     </div>
                 )}
 
+                {/* Pagination */}
+                {hasData && <div className="custom-pagination flex justify-center gap-3 mt-4" />}
             </div>
+
+            {/* Pagination Style */}
+            <style jsx global>{`
+        .custom-pagination .swiper-pagination-bullet {
+          width: 14px;
+          height: 14px;
+          background: #fb923c;
+          opacity: 0.5;
+        }
+        .custom-pagination .swiper-pagination-bullet-active {
+          opacity: 1;
+        }
+      `}</style>
 
         </section>
     );
