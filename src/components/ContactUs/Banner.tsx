@@ -1,27 +1,35 @@
 "use client";
 
 import Image from "next/image";
-import { useLanguage } from "@/app/context/LanguageContext";
+import { useEffect, useState } from "react";
 
-export interface BannerAboutProps {
-    title?: string;
-    subtitle?: string;
-    imageUrl?: string;
-    imageAlt?: string;
-}
+const BannerContactUs = () => {
+    const [imageUrl, setImageUrl] = useState("/image/Banner.bmp");
 
-const BannerContactUs = ({
-    imageUrl = "/image/Banner.bmp",
-    imageAlt = "G-PSF Meeting",
-}: BannerAboutProps) => {
+    useEffect(() => {
+        async function loadBanner() {
+            try {
+                const res = await fetch("/api/contact-banner");
+                const json = await res.json();
+
+                if (json?.banner?.imageUrl) {
+                    setImageUrl(json.banner.imageUrl);
+                }
+            } catch {
+                // fallback image already set
+            }
+        }
+
+        loadBanner();
+    }, []);
+
     return (
         <section className="bg-white py-5 md:py-13">
-            {/* FULL-WIDTH BANNER */}
             <div className="w-full">
                 <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px]">
                     <Image
                         src={imageUrl}
-                        alt={imageAlt}
+                        alt="Contact banner"
                         fill
                         priority
                         className="object-cover"

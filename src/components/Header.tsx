@@ -26,7 +26,7 @@ const Header: FC = () => {
             { label: "Working Groups (WGs)", href: "/working-groups" },
             { label: "Resources", href: "/resources" },
             { label: "News & Updates", href: "/new-update" },
-            { label: "MIS Dashboard", href: "/mis-dashboards" },
+            { label: "MIS Dashboard", href: "/mis" },
             { label: "Contact Us", href: "/contact-us" },
         ],
         kh: [
@@ -35,7 +35,7 @@ const Header: FC = () => {
             { label: "ក្រុមការងារ (WGs)", href: "/working-groups" },
             { label: "ធនធាន", href: "/resources" },
             { label: "ព័ត៌មាន និងបច្ចុប្បន្នភាព", href: "/new-update" },
-            { label: "ផ្ទាំង MIS", href: "/mis-dashboards" },
+            { label: "ផ្ទាំង MIS", href: "/mis" },
             { label: "ទាក់ទងមកពួកយើង", href: "/contact-us" },
         ],
     };

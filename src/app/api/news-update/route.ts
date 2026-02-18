@@ -1,47 +1,73 @@
+import { API_URL } from "@/config/api";
 import { NextResponse } from "next/server";
-import { fetchHomeSection } from "@/app/lib/homeSection";
+
+/* ---------- helpers ---------- */
+function cleanText(v: any): string {
+    const s = typeof v === "string" ? v.trim() : "";
+    return !s || s === "." ? "" : s;
+}
+
+function cleanI18n(obj: any) {
+    const en = cleanText(obj?.en);
+    const km = cleanText(obj?.km);
+    return { en, km: km || en };
+}
 
 export async function GET() {
     try {
-        const json = await fetchHomeSection();
+        const res = await fetch(`${API_URL}/pages/home/section`, { cache: "no-store" });
 
-        // 1. Find the block that contains the post list
-        const newsBlock = json?.data?.blocks?.find(
-            (b: any) => b?.enabled === true && b?.type === "post_list"
-        );
-
-        if (!newsBlock || !newsBlock.posts) {
-            return NextResponse.json({ error: "News & Updates block not found" }, { status: 404 });
+        if (!res.ok) {
+            return NextResponse.json(
+                { error: "Failed to fetch home sections" },
+                { status: res.status }
+            );
         }
 
-        // 2. Map through ALL posts to create an array for the Swiper
-        const formattedPosts = newsBlock.posts
+        const json = await res.json();
+        const blocks = json?.data?.blocks ?? [];
+
+        // ✅ block: enabled + post_list + categoryId = 1
+        const newsBlock = blocks.find(
+            (b: any) =>
+                b?.enabled === true &&
+                b?.type === "post_list" &&
+                b?.settings?.categoryIds?.includes(1)
+        );
+
+        if (!newsBlock) {
+            return NextResponse.json({ error: "News/Update block not found" }, { status: 404 });
+        }
+
+        const blockTitle = cleanI18n(newsBlock?.title);
+        const blockDesc = cleanI18n(newsBlock?.description);
+
+        const items = (newsBlock?.posts ?? [])
             .filter((p: any) => p?.status === "published")
             .map((p: any) => {
-                const content = p?.content ?? {};
-                
+                const title = cleanI18n(p?.title);
+                const description = cleanI18n(p?.description);
+                const group = cleanI18n(p?.category?.name);
+
                 return {
-                    id: p.id,
-                    titleEn: content.title?.en ?? p.title?.en ?? "",
-                    titleKh: content.title?.km ?? p.title?.km ?? "",
-                    contentEn: content.description?.en ?? "",
-                    contentKh: content.description?.km ?? "",
-                    icon: Array.isArray(content?.backgroundImages) && content.backgroundImages.length > 0
-                        ? content.backgroundImages[0].url // Ensure you access the .url property
-                        : "/icon_home_page/News_Updates1.svg", // Fallback icon
+                    id: p?.id ?? 0,
+                    slug: cleanText(p?.slug) || String(p?.id ?? ""),
+                    // ✅ USE coverImage (your data has it)
+                    icon: cleanText(p?.coverImage),
+                    title,
+                    description,
+                    group,
+                    createdAt: cleanText(p?.createdAt) || cleanText(p?.updatedAt),
                 };
             });
 
-        if (formattedPosts.length === 0) {
-            return NextResponse.json({ error: "No published posts found" }, { status: 404 });
-        }
-
-        return NextResponse.json(formattedPosts);
-    } catch (error) {
-        console.error("Error fetching News & Updates:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch News & Updates" },
-            { status: 500 }
-        );
+        return NextResponse.json({
+            heading: blockTitle.en || "News & Updates",
+            description: blockDesc,
+            items,
+        });
+    } catch (err) {
+        console.error(err);
+        return NextResponse.json({ error: "Failed to fetch news/update" }, { status: 500 });
     }
 }

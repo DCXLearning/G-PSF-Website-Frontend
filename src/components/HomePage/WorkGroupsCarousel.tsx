@@ -1,239 +1,159 @@
-// src/Components/UI-Homepage/WorkGroupsCarousel.tsx
+// src/components/HomePage/WorkGroupsCarousel.tsx
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import type { Swiper as SwiperClass } from "swiper";
+
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 import { useLanguage } from "@/app/context/LanguageContext";
 
-interface WorkGroup {
-    id: number;
-    nameEn: string;
-    nameKh: string;
-    icon: string;
-}
+type I18nText = { en?: string; km?: string };
 
-const workGroups: WorkGroup[] = [
-    {
-        id: 1,
-        nameEn: "Agriculture & Agro-Industry",
-        nameKh: "កសិកម្ម និងឧស្សាហកម្មកសិកម្ម",
-        icon: "/icon/Agriculture_&_Agro_industry.png",
-    },
-    {
-        id: 2,
-        nameEn: "Tourism",
-        nameKh: "ទេសចរណ៍",
-        icon: "/icon/Tourisum.png",
-    },
-    {
-        id: 3,
-        nameEn: "Manufacturing & SMEs",
-        nameKh: "ផលិតកម្ម និងសហគ្រាសតូច និងមធ្យម",
-        icon: "/icon/Manfacturing_&_SMEs.png",
-    },
-    {
-        id: 4,
-        nameEn: "Law, Tax & Governance",
-        nameKh: "ច្បាប់ ពន្ធ និងការគ្រប់គ្រងរដ្ឋបាល",
-        icon: "/icon/Law_Tax_&_Governance.png",
-    },
-    {
-        id: 5,
-        nameEn: "Banking & Financial Services",
-        nameKh: "ធនាគារ និងសេវាហិរញ្ញវត្ថុ",
-        icon: "/icon/Banking_&_Financial_Service.png",
-    },
-    {
-        id: 6,
-        nameEn: "Transportation & Infrastructure",
-        nameKh: "ដឹកជញ្ជូន និងហេដ្ឋារចនាសម្ព័ន្ធ",
-        icon: "/icon/Transportation_&_Infrastructure.png",
-    },
-    {
-        id: 7,
-        nameEn: "Healthcare",
-        nameKh: "សុខាភិបាល",
-        icon: "/icon/Export_Processing_&_Trade_Facilitation.png",
-    },
-    {
-        id: 8,
-        nameEn: "Education",
-        nameKh: "អប់រំ",
-        icon: "/icon/Industrial_Relations.png",
-    },
-    {
-        id: 9,
-        nameEn: "Agriculture & Agro-Industry",
-        nameKh: "កសិកម្ម និងឧស្សាហកម្មកសិកម្ម",
-        icon: "/icon/Paddy_Rice.png",
-    },
-    {
-        id: 10,
-        nameEn: "Tourism",
-        nameKh: "ទេសចរណ៍",
-        icon: "/icon/Energy_&_Mineral_Resources.png",
-    },
-    {
-        id: 11,
-        nameEn: "Manufacturing & SMEs",
-        nameKh: "ផលិតកម្ម និងសហគ្រាសតូច និងមធ្យម",
-        icon: "/icon/Education.png",
-    },
-    {
-        id: 12,
-        nameEn: "Law, Tax & Governance",
-        nameKh: "ច្បាប់ ពន្ធ និងការគ្រប់គ្រងរដ្ឋបាល",
-        icon: "/icon/Health.png",
-    },
-    {
-        id: 13,
-        nameEn: "Banking & Financial Services",
-        nameKh: "ធនាគារ និងសេវាហិរញ្ញវត្ថុ",
-        icon: "/icon/Constuction_&_Real_Estate.png",
-    },
-    {
-        id: 14,
-        nameEn: "Transportation & Infrastructure",
-        nameKh: "ដឹកជញ្ជូន និងហេដ្ឋារចនាសម្ព័ន្ធ",
-        icon: "/icon/Non_Banking_Financial_Services.png",
-    },
-    {
-        id: 15,
-        nameEn: "Healthcare",
-        nameKh: "សុខាភិបាល",
-        icon: "/icon/Digital_Economy_Society_&_Telecommunications.png",
-    },
-    {
-        id: 16,
-        nameEn: "Education",
-        nameKh: "អប់រំ",
-        icon: "/icon/Land_Administration_Security_&_Public_Order.png",
-    },
-];
+interface WorkGroupItem {
+  id: number;
+  title: I18nText;
+  iconUrl: string;
+  slug?: string;
+}
 
 const ICON_BG = "#4C518D";
 
-const WorkGroupsCarousel: React.FC = () => {
-    const prevRef = useRef<HTMLDivElement>(null);
-    const nextRef = useRef<HTMLDivElement>(null);
-    const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(
-        null
-    );
+// ✅ Convert 0-9999 to Khmer digits (simple digit mapping)
+function toKhmerNumber(n: number) {
+  const map: Record<string, string> = {
+    "0": "០",
+    "1": "១",
+    "2": "២",
+    "3": "៣",
+    "4": "៤",
+    "5": "៥",
+    "6": "៦",
+    "7": "៧",
+    "8": "៨",
+    "9": "៩",
+  };
+  return String(n).replace(/[0-9]/g, (d) => map[d]);
+}
 
-    const { language } = useLanguage();
-    const isKhmer = language === "kh";
+export default function WorkGroupsCarousel() {
+  const [groups, setGroups] = useState<WorkGroupItem[]>([]);
+  const [total, setTotal] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
 
-    const headingEnLine1 = "16 Work Groups";
-    const headingEnLine2 = "Working For You";
+  const { language } = useLanguage();
+  const isKhmer = language === "kh";
 
-    const headingKhLine1 = "ក្រុមការងារ ១៦ ក្រុម";
-    const headingKhLine2 = "កំពុងធ្វើការសម្រាប់អ្នក";
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/working-groups", { cache: "no-store" });
+        const data = await res.json();
 
-    // Assign navigation elements after refs exist
-    useEffect(() => {
-        if (swiperInstance && prevRef.current && nextRef.current) {
-            const navigation = swiperInstance.params.navigation as any;
-            navigation.prevEl = prevRef.current;
-            navigation.nextEl = nextRef.current;
-
-            swiperInstance.navigation.destroy();
-            swiperInstance.navigation.init();
-            swiperInstance.navigation.update();
+        if (!res.ok) {
+          console.error(data?.error || "Failed to fetch working groups");
+          return;
         }
-    }, [swiperInstance]);
 
-    return (
-        <div className="py-20 bg-white relative">
-            <div className="container mx-auto px-4 max-w-7xl relative">
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <h2
-                        className={`text-4xl md:text-6xl font-extrabold text-blue-950 ${isKhmer ? "khmer-font" : ""
-                            }`}
-                    >
-                        {isKhmer ? (
-                            <>
-                                {headingKhLine1}
-                                <br />
-                                {headingKhLine2}
-                            </>
-                        ) : (
-                            <>
-                                {headingEnLine1}
-                                <br />
-                                {headingEnLine2}
-                            </>
-                        )}
-                    </h2>
-                </div>
+        setTotal(Number(data?.total ?? 0));
+        setGroups(Array.isArray(data?.items) ? data.items : []);
+      } catch (e) {
+        console.error("Failed to load work groups", e);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-                {/* Prev Arrow */}
-                <div
-                    ref={prevRef}
-                    className="absolute -left-0 top-1/2 -translate-y-1/14 text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-blue-900 z-10 cursor-pointer select-none"
-                >
-                    ‹
-                </div>
+    load();
+  }, []);
 
-                {/* Next Arrow */}
-                <div
-                    ref={nextRef}
-                    className="absolute -right-0 top-1/2 -translate-y-1/14 text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-blue-900 z-10 cursor-pointer select-none"
-                >
-                    ›
-                </div>
+  // ✅ plural/singular (English)
+  const groupWord = !isKhmer && total === 1 ? "Work Group" : "Work Groups";
 
-                {/* Swiper */}
-                <Swiper
-                    modules={[Autoplay, Navigation, Pagination]}
-                    slidesPerView={1}
-                    spaceBetween={20}
-                    loop
-                    autoplay={{ delay: 2000, disableOnInteraction: false }}
-                    onSwiper={(swiper) => setSwiperInstance(swiper)}
-                    navigation={{
-                        prevEl: prevRef.current,
-                        nextEl: nextRef.current,
-                    }}
-                    breakpoints={{
-                        368: { slidesPerView: 2, spaceBetween: 30 },
-                        640: { slidesPerView: 3, spaceBetween: 10 },
-                        768: { slidesPerView: 3, spaceBetween: 20 },
-                        1024: { slidesPerView: 4, spaceBetween: 20 },
-                        1280: { slidesPerView: 6, spaceBetween: 30 },
-                    }}
-                    className="pb-12 pt-4"
-                >
-                    {workGroups.map((group) => (
-                        <SwiperSlide key={group.id}>
-                            <div
-                                className="group flex flex-col items-center justify-center h-[190px] p-4 rounded-xl shadow-lg transition-transform duration-500 transform hover:shadow-2xl hover:scale-105 cursor-pointer"
-                                style={{
-                                    backgroundColor:
-                                        group.id % 2 === 0 ? "#F5F6F7" : "#E9ECF0",
-                                }}
-                            >
-                                <img src={group.icon} alt="" className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4 p-2 transition-transform duration-500 transform group-hover:rotate-12 group-hover:scale-110"
-                                    style={{ backgroundColor: ICON_BG }}/>
-                                <p
-                                    className={`text-base text-center font-semibold text-gray-800 leading-snug px-2 ${isKhmer ? "khmer-font" : ""
-                                        }`}
-                                >
-                                    {isKhmer ? group.nameKh : group.nameEn}
-                                </p>
-                            </div>
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
-            </div>
+  // ✅ number text (Khmer digits if Khmer)
+  const numberText = isKhmer ? toKhmerNumber(total) : String(total);
+
+  // ✅ heading in ONE line:
+  // Example total=2 => "2 Work Groups Working For You"
+  const headingText = isKhmer
+    ? `${numberText} ក្រុមការងារ ធ្វើការសម្រាប់អ្នក`
+    : `${numberText} ${groupWord} Working For You`;
+
+  return (
+    <div className="py-20 bg-white">
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h2
+            className={`text-4xl md:text-6xl w-90 md:w-[512px] mx-auto font-extrabold text-blue-950 ${
+              isKhmer ? "khmer-font" : ""
+            }`}
+          >
+            {headingText}
+          </h2>
         </div>
-    );
-};
 
-export default WorkGroupsCarousel;
+        {/* Slider wrapper */}
+        <div className="relative px-10 md:px-14">
+          {/* Arrows */}
+          <div className="wg-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 text-7xl text-blue-900 cursor-pointer select-none">
+            ‹
+          </div>
+          <div className="wg-next absolute right-0 top-1/2 -translate-y-1/2 z-10 text-7xl text-blue-900 cursor-pointer select-none">
+            ›
+          </div>
+
+          <Swiper
+            modules={[Autoplay, Navigation, Pagination]}
+            autoplay={{ delay: 2000, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            navigation={{ prevEl: ".wg-prev", nextEl: ".wg-next" }}
+            loop={groups.length > 6}
+            spaceBetween={20}
+            breakpoints={{
+              0: { slidesPerView: 1.2 },
+              480: { slidesPerView: 2.2 },
+              640: { slidesPerView: 3 },
+              1024: { slidesPerView: 6 },
+            }}
+            className="pb-12"
+          >
+            {groups.map((g) => {
+              const title =
+                (isKhmer ? g.title.km || g.title.en : g.title.en || g.title.km)?.trim() || "";
+
+              return (
+                <SwiperSlide key={g.id}>
+                  <a
+                    href={g.slug ? `/${g.slug}` : "#"}
+                    className="flex flex-col items-center p-4 rounded-xl shadow hover:scale-105 transition bg-gray-50"
+                  >
+                    <div
+                      className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
+                      style={{ backgroundColor: ICON_BG }}
+                    >
+                      <img
+                        src={g.iconUrl || "/icon/placeholder.png"}
+                        alt={title}
+                        className="w-10 h-10 object-contain"
+                      />
+                    </div>
+
+                    <p className={`text-center font-semibold ${isKhmer ? "khmer-font" : ""}`}>
+                      {title}
+                    </p>
+                  </a>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+        </div>
+
+        {loading && <p className="text-center text-gray-400">Loading...</p>}
+      </div>
+    </div>
+  );
+}

@@ -35,7 +35,7 @@ const AnnualReports = () => {
                         Annual Reports
                     </h2>
                     <p className="text-white/80 text-sm md:text-base max-w-2xl mx-auto leading-relaxed px-2">
-                        Turning conversation into action through Cambodia's trusted G-PSF mechanism.
+                        Turning conversation into action through Cambodia trusted G-PSF mechanism.
                         See the reform progress by the Royal Government of Cambodia line ministries.
                     </p>
                 </div>
