@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
-
+import Link from "next/link";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -111,9 +111,15 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                             {item.excerpt || "No description available."}
                                         </p>
 
-                                        <button className="text-[#1a2b4b] text-xs font-bold flex items-center mt-auto">
+                                        <Link
+                                            href={{
+                                                pathname: "/new-update/view-detail",
+                                                query: { slug: item.slug }, // or { id: item.id }
+                                            }}
+                                            className="text-[#1a2b4b] text-xs font-bold flex items-center mt-auto hover:underline"
+                                        >
                                             View details <span className="ml-1 text-lg">›</span>
-                                        </button>
+                                        </Link>
 
                                     </div>
 
