@@ -71,7 +71,7 @@ const BannerAbout = ({
   useEffect(() => {
     (async () => {
       try {
-        // ✅ IMPORTANT: your route is /api-about/banner
+        //  IMPORTANT: your route is /api-about/banner
         const res = await fetch("/api-about/banner", { cache: "no-store" });
         if (!res.ok) throw new Error(await res.text());
         setApi((await res.json()) as ApiResponse);

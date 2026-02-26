@@ -1,27 +1,32 @@
+// app/api/contact/route.ts
 import { NextResponse } from "next/server";
 
-const BACKEND_URL = (process.env.BACKEND_URL || "http://localhost:3001").replace(
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "https://api-gpsf.datacolabx.com/api/v1").replace(
     /\/$/,
     ""
 );
 
-// ✅ GET /api/contact?page=1&limit=10&search=...
+const CONTACT_PATH = "/contact";
+
+// GET /api/contact?page=1&limit=10&search=...
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);
         const qs = url.searchParams.toString();
 
-        const res = await fetch(
-            `${BACKEND_URL}/api/v1/contact${qs ? `?${qs}` : ""}`,
-            { cache: "no-store" }
-        );
+        const upstream = `${API_BASE}${CONTACT_PATH}${qs ? `?${qs}` : ""}`;
+
+        const res = await fetch(upstream, {
+            method: "GET",
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+        });
 
         const text = await res.text();
         return new NextResponse(text, {
             status: res.status,
             headers: {
-                "Content-Type":
-                    res.headers.get("content-type") || "application/json; charset=utf-8",
+                "Content-Type": res.headers.get("content-type") || "application/json; charset=utf-8",
             },
         });
     } catch (err: any) {
@@ -32,14 +37,19 @@ export async function GET(req: Request) {
     }
 }
 
-// ✅ POST /api/contact  (create contact message)
+// POST /api/contact
 export async function POST(req: Request) {
     try {
         const body = await req.json();
 
-        const res = await fetch(`${BACKEND_URL}/api/v1/contact`, {
+        const upstream = `${API_BASE}${CONTACT_PATH}`;
+
+        const res = await fetch(upstream, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
             body: JSON.stringify(body),
         });
 
@@ -47,8 +57,7 @@ export async function POST(req: Request) {
         return new NextResponse(text, {
             status: res.status,
             headers: {
-                "Content-Type":
-                    res.headers.get("content-type") || "application/json; charset=utf-8",
+                "Content-Type": res.headers.get("content-type") || "application/json; charset=utf-8",
             },
         });
     } catch (err: any) {

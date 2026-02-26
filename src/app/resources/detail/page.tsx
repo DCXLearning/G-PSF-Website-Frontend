@@ -1,11 +1,11 @@
 
-import Route from '@/components/ResourcesPage/Route-Resources/Roue'
+import Rout from '@/components/ResourcesPage/UI-Detail_Page/Document/Rout'
 import React from 'react'
 
 export default function page() {
     return (
         <div>
-            <Route />
+            <Rout />
         </div>
     )
 }
