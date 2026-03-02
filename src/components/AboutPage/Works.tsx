@@ -70,7 +70,7 @@ export default function Works() {
                 setLoading(true);
                 setError(null);
 
-                // your endpoint is /api-about/about
+                //  your endpoint is /api-about/about
                 const res = await fetch("/api-about/about", { cache: "no-store" });
                 const ct = res.headers.get("content-type") || "";
                 if (!ct.includes("application/json")) {
@@ -105,13 +105,11 @@ export default function Works() {
     }, []);
 
     const { title, cards } = useMemo(() => {
-        // ✅ STATIC TITLE (does not depend on API title like "How it work?")
-        const title = uiLang === "kh" ? "របៀបដំណើរការ" : "How it works";
+        //  Find the "How it work?" block (id 15 in your sample)
+        const howBlock = blocks.find((b) => b.type === "text_block" && (b.title?.en || "").toLowerCase().includes("how"));
 
-        // ✅ Stable block select (prefer known ID 15, fallback to first text_block)
-        const howBlock =
-            blocks.find((b) => b.id === 15) ||
-            blocks.find((b) => b.type === "text_block");
+        const title =
+            pickText(howBlock?.title, apiLang, uiLang === "kh" ? "ដំណើរការរបៀបធ្វើការ" : "How it works");
 
         const items =
             howBlock?.posts?.[0]?.content?.[apiLang]?.items ||
@@ -124,7 +122,7 @@ export default function Works() {
             return {
                 title: t,
                 lines: splitLines(desc),
-                variant: idx === 0 ? "dark" : "light",
+                variant: idx === 0 ? "dark" : "light", // first dark like your design
             };
         });
 
@@ -142,10 +140,8 @@ export default function Works() {
 
                 {/* Title */}
                 <h2
-                    className={[
-                        "text-4xl md:text-6xl font-extrabold text-gray-900",
-                        uiLang === "kh" ? "khmer-font" : "",
-                    ].join(" ")}
+                    className={`text-4xl md:text-6xl font-extrabold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
+                        }`}
                 >
                     {loading ? (uiLang === "kh" ? "កំពុងផ្ទុក..." : "Loading...") : title}
                 </h2>
