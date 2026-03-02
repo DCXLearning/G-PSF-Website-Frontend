@@ -141,16 +141,16 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
 
             {/* Pagination Style */}
             <style jsx global>{`
-        .custom-pagination .swiper-pagination-bullet {
-          width: 14px;
-          height: 14px;
-          background: #fb923c;
-          opacity: 0.5;
-        }
-        .custom-pagination .swiper-pagination-bullet-active {
-          opacity: 1;
-        }
-      `}</style>
+                .custom-pagination .swiper-pagination-bullet {
+                width: 14px;
+                height: 14px;
+                background: #fb923c;
+                opacity: 0.5;
+                }
+                .custom-pagination .swiper-pagination-bullet-active {
+                opacity: 1;
+                }
+            `}</style>
 
         </section>
     );

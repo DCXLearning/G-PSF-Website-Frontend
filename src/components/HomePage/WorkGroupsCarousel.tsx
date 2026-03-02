@@ -3,11 +3,10 @@
 
 import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Navigation } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -22,7 +21,7 @@ interface WorkGroupItem {
 
 const ICON_BG = "#4C518D";
 
-// ✅ Convert 0-9999 to Khmer digits (simple digit mapping)
+// ✅ Convert 0-9999 to Khmer digits
 function toKhmerNumber(n: number) {
   const map: Record<string, string> = {
     "0": "០",
@@ -76,84 +75,130 @@ export default function WorkGroupsCarousel() {
   // ✅ number text (Khmer digits if Khmer)
   const numberText = isKhmer ? toKhmerNumber(total) : String(total);
 
-  // ✅ heading in ONE line:
-  // Example total=2 => "2 Work Groups Working For You"
-  const headingText = isKhmer
-    ? `${numberText} ក្រុមការងារ ធ្វើការសម្រាប់អ្នក`
-    : `${numberText} ${groupWord} Working For You`;
+  // ✅ Title 2 rows
+  const titleRow1 = isKhmer ? `${numberText} ក្រុមការងារ` : `${numberText} ${groupWord}`;
+  const titleRow2 = isKhmer ? `ធ្វើការសម្រាប់អ្នក` : `Working For You`;
 
   return (
-    <div className="py-20 bg-white">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="text-center mb-12">
+    <section className="bg-white py-14 md:py-20">
+      <div className="mx-auto max-w-7xl px-4">
+        {/* ✅ Header (2 rows) */}
+        <div className="text-center mb-10 md:mb-14">
           <h2
-            className={`text-4xl md:text-6xl w-90 md:w-[512px] mx-auto font-extrabold text-blue-950 ${
-              isKhmer ? "khmer-font" : ""
-            }`}
+            className={`text-blue-950 font-extrabold leading-[1.05] ${isKhmer ? "khmer-font" : ""
+              }`}
           >
-            {headingText}
+            <span className="block text-4xl sm:text-5xl md:text-6xl">
+              {titleRow1}
+            </span>
+            <span className="block text-4xl sm:text-5xl md:text-6xl">
+              {titleRow2}
+            </span>
           </h2>
         </div>
 
-        {/* Slider wrapper */}
-        <div className="relative px-10 md:px-14">
-          {/* Arrows */}
-          <div className="wg-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 text-7xl text-blue-900 cursor-pointer select-none">
-            ‹
-          </div>
-          <div className="wg-next absolute right-0 top-1/2 -translate-y-1/2 z-10 text-7xl text-blue-900 cursor-pointer select-none">
-            ›
-          </div>
-
-          <Swiper
-            modules={[Autoplay, Navigation, Pagination]}
-            autoplay={{ delay: 2000, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
-            navigation={{ prevEl: ".wg-prev", nextEl: ".wg-next" }}
-            loop={groups.length > 6}
-            spaceBetween={20}
-            breakpoints={{
-              0: { slidesPerView: 1.2 },
-              480: { slidesPerView: 2.2 },
-              640: { slidesPerView: 3 },
-              1024: { slidesPerView: 6 },
-            }}
-            className="pb-12"
+        {/* ✅ Slider wrapper */}
+        <div className="relative">
+          {/* ✅ Prev/Next WITHOUT background circle */}
+          <button
+            aria-label="Previous"
+            className="wg-prev absolute left-0 top-1/2 -translate-y-1/2 z-20
+                        w-14 md:w-6 h-[260px]
+                        flex items-center justify-center
+                        bg-transparent"
           >
-            {groups.map((g) => {
-              const title =
-                (isKhmer ? g.title.km || g.title.en : g.title.en || g.title.km)?.trim() || "";
+            <span className="text-blue-900 text-5xl md:text-8xl cursor-pointer font-semibold leading-none select-none">
+              ‹
+            </span>
+          </button>
 
-              return (
-                <SwiperSlide key={g.id}>
-                  <a
-                    href={g.slug ? `/${g.slug}` : "#"}
-                    className="flex flex-col items-center p-4 rounded-xl shadow hover:scale-105 transition bg-gray-50"
-                  >
-                    <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
-                      style={{ backgroundColor: ICON_BG }}
+          <button
+            aria-label="Next"
+            className="wg-next absolute right-0 top-1/2 -translate-y-1/2 z-20
+                        w-14 md:w-6 h-[260px]
+                        flex items-center justify-center
+                        bg-transparent"
+          >
+            <span className="text-blue-900 text-5xl md:text-8xl cursor-pointer font-semibold leading-none select-none">
+              ›
+            </span>
+          </button>
+
+          {/* ✅ space so arrows don't overlap cards */}
+          <div className="px-4 md:px-0">
+            <Swiper
+              modules={[Autoplay, Navigation]}
+              autoplay={{
+                delay: 2200,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }}
+              navigation={{ prevEl: ".wg-prev", nextEl: ".wg-next" }}
+              loop={groups.length > 6}
+              spaceBetween={22}
+              breakpoints={{
+                0: { slidesPerView: 2 },
+                480: { slidesPerView: 2.2 },
+                640: { slidesPerView: 3 },
+                1024: { slidesPerView: 6 },
+              }}
+              className="pb-2"
+            >
+              {groups.map((g) => {
+                const title =
+                  (
+                    isKhmer ? g.title.km || g.title.en : g.title.en || g.title.km
+                  )?.trim() || "";
+
+                return (
+                  <SwiperSlide key={g.id} className="py-3">
+                    <a
+                      href={g.slug ? `/${g.slug}` : "#"}
+                      className="
+                        flex flex-col items-center justify-center
+                        h-[210px] w-full
+                        px-4 py-6
+                        rounded-2xl
+                        bg-gray-50
+                        border border-gray-100
+                        shadow-sm
+                        hover:shadow-md hover:-translate-y-1 hover:scale-[1.02]
+                        transition
+                      "
                     >
-                      <img
-                        src={g.iconUrl || "/icon/placeholder.png"}
-                        alt={title}
-                        className="w-10 h-10 object-contain"
-                      />
-                    </div>
+                      <div
+                        className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
+                        style={{ backgroundColor: ICON_BG }}
+                      >
+                        <img
+                          src={g.iconUrl || "/icon/placeholder.png"}
+                          alt={title}
+                          className="w-10 h-10 object-contain"
+                        />
+                      </div>
 
-                    <p className={`text-center font-semibold ${isKhmer ? "khmer-font" : ""}`}>
-                      {title}
-                    </p>
-                  </a>
-                </SwiperSlide>
-              );
-            })}
-          </Swiper>
+                      {/* ✅ Title max 2 lines */}
+                      <p
+                        className={`text-center font-semibold text-gray-900 leading-snug ${isKhmer ? "khmer-font" : ""
+                          } line-clamp-2 max-w-[170px]`}
+                        title={title}
+                      >
+                        {title}
+                      </p>
+                    </a>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
+          </div>
         </div>
 
-        {loading && <p className="text-center text-gray-400">Loading...</p>}
+        {loading && (
+          <p className="text-center text-gray-400 mt-6">
+            {isKhmer ? "កំពុងផ្ទុក..." : "Loading..."}
+          </p>
+        )}
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,51 +1,52 @@
 import { NextResponse } from "next/server";
-import { fetchHomeSection } from "@/app/lib/homeSection";
+
+const UPSTREAM = "https://api-gpsf.datacolabx.com/api/v1/pages/home/section";
 
 export async function GET() {
-    try {
-        const json = await fetchHomeSection();
+  try {
+    const res = await fetch(UPSTREAM, { cache: "no-store" });
+    const json = await res.json();
 
-        const blocks = json?.data?.blocks ?? [];
-
-        const heroBlock = blocks.find(
-            (b: any) =>
-                b?.enabled === true &&
-                b?.type === "hero_banner"
-        );
-
-        if (!heroBlock) {
-            return NextResponse.json({ error: "Hero banner not found" }, { status: 404 });
-        }
-
-        const heroPost =
-            heroBlock.posts?.find((p: any) => p.status === "published") ??
-            heroBlock.posts?.[0];
-
-        if (!heroPost) {
-            return NextResponse.json({ error: "Hero post not found" }, { status: 404 });
-        }
-
-        // ✅ CMS is multilingual inside content.en / content.km
-        const content = heroPost.content ?? {};
-
-        return NextResponse.json({
-            id: heroPost.id,
-            slug: heroPost.slug,
-
-            title: content.en?.title,
-            subtitle: content.en?.subtitle,
-            description: content.en?.description,
-
-            background: content.en?.backgroundImages?.[0] ?? null,
-
-            ctas: content.en?.ctas ?? [],
-        });
-
-    } catch (e) {
-        console.error(e);
-        return NextResponse.json(
-            { error: "Failed to fetch home hero banner" },
-            { status: 500 }
-        );
+    if (!res.ok || !json?.success) {
+      return NextResponse.json(
+        { success: false, message: json?.message || "Upstream failed" },
+        { status: res.status || 500 }
+      );
     }
+
+    const blocks = json?.data?.blocks ?? [];
+
+    // HERO block id=1
+    const heroBlock = blocks.find((b: any) => b?.id === 1 && b?.type === "hero_banner");
+    const heroPost = heroBlock?.posts?.[0] ?? null;
+
+    // STATS block id=12 (State 1 home page)
+    const statsBlock = blocks.find((b: any) => b?.id === 12 && b?.type === "stats");
+    const statsPost = statsBlock?.posts?.[0] ?? null;
+
+    // ✅ Hero content is inside post.content.en / post.content.km
+    const heroEn = heroPost?.content?.en ?? {};
+    const heroKm = heroPost?.content?.km ?? {};
+
+    const data = {
+      hero: {
+        title: heroEn?.title ?? heroKm?.title ?? { en: "", km: "" },
+        subtitle: heroEn?.subtitle ?? heroKm?.subtitle ?? { en: "", km: "" },
+        description: heroEn?.description ?? heroKm?.description ?? { en: "", km: "" },
+        backgroundImages: heroEn?.backgroundImages ?? heroKm?.backgroundImages ?? [],
+        ctas: heroEn?.ctas ?? heroKm?.ctas ?? [],
+      },
+      bannerStats: {
+        itemsEn: statsPost?.content?.en?.items ?? [],
+        itemsKm: statsPost?.content?.km?.items ?? [],
+      },
+    };
+
+    return NextResponse.json({ success: true, data });
+  } catch (e: any) {
+    return NextResponse.json(
+      { success: false, message: e?.message || "Internal error" },
+      { status: 500 }
+    );
+  }
 }

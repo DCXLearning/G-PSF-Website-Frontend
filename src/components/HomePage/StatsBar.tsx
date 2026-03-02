@@ -1,50 +1,29 @@
-// src/Components/StatsBar.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-export interface KeyStat {
-    value: string;
-    labelEn: string;
-    labelKh: string;
-    trend?: string; // Optional: Trend for percentage change
-    color: string; // CSS class for the text color (e.g., text-green-500)
+type I18n = { en?: string; km?: string };
+
+type StatApiItem = {
+    label?: I18n;
+    value?: I18n;
+};
+
+type StatsApiResponse = {
+    success: boolean;
+    data?: {
+        description?: I18n | null;
+        items?: StatApiItem[];
+    };
+    message?: string;
+};
+
+function pickText(obj: I18n | undefined, lang: "en" | "km") {
+    if (!obj) return "";
+    return (lang === "km" ? obj.km : obj.en) || obj.en || obj.km || "";
 }
 
-// Sample data for the stats
-export const keyStats: KeyStat[] = [
-    {
-        value: "1,268",
-        labelEn: "Total Projects",
-        labelKh: "គម្រោងសរុប",
-        trend: "2.3%",
-        color: "text-green-500",
-    },
-    {
-        value: "63",
-        labelEn: "Sector Focus",
-        labelKh: "វិស័យផ្តោតអាទិភាព",
-        trend: "0.5%",
-        color: "text-blue-500",
-    },
-    {
-        value: "91.4%",
-        labelEn: "Completion Rate",
-        labelKh: "អត្រាបញ្ចប់",
-        trend: "1.1%",
-        color: "text-yellow-500",
-    },
-    {
-        value: "48",
-        labelEn: "Active Zones",
-        labelKh: "តំបន់សកម្ម",
-        trend: "3.5%",
-        color: "text-red-500",
-    },
-];
-
-// Type the props of the StatItem component
 interface StatItemProps {
     value: string;
     label: string;
@@ -68,27 +47,99 @@ const StatItem: React.FC<StatItemProps> = ({ value, label, isKhmer }) => (
 const StatsBar: React.FC = () => {
     const { language } = useLanguage();
     const isKhmer = language === "kh";
+    const langKey: "en" | "km" = isKhmer ? "km" : "en";
 
-    const descriptionText = isKhmer
-        ? "អត្ថបទគំរូ សម្រាប់ពិពណ៌នាស្ថಿತಿ សូមបញ្ចូលអត្ថបទពិតនៅទីនេះ។"
-        : "There are many variations of passages of Lorem Ipsum available.";
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string>("");
+    const [items, setItems] = useState<StatApiItem[]>([]);
+    const [desc, setDesc] = useState<I18n | null>(null);
+
+    useEffect(() => {
+        let alive = true;
+
+        async function run() {
+            try {
+                setLoading(true);
+                setError("");
+
+                const res = await fetch("/api/stats", { cache: "no-store" });
+                const json = (await res.json()) as StatsApiResponse;
+
+                if (!res.ok || !json?.success) {
+                    throw new Error(json?.message || `Request failed: ${res.status}`);
+                }
+
+                if (!alive) return;
+                setItems(json?.data?.items ?? []);
+                setDesc((json?.data?.description as any) ?? null);
+            } catch (e: any) {
+                if (!alive) return;
+                setError(e?.message || "Failed to load stats");
+            } finally {
+                if (!alive) return;
+                setLoading(false);
+            }
+        }
+
+        run();
+        return () => {
+            alive = false;
+        };
+    }, []);
+
+    const descriptionText = useMemo(() => {
+        // If you store description in statsBlock.description (top level) instead, just return that from route
+        const txt = pickText(desc ?? undefined, langKey);
+        return txt || (isKhmer ? "" : "");
+    }, [desc, langKey, isKhmer]);
+
+    const uiItems = useMemo(() => {
+        return (items || []).map((it) => ({
+            label: pickText(it.label, langKey),
+            value: pickText(it.value, langKey),
+        }));
+    }, [items, langKey]);
+
+    if (loading) {
+        return (
+            <section className="w-full bg-white py-16">
+                <div className="container mx-auto px-4 max-w-7xl text-center text-gray-600">
+                    {isKhmer ? "កំពុងទាញទិន្នន័យ..." : "Loading..."}
+                </div>
+            </section>
+        );
+    }
+
+    if (error) {
+        return (
+            <section className="w-full bg-white py-16">
+                <div className="container mx-auto px-4 max-w-7xl">
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                        {error}
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="w-full bg-white py-16">
             <div className="container mx-auto px-4 max-w-7xl">
-                <p
-                    className={`text-center text-gray-600 mb-12 text-lg ${isKhmer ? "khmer-font" : ""
-                        }`}
-                >
-                    {descriptionText}
-                </p>
+                {descriptionText ? (
+                    <p
+                        className={`text-center text-gray-600 mb-12 text-lg ${isKhmer ? "khmer-font" : ""
+                            }`}
+                    >
+                        {descriptionText}
+                    </p>
+                ) : null}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-                    {keyStats.map((stat: KeyStat, index: number) => (
+                    {uiItems.map((stat, index) => (
                         <StatItem
                             key={index}
                             value={stat.value}
-                            label={isKhmer ? stat.labelKh : stat.labelEn}
+                            label={stat.label}
                             isKhmer={isKhmer}
                         />
                     ))}
