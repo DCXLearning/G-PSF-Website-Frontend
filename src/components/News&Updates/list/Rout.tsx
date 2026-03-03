@@ -1,12 +1,16 @@
 import React from 'react'
-import DetailPage from './Detail_top'
+import DetailPage, { type DetailPageData } from './Detail_top'
 import Slider from './Slider'
 
-export default function Rout() {
+type RoutProps = {
+  detailData: DetailPageData
+}
+
+export default function Rout({ detailData }: RoutProps) {
   return (
     <div>
-        <DetailPage/>
-        <Slider/>
+      <DetailPage data={detailData} />
+      <Slider />
     </div>
   )
 }

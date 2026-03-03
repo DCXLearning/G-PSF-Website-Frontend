@@ -69,7 +69,13 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                         className="pb-20"
                     >
 
-                        {data.map((item) => (
+                        {data.map((item) => {
+                            // Use slug first. If slug is empty, send id.
+                            const detailQuery = item.slug
+                                ? { slug: item.slug, id: String(item.id) }
+                                : { id: String(item.id) };
+
+                            return (
                             <SwiperSlide key={item.id}>
 
                                 <div className="bg-[#e9ecef] flex flex-col shadow-xl min-h-[500px]">
@@ -114,7 +120,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                         <Link
                                             href={{
                                                 pathname: "/new-update/view-detail",
-                                                query: { slug: item.slug }, // or { id: item.id }
+                                                query: detailQuery,
                                             }}
                                             className="text-[#1a2b4b] text-xs font-bold flex items-center mt-auto hover:underline"
                                         >
@@ -126,7 +132,8 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                 </div>
 
                             </SwiperSlide>
-                        ))}
+                            );
+                        })}
 
                     </Swiper>
                 ) : (
