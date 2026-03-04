@@ -294,7 +294,7 @@ function Card({
 }) {
     return (
         <div className="bg-[#e9ecef] flex flex-col shadow-xl h-full min-h-[500px]">
-            <div className="bg-white m-4 aspect-square flex flex-col items-center justify-center border border-gray-100 overflow-hidden">
+            <div className="bg-white m-4 aspect-[3/4] flex flex-col items-center justify-center border border-gray-100 overflow-hidden">
                 {thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={thumb} alt={title} className="w-full h-full object-top object-cover" loading="lazy" />
