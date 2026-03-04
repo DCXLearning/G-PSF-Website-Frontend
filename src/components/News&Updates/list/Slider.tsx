@@ -79,8 +79,8 @@ const Slider: React.FC = () => {
                                     </div>
 
                                     <div className="p-6 pt-10">
-                                        <h3 className="text-xl font-bold text-gray-800 mb-4">{item.title}</h3>
-                                        <p className="text-gray-600 leading-relaxed text-base">{item.content}</p>
+                                        <h3 className="text-xl font-bold khmer-font text-gray-800 mb-4">{item.title}</h3>
+                                        <p className="text-gray-600 khmer-font leading-relaxed text-base">{item.content}</p>
                                     </div>
                                 </div>
                             </SwiperSlide>

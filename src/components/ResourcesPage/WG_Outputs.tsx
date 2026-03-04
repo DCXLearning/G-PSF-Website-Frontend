@@ -196,7 +196,7 @@ export default function WGOutputs() {
                             {featured ? pickText(featured.title, apiLang, "Featured Report") : "—"}
                         </h4>
 
-                        <p className="text-gray-800 mb-8 font-medium line-clamp-4">
+                        <p className="text-gray-800 mb-8 khmer-font font-medium line-clamp-4">
                             {featured ? pickText(featured.description || undefined, apiLang, "") : ""}
                         </p>
 
@@ -307,7 +307,7 @@ function ArticleCard({
                 {headline}
             </h4>
 
-            <p className="text-gray-700 text-sm max-w-sm mb-6 line-clamp-3">
+            <p className="text-gray-700 khmer-font text-sm max-w-sm mb-6 line-clamp-3">
                 {description || ""}
             </p>
 
