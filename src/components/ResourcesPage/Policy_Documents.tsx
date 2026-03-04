@@ -155,7 +155,7 @@ export default function PolicyDocuments() {
                     </div>
                 ) : (
                     <>
-                        {/* ✅ SCREEN: Swiper */}
+                        {/* SCREEN: Swiper */}
                         <div className="print:hidden">
                             <Swiper
                                 modules={[Pagination, Autoplay]}
@@ -258,7 +258,7 @@ export default function PolicyDocuments() {
                                 opacity: 1;
                             }
 
-                            /* ✅ A4 print setup */
+                            /* A4 print setup */
                             @media print {
                                 @page {
                                 size: A4;

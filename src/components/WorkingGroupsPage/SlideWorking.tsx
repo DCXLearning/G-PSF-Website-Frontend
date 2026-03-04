@@ -4,16 +4,16 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
-import { ArrowLeft, ArrowRight, UserCircle2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, UserCircle2, Sprout } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 import "swiper/css";
 
-type UiLang = "en" | "kh";
+type Lang = "en" | "kh";
 type ApiLang = "en" | "km";
 type I18n = { en?: string; km?: string };
 
-type CoChairItem = {
+type ApiItem = {
     name?: I18n;
     profileUrl?: string | null;
     description?: I18n;
@@ -22,12 +22,11 @@ type CoChairItem = {
 type Block = {
     id: number;
     type: string;
-    title?: I18n;
     posts?: Array<{
         id: number;
         content?: {
-            en?: { items?: CoChairItem[] };
-            km?: { items?: CoChairItem[] };
+            en?: { items?: ApiItem[] };
+            km?: { items?: ApiItem[] };
         };
     }>;
 };
@@ -35,247 +34,230 @@ type Block = {
 type ApiResponse = {
     success: boolean;
     data?: {
-        page?: I18n;
-        slug?: string;
         blocks?: Block[];
     };
 };
 
+interface CoChair {
+    id: number;
+    type: "empty" | "photo" | "card";
+    name?: string;
+    role?: string;
+    profileUrl?: string | null;
+}
+
+// ✅ use your Next API route (proxy)
+const API_URL = "/api/working-groups-page/section";
+
 function pickText(obj: I18n | undefined, lang: ApiLang, fallback = "") {
     if (!obj) return fallback;
     const primary = lang === "km" ? obj.km : obj.en;
-    return (primary && primary.trim()) || (obj.en && obj.en.trim()) || fallback;
+    return (primary || obj.en || obj.km || fallback).trim();
 }
 
-function uiToApiLang(ui: UiLang): ApiLang {
-    return ui === "kh" ? "km" : "en";
+function cleanText(s?: string) {
+    return (s || "").replace(/\n+/g, " ").trim();
 }
 
-function safeArr<T>(v: any): T[] {
-    return Array.isArray(v) ? v : [];
+function padWithEmpties(items: CoChair[], targetCount: number, startId = 10000) {
+    const out = [...items];
+    let id = startId;
+    while (out.length < targetCount) out.push({ id: id++, type: "empty" });
+    return out;
 }
 
-/* ================= CARDS ================= */
+const CoChairCard = ({ chair, lang }: { chair: CoChair; lang: Lang }) => {
+    if (chair.type === "empty") return <div className="bg-gray-200 aspect-square w-full" />;
 
-function PhotoCard({
-    name,
-    profileUrl,
-}: {
-    name: string;
-    profileUrl?: string | null;
-}) {
-    return (
-        <div className="bg-[#1e3a8a] w-full aspect-square flex flex-col items-center justify-center text-white text-center">
-            <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
-                {profileUrl ? (
-                    <Image
-                        src={profileUrl}
-                        alt={name}
-                        fill
-                        className="object-cover"
-                        sizes="112px"
-                    />
-                ) : (
-                    <UserCircle2 className="w-16 h-16 text-gray-200 opacity-90" strokeWidth={1} />
-                )}
+    const isKh = lang === "kh";
+
+    if (chair.type === "photo") {
+        return (
+            <div className="bg-[#1e3a8a] aspect-square w-full p-6 flex flex-col items-center justify-center text-white shadow-inner text-center">
+                <div className="flex flex-col items-center">
+                    <div className="mb-4">
+                        {chair.profileUrl ? (
+                            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden ring-2 ring-white/20">
+                                <Image
+                                    src={chair.profileUrl}
+                                    alt={chair.name || "Co-chair"}
+                                    fill
+                                    className="object-cover"
+                                    sizes="(min-width: 768px) 128px, 96px"
+                                />
+                            </div>
+                        ) : (
+                            <UserCircle2 className="w-24 h-24 md:w-32 md:h-32 text-gray-300 opacity-90" strokeWidth={1} />
+                        )}
+                    </div>
+
+                    <h3 className={`font-bold text-lg md:text-xl text-yellow-500 ${isKh ? "khmer-font" : ""}`}>
+                        {chair.name || (isKh ? "ឈ្មោះសហអធិបតី" : "H.E. NAME NAME")}
+                    </h3>
+                </div>
             </div>
+        );
+    }
 
-            <h3 className="mt-4 font-extrabold text-yellow-500 text-lg md:text-xl line-clamp-2 px-2">
-                {name}
-            </h3>
-        </div>
-    );
-}
-
-function TextCard({
-    name,
-    description,
-    isKh,
-}: {
-    name: string;
-    description: string;
-    isKh: boolean;
-}) {
+    // CARD tile (NO ICON)
     return (
-        <div className="bg-[#1e3a8a] w-full aspect-square flex flex-col items-center justify-center text-white text-center px-6">
-            <h3
-                className={`font-extrabold text-yellow-500 text-lg md:text-xl ${isKh ? "khmer-font" : ""
-                    }`}
-            >
-                {name}
+        <div className="bg-[#1e3a8a] aspect-square w-full p-6 flex flex-col items-center justify-center text-white shadow-inner text-center">
+            <h3 className={`font-bold text-xl text-yellow-500 ${isKh ? "khmer-font" : ""}`}>
+                {chair.name || (isKh ? "ឈ្មោះ" : "Name")}
             </h3>
 
-            <p
-                className={`mt-3 text-sm md:text-base opacity-90 line-clamp-5 ${isKh ? "khmer-font" : ""
-                    }`}
-            >
-                {description || (isKh ? "មិនមានពណ៌នា" : "No description")}
-            </p>
+            {chair.role ? (
+                <p className={`text-sm mt-2 opacity-90 ${isKh ? "khmer-font" : ""}`}>
+                    {chair.role}
+                </p>
+            ) : null}
         </div>
     );
-}
+};
 
-function EmptyCell() {
-    return <div className="bg-gray-200 w-full aspect-square" />;
-}
-
-/* ================= MAIN ================= */
-
-export default function WorkingGroupCoChairsSwiper() {
+export default function FullWidthSwiperLayout() {
     const { language } = useLanguage();
-    const uiLang = (language as UiLang) ?? "en";
-    const apiLang = uiToApiLang(uiLang);
-    const isKh = uiLang === "kh";
-
-    const API_URL = "https://api-gpsf.datacolabx.com/api/v1/pages/working-groups/section";
-
-    const [loading, setLoading] = useState(true);
-    const [items, setItems] = useState<CoChairItem[]>([]);
-    const [title, setTitle] = useState("Working Group Co-Chairs");
+    const lang = (language as Lang) ?? "en";
 
     const topSwiperRef = useRef<any>(null);
     const bottomSwiperRef = useRef<any>(null);
 
+    const [loading, setLoading] = useState(true);
+    const [items, setItems] = useState<ApiItem[]>([]);
+
     useEffect(() => {
-        let mounted = true;
-        async function run() {
+        const controller = new AbortController();
+
+        (async () => {
             try {
                 setLoading(true);
-                const res = await fetch(API_URL, { cache: "no-store" });
+
+                const res = await fetch(API_URL, {
+                    cache: "no-store",
+                    signal: controller.signal,
+                });
+
                 const json: ApiResponse = await res.json();
-                if (!mounted) return;
 
-                const blocks = safeArr<Block>(json?.data?.blocks);
-                const wgBlock = blocks.find((b) => b.type === "working_group_co_chairs");
-                const blockTitle = pickText(wgBlock?.title, apiLang, "Working Group Co-Chairs");
-                setTitle(blockTitle);
+                const blocks = json?.data?.blocks ?? [];
+                const block = blocks.find((b) => b.type === "working_group_co_chairs");
+                const post = block?.posts?.[0];
 
-                const post = wgBlock?.posts?.[0];
-                const list = apiLang === "km"
-                    ? safeArr<CoChairItem>(post?.content?.km?.items)
-                    : safeArr<CoChairItem>(post?.content?.en?.items);
+                const apiLang: ApiLang = lang === "kh" ? "km" : "en";
 
-                setItems(list);
-            } catch {
-                if (!mounted) return;
-                setItems([]);
+                const list =
+                    post?.content?.[apiLang]?.items ??
+                    post?.content?.en?.items ??
+                    post?.content?.km?.items ??
+                    [];
+
+                setItems(list || []);
+            } catch (e) {
+                if ((e as any)?.name !== "AbortError") setItems([]);
             } finally {
-                if (!mounted) return;
                 setLoading(false);
             }
-        }
-        run();
-        return () => { mounted = false; };
-    }, [apiLang]);
+        })();
 
-    const normalized = useMemo(() => {
-        return items.map((it, idx) => {
-            const name = pickText(it.name, apiLang, `Co-Chair ${idx + 1}`);
-            const desc = pickText(it.description, apiLang, "");
-            return { id: idx + 1, name, desc, profileUrl: it.profileUrl || null };
-        });
-    }, [items, apiLang]);
+        return () => controller.abort();
+    }, [lang]);
 
-    const PAD = 4;
+    const { topRowData, bottomRowData } = useMemo(() => {
+        const apiLang: ApiLang = lang === "kh" ? "km" : "en";
 
-    const paddedTop = useMemo(() => {
-        return [
-            ...normalized.map((x) => ({ ...x, kind: "photo" as const })),
-            ...Array.from({ length: PAD }, (_, i) => ({ id: 1000 + i, kind: "empty" as const })),
-        ];
-    }, [normalized]);
+        const mapped: CoChair[] = (items || []).map((it, idx) => ({
+            id: idx + 1,
+            type: "photo",
+            name: pickText(it.name, apiLang, ""),
+            role: cleanText(pickText(it.description, apiLang, "")),
+            profileUrl: it.profileUrl || null,
+        }));
 
-    const paddedBottom = useMemo(() => {
-        return [
-            ...normalized.map((x) => ({ ...x, kind: "text" as const })),
-            ...Array.from({ length: PAD }, (_, i) => ({ id: 3000 + i, kind: "empty" as const })),
-        ];
-    }, [normalized]);
+        return {
+            topRowData: padWithEmpties(mapped.map((x) => ({ ...x, type: "photo" as const })), 6, 20000),
+            bottomRowData: padWithEmpties(mapped.map((x) => ({ ...x, type: "card" as const })), 7, 30000),
+        };
+    }, [items, lang]);
 
     return (
         <section className="py-10 w-full overflow-hidden bg-white">
             <div className="px-8 mb-12">
-                <h1 className={`text-4xl md:text-5xl font-extrabold text-gray-900 ${isKh ? "khmer-font" : ""}`}>
-                    {title}
+                <h1 className={`text-4xl md:text-5xl font-extrabold text-gray-900 ${lang === "kh" ? "khmer-font" : ""}`}>
+                    {lang === "kh" ? "សហអធិបតីក្រុមការងារ" : "Working Group Co-Chairs"}
                 </h1>
                 <div className="mt-4 h-1.5 bg-orange-500 w-64" />
+                {loading ? (
+                    <p className={`mt-3 text-sm text-gray-500 ${lang === "kh" ? "khmer-font" : ""}`}>
+                        {lang === "kh" ? "កំពុងទាញទិន្នន័យ..." : "Loading..."}
+                    </p>
+                ) : null}
             </div>
 
-            {loading && <div className="px-8 text-gray-600">{isKh ? "កំពុងផ្ទុក..." : "Loading..."}</div>}
-
-            {normalized.length > 0 && (
-                <div className="flex flex-col gap-1 mt-6">
-                    {/* ===== TOP ROW (Button on Right) ===== */}
-                    <div className="flex w-full items-stretch">
-                        <div className="flex-1 overflow-hidden">
-                            <Swiper
-                                onSwiper={(s) => (topSwiperRef.current = s)}
-                                modules={[Navigation]}
-                                slidesPerView={1.5}
-                                spaceBetween={4}
-                                loop={paddedTop.length > 4}
-                                breakpoints={{
-                                    640: { slidesPerView: 2.5 },
-                                    1024: { slidesPerView: 4.5 },
-                                    1440: { slidesPerView: 4 },
-                                }}
-                            >
-                                {paddedTop.map((it: any) => (
-                                    <SwiperSlide key={it.id} className="!h-auto flex">
-                                        {it.kind === "empty" ? (
-                                            <EmptyCell />
-                                        ) : (
-                                            <PhotoCard name={it.name} profileUrl={it.profileUrl} />
-                                        )}
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
-                        </div>
-
-                        <button
-                            onClick={() => topSwiperRef.current?.slideNext()}
-                            className="bg-[#2b45a2] hover:bg-[#1e3a8a] text-white flex items-center justify-center shrink-0 transition-all h-auto w-[15%] md:w-[10%] lg:w-[15%]"
+            <div className="flex flex-col gap-1">
+                <div className="flex w-full items-stretch">
+                    <div className="flex-1 overflow-hidden">
+                        <Swiper
+                            onSwiper={(s) => (topSwiperRef.current = s)}
+                            modules={[Navigation]}
+                            slidesPerView={1.5}
+                            spaceBetween={4}
+                            loop={true}
+                            breakpoints={{
+                                640: { slidesPerView: 2.5 },
+                                1024: { slidesPerView: 4.5 },
+                                1440: { slidesPerView: 4 },
+                            }}
                         >
-                            <ArrowRight className="w-8 h-8 md:w-12 md:h-12" />
-                        </button>
+                            {topRowData.map((item) => (
+                                <SwiperSlide key={item.id}>
+                                    <CoChairCard chair={item} lang={lang} />
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
                     </div>
 
-                    {/* ===== BOTTOM ROW (Button on Left) ===== */}
-                    <div className="flex w-full flex-row-reverse items-stretch">
-                        <div className="flex-1 overflow-hidden">
-                            <Swiper
-                                onSwiper={(s) => (bottomSwiperRef.current = s)}
-                                modules={[Navigation]}
-                                slidesPerView={1.5}
-                                spaceBetween={4}
-                                loop={paddedBottom.length > 4}
-                                breakpoints={{
-                                    640: { slidesPerView: 2.5 },
-                                    1024: { slidesPerView: 4.5 },
-                                    1440: { slidesPerView: 4 },
-                                }}
-                            >
-                                {paddedBottom.map((it: any) => (
-                                    <SwiperSlide key={it.id} className="!h-auto flex">
-                                        {it.kind === "empty" ? (
-                                            <EmptyCell />
-                                        ) : (
-                                            <TextCard name={it.name} description={it.desc} isKh={isKh} />
-                                        )}
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
-                        </div>
-
-                        <button
-                            onClick={() => bottomSwiperRef.current?.slidePrev()}
-                            className="bg-[#2b45a2] hover:bg-[#1e3a8a] text-white flex items-center justify-center shrink-0 transition-all h-auto w-[15%] md:w-[10%] lg:w-[15%]"
-                        >
-                            <ArrowLeft className="w-8 h-8 md:w-12 md:h-12" />
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => topSwiperRef.current?.slideNext()}
+                        className="bg-[#2b45a2] hover:bg-[#1e3a8a] text-white flex items-center justify-center shrink-0 transition-all z-10 w-[15%] md:w-[10%] lg:w-[15%]"
+                        aria-label="Next"
+                        type="button"
+                    >
+                        <ArrowRight className="w-8 h-8 md:w-12 md:h-12" />
+                    </button>
                 </div>
-            )}
+
+                <div className="flex w-full flex-row-reverse items-stretch">
+                    <div className="flex-1 overflow-hidden">
+                        <Swiper
+                            onSwiper={(s) => (bottomSwiperRef.current = s)}
+                            modules={[Navigation]}
+                            slidesPerView={1.5}
+                            spaceBetween={4}
+                            loop={true}
+                            breakpoints={{
+                                640: { slidesPerView: 2.5 },
+                                1024: { slidesPerView: 4.5 },
+                                1440: { slidesPerView: 4 },
+                            }}
+                        >
+                            {bottomRowData.map((item) => (
+                                <SwiperSlide key={item.id}>
+                                    <CoChairCard chair={item} lang={lang} />
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                    </div>
+
+                    <button
+                        onClick={() => bottomSwiperRef.current?.slidePrev()}
+                        className="bg-[#2b45a2] hover:bg-[#1e3a8a] text-white flex items-center justify-center shrink-0 transition-all z-10 w-[15%] md:w-[10%] lg:w-[15%]"
+                        aria-label="Prev"
+                        type="button"
+                    >
+                        <ArrowLeft className="w-8 h-8 md:w-12 md:h-12" />
+                    </button>
+                </div>
+            </div>
         </section>
     );
 }
