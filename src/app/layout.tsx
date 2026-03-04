@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+
 import { Geist, Geist_Mono, Kantumruy_Pro } from "next/font/google";
 import { LanguageProvider } from "./context/LanguageContext";
 

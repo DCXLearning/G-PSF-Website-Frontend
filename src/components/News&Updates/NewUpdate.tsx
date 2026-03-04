@@ -108,12 +108,12 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                         </span>
 
                                         {/* TITLE 1 ROW */}
-                                        <h3 className="text-[#1a2b4b] text-xl font-bold uppercase mb-3 line-clamp-1 min-h-[28px]">
+                                        <h3 className="text-[#1a2b4b] text-xl khmer-font font-bold uppercase mb-3 line-clamp-1 min-h-[28px]">
                                             {item.title}
                                         </h3>
 
                                         {/* DESCRIPTION 2 ROW */}
-                                        <p className="text-gray-700 text-sm mb-6 line-clamp-2 min-h-[40px]">
+                                        <p className="text-gray-700 text-sm khmer-font mb-6 line-clamp-2 min-h-[40px]">
                                             {item.excerpt || "No description available."}
                                         </p>
 

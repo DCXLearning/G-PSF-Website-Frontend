@@ -308,11 +308,11 @@ function Card({
             <div className="px-6 pb-8 pt-2 flex flex-col grow">
                 <span className="text-[#1a2b4b] text-xs font-semibold mb-3">{dateText}</span>
 
-                <h3 className="text-[#1a2b4b] text-2xl font-bold mb-3 uppercase line-clamp-1">
+                <h3 className="text-[#1a2b4b] khmer-font text-2xl font-bold mb-3 uppercase line-clamp-1">
                     {title}
                 </h3>
 
-                <p className="text-gray-700 text-sm mb-6 flex-grow line-clamp-1">
+                <p className="text-gray-700 khmer-font text-sm mb-6 flex-grow line-clamp-1">
                     {desc || title}
                 </p>
 
