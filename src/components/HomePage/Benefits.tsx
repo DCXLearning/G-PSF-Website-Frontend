@@ -1,4 +1,4 @@
-// ✅ components/Benefits.tsx (API-first from Home section, block id=2)
+// components/Benefits.tsx (API-first from Home section, block id=2)
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -16,7 +16,6 @@ type ApiPost = {
     title?: I18n;
     description?: I18n | null;
     coverImage?: string | null;
-    // richtext exists but not needed for this UI
     content?: any;
 };
 
@@ -41,7 +40,6 @@ function pickText(i18n: I18n | null | undefined, lang: UiLang) {
 }
 
 function iconFallback(idx: number) {
-    // your current fallback icons
     const map = [
         "/icon_home_page/Benefits1.svg",
         "/icon_home_page/Benefits2.svg",
@@ -52,7 +50,6 @@ function iconFallback(idx: number) {
 }
 
 function pickIcon(post: ApiPost, idx: number) {
-    // if API provides coverImage you can use it as icon
     return post.coverImage || iconFallback(idx);
 }
 
@@ -62,6 +59,7 @@ type BenefitCardProps = {
     description: string;
     isKhmer: boolean;
     href: string;
+    disabled?: boolean; // add
 };
 
 const BenefitCard: React.FC<BenefitCardProps> = ({
@@ -70,10 +68,10 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
     description,
     isKhmer,
     href,
+    disabled,
 }) => (
-    <div className="flex flex-col md:flex-row items-start gap-4 md:gap-10">
+    <div className={`flex flex-col md:flex-row items-start gap-4 md:gap-10 ${disabled ? "pointer-events-none" : ""}`}>
         <div className="p-4 md:p-3 mt-6 flex-shrink-0">
-            {/* ✅ use next/image for remote icons too */}
             <Image
                 src={icon}
                 alt={title || "benefit"}
@@ -100,8 +98,10 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
 
             <Link
                 href={href}
+                aria-disabled={disabled}
+                tabIndex={disabled ? -1 : 0}
                 className={`inline-flex px-4 sm:px-5 py-2 text-sm sm:text-base font-semibold text-white bg-[#1B1D4E] rounded-full hover:bg-[#03057f] transition ${isKhmer ? "khmer-font" : ""
-                    }`}
+                    } ${disabled ? "opacity-60" : ""}`}
             >
                 {isKhmer ? "ស្វែងយល់បន្ថែម" : "Learn More"}
             </Link>
@@ -127,7 +127,6 @@ export default function Benefits() {
                 setLoading(true);
                 setError(null);
 
-                // ✅ your proxy route
                 const res = await fetch("/api/home-page/benefit", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
@@ -138,7 +137,6 @@ export default function Benefits() {
                 const json = (await res.json()) as ApiResponse;
                 const blocks = json?.data?.blocks || [];
 
-                // ✅ block id = 2 (G-PSF Benefit)
                 const picked =
                     blocks.find(
                         (b) =>
@@ -160,17 +158,33 @@ export default function Benefits() {
         };
     }, []);
 
+    const limit = block?.settings?.limit ?? 4;
+
     const posts = useMemo(() => {
         const p = block?.posts || [];
-        const limit = block?.settings?.limit ?? 4;
         return p.slice(0, limit);
-    }, [block]);
+    }, [block, limit]);
 
     const heading = useMemo(() => {
         const h = pickText(block?.title, uiLang);
         const d = pickText(block?.description ?? undefined, uiLang);
         return { h, d };
     }, [block, uiLang]);
+
+    // FIX: stable placeholder list (prevents "Loading..." 느낌)
+    const placeholderPosts = useMemo(
+        () =>
+            Array.from({ length: limit }).map((_, i) => ({
+                id: -1 - i,
+                slug: null,
+                title: { en: "\u00A0", km: "\u00A0" }, // non-breaking space
+                description: { en: "\u00A0", km: "\u00A0" },
+                coverImage: null,
+            })),
+        [limit]
+    );
+
+    const listToRender = loading ? placeholderPosts : posts;
 
     return (
         <section className={`bg-white px-4 sm:px-8 md:px-16 lg:px-32 py-12 md:py-16 ${fontClass}`}>
@@ -194,30 +208,29 @@ export default function Benefits() {
                             {heading.d}
                         </p>
                     </div>
-
-                    {/* {loading && <p className="mt-28 text-gray-500 text-sm">Loading…</p>} */}
-                    {/* {!loading && error && <p className="mt-28 text-red-600 text-sm">Failed: {error}</p>} */}
                 </div>
 
                 {/* RIGHT */}
                 <div className="flex flex-col gap-6 sm:gap-8 md:gap-10">
-                    {!loading &&
-                        !error &&
-                        posts.map((p, idx) => {
-                            const title = pickText(p.title, uiLang) || "—";
-                            const desc = pickText(p.description ?? undefined, uiLang) || "—";
+                    {listToRender.map((p, idx) => {
+                        const title = pickText(p.title, uiLang) || "\u00A0";
+                        const desc = pickText(p.description ?? undefined, uiLang) || "\u00A0";
 
-                            return (
+                        return (
+                            <div key={p.id} className={loading ? "opacity-50" : ""}>
                                 <BenefitCard
-                                    key={p.id}
-                                    icon={pickIcon(p, idx)}
+                                    icon={loading ? iconFallback(idx) : pickIcon(p as any, idx)}
                                     title={title}
                                     description={desc}
                                     isKhmer={isKhmer}
-                                    href={p.slug ? `/posts/${p.slug}` : "#"}
+                                    href={!loading && (p as any).slug ? `/posts/${(p as any).slug}` : "#"}
+                                    disabled={loading} // disable link while loading
                                 />
-                            );
-                        })}
+                            </div>
+                        );
+                    })}
+
+                    {!loading && error && <p className="text-red-600 text-sm">Failed: {error}</p>}
                 </div>
             </div>
         </section>
