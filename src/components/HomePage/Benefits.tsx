@@ -1,34 +1,68 @@
-// components/Benefits.tsx
+// ✅ components/Benefits.tsx (API-first from Home section, block id=2)
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useLanguage } from "@/app/context/LanguageContext";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useLanguage } from "@/app/context/LanguageContext";
 
-type I18nText = { en?: string; km?: string };
+type UiLang = "en" | "kh";
+type ApiLang = "en" | "km";
+type I18n = { en?: string; km?: string };
 
-type BenefitItem = {
+type ApiPost = {
     id: number;
-    slug: string;
-    icon: string;
-    title: I18nText;
-    description: I18nText;
+    slug?: string | null;
+    title?: I18n;
+    description?: I18n | null;
+    coverImage?: string | null;
+    // richtext exists but not needed for this UI
+    content?: any;
 };
 
-type BenefitsResponse = {
-    headingLine1: I18nText;
-    headingLine2: I18nText;
-    description: I18nText;
-    items: BenefitItem[];
+type ApiBlock = {
+    id: number;
+    type: string; // post_list
+    title?: I18n;
+    description?: I18n | null;
+    settings?: { limit?: number } | null;
+    enabled?: boolean;
+    posts?: ApiPost[];
 };
 
-interface BenefitCardProps {
+type ApiResponse = {
+    success: boolean;
+    message?: string;
+    data?: { blocks?: ApiBlock[] };
+};
+
+function pickText(i18n: I18n | null | undefined, lang: UiLang) {
+    return (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || "";
+}
+
+function iconFallback(idx: number) {
+    // your current fallback icons
+    const map = [
+        "/icon_home_page/Benefits1.svg",
+        "/icon_home_page/Benefits2.svg",
+        "/icon_home_page/Benefits3.svg",
+        "/icon_home_page/Benefits4.svg",
+    ];
+    return map[idx % map.length];
+}
+
+function pickIcon(post: ApiPost, idx: number) {
+    // if API provides coverImage you can use it as icon
+    return post.coverImage || iconFallback(idx);
+}
+
+type BenefitCardProps = {
     icon: string;
     title: string;
     description: string;
     isKhmer: boolean;
     href: string;
-}
+};
 
 const BenefitCard: React.FC<BenefitCardProps> = ({
     icon,
@@ -39,10 +73,12 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
 }) => (
     <div className="flex flex-col md:flex-row items-start gap-4 md:gap-10">
         <div className="p-4 md:p-3 mt-6 flex-shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-                src={icon || "/icon_home_page/Benefits1.svg"}
-                alt={title}
+            {/* ✅ use next/image for remote icons too */}
+            <Image
+                src={icon}
+                alt={title || "benefit"}
+                width={64}
+                height={64}
                 className="w-16 h-16 object-contain"
             />
         </div>
@@ -73,75 +109,117 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
     </div>
 );
 
-const Benefits: React.FC = () => {
-    const { language } = useLanguage();
-    const langKey: "en" | "km" = language === "kh" ? "km" : "en";
+export default function Benefits() {
+    const { language, fontClass } = useLanguage();
+    const uiLang = (language as UiLang) ?? "en";
+    const langKey: ApiLang = uiLang === "kh" ? "km" : "en";
     const isKhmer = langKey === "km";
 
-    const [data, setData] = useState<BenefitsResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [block, setBlock] = useState<ApiBlock | null>(null);
 
     useEffect(() => {
-        fetch("/api/benefits")
-            .then((res) => res.json())
-            .then(setData)
-            .catch(console.error);
+        let mounted = true;
+
+        (async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                // ✅ your proxy route
+                const res = await fetch("/api/home-page/benefit", {
+                    cache: "no-store",
+                    headers: { Accept: "application/json" },
+                });
+
+                if (!res.ok) throw new Error(`API error ${res.status}`);
+
+                const json = (await res.json()) as ApiResponse;
+                const blocks = json?.data?.blocks || [];
+
+                // ✅ block id = 2 (G-PSF Benefit)
+                const picked =
+                    blocks.find(
+                        (b) =>
+                            b?.enabled !== false &&
+                            b?.type === "post_list" &&
+                            (b?.id === 2 || b?.title?.en === "G-PSF Benefit")
+                    ) || null;
+
+                if (mounted) setBlock(picked);
+            } catch (e: any) {
+                if (mounted) setError(e?.message || "Fetch failed");
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        })();
+
+        return () => {
+            mounted = false;
+        };
     }, []);
 
-    if (!data) return null;
+    const posts = useMemo(() => {
+        const p = block?.posts || [];
+        const limit = block?.settings?.limit ?? 4;
+        return p.slice(0, limit);
+    }, [block]);
 
-    // ✅ heading from API
-    const heading1 = data.headingLine1?.[langKey] ?? data.headingLine1?.en ?? "";
-    const heading2 = data.headingLine2?.[langKey] ?? data.headingLine2?.en ?? "";
-
-    const descText = data.description?.[langKey] ?? data.description?.en ?? "";
+    const heading = useMemo(() => {
+        const h = pickText(block?.title, uiLang);
+        const d = pickText(block?.description ?? undefined, uiLang);
+        return { h, d };
+    }, [block, uiLang]);
 
     return (
-        <section className="bg-white font-sans px-4 sm:px-8 md:px-16 lg:px-32 py-12 md:py-16">
+        <section className={`bg-white px-4 sm:px-8 md:px-16 lg:px-32 py-12 md:py-16 ${fontClass}`}>
             <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
                 {/* LEFT */}
                 <div className="mb-32 sm:mb-10 md:mb-0">
                     <h2
-                        className={`text-3xl w-70 sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-gray-900 leading-tight ${isKhmer ? "khmer-font" : ""
+                        className={`text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-gray-900 leading-tight ${isKhmer ? "khmer-font" : ""
                             }`}
                     >
-                        {heading1}
-                        
+                        {heading.h || (isKhmer ? "អត្ថប្រយោជន៍ G-PSF" : "G-PSF Benefit")}
                     </h2>
 
                     <div className="mt-6 sm:mt-8 relative">
-                        <div className="absolute top-0 left-0 sm:left-4 md:left-28 w-20 sm:w-24 md:w-72 h-1 bg-orange-500 rounded-full mb-4"></div>
+                        <div className="absolute top-0 left-0 sm:left-4 md:left-28 w-20 sm:w-24 md:w-72 h-1 bg-orange-500 rounded-full mb-4" />
 
                         <p
                             className={`absolute top-0 left-0 sm:left-4 md:left-28 text-gray-700 text-sm sm:text-base md:text-xl leading-relaxed mt-6 ${isKhmer ? "khmer-font" : ""
                                 }`}
                         >
-                            {descText}
+                            {heading.d}
                         </p>
                     </div>
+
+                    {/* {loading && <p className="mt-28 text-gray-500 text-sm">Loading…</p>} */}
+                    {/* {!loading && error && <p className="mt-28 text-red-600 text-sm">Failed: {error}</p>} */}
                 </div>
 
                 {/* RIGHT */}
                 <div className="flex flex-col gap-6 sm:gap-8 md:gap-10">
-                    {data.items.map((benefit) => {
-                        const title = benefit.title?.[langKey] ?? benefit.title?.en ?? "";
-                        const description =
-                            benefit.description?.[langKey] ?? benefit.description?.en ?? "";
+                    {!loading &&
+                        !error &&
+                        posts.map((p, idx) => {
+                            const title = pickText(p.title, uiLang) || "—";
+                            const desc = pickText(p.description ?? undefined, uiLang) || "—";
 
-                        return (
-                            <BenefitCard
-                                key={benefit.id}
-                                icon={benefit.icon}
-                                title={title}
-                                description={description}
-                                isKhmer={isKhmer}
-                                href={`/posts/${benefit.slug}`}
-                            />
-                        );
-                    })}
+                            return (
+                                <BenefitCard
+                                    key={p.id}
+                                    icon={pickIcon(p, idx)}
+                                    title={title}
+                                    description={desc}
+                                    isKhmer={isKhmer}
+                                    href={p.slug ? `/posts/${p.slug}` : "#"}
+                                />
+                            );
+                        })}
                 </div>
             </div>
         </section>
     );
-};
-
-export default Benefits;
+}

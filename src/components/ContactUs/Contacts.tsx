@@ -173,7 +173,7 @@ export default function ContactSection() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("/api/contact-form/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

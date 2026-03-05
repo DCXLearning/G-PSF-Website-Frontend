@@ -32,7 +32,7 @@ const MembersSaySwiperSlider: React.FC = () => {
 
     useEffect(() => {
         setLoading(true);
-        fetch("/api/members")
+        fetch("/api/home-page/members")
             .then((res) => res.json())
             .then((json) => setSlides(json?.items ?? []))
             .catch(console.error)

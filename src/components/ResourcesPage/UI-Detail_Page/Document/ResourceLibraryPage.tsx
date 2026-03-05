@@ -207,30 +207,8 @@ export default function ResourceLibraryPage() {
 
                     {/* Main Content Column */}
                     <main className="flex-1 order-2 lg:order-1">
-                        {/* Tabs */}
-                        <div className="flex border-b border-gray-300 mb-8 overflow-x-auto">
-                            <button
-                                onClick={() => setActiveTab('added')}
-                                className={`px-8 py-4 font-bold whitespace-nowrap transition-all ${activeTab === 'added'
-                                        ? 'text-slate-900 border-b-4 border-orange-500 bg-white'
-                                        : 'text-slate-400 hover:text-slate-600'
-                                    }`}
-                            >
-                                Recently Added
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('published')}
-                                className={`px-8 py-4 font-bold whitespace-nowrap transition-all ${activeTab === 'published'
-                                        ? 'text-slate-900 border-b-4 border-orange-500 bg-white'
-                                        : 'text-slate-400 hover:text-slate-600'
-                                    }`}
-                            >
-                                Recently Published
-                            </button>
-                        </div>
-
                         {/* List */}
-                        <div className="divide-y divide-gray-200">
+                        <div className="divide-gray-200">
                             {DATA.map((resource) => (
                                 <ResourceItem key={resource.id} item={resource} />
                             ))}

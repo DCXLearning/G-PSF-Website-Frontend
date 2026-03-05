@@ -9,7 +9,7 @@ const BannerContactUs = () => {
     useEffect(() => {
         async function loadBanner() {
             try {
-                const res = await fetch("/api/contact-banner");
+                const res = await fetch("/api/contact/contact-banner");
                 const json = await res.json();
 
                 if (json?.banner?.imageUrl) {

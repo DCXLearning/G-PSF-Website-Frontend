@@ -76,7 +76,7 @@ const DigitalReforms: React.FC = () => {
         (async () => {
             try {
                 setLoading(true);
-                const res = await fetch("/api/latest-reforms", { cache: "no-store" });
+                const res = await fetch("/api/home-page/latest-reforms", { cache: "no-store" });
                 const json = await res.json();
                 if (!alive) return;
 

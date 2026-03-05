@@ -162,7 +162,7 @@ export default function GrowthVision() {
                 setLoading(true);
                 setError("");
 
-                const res = await fetch("/api/growth-vision", {
+                const res = await fetch("/api/home-page/growth-vision", {
                     cache: "no-store",
                 });
 

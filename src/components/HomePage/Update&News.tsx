@@ -29,7 +29,7 @@ export default function Update_News() {
   useEffect(() => {
     async function fetchNews() {
       try {
-        const res = await fetch("/api/news-update", { cache: "no-store" });
+        const res = await fetch("/api/home-page/news-update", { cache: "no-store" });
         const data = await res.json();
 
         if (!res.ok) {

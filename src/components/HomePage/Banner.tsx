@@ -31,7 +31,7 @@ export default function HeroBanner() {
     const [data, setData] = useState<HomePostApi | null>(null);
 
     useEffect(() => {
-        fetch("/api/home-post")
+        fetch("/api/home-page/home-post")
             .then((r) => r.json())
             .then((j) => setData(j?.data ?? null)) // ✅ IMPORTANT FIX
             .catch(console.error);

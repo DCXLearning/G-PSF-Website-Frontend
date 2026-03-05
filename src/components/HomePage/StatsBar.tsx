@@ -62,7 +62,7 @@ const StatsBar: React.FC = () => {
                 setLoading(true);
                 setError("");
 
-                const res = await fetch("/api/stats", { cache: "no-store" });
+                const res = await fetch("/api/home-page/stats", { cache: "no-store" });
                 const json = (await res.json()) as StatsApiResponse;
 
                 if (!res.ok || !json?.success) {

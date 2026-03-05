@@ -22,7 +22,7 @@ const TrustedByCarousel: React.FC = () => {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch("/api/logos", { cache: "no-store" });
+                const res = await fetch("/api/home-page/logos", { cache: "no-store" });
                 const json = await res.json();
 
                 if (json?.data?.logos && Array.isArray(json.data.logos)) {
