@@ -26,6 +26,7 @@ type HomePostApi = {
 };
 
 const PLACEHOLDER_IMAGE_URL = "/image/Banner.bmp";
+const CACHE_KEY = "home-post-cache";
 
 export default function HeroBanner() {
     const { language } = useLanguage();
@@ -34,30 +35,64 @@ export default function HeroBanner() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let ignore = false;
+        const controller = new AbortController();
+
         const loadData = async () => {
             try {
+                // 1. read cache first
+                const cached = sessionStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (!ignore) {
+                        setData(parsed);
+                        setLoading(false);
+                    }
+                    return;
+                }
+
+                // 2. fetch only if no cache
                 setLoading(true);
 
                 const res = await fetch("/api/home-page/home-post", {
                     cache: "no-store",
+                    signal: controller.signal,
                 });
 
+                if (!res.ok) {
+                    throw new Error("Failed to fetch home post");
+                }
+
                 const json = await res.json();
-                setData(json?.data ?? null);
-            } catch (err) {
-                console.error(err);
-                setData(null);
+                const newData = json?.data ?? null;
+
+                if (!ignore) {
+                    setData(newData);
+
+                    if (newData) {
+                        sessionStorage.setItem(CACHE_KEY, JSON.stringify(newData));
+                    }
+                }
+            } catch (err: any) {
+                if (err?.name !== "AbortError") {
+                    console.error(err);
+                    if (!ignore) setData(null);
+                }
             } finally {
-                setLoading(false);
+                if (!ignore) setLoading(false);
             }
         };
 
         loadData();
+
+        return () => {
+            ignore = true;
+            controller.abort();
+        };
     }, []);
 
     const langKey: "en" | "km" = language === "kh" ? "km" : "en";
 
-    // ✅ safe fallback when data is not ready yet
     const hero = data?.hero;
     const title = hero?.title?.[langKey] ?? hero?.title?.en ?? "";
     const subtitle = hero?.subtitle?.[langKey] ?? hero?.subtitle?.en ?? "";
@@ -85,13 +120,9 @@ export default function HeroBanner() {
                 <div className="absolute inset-0 bg-black/50" />
             </div>
 
-            {/* ✅ Loading overlay (no page jump) */}
-            {loading && (
+            {/* Loading overlay */}
+            {loading && !data && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center">
-                    <div className="flex items-center gap-3 rounded-full bg-white/15 px-5 py-3 backdrop-blur-md">
-                        <span className="h-3 w-3 animate-ping rounded-full bg-white" />
-                        <span className="text-white font-semibold">Loading...</span>
-                    </div>
                 </div>
             )}
 
@@ -106,11 +137,9 @@ export default function HeroBanner() {
                     </p>
                 )}
 
-                {/* ✅ skeleton if loading and no title yet */}
-                {!title && loading ? (
+                {!title && loading && !data ? (
                     <div className="w-full max-w-3xl">
-                        {/* bg-white/20 bg Loading...  */}
-                        <div className="h-10 md:h-14 w-4/5 mx-auto rounded-lg  animate-pulse" />
+                        <div className="h-10 md:h-14 w-4/5 mx-auto rounded-lg animate-pulse" />
                         <div className="mt-4 h-10 md:h-14 w-3/5 mx-auto rounded-lg animate-pulse" />
                     </div>
                 ) : (
@@ -127,8 +156,8 @@ export default function HeroBanner() {
                     </p>
                 )}
 
-                {/* CTA Button */}
-                {!!ctaLabel && !loading &&
+                {!!ctaLabel &&
+                    !loading &&
                     (isExternal ? (
                         <a
                             href={ctaHref}
@@ -155,26 +184,28 @@ export default function HeroBanner() {
 
                     <div className="py-5">
                         <div className="grid grid-cols-3 text-center text-white">
-                            {(loading ? Array.from({ length: 3 }) : statsItems.slice(0, 3)).map((it: any, idx) => {
-                                if (loading) {
+                            {(loading && !data ? Array.from({ length: 3 }) : statsItems.slice(0, 3)).map(
+                                (it: any, idx) => {
+                                    if (loading && !data) {
+                                        return (
+                                            <div key={idx} className="px-2">
+                                                <div className="h-10 md:h-12 w-20 mx-auto rounded bg-white/20 animate-pulse" />
+                                                <div className="mt-3 h-4 w-24 mx-auto rounded bg-white/20 animate-pulse" />
+                                            </div>
+                                        );
+                                    }
+
+                                    const value = it?.value?.[langKey] ?? it?.value?.en ?? "";
+                                    const label = it?.label?.[langKey] ?? it?.label?.en ?? "";
+
                                     return (
                                         <div key={idx} className="px-2">
-                                            <div className="h-10 md:h-12 w-20 mx-auto rounded bg-white/20 animate-pulse" />
-                                            <div className="mt-3 h-4 w-24 mx-auto rounded bg-white/20 animate-pulse" />
+                                            <div className="text-2xl md:text-4xl font-extrabold">{value}</div>
+                                            <div className="mt-2 text-xs uppercase tracking-wider">{label}</div>
                                         </div>
                                     );
                                 }
-
-                                const value = it?.value?.[langKey] ?? it?.value?.en ?? "";
-                                const label = it?.label?.[langKey] ?? it?.label?.en ?? "";
-
-                                return (
-                                    <div key={idx} className="px-2">
-                                        <div className="text-2xl md:text-4xl font-extrabold">{value}</div>
-                                        <div className="mt-2 text-xs uppercase tracking-wider">{label}</div>
-                                    </div>
-                                );
-                            })}
+                            )}
                         </div>
                     </div>
                 </div>

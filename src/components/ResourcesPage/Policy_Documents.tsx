@@ -41,11 +41,19 @@ type ApiResponse = {
     data?: { page?: I18n; slug?: string; blocks?: ApiBlock[] };
 };
 
+const API_URL = "/api/resources/section";
+const CACHE_KEY = "policy-documents-block-cache";
+
 function formatMonthYear(iso?: string) {
     if (!iso) return "";
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString(undefined, { year: "numeric", month: "long" });
+
+    // fixed locale to avoid hydration mismatch
+    return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+    }).format(d);
 }
 
 function pickText(i18n?: I18n, fallback = "") {
@@ -65,41 +73,83 @@ function pickDocUrl(p: ApiPost) {
     return p.document || p.documents?.en?.url || p.documents?.km?.url || "";
 }
 
-const API_URL = "/api/resources/section";
+function getPostListBlock(json: ApiResponse): ApiBlock | null {
+    const blocks = json?.data?.blocks ?? [];
+    return (
+        blocks.find((b) => b.enabled && b.type === "post_list") ||
+        blocks.find((b) => b.type === "post_list") ||
+        null
+    );
+}
+
+function readCachedBlock(): ApiBlock | null {
+    try {
+        const raw = sessionStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw) as ApiBlock;
+    } catch {
+        return null;
+    }
+}
+
+function writeCachedBlock(block: ApiBlock | null) {
+    if (!block) return;
+
+    try {
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(block));
+    } catch {
+        // ignore cache errors
+    }
+}
 
 export default function PolicyDocuments() {
+    // IMPORTANT: same initial render on server and client
+    const [block, setBlock] = useState<ApiBlock | null>(null);
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
-    const [block, setBlock] = useState<ApiBlock | null>(null);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
+
+        const cached = readCachedBlock();
+        if (cached) {
+            setBlock(cached);
+            setLoading(false);
+        }
+
         let alive = true;
 
         async function load() {
             try {
-                setLoading(true);
                 setErr(null);
 
-                const res = await fetch(API_URL, { cache: "no-store" });
+                const res = await fetch(API_URL, {
+                    cache: "no-store",
+                    headers: { Accept: "application/json" },
+                });
+
                 if (!res.ok) throw new Error(`API error: ${res.status}`);
 
                 const json = (await res.json()) as ApiResponse;
+                const postList = getPostListBlock(json);
 
-                const blocks = json?.data?.blocks ?? [];
-                const postList =
-                    blocks.find((b) => b.enabled && b.type === "post_list") ||
-                    blocks.find((b) => b.type === "post_list") ||
-                    null;
+                if (!alive) return;
 
-                if (alive) setBlock(postList);
+                if (postList) {
+                    setBlock(postList);
+                    writeCachedBlock(postList);
+                }
             } catch (e: any) {
-                if (alive) setErr(e?.message || "Failed to load policy documents");
+                if (!alive) return;
+                setErr(e?.message || "Failed to load policy documents");
             } finally {
                 if (alive) setLoading(false);
             }
         }
 
         load();
+
         return () => {
             alive = false;
         };
@@ -117,9 +167,12 @@ export default function PolicyDocuments() {
     const headerTitle = pickText(block?.title, "Policy Documents");
     const headerDesc = pickText(block?.description, "");
 
+    const showSkeleton = !mounted || (loading && !block);
+    const showEmpty = !showSkeleton && !err && posts.length === 0;
+    const showErrorOnly = !showSkeleton && !block && !!err;
+
     return (
         <section className="relative bg-white font-sans overflow-hidden py-16 print:py-0">
-            {/* Header */}
             <div className="max-w-5xl mx-auto text-center px-4 mb-16 relative z-10 print:mb-6 print:text-left print:max-w-none">
                 <p className="text-gray-900 font-bold text-3xl md:text-4xl mb-1 print:text-xl print:mb-1">
                     Core Policies & Frameworks
@@ -136,26 +189,42 @@ export default function PolicyDocuments() {
                 ) : null}
             </div>
 
-            {/* BLUE BACKGROUND DECORATION (hide in print) */}
             <div className="absolute bottom-0 left-0 w-full h-[350px] bg-[#3b5998] z-0 print:hidden" />
 
-            {/* Content */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 print:max-w-none print:px-0">
-                {loading ? (
-                    <div className="bg-white/70 rounded-xl p-8 text-center shadow print:shadow-none print:border print:rounded-none">
-                        <p className="text-[#1a2b4b] font-semibold">Loading documents…</p>
+                {showSkeleton ? (
+                    <div className="print:hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="bg-[#e9ecef] flex flex-col shadow-xl min-h-[500px] animate-pulse"
+                                >
+                                    <div className="bg-white m-4 aspect-[3/4] border border-gray-100">
+                                        <div className="w-full h-full bg-slate-200" />
+                                    </div>
+
+                                    <div className="px-6 pb-8 pt-2 flex flex-col grow">
+                                        <div className="h-4 w-24 bg-slate-200 rounded mb-4" />
+                                        <div className="h-7 w-3/4 bg-slate-200 rounded mb-3" />
+                                        <div className="h-4 w-full bg-slate-200 rounded mb-2" />
+                                        <div className="h-4 w-5/6 bg-slate-200 rounded mb-6" />
+                                        <div className="mt-auto h-4 w-28 bg-slate-200 rounded" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                ) : err ? (
+                ) : showErrorOnly ? (
                     <div className="bg-white/70 rounded-xl p-8 text-center shadow print:shadow-none print:border print:rounded-none">
                         <p className="text-red-600 font-semibold">Error: {err}</p>
                     </div>
-                ) : posts.length === 0 ? (
+                ) : showEmpty ? (
                     <div className="bg-white/70 rounded-xl p-8 text-center shadow print:shadow-none print:border print:rounded-none">
                         <p className="text-[#1a2b4b] font-semibold">No documents found.</p>
                     </div>
                 ) : (
                     <>
-                        {/* SCREEN: Swiper */}
                         <div className="print:hidden">
                             <Swiper
                                 modules={[Pagination, Autoplay]}
@@ -192,10 +261,10 @@ export default function PolicyDocuments() {
                             </Swiper>
 
                             <div className="custom-pagination flex justify-center gap-3 mt-4" />
-                            {/* View More button */}
+
                             <div className="mt-8 -mb-[30px] flex justify-center">
                                 <Link
-                                    href="/resources/detail" // change to your "all documents" page
+                                    href="/resources/detail"
                                     className="inline-flex items-center justify-center rounded-full bg-[#fb923c] px-6 py-2 text-sm font-semibold uppercase tracking-wider text-white shadow-md hover:opacity-90"
                                 >
                                     View More <span className="ml-2 text-lg">›</span>
@@ -203,7 +272,6 @@ export default function PolicyDocuments() {
                             </div>
                         </div>
 
-                        {/*PRINT: A4-friendly grid/list (NO slider) */}
                         <div className="hidden print:grid print:grid-cols-2 print:gap-3">
                             {posts.map((p) => {
                                 const thumb = pickThumbnail(p);
@@ -213,7 +281,10 @@ export default function PolicyDocuments() {
                                 const docUrl = pickDocUrl(p);
 
                                 return (
-                                    <div key={p.id} className="border border-slate-300 p-3 break-inside-avoid">
+                                    <div
+                                        key={p.id}
+                                        className="border border-slate-300 p-3 break-inside-avoid"
+                                    >
                                         <div className="text-[10pt] font-semibold text-slate-800">
                                             {dateText}
                                         </div>
@@ -223,7 +294,6 @@ export default function PolicyDocuments() {
                                         </div>
 
                                         {thumb ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
                                             <img
                                                 src={thumb}
                                                 alt={title}
@@ -245,33 +315,33 @@ export default function PolicyDocuments() {
                             })}
                         </div>
 
-                        {/* Global CSS for Custom Pagination */}
                         <style jsx global>{`
-                            .custom-pagination .swiper-pagination-bullet {
-                                width: 16px;
-                                height: 16px;
-                                background-color: #fb923c !important;
-                                opacity: 0.6;
-                                margin: 0 6px;
-                            }
-                            .custom-pagination .swiper-pagination-bullet-active {
-                                opacity: 1;
-                            }
+              .custom-pagination .swiper-pagination-bullet {
+                width: 16px;
+                height: 16px;
+                background-color: #fb923c !important;
+                opacity: 0.6;
+                margin: 0 6px;
+              }
 
-                            /* A4 print setup */
-                            @media print {
-                                @page {
-                                size: A4;
-                                margin: 12mm;
-                                }
-                                html,
-                                body {
-                                background: #fff !important;
-                                -webkit-print-color-adjust: exact;
-                                print-color-adjust: exact;
-                                }
-                            }
-                        `}</style>
+              .custom-pagination .swiper-pagination-bullet-active {
+                opacity: 1;
+              }
+
+              @media print {
+                @page {
+                  size: A4;
+                  margin: 12mm;
+                }
+
+                html,
+                body {
+                  background: #fff !important;
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                }
+              }
+            `}</style>
                     </>
                 )}
             </div>
@@ -296,17 +366,25 @@ function Card({
         <div className="bg-[#e9ecef] flex flex-col shadow-xl h-full min-h-[500px]">
             <div className="bg-white m-4 aspect-[3/4] flex flex-col items-center justify-center border border-gray-100 overflow-hidden">
                 {thumb ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={thumb} alt={title} className="w-full h-full object-cover" loading="lazy" />
+                    <img
+                        src={thumb}
+                        alt={title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                    />
                 ) : (
                     <div className="flex flex-col items-center justify-center px-6 text-center">
-                        <span className="text-gray-500 font-medium text-lg mt-2">No thumbnail</span>
+                        <span className="text-gray-500 font-medium text-lg mt-2">
+                            No thumbnail
+                        </span>
                     </div>
                 )}
             </div>
 
             <div className="px-6 pb-8 pt-2 flex flex-col grow">
-                <span className="text-[#1a2b4b] text-xs font-semibold mb-3">{dateText}</span>
+                <span className="text-[#1a2b4b] text-xs font-semibold mb-3">
+                    {dateText}
+                </span>
 
                 <h3 className="text-[#1a2b4b] khmer-font text-2xl font-bold mb-3 uppercase line-clamp-1">
                     {title}

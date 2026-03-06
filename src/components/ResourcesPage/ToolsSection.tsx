@@ -13,17 +13,13 @@ type ApiPost = {
     title?: I18n;
     slug?: string | null;
     description?: I18n | null;
-
     coverImage?: string | null;
-
     document?: string | null;
     documents?: {
         en?: { url?: string; thumbnailUrl?: string };
         km?: { url?: string; thumbnailUrl?: string } | null;
     } | null;
-
     link?: string | null;
-
     category?: {
         id: number;
         name?: I18n;
@@ -46,6 +42,8 @@ type ApiResponse = {
     data?: { blocks?: ApiBlock[] };
 };
 
+const CACHE_KEY_PREFIX = "tools-section-block-cache";
+
 const pickText = (i18n: I18n | null | undefined, lang: UiLang) =>
     (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || "";
 
@@ -54,19 +52,79 @@ function pickDocUrl(post: ApiPost, apiLang: ApiLang) {
     return post.documents?.[key]?.url || post.document || post.link || "";
 }
 
+function getCacheKey(apiLang: ApiLang) {
+    return `${CACHE_KEY_PREFIX}-${apiLang}`;
+}
+
+function readCache(apiLang: ApiLang): ApiBlock | null {
+    try {
+        const raw = sessionStorage.getItem(getCacheKey(apiLang));
+        if (!raw) return null;
+        return JSON.parse(raw) as ApiBlock;
+    } catch {
+        return null;
+    }
+}
+
+function writeCache(apiLang: ApiLang, block: ApiBlock | null) {
+    if (!block) return;
+    try {
+        sessionStorage.setItem(getCacheKey(apiLang), JSON.stringify(block));
+    } catch {
+        // ignore cache errors
+    }
+}
+
+function pickToolsBlock(json: ApiResponse): ApiBlock | null {
+    const blocks = json?.data?.blocks || [];
+
+    return (
+        blocks.find(
+            (b) =>
+                b?.enabled !== false &&
+                b?.type === "post_list" &&
+                (b?.id === 29 || b?.title?.en === "Templates & Forms")
+        ) || null
+    );
+}
+
+function ToolCardSkeleton() {
+    return (
+        <div className="flex flex-col items-center rounded-2xl p-6 animate-pulse">
+            <div className="w-20 h-20 rounded-full mb-6 bg-slate-200" />
+            <div className="h-4 w-24 bg-slate-200 rounded mb-3" />
+            <div className="h-8 w-40 bg-slate-200 rounded mb-4" />
+            <div className="h-4 w-full max-w-[240px] bg-slate-200 rounded mb-2" />
+            <div className="h-4 w-5/6 max-w-[220px] bg-slate-200 rounded mb-2" />
+            <div className="h-4 w-2/3 max-w-[180px] bg-slate-200 rounded mb-8" />
+            <div className="h-10 w-32 bg-slate-200 rounded-lg" />
+        </div>
+    );
+}
+
 export default function ToolsSection() {
     const { language, apiLang, fontClass } = useLanguage();
+    const uiLang = (language as UiLang) ?? "en";
+    const currentApiLang = (apiLang as ApiLang) ?? "en";
 
+    const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [block, setBlock] = useState<ApiBlock | null>(null);
 
     useEffect(() => {
-        let mounted = true;
+        setMounted(true);
 
-        (async () => {
+        const cached = readCache(currentApiLang);
+        if (cached) {
+            setBlock(cached);
+            setLoading(false);
+        }
+
+        let alive = true;
+
+        async function load() {
             try {
-                setLoading(true);
                 setError(null);
 
                 const res = await fetch("/api/resources-page/section", {
@@ -77,28 +135,29 @@ export default function ToolsSection() {
                 if (!res.ok) throw new Error(`API error ${res.status}`);
 
                 const json = (await res.json()) as ApiResponse;
-                const blocks = json?.data?.blocks || [];
+                if (!alive) return;
 
-                const picked =
-                    blocks.find(
-                        (b) =>
-                            b?.enabled !== false &&
-                            b?.type === "post_list" &&
-                            (b?.id === 29 || b?.title?.en === "Templates & Forms")
-                    ) || null;
+                const picked = pickToolsBlock(json);
 
-                if (mounted) setBlock(picked);
+                if (picked) {
+                    setBlock(picked);
+                    writeCache(currentApiLang, picked);
+                }
             } catch (e: any) {
-                if (mounted) setError(e?.message || "Fetch failed");
+                if (!alive) return;
+                setError(e?.message || "Fetch failed");
             } finally {
-                if (mounted) setLoading(false);
+                if (!alive) return;
+                setLoading(false);
             }
-        })();
+        }
+
+        load();
 
         return () => {
-            mounted = false;
+            alive = false;
         };
-    }, []);
+    }, [currentApiLang]);
 
     const posts = useMemo(() => {
         const p = block?.posts || [];
@@ -106,12 +165,15 @@ export default function ToolsSection() {
         return p.slice(0, limit);
     }, [block]);
 
+    const showSkeleton = !mounted || (loading && !block);
+    const showErrorOnly = !showSkeleton && !block && !!error;
+    const showEmpty = !showSkeleton && !error && posts.length === 0;
+
     return (
         <section className={`bg-white py-20 px-4 ${fontClass}`}>
             <div className="max-w-6xl mx-auto text-center">
-                {/* Header */}
                 <h2 className="text-2xl md:text-3xl font-bold text-[#1e1e4b] uppercase tracking-tight">
-                    {pickText(block?.title, language) || "Templates & Forms"}
+                    {pickText(block?.title, uiLang) || "Templates & Forms"}
                 </h2>
 
                 <h1 className="text-5xl md:text-6xl font-bold text-[#1e1e4b] mt-2 mb-6">
@@ -119,61 +181,58 @@ export default function ToolsSection() {
                 </h1>
 
                 <p className="max-w-3xl mx-auto text-[#1e1e4b] text-xl leading-relaxed mb-16">
-                    {pickText(block?.description, language) ||
+                    {pickText(block?.description, uiLang) ||
                         "Download standard templates and forms to support Working Group operations and documentation."}
                 </p>
 
-                {/* States */}
-                {loading && <div className="text-slate-600 text-sm">Loading…</div>}
-
-                {!loading && error && (
+                {showErrorOnly ? (
                     <div className="text-red-600 text-sm">Failed to load: {error}</div>
-                )}
+                ) : null}
 
-                {!loading && !error && posts.length === 0 && (
+                {showSkeleton ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                        <ToolCardSkeleton />
+                        <ToolCardSkeleton />
+                        <ToolCardSkeleton />
+                    </div>
+                ) : showEmpty ? (
                     <div className="text-slate-600 text-sm">No templates found.</div>
-                )}
-
-                {/* Grid */}
-                {!loading && !error && posts.length > 0 && (
+                ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                         {posts.map((post) => {
-                            const docUrl = pickDocUrl(post, apiLang);
+                            const docUrl = pickDocUrl(post, currentApiLang);
 
                             return (
                                 <div
                                     key={post.id}
                                     className="flex flex-col items-center rounded-2xl p-6 transition hover:shadow-lg"
                                 >
-                                    {/* Icon */}
-                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-lg overflow-hidden">
+                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-lg overflow-hidden bg-[#1e1e4b]">
                                         {post.coverImage ? (
                                             <Image
                                                 src={post.coverImage}
-                                                alt={pickText(post.title, language) || "icon"}
+                                                alt={pickText(post.title, uiLang) || "icon"}
                                                 width={56}
                                                 height={56}
                                                 className="w-12 h-12 object-contain"
                                             />
                                         ) : (
-                                            <span className="text-white text-xs">PDF</span>
+                                            <span className="text-white text-xs font-bold">PDF</span>
                                         )}
                                     </div>
 
-                                    {/* Content */}
                                     <span className="text-slate-900 font-bold mb-2">
-                                        {pickText(post.category?.name, language) || "Template"}
+                                        {pickText(post.category?.name, uiLang) || "Template"}
                                     </span>
 
                                     <h3 className="text-2xl font-bold text-slate-800 mb-4 tracking-tight">
-                                        {pickText(post.title, language) || "Untitled"}
+                                        {pickText(post.title, uiLang) || "Untitled"}
                                     </h3>
 
                                     <p className="text-[#1e1e4b] text-sm leading-6 mb-8 px-2 line-clamp-4">
-                                        {pickText(post.description, language) || "—"}
+                                        {pickText(post.description, uiLang) || "—"}
                                     </p>
 
-                                    {/* Download */}
                                     <a
                                         href={docUrl || "#"}
                                         target="_blank"
@@ -181,7 +240,8 @@ export default function ToolsSection() {
                                         className={`hover:underline flex items-center gap-2 px-8 py-2 border border-orange-400 text-slate-800 text-sm font-bold rounded-lg hover:bg-orange-50 transition-colors ${!docUrl ? "pointer-events-none opacity-50" : ""
                                             }`}
                                     >
-                                        Download <span className="text-xs">›</span>
+                                        {uiLang === "kh" ? "ទាញយក" : "Download"}{" "}
+                                        <span className="text-xs">›</span>
                                     </a>
                                 </div>
                             );

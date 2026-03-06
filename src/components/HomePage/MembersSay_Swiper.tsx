@@ -22,53 +22,139 @@ type Testimonial = {
     avatarUrl: string;
 };
 
+const CACHE_KEY = "members-say-slides-cache";
+
+function readCache(): Testimonial[] {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function writeCache(items: Testimonial[]) {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+    } catch {
+        // ignore cache errors
+    }
+}
+
+function TestimonialCardSkeleton() {
+    return (
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col h-full border border-gray-100 mx-auto animate-pulse">
+            <div className="mb-6 flex justify-start items-center">
+                <div className="h-8 w-36 bg-slate-200 rounded" />
+            </div>
+
+            <div className="h-8 w-2/3 bg-slate-200 rounded mb-4" />
+            <div className="h-5 w-full bg-slate-200 rounded mb-2" />
+            <div className="h-5 w-5/6 bg-slate-200 rounded mb-2" />
+            <div className="h-5 w-3/4 bg-slate-200 rounded mb-10" />
+
+            <div className="pt-6 flex items-center gap-4 border-t border-gray-100 mt-auto">
+                <div className="w-14 h-14 rounded-full bg-slate-200 shrink-0" />
+                <div className="w-full">
+                    <div className="h-6 w-32 bg-slate-200 rounded mb-2" />
+                    <div className="h-4 w-40 bg-slate-200 rounded" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 const MembersSaySwiperSlider: React.FC = () => {
-    const { language } = useLanguage(); // "en" | "kh"
+    const { language } = useLanguage();
     const langKey: "en" | "km" = language === "kh" ? "km" : "en";
     const isKhmer = langKey === "km";
 
+    const [mounted, setMounted] = useState(false);
     const [slides, setSlides] = useState<Testimonial[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setLoading(true);
-        fetch("/api/home-page/members")
-            .then((res) => res.json())
-            .then((json) => setSlides(json?.items ?? []))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        setMounted(true);
+
+        const cached = readCache();
+        if (cached.length > 0) {
+            setSlides(cached);
+            setLoading(false);
+        }
+
+        let alive = true;
+
+        async function load() {
+            try {
+                const res = await fetch("/api/home-page/members", {
+                    cache: "no-store",
+                    headers: { Accept: "application/json" },
+                });
+
+                const json = await res.json();
+                if (!alive) return;
+
+                const items = Array.isArray(json?.items) ? json.items : [];
+
+                setSlides(items);
+                writeCache(items);
+            } catch (e) {
+                if (!alive) return;
+                console.error("Failed to load testimonials", e);
+                // keep cached content, do not clear slides
+            } finally {
+                if (!alive) return;
+                setLoading(false);
+            }
+        }
+
+        load();
+
+        return () => {
+            alive = false;
+        };
     }, []);
 
     const smallHeading = isKhmer ? "មតិសមាជិក" : "Testimonials";
     const mainHeadingLine1 = isKhmer ? "អ្វីដែលសមាជិក" : "What G-PSF";
     const mainHeadingLine2 = isKhmer ? "និយាយ" : "Members Say";
 
+    const showSkeleton = !mounted || (loading && slides.length === 0);
+
     return (
         <div className="bg-blue-950 pt-16 pb-20 px-4 sm:px-6 md:px-10 xl:px-0 relative">
             <div className="max-w-7xl mx-auto text-center mb-12">
-                <h2 className={`text-xl font-bold text-white mb-4 ${isKhmer ? "khmer-font" : ""}`}>
+                <h2
+                    className={`text-xl font-bold text-white mb-4 ${isKhmer ? "khmer-font" : ""
+                        }`}
+                >
                     {smallHeading}
                 </h2>
 
-                <h3 className={`text-3xl sm:text-4xl md:text-5xl text-white font-bold ${isKhmer ? "khmer-font" : ""}`}>
+                <h3
+                    className={`text-3xl sm:text-4xl md:text-5xl text-white font-bold ${isKhmer ? "khmer-font" : ""
+                        }`}
+                >
                     {mainHeadingLine1} <br />
                     {mainHeadingLine2}
                 </h3>
             </div>
 
-            {loading && (
-                <div className="text-center text-white/80 py-10">
-                    {isKhmer ? "កំពុងផ្ទុក..." : "Loading..."}
+            {showSkeleton ? (
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <TestimonialCardSkeleton />
+                        <div className="hidden md:block">
+                            <TestimonialCardSkeleton />
+                        </div>
+                        <div className="hidden xl:block">
+                            <TestimonialCardSkeleton />
+                        </div>
+                    </div>
                 </div>
-            )}
-
-            {!loading && slides.length === 0 && (
-                <div className="text-center text-white/80 py-10">
-                    {isKhmer ? "មិនមានទិន្នន័យ" : "No testimonials found"}
-                </div>
-            )}
-
-            {!loading && slides.length > 0 && (
+            ) : slides.length > 0 ? (
                 <Swiper
                     modules={[Autoplay, Navigation, Pagination]}
                     slidesPerView={1}
@@ -91,7 +177,6 @@ const MembersSaySwiperSlider: React.FC = () => {
 
                         const cardTitle = t.title?.[langKey] ?? t.title?.en ?? "";
                         const quote = t.quote?.[langKey] ?? t.quote?.en ?? "";
-
                         const name = t.authorName?.[langKey] ?? t.authorName?.en ?? "";
                         const role = t.authorRole?.[langKey] ?? t.authorRole?.en ?? "";
                         const company = t.company ?? "";
@@ -99,12 +184,12 @@ const MembersSaySwiperSlider: React.FC = () => {
                         return (
                             <SwiperSlide key={t.id}>
                                 <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col h-full border border-gray-100 hover:shadow-2xl transition mx-auto">
-                                    {/* Rating */}
                                     <div className="mb-6 flex justify-start items-center">
                                         {[...Array(5)].map((_, i) => (
                                             <span
                                                 key={i}
-                                                className={`text-4xl ${i < rating ? "text-yellow-500" : "text-gray-300"}`}
+                                                className={`text-4xl ${i < rating ? "text-yellow-500" : "text-gray-300"
+                                                    }`}
                                             >
                                                 ★
                                             </span>
@@ -114,22 +199,24 @@ const MembersSaySwiperSlider: React.FC = () => {
                                         </span>
                                     </div>
 
-                                    {/* ✅ Title (Digital Reforms) */}
                                     {cardTitle && (
-                                        <h3 className={`text-2xl font-bold text-gray-900 mb-4 ${isKhmer ? "khmer-font" : ""}`}>
+                                        <h3
+                                            className={`text-2xl font-bold text-gray-900 mb-4 ${isKhmer ? "khmer-font" : ""
+                                                }`}
+                                        >
                                             {cardTitle}
                                         </h3>
                                     )}
 
-                                    {/* ✅ Quote (paragraph) */}
-                                    <p className={`text-gray-600 mb-10 flex-grow text-lg leading-relaxed ${isKhmer ? "khmer-font" : ""}`}>
+                                    <p
+                                        className={`text-gray-600 mb-10 flex-grow text-lg leading-relaxed ${isKhmer ? "khmer-font" : ""
+                                            }`}
+                                    >
                                         {quote}
                                     </p>
 
-                                    {/* Footer: avatar + name + role/company */}
                                     <div className="pt-6 flex items-center gap-4 border-t border-gray-100">
                                         <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200 shrink-0">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={t.avatarUrl || "/image/avatar-placeholder.png"}
                                                 alt={name || "avatar"}
@@ -153,24 +240,27 @@ const MembersSaySwiperSlider: React.FC = () => {
                         );
                     })}
                 </Swiper>
+            ) : (
+                <div className="text-center text-white/80 py-10">
+                    {isKhmer ? "មិនមានទិន្នន័យ" : "No testimonials found"}
+                </div>
             )}
 
-            {/* Pagination below Swiper */}
             <div className="custom-pagination mt-6 flex justify-center space-x-2"></div>
 
             <style>{`
-                .custom-pagination .swiper-pagination-bullet {
-                width: 16px;
-                height: 16px;
-                background-color: white !important;
-                opacity: 1;
-                border-radius: 9999px;
-                }
-                .custom-pagination .swiper-pagination-bullet-active {
-                background-color: white !important;
-                transform: scale(1.25);
-                }
-            `}</style>
+        .custom-pagination .swiper-pagination-bullet {
+          width: 16px;
+          height: 16px;
+          background-color: white !important;
+          opacity: 1;
+          border-radius: 9999px;
+        }
+        .custom-pagination .swiper-pagination-bullet-active {
+          background-color: white !important;
+          transform: scale(1.25);
+        }
+      `}</style>
         </div>
     );
 };

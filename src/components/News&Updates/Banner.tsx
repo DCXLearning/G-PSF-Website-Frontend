@@ -20,7 +20,7 @@ type HeroContent = {
 
 type Block = {
     id: number;
-    type: string; // "hero_banner"
+    type: string;
     posts?: Array<{
         id: number;
         content?: {
@@ -37,6 +37,9 @@ type ApiResponse = {
     };
 };
 
+const DEFAULT_IMAGE = "/image/BannerNews_Updates.bmp";
+const CACHE_KEY_PREFIX = "newupdate-hero-cache";
+
 function uiToApiLang(ui: UiLang): ApiLang {
     return ui === "kh" ? "km" : "en";
 }
@@ -47,21 +50,64 @@ function pickText(obj: I18n | undefined, lang: ApiLang, fallback = "") {
     return primary || obj.en || obj.km || fallback;
 }
 
+function getCacheKey(apiLang: ApiLang) {
+    return `${CACHE_KEY_PREFIX}-${apiLang}`;
+}
+
+function readCache(apiLang: ApiLang): HeroContent | null {
+    try {
+        const raw = localStorage.getItem(getCacheKey(apiLang));
+        if (!raw) return null;
+        return JSON.parse(raw) as HeroContent;
+    } catch {
+        return null;
+    }
+}
+
+function writeCache(apiLang: ApiLang, hero: HeroContent | null) {
+    if (!hero) return;
+    try {
+        localStorage.setItem(getCacheKey(apiLang), JSON.stringify(hero));
+    } catch {
+        // ignore cache errors
+    }
+}
+
+function HeroSkeleton({ isKhmer }: { isKhmer: boolean }) {
+    return (
+        <section className="bg-white py-5 md:py-13 animate-pulse">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            </div>
+
+            <div className="w-full">
+                <div className="relative w-full mt-20 h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px] bg-slate-200 shadow-[0_-15px_30px_rgba(0,0,0,0.20),0_15px_30px_rgba(0,0,0,0.20)]" />
+            </div>
+        </section>
+    );
+}
+
 export default function NewUpdate() {
     const { language } = useLanguage() as { language: UiLang };
     const apiLang = useMemo(() => uiToApiLang(language), [language]);
+    const isKhmer = language === "kh";
 
+    const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [hero, setHero] = useState<HeroContent | null>(null);
 
     useEffect(() => {
+        setMounted(true);
+
+        const cached = readCache(apiLang);
+        if (cached) {
+            setHero(cached);
+            setLoading(false);
+        }
+
         let alive = true;
 
         async function run() {
             try {
-                setLoading(true);
-
-                // ✅ route: app/api/newupdate-page/section/route.ts
                 const res = await fetch("/api/newupdate-page/section", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
@@ -76,15 +122,22 @@ export default function NewUpdate() {
                 const post = heroBlock?.posts?.[0];
                 const content = post?.content?.[apiLang] || post?.content?.en || null;
 
-                if (alive) setHero(content);
+                if (!alive) return;
+
+                if (content) {
+                    setHero(content);
+                    writeCache(apiLang, content);
+                }
             } catch {
-                if (alive) setHero(null);
+                if (!alive) return;
+                // keep old cached hero, do not clear state
             } finally {
                 if (alive) setLoading(false);
             }
         }
 
         run();
+
         return () => {
             alive = false;
         };
@@ -98,7 +151,6 @@ export default function NewUpdate() {
             : "Tracking dialogue, decisions, and reforms"
     );
 
-    // subtitle is empty in your JSON, so we’ll hide it if empty
     const subtitle = pickText(hero?.subtitle, apiLang, "");
 
     const description = pickText(
@@ -109,16 +161,20 @@ export default function NewUpdate() {
             : "Stay informed on key developments from the G-PSF, including plenary outcomes, Working Group progress, policy briefs, and institutional reforms."
     );
 
-    const imageUrl =
-        hero?.backgroundImages?.[0] || "/image/BannerNews_Updates.bmp";
+    const imageUrl = hero?.backgroundImages?.[0] || DEFAULT_IMAGE;
+
+    const showSkeleton = !mounted || (loading && !hero);
+
+    if (showSkeleton) {
+        return <HeroSkeleton isKhmer={isKhmer} />;
+    }
 
     return (
         <section className="bg-white py-5 md:py-13">
-            {/* Title + subtitle/description */}
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-10">
                     <h1
-                        className={`text-3xl text-shadow-lg sm:text-5xl font-bold text-gray-900 ${language === "kh" ? "khmer-font" : ""
+                        className={`text-3xl text-shadow-lg sm:text-5xl font-bold text-gray-900 ${isKhmer ? "khmer-font" : ""
                             }`}
                     >
                         {title}
@@ -126,7 +182,7 @@ export default function NewUpdate() {
 
                     {subtitle ? (
                         <p
-                            className={`mt-3 max-w-2xl mx-auto text-lg sm:text-xl text-gray-900 ${language === "kh" ? "khmer-font" : ""
+                            className={`mt-3 max-w-2xl mx-auto text-lg sm:text-xl text-gray-900 ${isKhmer ? "khmer-font" : ""
                                 }`}
                         >
                             {subtitle}
@@ -135,20 +191,15 @@ export default function NewUpdate() {
 
                     {description ? (
                         <p
-                            className={`mt-4 max-w-3xl mx-auto text-base sm:text-lg text-gray-700 ${language === "kh" ? "khmer-font" : ""
+                            className={`mt-4 max-w-3xl mx-auto text-base sm:text-lg text-gray-700 ${isKhmer ? "khmer-font" : ""
                                 }`}
                         >
                             {description}
                         </p>
                     ) : null}
-
-                    {loading ? (
-                        <p className="mt-3 text-sm text-slate-500">Loading banner...</p>
-                    ) : null}
                 </div>
             </div>
 
-            {/* FULL-WIDTH BANNER */}
             <div className="w-full">
                 <div className="relative w-full mt-20 h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px] shadow-[0_-15px_30px_rgba(0,0,0,0.20),0_15px_30px_rgba(0,0,0,0.20)]">
                     <Image

@@ -39,13 +39,17 @@ interface PostListBlock {
 }
 
 const DARK_BLUE = "#1A1D42";
+const CACHE_KEY_PREFIX = "latestReformsCache";
+
+function getCacheKey(lang: Lang) {
+    return `${CACHE_KEY_PREFIX}-${lang}`;
+}
 
 function pickLang(obj: any, lang: Lang, fallback = "") {
     if (!obj) return fallback;
     return (lang === "km" ? obj.km : obj.en) || obj.en || obj.km || fallback;
 }
 
-// optional basic ProseMirror => text
 function proseMirrorToText(doc: any): string {
     try {
         if (!doc) return "";
@@ -62,45 +66,119 @@ function proseMirrorToText(doc: any): string {
     }
 }
 
+function readCache(lang: Lang): PostListBlock | null {
+    try {
+        const raw = localStorage.getItem(getCacheKey(lang));
+        if (!raw) return null;
+        return JSON.parse(raw) as PostListBlock;
+    } catch {
+        return null;
+    }
+}
+
+function writeCache(lang: Lang, block: PostListBlock | null) {
+    if (!block) return;
+    try {
+        localStorage.setItem(getCacheKey(lang), JSON.stringify(block));
+    } catch {
+        // ignore cache errors
+    }
+}
+
+function ReformCardSkeleton({ isKhmer }: { isKhmer: boolean }) {
+    return (
+        <div
+            className="rounded-tl-[120px] bg-white overflow-hidden rounded-bl-[25px] rounded-br-[25px] relative pt-12 h-[390px] pb-10 flex flex-col animate-pulse"
+            style={{ boxShadow: "0 7px 15px rgba(0,0,0,0.4)" }}
+        >
+            <div className="absolute bg-blue-950 top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-70">
+                <div className="flex items-center justify-center w-full h-[160px]">
+                    <div className="h-[120px] w-[120px] rounded-full border-4 border-white bg-white/20" />
+                </div>
+            </div>
+
+            <div className="w-25 h-25 relative rounded-[200px] ml-10 top-8 mb-6">
+                <div className="bg-blue-950 w-25 h-25 border-white border-3 rounded-[200px] flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full bg-white/20" />
+                </div>
+            </div>
+
+            <div className="p-6 pt-10">
+                <div className="h-7 bg-slate-200 rounded w-3/4 mb-4" />
+                <div className="h-4 bg-slate-200 rounded w-full mb-2" />
+                <div className="h-4 bg-slate-200 rounded w-5/6 mb-2" />
+                <div className="h-4 bg-slate-200 rounded w-2/3" />
+            </div>
+        </div>
+    );
+}
+
 const DigitalReforms: React.FC = () => {
     const { language } = useLanguage();
     const lang: Lang = language === "kh" ? "km" : "en";
     const isKhmer = lang === "km";
 
+    const [mounted, setMounted] = useState(false);
     const [block, setBlock] = useState<PostListBlock | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setMounted(true);
+
+        const cached = readCache(lang);
+        if (cached) {
+            setBlock(cached);
+            setLoading(false);
+        }
+
         let alive = true;
 
-        (async () => {
+        async function run() {
             try {
-                setLoading(true);
-                const res = await fetch("/api/home-page/latest-reforms", { cache: "no-store" });
+                const res = await fetch("/api/home-page/latest-reforms", {
+                    cache: "no-store",
+                    headers: { Accept: "application/json" },
+                });
+
                 const json = await res.json();
                 if (!alive) return;
 
-                setBlock(json?.block ?? null);
-            } catch (e) {
+                const apiBlock = json?.block ?? null;
+
+                if (apiBlock) {
+                    setBlock(apiBlock);
+                    writeCache(lang, apiBlock);
+                }
+            } catch {
                 if (!alive) return;
-                setBlock(null);
+                // keep previous cached block, do not clear it
             } finally {
                 if (!alive) return;
                 setLoading(false);
             }
-        })();
+        }
+
+        run();
 
         return () => {
             alive = false;
         };
-    }, []);
+    }, [lang]);
 
     const subHeading = isKhmer ? "ព័ត៌មានអំពីកំណែទម្រង់" : "Policy Update";
-    const mainHeading = pickLang(block?.title, lang, isKhmer ? "កំណែទម្រង់ចុងក្រោយ" : "Latest Reforms");
+
+    const mainHeading = pickLang(
+        block?.title,
+        lang,
+        isKhmer ? "កំណែទម្រង់ចុងក្រោយ" : "Latest Reforms"
+    );
+
     const description = pickLang(
         block?.description,
         lang,
-        isKhmer ? "អត្ថបទសង្ខេបអំពីកំណែទម្រង់ចុងក្រោយ។" : "About latest reforms."
+        isKhmer
+            ? "អត្ថបទសង្ខេបអំពីកំណែទម្រង់ចុងក្រោយ។"
+            : "About latest reforms."
     );
 
     const posts = useMemo(() => {
@@ -109,66 +187,71 @@ const DigitalReforms: React.FC = () => {
         return arr.slice(0, limit);
     }, [block]);
 
+    const showSkeleton = !mounted || (loading && !block);
+
     return (
         <>
             {/* Header */}
             <div className="text-center mb-90 mt-20">
-                <p className={`text-xl font-medium text-indigo-600 uppercase tracking-wider ${isKhmer ? "khmer-font" : ""}`}>
+                <p
+                    className={`text-xl font-medium text-indigo-600 uppercase tracking-wider ${isKhmer ? "khmer-font" : ""
+                        }`}
+                >
                     {subHeading}
                 </p>
 
-                <h1 className={`text-6xl font-extrabold text-indigo-900 mt-2 ${isKhmer ? "khmer-font" : ""}`}>
+                <h1
+                    className={`text-6xl font-extrabold text-indigo-900 mt-2 ${isKhmer ? "khmer-font" : ""
+                        }`}
+                >
                     {mainHeading}
                 </h1>
 
-                <p className={`mt-4 text-2xl text-gray-500 max-w-4xl mx-auto ${isKhmer ? "khmer-font" : ""}`}>
+                <p
+                    className={`mt-4 text-2xl text-gray-500 max-w-4xl mx-auto ${isKhmer ? "khmer-font" : ""
+                        }`}
+                >
                     {description}
                 </p>
             </div>
 
             {/* Swiper Section */}
-            <div className="h-[220px] flex flex-col justify-end relative" style={{ backgroundColor: DARK_BLUE }}>
+            <div
+                className="h-[220px] flex flex-col justify-end relative"
+                style={{ backgroundColor: DARK_BLUE }}
+            >
                 <div className="container mx-auto px-4 max-w-7xl py-8">
-                    <Swiper
-                        modules={[Navigation, Pagination]}
-                        slidesPerView={1}
-                        spaceBetween={20}
-                        navigation={false}
-                        pagination={{ clickable: true }}
-                        breakpoints={{
-                            640: { slidesPerView: 2 },
-                            768: { slidesPerView: 2 },
-                            1024: { slidesPerView: 3 },
-                        }}
-                        className="custom-swiper-pagination-white"
-                    >
-                        {loading && (
-                            <SwiperSlide className="pb-15 pt-16 px-[10px]">
-                                <div className="bg-white rounded-[25px] p-10 h-[390px] flex items-center justify-center">
-                                    <p className={`text-gray-500 ${isKhmer ? "khmer-font" : ""}`}>
-                                        {isKhmer ? "កំពុងផ្ទុក..." : "Loading..."}
-                                    </p>
-                                </div>
-                            </SwiperSlide>
-                        )}
-
-                        {!loading && posts.length === 0 && (
-                            <SwiperSlide className="pb-15 pt-16 px-[10px]">
-                                <div className="bg-white rounded-[25px] p-10 h-[390px] flex items-center justify-center">
-                                    <p className={`text-gray-500 ${isKhmer ? "khmer-font" : ""}`}>
-                                        {isKhmer ? "មិនទាន់មានអត្ថបទទេ។" : "No posts found."}
-                                    </p>
-                                </div>
-                            </SwiperSlide>
-                        )}
-
-                        {!loading &&
-                            posts.map((post) => {
+                    {showSkeleton ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <ReformCardSkeleton isKhmer={isKhmer} />
+                            <div className="hidden sm:block">
+                                <ReformCardSkeleton isKhmer={isKhmer} />
+                            </div>
+                            <div className="hidden lg:block">
+                                <ReformCardSkeleton isKhmer={isKhmer} />
+                            </div>
+                        </div>
+                    ) : posts.length > 0 ? (
+                        <Swiper
+                            modules={[Navigation, Pagination]}
+                            slidesPerView={1}
+                            spaceBetween={20}
+                            navigation={false}
+                            pagination={{ clickable: true }}
+                            breakpoints={{
+                                640: { slidesPerView: 2 },
+                                768: { slidesPerView: 2 },
+                                1024: { slidesPerView: 3 },
+                            }}
+                            className="custom-swiper-pagination-white"
+                        >
+                            {posts.map((post) => {
                                 const title = pickLang(post.title, lang, "Untitled");
-
                                 const desc =
                                     pickLang(post.description, lang, "") ||
-                                    proseMirrorToText(lang === "km" ? post?.content?.km : post?.content?.en) ||
+                                    proseMirrorToText(
+                                        lang === "km" ? post?.content?.km : post?.content?.en
+                                    ) ||
                                     "";
 
                                 const cover = post.images?.[0]?.url;
@@ -179,11 +262,9 @@ const DigitalReforms: React.FC = () => {
                                             className="rounded-tl-[120px] bg-white overflow-hidden rounded-bl-[25px] rounded-br-[25px] relative pt-12 h-[390px] pb-10 flex flex-col"
                                             style={{ boxShadow: "0 7px 15px rgba(0,0,0,0.4)" }}
                                         >
-                                            {/* top banner */}
                                             <div className="absolute bg-blue-950 top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-70">
                                                 <div className="flex items-center justify-center w-full h-[160px] text-white text-4xl">
                                                     {cover ? (
-                                                        // eslint-disable-next-line @next/next/no-img-element
                                                         <img
                                                             src={cover}
                                                             alt={title}
@@ -195,25 +276,32 @@ const DigitalReforms: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            {/* circle icon */}
                                             <div className="w-25 h-25 relative rounded-[200px] ml-10 top-8 mb-6">
                                                 <div className="bg-blue-950 w-25 h-25 border-white border-3 rounded-[200px] flex items-center justify-center overflow-hidden">
                                                     {cover ? (
-                                                        // eslint-disable-next-line @next/next/no-img-element
-                                                        <img src={cover} alt={title} className="w-full h-full object-cover" />
+                                                        <img
+                                                            src={cover}
+                                                            alt={title}
+                                                            className="w-full h-full object-cover"
+                                                        />
                                                     ) : (
                                                         <span className="text-white text-3xl">📰</span>
                                                     )}
                                                 </div>
                                             </div>
 
-                                            {/* text */}
                                             <div className="p-6 pt-10">
-                                                <h3 className={`text-xl font-bold text-gray-800 mb-4 ${isKhmer ? "khmer-font" : ""}`}>
+                                                <h3
+                                                    className={`text-xl font-bold text-gray-800 mb-4 ${isKhmer ? "khmer-font" : ""
+                                                        }`}
+                                                >
                                                     {title}
                                                 </h3>
 
-                                                <p className={`text-gray-600 leading-relaxed text-base line-clamp-4 ${isKhmer ? "khmer-font" : ""}`}>
+                                                <p
+                                                    className={`text-gray-600 leading-relaxed text-base line-clamp-4 ${isKhmer ? "khmer-font" : ""
+                                                        }`}
+                                                >
                                                     {desc}
                                                 </p>
                                             </div>
@@ -221,7 +309,15 @@ const DigitalReforms: React.FC = () => {
                                     </SwiperSlide>
                                 );
                             })}
-                    </Swiper>
+                        </Swiper>
+                    ) : (
+                        <div
+                            className={`text-center text-white/80 text-sm ${isKhmer ? "khmer-font" : ""
+                                }`}
+                        >
+                            {isKhmer ? "មិនមានទិន្នន័យកំណែទម្រង់" : "No reform items found."}
+                        </div>
+                    )}
                 </div>
             </div>
         </>

@@ -41,6 +41,16 @@ type ApiResponse = {
     };
 };
 
+type UIItem = {
+    id: number;
+    title: string;
+    description: string;
+    icon: string;
+    href: string;
+};
+
+const CACHE_KEY_PREFIX = "growth-vision-items-cache";
+
 function pickText(obj: I18n | undefined, lang: "en" | "km") {
     if (!obj) return "";
     return (lang === "km" ? obj.km : obj.en) || obj.en || obj.km || "";
@@ -48,16 +58,8 @@ function pickText(obj: I18n | undefined, lang: "en" | "km") {
 
 function normalizeImage(src?: string | null) {
     if (!src) return "";
-    return src; // already absolute in your API
+    return src;
 }
-
-type UIItem = {
-    id: number;
-    title: string;
-    description: string;
-    icon: string; // coverImage
-    href: string;
-};
 
 function buildDetailHref(post: ApiPost): string {
     const slug = post.slug?.trim() || "";
@@ -67,6 +69,39 @@ function buildDetailHref(post: ApiPost): string {
     }
 
     return `/new-update/view-detail?id=${post.id}`;
+}
+
+function getCacheKey(langKey: "en" | "km") {
+    return `${CACHE_KEY_PREFIX}-${langKey}`;
+}
+
+function readCache(langKey: "en" | "km"): UIItem[] {
+    try {
+        const raw = sessionStorage.getItem(getCacheKey(langKey));
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function writeCache(langKey: "en" | "km", items: UIItem[]) {
+    try {
+        sessionStorage.setItem(getCacheKey(langKey), JSON.stringify(items));
+    } catch {
+        // ignore cache write errors
+    }
+}
+
+function pickGrowthVisionBlock(blocks: ApiBlock[]) {
+    return (
+        blocks.find((b) => b.id === 10) ||
+        blocks.find(
+            (b) => b.type === "post_list" && (b.settings?.categoryIds || []).includes(7)
+        ) ||
+        null
+    );
 }
 
 function Card({
@@ -110,7 +145,8 @@ function Card({
                 <div className="text-center mt-4">
                     <Link
                         href={href}
-                        className={`inline-flex items-center justify-center mx-auto text-sm font-semibold opacity-80 hover:opacity-100 ${isKhmer ? "khmer-font" : ""}`}
+                        className={`inline-flex items-center justify-center mx-auto text-sm font-semibold opacity-80 hover:opacity-100 ${isKhmer ? "khmer-font" : ""
+                            }`}
                     >
                         {isKhmer ? "ស្វែងយល់បន្ថែម" : "LEARN MORE"}
                     </Link>
@@ -140,10 +176,46 @@ function Card({
             <div className="text-center mt-4">
                 <Link
                     href={href}
-                    className={`inline-flex items-center justify-center mx-auto text-sm font-semibold text-indigo-900 hover:text-indigo-700 ${isKhmer ? "khmer-font" : ""}`}
+                    className={`inline-flex items-center justify-center mx-auto text-sm font-semibold text-indigo-900 hover:text-indigo-700 ${isKhmer ? "khmer-font" : ""
+                        }`}
                 >
                     {isKhmer ? "ស្វែងយល់បន្ថែម" : "LEARN MORE"}
                 </Link>
+            </div>
+        </div>
+    );
+}
+
+function CardSkeleton({ primary = false }: { primary?: boolean }) {
+    return (
+        <div
+            className={`animate-pulse p-8 rounded-tl-[120px] rounded-br-[120px] min-h-[280px] flex flex-col justify-between ${primary ? "bg-blue-950 text-white min-h-[300px]" : "shadow-xl border border-gray-100"
+                }`}
+        >
+            <div className="pt-4 text-center mb-4">
+                <div
+                    className={`w-14 h-14 mx-auto mb-4 rounded-full ${primary ? "bg-white/15" : "bg-gray-200"
+                        }`}
+                />
+                <div
+                    className={`h-7 w-2/3 mx-auto rounded mb-3 ${primary ? "bg-white/15" : "bg-gray-200"
+                        }`}
+                />
+                <div
+                    className={`h-5 w-5/6 mx-auto rounded mb-2 ${primary ? "bg-white/15" : "bg-gray-200"
+                        }`}
+                />
+                <div
+                    className={`h-5 w-3/4 mx-auto rounded ${primary ? "bg-white/15" : "bg-gray-200"
+                        }`}
+                />
+            </div>
+
+            <div className="text-center mt-4">
+                <div
+                    className={`h-4 w-28 mx-auto rounded ${primary ? "bg-white/15" : "bg-gray-200"
+                        }`}
+                />
             </div>
         </div>
     );
@@ -154,58 +226,64 @@ export default function GrowthVision() {
     const isKhmer = language === "kh";
     const langKey: "en" | "km" = isKhmer ? "km" : "en";
 
+    const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string>("");
+    const [error, setError] = useState("");
     const [items, setItems] = useState<UIItem[]>([]);
 
-    // headings (same as your design)
     const headingEnLine1 = "Align With Cambodia’s";
     const headingEnLine2 = "Growth Vision";
     const headingKhLine1 = "សម្របអាជីវកម្មរបស់អ្នក";
     const headingKhLine2 = "ឲ្យស្របតាមចក្ខុវិស័យកំណើនកម្ពុជា";
 
     useEffect(() => {
+        setMounted(true);
+
+        const cached = readCache(langKey);
+        if (cached.length > 0) {
+            setItems(cached);
+            setLoading(false);
+        }
+
         let alive = true;
 
         async function run() {
             try {
-                setLoading(true);
                 setError("");
 
                 const res = await fetch("/api/home-page/growth-vision", {
                     cache: "no-store",
+                    headers: { Accept: "application/json" },
                 });
 
                 const json = (await res.json()) as ApiResponse;
+
                 if (!res.ok || !json?.success) {
                     throw new Error(json?.message || `Request failed: ${res.status}`);
                 }
 
                 const blocks = json?.data?.blocks || [];
-                // find block id=10 (Growth Vision section)
-                const gv = blocks.find((b) => b.id === 10) || blocks.find((b) => b.type === "post_list" && (b.settings?.categoryIds || []).includes(7));
-
+                const gv = pickGrowthVisionBlock(blocks);
                 const posts = gv?.posts || [];
 
                 const mapped: UIItem[] = posts
                     .filter((p) => p?.status !== "draft")
-                    .map((p) => {
-                        const title = pickText(p.title, langKey) || "Untitled";
-                        const description = pickText(p.description, langKey) || "";
-                        return {
-                            id: p.id,
-                            title,
-                            description,
-                            icon: normalizeImage(p.coverImage),
-                            href: buildDetailHref(p),
-                        };
-                    });
+                    .map((p) => ({
+                        id: p.id,
+                        title: pickText(p.title, langKey) || "Untitled",
+                        description: pickText(p.description, langKey) || "",
+                        icon: normalizeImage(p.coverImage),
+                        href: buildDetailHref(p),
+                    }));
 
                 if (!alive) return;
+
                 setItems(mapped);
+                writeCache(langKey, mapped);
             } catch (error) {
                 if (!alive) return;
-                const message = error instanceof Error ? error.message : "Failed to load Growth Vision";
+                const message =
+                    error instanceof Error ? error.message : "Failed to load Growth Vision";
                 setError(message);
             } finally {
                 if (!alive) return;
@@ -214,16 +292,17 @@ export default function GrowthVision() {
         }
 
         run();
+
         return () => {
             alive = false;
         };
     }, [langKey]);
 
-    // choose primary card (ex: first one or the one you prefer)
     const { primary, secondary } = useMemo(() => {
-        if (items.length === 0) return { primary: null as UIItem | null, secondary: [] as UIItem[] };
+        if (items.length === 0) {
+            return { primary: null as UIItem | null, secondary: [] as UIItem[] };
+        }
 
-        // Option A: pick "Policy Updates" as primary if exists
         const policy = items.find((i) => i.title.toLowerCase().includes("policy"));
         const primary = policy || items[0];
         const secondary = items.filter((i) => i.id !== primary.id);
@@ -231,9 +310,16 @@ export default function GrowthVision() {
         return { primary, secondary };
     }, [items]);
 
+    const showSkeleton = !mounted || (loading && items.length === 0);
+    const showErrorOnly = !showSkeleton && items.length === 0 && !!error;
+    const showEmpty = !showSkeleton && !error && items.length === 0;
+
     return (
         <div className="container mx-auto px-4 max-w-7xl py-16 relative">
-            <h2 className={`text-5xl font-extrabold text-indigo-900 mb-12 ${isKhmer ? "khmer-font" : ""}`}>
+            <h2
+                className={`text-5xl font-extrabold text-indigo-900 mb-12 ${isKhmer ? "khmer-font" : ""
+                    }`}
+            >
                 {isKhmer ? (
                     <>
                         {headingKhLine1}
@@ -249,27 +335,49 @@ export default function GrowthVision() {
                 )}
             </h2>
 
-            {loading && (
-                <div className="text-gray-600">
-                    {isKhmer ? "កំពុងទាញទិន្នន័យ..." : "Loading..."}
-                </div>
-            )}
-
-            {!loading && error && (
+            {showErrorOnly && (
                 <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
                     {error}
                 </div>
             )}
 
-            {!loading && !error && items.length === 0 && (
+            {showEmpty && (
                 <div className="text-gray-600">
                     {isKhmer ? "មិនមានទិន្នន័យ Growth Vision ទេ" : "No Growth Vision items found"}
                 </div>
             )}
 
-            {!loading && !error && items.length > 0 && (
+            {showSkeleton ? (
                 <>
-                    {/* GRID FOR MOBILE / TABLET / LAPTOP (<1400px) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:hidden">
+                        <CardSkeleton />
+                        <CardSkeleton />
+                        <CardSkeleton primary />
+                    </div>
+
+                    <div className="relative mb-34 hidden xl:block h-[700px]">
+                        <div className="absolute top-32 left-0 w-91">
+                            <CardSkeleton />
+                        </div>
+                        <div className="absolute top-[22%] -translate-y-1/2 left-1/2 -translate-x-1/2 w-91 z-10">
+                            <CardSkeleton primary />
+                        </div>
+                        <div className="absolute top-0 -translate-y-2/5 right-0 w-91">
+                            <CardSkeleton />
+                        </div>
+                        <div className="absolute bottom-0 top-139 left-0 w-91">
+                            <CardSkeleton />
+                        </div>
+                        <div className="absolute bottom-0 top-106 left-1/2 -translate-x-1/2 w-91">
+                            <CardSkeleton />
+                        </div>
+                        <div className="absolute bottom-28 right-0 w-91">
+                            <CardSkeleton />
+                        </div>
+                    </div>
+                </>
+            ) : items.length > 0 ? (
+                <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:hidden">
                         {[...secondary, ...(primary ? [primary] : [])].map((card) => (
                             <Card
@@ -284,9 +392,7 @@ export default function GrowthVision() {
                         ))}
                     </div>
 
-                    {/* ABSOLUTE LAYOUT FOR BIG DESKTOP (>=1400px) */}
                     <div className="relative mb-34 hidden xl:block h-[700px]">
-                        {/* Left Top */}
                         {secondary[0] && (
                             <div className="absolute top-32 left-0 w-91">
                                 <Card
@@ -299,7 +405,6 @@ export default function GrowthVision() {
                             </div>
                         )}
 
-                        {/* Center Primary */}
                         {primary && (
                             <div className="absolute top-[22%] -translate-y-1/2 left-1/2 -translate-x-1/2 w-91 z-10">
                                 <Card
@@ -313,7 +418,6 @@ export default function GrowthVision() {
                             </div>
                         )}
 
-                        {/* Right Top */}
                         {secondary[1] && (
                             <div className="absolute top-0 -translate-y-2/5 right-0 w-91">
                                 <Card
@@ -326,7 +430,6 @@ export default function GrowthVision() {
                             </div>
                         )}
 
-                        {/* Left Bottom */}
                         {secondary[2] && (
                             <div className="absolute bottom-0 top-139 left-0 w-91">
                                 <Card
@@ -339,7 +442,6 @@ export default function GrowthVision() {
                             </div>
                         )}
 
-                        {/* Center Bottom */}
                         {secondary[3] && (
                             <div className="absolute bottom-0 top-106 left-1/2 -translate-x-1/2 w-91">
                                 <Card
@@ -352,7 +454,6 @@ export default function GrowthVision() {
                             </div>
                         )}
 
-                        {/* Right Bottom */}
                         {secondary[4] && (
                             <div className="absolute bottom-28 right-0 w-91">
                                 <Card
@@ -366,7 +467,7 @@ export default function GrowthVision() {
                         )}
                     </div>
                 </>
-            )}
+            ) : null}
         </div>
     );
 }
