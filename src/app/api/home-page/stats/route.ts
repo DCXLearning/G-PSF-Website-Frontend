@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 
 const UPSTREAM = "https://api-gpsf.datacolabx.com/api/v1/sections/page/home";

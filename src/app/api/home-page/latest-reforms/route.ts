@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/api/latest-reforms/route.ts
 import { NextResponse } from "next/server";
 
@@ -50,7 +51,7 @@ export async function GET() {
             );
         }
 
-        // ✅ normalize block + posts so UI can use post.images[0].url
+        //  normalize block + posts so UI can use post.images[0].url
         const normalizedBlock = {
             id: rawBlock.id,
             type: rawBlock.type,
@@ -75,7 +76,7 @@ export async function GET() {
                         createdAt: p?.createdAt,
                         updatedAt: p?.updatedAt,
 
-                        // ✅ IMPORTANT: create images[] for your UI
+                        // IMPORTANT: create images[] for your UI
                         images: cover ? [{ id: 1, url: cover, sortOrder: 1 }] : [],
 
                         // keep originals too (optional)

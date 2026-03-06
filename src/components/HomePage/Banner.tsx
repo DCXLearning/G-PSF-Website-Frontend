@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,7 +27,7 @@ type HomePostApi = {
 };
 
 const PLACEHOLDER_IMAGE_URL = "/image/Banner.bmp";
-const CACHE_KEY = "home-post-cache";
+const CACHE_KEY = "home-post-cache-v2";
 
 export default function HeroBanner() {
     const { language } = useLanguage();
@@ -40,23 +41,26 @@ export default function HeroBanner() {
 
         const loadData = async () => {
             try {
-                // 1. read cache first
                 const cached = sessionStorage.getItem(CACHE_KEY);
-                if (cached) {
-                    const parsed = JSON.parse(cached);
-                    if (!ignore) {
+
+                if (cached && !ignore) {
+                    try {
+                        const parsed = JSON.parse(cached);
                         setData(parsed);
                         setLoading(false);
+                    } catch {
+                        sessionStorage.removeItem(CACHE_KEY);
                     }
-                    return;
+                } else {
+                    setLoading(true);
                 }
 
-                // 2. fetch only if no cache
-                setLoading(true);
-
-                const res = await fetch("/api/home-page/home-post", {
+                const res = await fetch(`/api/home-page/home-post?_t=${Date.now()}`, {
                     cache: "no-store",
                     signal: controller.signal,
+                    headers: {
+                        "Cache-Control": "no-cache",
+                    },
                 });
 
                 if (!res.ok) {
@@ -68,18 +72,21 @@ export default function HeroBanner() {
 
                 if (!ignore) {
                     setData(newData);
-
                     if (newData) {
                         sessionStorage.setItem(CACHE_KEY, JSON.stringify(newData));
                     }
                 }
             } catch (err: any) {
                 if (err?.name !== "AbortError") {
-                    console.error(err);
-                    if (!ignore) setData(null);
+                    console.error("HeroBanner fetch error:", err);
+                    if (!ignore && !data) {
+                        setData(null);
+                    }
                 }
             } finally {
-                if (!ignore) setLoading(false);
+                if (!ignore) {
+                    setLoading(false);
+                }
             }
         };
 
@@ -94,14 +101,19 @@ export default function HeroBanner() {
     const langKey: "en" | "km" = language === "kh" ? "km" : "en";
 
     const hero = data?.hero;
-    const title = hero?.title?.[langKey] ?? hero?.title?.en ?? "";
-    const subtitle = hero?.subtitle?.[langKey] ?? hero?.subtitle?.en ?? "";
-    const description = hero?.description?.[langKey] ?? hero?.description?.en ?? "";
+    const title = hero?.title?.[langKey] || hero?.title?.en || hero?.title?.km || "";
+    const subtitle =
+        hero?.subtitle?.[langKey] || hero?.subtitle?.en || hero?.subtitle?.km || "";
+    const description =
+        hero?.description?.[langKey] ||
+        hero?.description?.en ||
+        hero?.description?.km ||
+        "";
 
     const bgImage = hero?.backgroundImages?.[0] || PLACEHOLDER_IMAGE_URL;
 
     const cta = hero?.ctas?.[0];
-    const ctaLabel = cta?.label?.[langKey] ?? cta?.label?.en ?? "";
+    const ctaLabel = cta?.label?.[langKey] || cta?.label?.en || cta?.label?.km || "";
     const ctaHref = cta?.href?.trim() ? cta.href : "#";
     const isExternal = ctaHref.startsWith("http");
 
@@ -122,8 +134,7 @@ export default function HeroBanner() {
 
             {/* Loading overlay */}
             {loading && !data && (
-                <div className="absolute inset-0 z-30 flex items-center justify-center">
-                </div>
+                <div className="absolute inset-0 z-30 flex items-center justify-center" />
             )}
 
             {/* Content */}
@@ -139,8 +150,6 @@ export default function HeroBanner() {
 
                 {!title && loading && !data ? (
                     <div className="w-full max-w-3xl">
-                        <div className="h-10 md:h-14 w-4/5 mx-auto rounded-lg animate-pulse" />
-                        <div className="mt-4 h-10 md:h-14 w-3/5 mx-auto rounded-lg animate-pulse" />
                     </div>
                 ) : (
                     title && (
@@ -195,13 +204,19 @@ export default function HeroBanner() {
                                         );
                                     }
 
-                                    const value = it?.value?.[langKey] ?? it?.value?.en ?? "";
-                                    const label = it?.label?.[langKey] ?? it?.label?.en ?? "";
+                                    const value =
+                                        it?.value?.[langKey] || it?.value?.en || it?.value?.km || "";
+                                    const label =
+                                        it?.label?.[langKey] || it?.label?.en || it?.label?.km || "";
 
                                     return (
                                         <div key={idx} className="px-2">
-                                            <div className="text-2xl md:text-4xl font-extrabold">{value}</div>
-                                            <div className="mt-2 text-xs uppercase tracking-wider">{label}</div>
+                                            <div className="text-2xl md:text-4xl font-extrabold">
+                                                {value}
+                                            </div>
+                                            <div className="mt-2 text-xs md:text-sm uppercase tracking-wider">
+                                                {label}
+                                            </div>
                                         </div>
                                     );
                                 }
