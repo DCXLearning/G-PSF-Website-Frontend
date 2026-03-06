@@ -50,6 +50,16 @@ type HeroData = {
   ctaHref: string;
 };
 
+type WorkingGroupItem = {
+  slug?: string;
+  orderIndex?: number;
+  title?: I18nText;
+};
+
+type WorkingGroupsResponse = {
+  items?: WorkingGroupItem[];
+};
+
 type ListWorkingGroupsProps = {
   pageSlug?: string;
 };
@@ -118,6 +128,7 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
   const apiLang: ApiLang = lang === "kh" ? "km" : "en";
 
   const [heroData, setHeroData] = useState<HeroData | null>(null);
+  const [workingGroupTitle, setWorkingGroupTitle] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -158,13 +169,68 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
     };
   }, [apiLang, pageSlug]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadWorkingGroupTitle() {
+      try {
+        const response = await fetch("/api/working-groups", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          setWorkingGroupTitle("");
+          return;
+        }
+
+        const json = (await response.json()) as WorkingGroupsResponse;
+        const groups = Array.isArray(json.items) ? json.items : [];
+        const cleanSlug = getText(pageSlug);
+
+        const group = groups.find(
+          (item) => getText(item.slug) === cleanSlug
+        );
+
+        if (!group) {
+          setWorkingGroupTitle("");
+          return;
+        }
+
+        const label = pickI18nText(group.title, apiLang);
+        if (!label) {
+          setWorkingGroupTitle("");
+          return;
+        }
+
+        const rawOrderIndex = typeof group.orderIndex === "number"
+          ? group.orderIndex
+          : groups.findIndex((item) => getText(item.slug) === cleanSlug);
+
+        const orderIndex = rawOrderIndex >= 0 ? rawOrderIndex : 0;
+        setWorkingGroupTitle(`WG: ${orderIndex} ${label}`);
+      } catch (error) {
+        if ((error as { name?: string })?.name !== "AbortError") {
+          setWorkingGroupTitle("");
+        }
+      }
+    }
+
+    loadWorkingGroupTitle();
+
+    return () => {
+      controller.abort();
+    };
+  }, [apiLang, pageSlug]);
+
   const titleLine =
     lang === "en" ? "Working Group Profile" : "ព័ត៌មានអំពីក្រុមការងារ";
 
   const fallbackTitle =
-    lang === "en"
-      ? "WG: 4 Lay, Tex & Governance"
-      : "WG: 4 ច្បាប់ បទប្បញ្ញត្តិ និងប្រព័ន្ធអភិបាលកិច្ច";
+    workingGroupTitle ||
+    (lang === "en"
+      ? "WG: 0 Lay, Tex & Governance"
+      : "WG: 0 ច្បាប់ បទប្បញ្ញត្តិ និងប្រព័ន្ធអភិបាលកិច្ច");
 
   const fallbackSubtitle =
     lang === "en"
