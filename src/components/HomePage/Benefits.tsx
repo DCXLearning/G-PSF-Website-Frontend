@@ -16,7 +16,7 @@ type ApiPost = {
     title?: I18n;
     description?: I18n | null;
     coverImage?: string | null;
-    content?: any;
+    content?: unknown;
 };
 
 type ApiBlock = {
@@ -51,6 +51,16 @@ function iconFallback(idx: number) {
 
 function pickIcon(post: ApiPost, idx: number) {
     return post.coverImage || iconFallback(idx);
+}
+
+function buildDetailHref(post: ApiPost): string {
+    const slug = post.slug?.trim() || "";
+
+    if (slug) {
+        return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
+    }
+
+    return `/new-update/view-detail?id=${post.id}`;
 }
 
 type BenefitCardProps = {
@@ -134,8 +144,8 @@ export default function Benefits() {
 
                 if (!res.ok) throw new Error(`API error ${res.status}`);
 
-                const json = (await res.json()) as ApiResponse;
-                const blocks = json?.data?.blocks || [];
+                    const json = (await res.json()) as ApiResponse;
+                    const blocks = json?.data?.blocks || [];
 
                 const picked =
                     blocks.find(
@@ -146,8 +156,11 @@ export default function Benefits() {
                     ) || null;
 
                 if (mounted) setBlock(picked);
-            } catch (e: any) {
-                if (mounted) setError(e?.message || "Fetch failed");
+            } catch (error) {
+                if (mounted) {
+                    const message = error instanceof Error ? error.message : "Fetch failed";
+                    setError(message);
+                }
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -215,16 +228,18 @@ export default function Benefits() {
                     {listToRender.map((p, idx) => {
                         const title = pickText(p.title, uiLang) || "\u00A0";
                         const desc = pickText(p.description ?? undefined, uiLang) || "\u00A0";
+                        const href = !loading ? buildDetailHref(p) : "#";
+                        const isDisabled = loading;
 
                         return (
                             <div key={p.id} className={loading ? "opacity-50" : ""}>
                                 <BenefitCard
-                                    icon={loading ? iconFallback(idx) : pickIcon(p as any, idx)}
+                                    icon={loading ? iconFallback(idx) : pickIcon(p, idx)}
                                     title={title}
                                     description={desc}
                                     isKhmer={isKhmer}
-                                    href={!loading && (p as any).slug ? `/posts/${(p as any).slug}` : "#"}
-                                    disabled={loading} // disable link while loading
+                                    href={href}
+                                    disabled={isDisabled}
                                 />
                             </div>
                         );

@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 type UiLang = "en" | "kh";
@@ -64,6 +65,16 @@ function pickThumbUrl(post: ApiPost, apiLang: ApiLang) {
     return post.documents?.[key]?.thumbnailUrl || post.documentThumbnail || "";
 }
 
+function buildDetailHref(post: ApiPost): string {
+    const slug = post.slug?.trim() || "";
+
+    if (slug) {
+        return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
+    }
+
+    return `/new-update/view-detail?id=${post.id}`;
+}
+
 export default function CaseStudies() {
     const { language, apiLang, fontClass } = useLanguage();
     const uiLang = (language as UiLang) ?? "en";
@@ -102,8 +113,11 @@ export default function CaseStudies() {
                     ) || null;
 
                 if (mounted) setBlock(picked);
-            } catch (e: any) {
-                if (mounted) setError(e?.message || "Fetch failed");
+            } catch (error) {
+                if (mounted) {
+                    const message = error instanceof Error ? error.message : "Fetch failed";
+                    setError(message);
+                }
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -130,6 +144,7 @@ export default function CaseStudies() {
             relatedPhoto: uiLang === "kh" ? "រូបថតដែលទាក់ទង" : "Related Photo",
             workingGroup: uiLang === "kh" ? "ឈ្មោះក្រុមការងារ" : "Working Group",
             download: uiLang === "kh" ? "ទាញយក" : "Download",
+            viewDetail: uiLang === "kh" ? "មើលលម្អិត" : "View Detail",
             fallbackDesc:
                 uiLang === "kh"
                     ? "ទទួលបានព័ត៌មានអំពីការអភិវឌ្ឍន៍សំខាន់ៗពី G-PSF រួមទាំងលទ្ធផលពេញអង្គ វឌ្ឍនភាពនៃក្រុមការងារ ការសង្ខេបគោលនយោបាយ និងកំណែទម្រង់ស្ថាប័ន។"
@@ -198,15 +213,24 @@ export default function CaseStudies() {
                                         {pickText(featured.description ?? undefined, uiLang) || t.fallbackDesc}
                                     </p>
 
-                                    <a
-                                        href={pickDocUrl(featured, apiLanguage) || "#"}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${!pickDocUrl(featured, apiLanguage) ? "pointer-events-none opacity-60" : ""
-                                            } ${uiLang === "kh" ? "khmer-font" : ""}`}
-                                    >
-                                        {t.download} <span className="ml-2 text-lg">›</span>
-                                    </a>
+                                    <div className="flex flex-wrap items-center gap-6">
+                                        <a
+                                            href={pickDocUrl(featured, apiLanguage) || "#"}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${!pickDocUrl(featured, apiLanguage) ? "pointer-events-none opacity-60" : ""
+                                                } ${uiLang === "kh" ? "khmer-font normal-case tracking-normal" : ""}`}
+                                        >
+                                            {t.download} <span className="ml-2 text-lg">›</span>
+                                        </a>
+
+                                        <Link
+                                            href={buildDetailHref(featured)}
+                                            className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${uiLang === "kh" ? "khmer-font normal-case tracking-normal" : ""}`}
+                                        >
+                                            {t.viewDetail} <span className="ml-2 text-lg">›</span>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -230,15 +254,24 @@ export default function CaseStudies() {
                                             {pickText(post.description ?? undefined, uiLang) || t.fallbackDesc}
                                         </p>
 
-                                        <a
-                                            href={docUrl || "#"}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase mt-auto tracking-widest ${!docUrl ? "pointer-events-none opacity-60" : ""
-                                                } ${uiLang === "kh" ? "khmer-font" : ""}`}
-                                        >
-                                            {t.download} <span className="ml-2 text-lg">›</span>
-                                        </a>
+                                        <div className="mt-auto flex flex-wrap items-center gap-6">
+                                            <a
+                                                href={docUrl || "#"}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${!docUrl ? "pointer-events-none opacity-60" : ""
+                                                    } ${uiLang === "kh" ? "khmer-font normal-case tracking-normal" : ""}`}
+                                            >
+                                                {t.download} <span className="ml-2 text-lg">›</span>
+                                            </a>
+
+                                            <Link
+                                                href={buildDetailHref(post)}
+                                                className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${uiLang === "kh" ? "khmer-font normal-case tracking-normal" : ""}`}
+                                            >
+                                                {t.viewDetail} <span className="ml-2 text-lg">›</span>
+                                            </Link>
+                                        </div>
                                     </div>
                                 );
                             })}

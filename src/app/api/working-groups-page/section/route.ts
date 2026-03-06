@@ -4,11 +4,16 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs"; // safer for remote fetch + images
 export const revalidate = 0;     // always fresh (no cache)
 
-const UPSTREAM = "https://api-gpsf.datacolabx.com/api/v1/pages/working-groups/section";
+const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const res = await fetch(UPSTREAM, {
+    const { searchParams } = new URL(request.url);
+    const slug = searchParams.get("slug")?.trim() || "working-groups";
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || FALLBACK_API_BASE;
+    const upstream = `${apiBase}/pages/${encodeURIComponent(slug)}/section`;
+
+    const res = await fetch(upstream, {
       // If upstream sends cache headers you don't want, keep no-store
       cache: "no-store",
       headers: { Accept: "application/json" },
@@ -25,9 +30,10 @@ export async function GET() {
 
     // Pass-through (you can also "shape" the response here if you want)
     return NextResponse.json(data, { status: 200 });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Fetch failed";
     return NextResponse.json(
-      { success: false, message: err?.message || "Fetch failed" },
+      { success: false, message },
       { status: 500 }
     );
   }

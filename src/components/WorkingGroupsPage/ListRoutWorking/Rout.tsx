@@ -4,13 +4,17 @@ import Mandate from '../ListWorking/Mandate'
 import View from '../ListWorking/View'
 import Start from '../ListWorking/Start'
 
-export default function Rout() {
+type RoutProps = {
+    pageSlug?: string
+}
+
+export default function Rout({ pageSlug }: RoutProps) {
     return (
         <>
-            <ListWorkingGroups />
-            <Mandate />
-            <View />
-            <Start />
+            <ListWorkingGroups pageSlug={pageSlug} />
+            <Mandate pageSlug={pageSlug} />
+            <View pageSlug={pageSlug} />
+            <Start pageSlug={pageSlug} />
         </>
     )
 }

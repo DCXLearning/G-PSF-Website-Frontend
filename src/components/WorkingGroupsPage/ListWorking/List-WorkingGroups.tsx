@@ -1,76 +1,248 @@
-// components/HeroBanner.tsx
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-const PLACEHOLDER_IMAGE_URL = "/image/bannerpdf.bmp";
+type Lang = "en" | "kh";
+type ApiLang = "en" | "km";
 
-const ListWorkingGroups: React.FC = () => {
-    const { language } = useLanguage(); // get current language
+type I18nText = {
+  en?: string;
+  km?: string;
+};
 
-    const titleLine =
-        language === "en"
-            ? "Working Group Profile"
-            : "ព័ត៌មានអំពីក្រុមការងារ";
+type HeroContent = {
+  ctas?: Array<{
+    href?: string;
+    label?: I18nText;
+  }>;
+  title?: I18nText;
+  subtitle?: I18nText;
+  description?: I18nText;
+  backgroundImages?: string[];
+};
 
-    const topLine =
-        language === "en"
-            ? "Lay, Tex & Governance"
-            : "ច្បាប់ បទប្បញ្ញត្តិ និងប្រព័ន្ធអភិបាលកិច្ច";
+type HeroBlock = {
+  type?: string;
+  enabled?: boolean;
+  title?: I18nText;
+  posts?: Array<{
+    status?: string;
+    content?: {
+      en?: HeroContent;
+      km?: HeroContent;
+    };
+  }>;
+};
 
-    const textLabel =
-        language === "en"
-            ? "Cross-cutting reform affecting business regulatoin, taxation, and Governance "
-            : "ការកែទម្រង់ឆ្លងកាត់វិស័យ ដែលមានផលប៉ះពាល់ដល់ការគ្រប់គ្រងអាជីវកម្ម ពន្ធដារ និងអភិបាលកិច្ច";
+type HeroResponse = {
+  data?: {
+    blocks?: HeroBlock[];
+  };
+};
 
-    const buttonLabel =
-        language === "en"
-            ? "Download WG Brief"
-            : "ទាញយកសង្ខេប WG";
+type HeroData = {
+  title: string;
+  subtitle: string;
+  description: string;
+  imageUrl: string;
+  ctaLabel: string;
+  ctaHref: string;
+};
 
-    return (
-        <div className="relative mb-0 opacity-110 min-h-180 flex flex-col items-center justify-start overflow-hidden bg-gray-100">
-            {/* Background Image */}
-            <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${PLACEHOLDER_IMAGE_URL})` }}
-            >
-                <div className="absolute inset-0 bg-gray-900/50"></div>
-            </div>
+type ListWorkingGroupsProps = {
+  pageSlug?: string;
+};
 
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-68 pb-3 sm:pb-2 max-w-5xl w-full">
-                <p
-                    className={`text-base sm:text-lg md:text-2xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${language === "kh" ? "khmer-font" : ""
-                        }`}
-                >
-                    {titleLine}
-                </p>
-                {/* Top line */}
-                <p
-                    className={`text-base sm:text-lg md:text-5xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${language === "kh" ? "khmer-font" : ""
-                        }`}
-                >
-                    <span className="bg-white px-5 py-1 rounded-full text-gray-800 font-bold text-sm md:text-4xl">WG: 4</span> <span> </span>
-                    {topLine}
-                </p>
-                <p
-                    className={`text-base sm:text-lg md:text-2xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${language === "kh" ? "khmer-font" : ""
-                        }`}
-                >
-                    {textLabel}
-                </p>
-                {/* Button */}
-                <button
-                    className={`bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-8 md:px-12 rounded-2xl shadow-xl transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50 text-sm sm:text-base md:text-lg ${language === "kh" ? "khmer-font" : ""
-                        }`}
-                    onClick={() => console.log("CTA Clicked")}
-                >
-                    {buttonLabel}
-                </button>
-            </div>
-        </div>
-    );
+const DEFAULT_PAGE_SLUG = "law-tax-and-governance";
+const DEFAULT_IMAGE_URL = "/image/bannerpdf.bmp";
+
+function getText(value?: string | null): string {
+  const text = value?.trim() ?? "";
+  return text === "." ? "" : text;
+}
+
+function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
+  if (!value) return "";
+  const primary = apiLang === "km" ? getText(value.km) : getText(value.en);
+  return primary || getText(value.en) || getText(value.km);
+}
+
+function mapHeroData(response: HeroResponse, apiLang: ApiLang): HeroData | null {
+  const blocks = response.data?.blocks ?? [];
+  const heroBlock =
+    blocks.find((block) => block.enabled !== false && block.type === "hero_banner") ??
+    blocks.find((block) => block.enabled !== false);
+
+  const post =
+    heroBlock?.posts?.find((item) => item.status === "published") ??
+    heroBlock?.posts?.[0];
+
+  const content =
+    post?.content?.[apiLang] ??
+    post?.content?.en ??
+    post?.content?.km;
+
+  if (!content) {
+    return null;
+  }
+
+  const cta = content.ctas?.[0];
+  const title = pickI18nText(content.title, apiLang);
+  const subtitle = pickI18nText(content.subtitle, apiLang);
+  const description = pickI18nText(content.description, apiLang);
+  const ctaLabel = pickI18nText(cta?.label, apiLang);
+  const ctaHref = getText(cta?.href);
+  const imageUrl = getText(content.backgroundImages?.[0]) || DEFAULT_IMAGE_URL;
+
+  const hasContent = Boolean(title || subtitle || description || ctaLabel || ctaHref);
+  if (!hasContent) {
+    return null;
+  }
+
+  return {
+    title,
+    subtitle,
+    description,
+    imageUrl,
+    ctaLabel,
+    ctaHref,
+  };
+}
+
+const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
+  pageSlug = DEFAULT_PAGE_SLUG,
+}) => {
+  const { language } = useLanguage();
+  const lang = (language as Lang) ?? "en";
+  const apiLang: ApiLang = lang === "kh" ? "km" : "en";
+
+  const [heroData, setHeroData] = useState<HeroData | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadHeroBanner() {
+      try {
+        setLoading(true);
+
+        const response = await fetch(
+          `/api/working-groups-page/section?slug=${encodeURIComponent(pageSlug)}`,
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
+
+        if (!response.ok) {
+          setHeroData(null);
+          return;
+        }
+
+        const json = (await response.json()) as HeroResponse;
+        setHeroData(mapHeroData(json, apiLang));
+      } catch (error) {
+        if ((error as { name?: string })?.name !== "AbortError") {
+          setHeroData(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadHeroBanner();
+
+    return () => {
+      controller.abort();
+    };
+  }, [apiLang, pageSlug]);
+
+  const titleLine =
+    lang === "en" ? "Working Group Profile" : "ព័ត៌មានអំពីក្រុមការងារ";
+
+  const fallbackTitle =
+    lang === "en"
+      ? "WG: 4 Lay, Tex & Governance"
+      : "WG: 4 ច្បាប់ បទប្បញ្ញត្តិ និងប្រព័ន្ធអភិបាលកិច្ច";
+
+  const fallbackSubtitle =
+    lang === "en"
+      ? "Cross-cutting reform affecting business regulation, taxation, and governance"
+      : "ការកែទម្រង់ឆ្លងកាត់វិស័យ ដែលមានផលប៉ះពាល់ដល់ការគ្រប់គ្រងអាជីវកម្ម ពន្ធដារ និងអភិបាលកិច្ច";
+
+  const fallbackButtonLabel =
+    lang === "en" ? "Download WG Brief" : "ទាញយកសង្ខេប WG";
+
+  const mainTitle = heroData?.title || fallbackTitle;
+  const subtitle = heroData?.subtitle || heroData?.description || fallbackSubtitle;
+  const buttonLabel = heroData?.ctaLabel || fallbackButtonLabel;
+  const buttonHref = heroData?.ctaHref || "";
+  const imageUrl = heroData?.imageUrl || DEFAULT_IMAGE_URL;
+
+  return (
+    <div className="relative mb-0 opacity-110 min-h-180 flex flex-col items-center justify-start overflow-hidden bg-gray-100">
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${imageUrl})` }}
+      >
+        <div className="absolute inset-0 bg-gray-900/50" />
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-68 pb-3 sm:pb-2 max-w-5xl w-full">
+        <p
+          className={`text-base sm:text-lg md:text-2xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${
+            language === "kh" ? "khmer-font" : ""
+          }`}
+        >
+          {titleLine}
+        </p>
+
+        <p
+          className={`text-base sm:text-lg md:text-5xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${
+            language === "kh" ? "khmer-font" : ""
+          }`}
+        >
+          {mainTitle}
+        </p>
+
+        <p
+          className={`text-base sm:text-lg md:text-2xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${
+            language === "kh" ? "khmer-font" : ""
+          }`}
+        >
+          {subtitle}
+        </p>
+
+        {buttonHref ? (
+          <a
+            href={buttonHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-8 md:px-12 rounded-2xl shadow-xl transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50 text-sm sm:text-base md:text-lg ${
+              language === "kh" ? "khmer-font" : ""
+            }`}
+          >
+            {buttonLabel}
+          </a>
+        ) : (
+          <span
+            className={`inline-flex bg-slate-500 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-8 md:px-12 rounded-2xl text-sm sm:text-base md:text-lg ${
+              language === "kh" ? "khmer-font" : ""
+            }`}
+          >
+            {buttonLabel}
+          </span>
+        )}
+
+        {loading ? (
+          <p className={`mt-4 text-sm text-white/90 ${language === "kh" ? "khmer-font" : ""}`}>
+            {language === "kh" ? "កំពុងទាញទិន្នន័យ..." : "Loading data..."}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
 };
 
 export default ListWorkingGroups;

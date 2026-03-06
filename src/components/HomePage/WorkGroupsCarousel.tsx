@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 
@@ -20,6 +21,16 @@ interface WorkGroupItem {
 }
 
 const ICON_BG = "#4C518D";
+
+function buildWorkingGroupHref(slug?: string) {
+  const cleanSlug = slug?.trim() ?? "";
+
+  if (!cleanSlug) {
+    return "/working-groups";
+  }
+
+  return `/working-groups/${encodeURIComponent(cleanSlug)}`;
+}
 
 // ✅ Convert 0-9999 to Khmer digits
 function toKhmerNumber(n: number) {
@@ -152,8 +163,8 @@ export default function WorkGroupsCarousel() {
 
                 return (
                   <SwiperSlide key={g.id} className="py-3">
-                    <a
-                      href={g.slug ? `/${g.slug}` : "#"}
+                    <Link
+                      href={buildWorkingGroupHref(g.slug)}
                       className="
                         flex flex-col items-center justify-center
                         h-[210px] w-full
@@ -185,7 +196,7 @@ export default function WorkGroupsCarousel() {
                       >
                         {title}
                       </p>
-                    </a>
+                    </Link>
                   </SwiperSlide>
                 );
               })}

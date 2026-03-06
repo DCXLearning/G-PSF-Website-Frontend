@@ -11,7 +11,7 @@ type ApiPost = {
     status: string;
     id: number;
     title?: I18n;
-    slug?: string;
+    slug?: string | null;
     description?: I18n;
     coverImage?: string | null;
     createdAt?: string;
@@ -56,8 +56,18 @@ type UIItem = {
     title: string;
     description: string;
     icon: string; // coverImage
-    slug: string;
+    href: string;
 };
+
+function buildDetailHref(post: ApiPost): string {
+    const slug = post.slug?.trim() || "";
+
+    if (slug) {
+        return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
+    }
+
+    return `/new-update/view-detail?id=${post.id}`;
+}
 
 function Card({
     title,
@@ -187,15 +197,16 @@ export default function GrowthVision() {
                             title,
                             description,
                             icon: normalizeImage(p.coverImage),
-                            slug: p.slug || String(p.id),
+                            href: buildDetailHref(p),
                         };
                     });
 
                 if (!alive) return;
                 setItems(mapped);
-            } catch (e: any) {
+            } catch (error) {
                 if (!alive) return;
-                setError(e?.message || "Failed to load Growth Vision");
+                const message = error instanceof Error ? error.message : "Failed to load Growth Vision";
+                setError(message);
             } finally {
                 if (!alive) return;
                 setLoading(false);
@@ -268,7 +279,7 @@ export default function GrowthVision() {
                                 description={card.description}
                                 isPrimary={primary?.id === card.id}
                                 isKhmer={isKhmer}
-                                href={`/posts/${card.slug}`} // change route here if needed
+                                href={card.href}
                             />
                         ))}
                     </div>
@@ -283,7 +294,7 @@ export default function GrowthVision() {
                                     icon={secondary[0].icon}
                                     description={secondary[0].description}
                                     isKhmer={isKhmer}
-                                    href={`/posts/${secondary[0].slug}`}
+                                    href={secondary[0].href}
                                 />
                             </div>
                         )}
@@ -297,7 +308,7 @@ export default function GrowthVision() {
                                     description={primary.description}
                                     isPrimary
                                     isKhmer={isKhmer}
-                                    href={`/posts/${primary.slug}`}
+                                    href={primary.href}
                                 />
                             </div>
                         )}
@@ -310,7 +321,7 @@ export default function GrowthVision() {
                                     icon={secondary[1].icon}
                                     description={secondary[1].description}
                                     isKhmer={isKhmer}
-                                    href={`/posts/${secondary[1].slug}`}
+                                    href={secondary[1].href}
                                 />
                             </div>
                         )}
@@ -323,7 +334,7 @@ export default function GrowthVision() {
                                     icon={secondary[2].icon}
                                     description={secondary[2].description}
                                     isKhmer={isKhmer}
-                                    href={`/posts/${secondary[2].slug}`}
+                                    href={secondary[2].href}
                                 />
                             </div>
                         )}
@@ -336,7 +347,7 @@ export default function GrowthVision() {
                                     icon={secondary[3].icon}
                                     description={secondary[3].description}
                                     isKhmer={isKhmer}
-                                    href={`/posts/${secondary[3].slug}`}
+                                    href={secondary[3].href}
                                 />
                             </div>
                         )}
@@ -349,7 +360,7 @@ export default function GrowthVision() {
                                     icon={secondary[4].icon}
                                     description={secondary[4].description}
                                     isKhmer={isKhmer}
-                                    href={`/posts/${secondary[4].slug}`}
+                                    href={secondary[4].href}
                                 />
                             </div>
                         )}
