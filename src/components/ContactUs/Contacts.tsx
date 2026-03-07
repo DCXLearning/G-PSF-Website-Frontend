@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -173,7 +174,7 @@ export default function ContactSection() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/contact-form/contact", {
+      const res = await fetch("/api/contact/contact-form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -198,7 +199,7 @@ export default function ContactSection() {
         throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
       }
 
-      setSuccessMsg("✅ Message sent successfully!");
+      setSuccessMsg("Message sent successfully!");
       setForm({
         firstName: "",
         lastName: "",
