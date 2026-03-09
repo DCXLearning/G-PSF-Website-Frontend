@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ✅ app/api/newupdate-page/section/route.ts
 import { NextResponse } from "next/server";
 
@@ -5,7 +6,7 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 
 export async function GET() {
-  // ✅ News & Updates section endpoint
+  //  News & Updates section endpoint
   const url = "https://api-gpsf.datacolabx.com/api/v1/pages/news-and-updates/section";
 
   try {

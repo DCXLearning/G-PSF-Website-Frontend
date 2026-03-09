@@ -16,7 +16,7 @@ type CmsResponse = {
         title?: { en?: string; km?: string };
         description?: { en?: string; km?: string };
         status?: string;
-        coverImage?: string | null; // ✅ from API
+        coverImage?: string | null; //  from API
         images?: Array<{ url?: string }>;
         createdAt?: string;
         updatedAt?: string;

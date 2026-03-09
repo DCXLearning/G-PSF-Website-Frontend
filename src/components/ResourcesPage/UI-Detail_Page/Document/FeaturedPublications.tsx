@@ -187,7 +187,7 @@ function PublicationCard({ item }: { item: Publication }) {
                     {item.dateText || "No date"}
                 </div>
 
-                <h3 className="mt-1 text-[#1a2b4b] font-extrabold text-base leading-snug line-clamp-2">
+                <h3 className="mt-1 text-[#1a2b4b] khmer-font font-extrabold text-base leading-snug line-clamp-2">
                     {item.title}
                 </h3>
 

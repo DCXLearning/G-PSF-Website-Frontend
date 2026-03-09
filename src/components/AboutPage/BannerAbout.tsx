@@ -52,7 +52,7 @@ const BannerAbout = ({
   const { language } = useLanguage();
   const lang: "en" | "kh" = language === "kh" ? "kh" : "en";
 
-  // ✅ defaults (fallback)
+  // defaults (fallback)
   const defaultTitle =
     lang === "kh"
       ? "វេទិការាជរដ្ឋាភិបាល–វិស័យឯកជន (G-PSF)"
@@ -65,14 +65,14 @@ const BannerAbout = ({
 
   const defaultImage = "/image/BannerAbout.bmp";
 
-  // ✅ API state
+  // API state
   const [api, setApi] = useState<ApiResponse | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
         //  IMPORTANT: your route is /api-about/banner
-        const res = await fetch("/api-about/banner", { cache: "no-store" });
+        const res = await fetch("api/about-us-page/banner", { cache: "no-store" });
         if (!res.ok) throw new Error(await res.text());
         setApi((await res.json()) as ApiResponse);
       } catch {
@@ -91,7 +91,7 @@ const BannerAbout = ({
     return lang === "kh" ? post?.content?.km : post?.content?.en;
   }, [hero, lang]);
 
-  // ✅ final values (priority: props -> API -> defaults)
+  //  final values (priority: props -> API -> defaults)
   const finalTitle = title ?? pickText(content?.title, lang) ?? defaultTitle;
   const finalSubtitle =
     subtitle ?? pickText(content?.subtitle, lang) ?? defaultSubtitle;

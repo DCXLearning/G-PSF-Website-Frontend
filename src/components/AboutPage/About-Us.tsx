@@ -141,7 +141,7 @@ const AboutUs: React.FC = () => {
             try {
                 setError(null);
 
-                const res = await fetch("/api-about/about/", {
+                const res = await fetch("/api/about-us-page/about", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
                 });

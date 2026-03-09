@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/api-about/route.ts
 import { NextResponse } from "next/server";
 

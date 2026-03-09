@@ -176,7 +176,7 @@ const ResourceItem = ({ item }: { item: Resource }) => {
                     </div>
                 )}
 
-                <p className="mt-4 text-slate-600 text-[15px] leading-relaxed line-clamp-3">
+                <p className="mt-4 text-slate-600 khmer-font text-[15px] leading-relaxed line-clamp-3">
                     {item.description}
                 </p>
 

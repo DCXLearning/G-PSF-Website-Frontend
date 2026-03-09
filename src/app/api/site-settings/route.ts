@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/site-settings/route.ts
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+/* ===========fetch api Footer and contact Address========= */
 export async function GET() {
     try {
         const upstream = await fetch(
