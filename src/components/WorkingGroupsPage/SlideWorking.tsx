@@ -103,7 +103,7 @@ const CoChairCard = ({ chair, lang }: { chair: CoChair; lang: Lang }) => {
                 <div className="flex flex-col items-center">
                     <div className="mb-4">
                         {chair.profileUrl ? (
-                            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden ring-2 ring-white/20">
+                            <div className="relative w-24 h-24 md:w-34 md:h-34 rounded-full overflow-hidden ring-2 ring-white/20">
                                 <Image
                                     src={chair.profileUrl}
                                     alt={chair.name || "Co-chair"}
@@ -114,15 +114,14 @@ const CoChairCard = ({ chair, lang }: { chair: CoChair; lang: Lang }) => {
                             </div>
                         ) : (
                             <UserCircle2
-                                className="w-24 h-24 md:w-32 md:h-32 text-gray-300 opacity-90"
+                                className="w-24 h-24 md:w-34 md:h-34 text-gray-300 opacity-90"
                                 strokeWidth={1}
                             />
                         )}
                     </div>
 
                     <h3
-                        className={`font-bold text-lg md:text-xl text-yellow-500 ${isKh ? "khmer-font" : ""
-                            }`}
+                        className={`font-bold text-lg md:text-xl text-yellow-500 ${isKh ? "khmer-font" : ""}`}
                     >
                         {chair.name || (isKh ? "ឈ្មោះសហអធិបតី" : "H.E. NAME NAME")}
                     </h3>
@@ -133,9 +132,27 @@ const CoChairCard = ({ chair, lang }: { chair: CoChair; lang: Lang }) => {
 
     return (
         <div className="bg-[#1e3a8a] aspect-square w-full p-6 flex flex-col items-center justify-center text-white shadow-inner text-center">
+            <div className="mb-4">
+                {chair.profileUrl ? (
+                    <div className="relative w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden ring-2 ring-white/20 mx-auto">
+                        <Image
+                            src={chair.profileUrl}
+                            alt={chair.name || "Co-chair"}
+                            fill
+                            className="object-cover"
+                            sizes="(min-width: 768px) 96px, 80px"
+                        />
+                    </div>
+                ) : (
+                    <UserCircle2
+                        className="w-20 h-20 md:w-24 md:h-24 text-gray-300 opacity-90 mx-auto"
+                        strokeWidth={1}
+                    />
+                )}
+            </div>
+
             <h3
-                className={`font-bold text-xl text-yellow-500 ${isKh ? "khmer-font" : ""
-                    }`}
+                className={`font-bold text-xl text-yellow-500 ${isKh ? "khmer-font" : ""}`}
             >
                 {chair.name || (isKh ? "ឈ្មោះ" : "Name")}
             </h3>
@@ -169,9 +186,16 @@ export default function FullWidthSwiperLayout() {
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [items, setItems] = useState<ApiItem[]>([]);
+    const [swapRows, setSwapRows] = useState(false);
 
     useEffect(() => {
         setMounted(true);
+
+        const key = "wg-cochairs-swap";
+        const prev = sessionStorage.getItem(key) === "true";
+        const next = !prev;
+        sessionStorage.setItem(key, String(next));
+        setSwapRows(next);
 
         const cached = readCache(lang);
         if (cached.length > 0) {
@@ -210,7 +234,6 @@ export default function FullWidthSwiperLayout() {
                 writeCache(lang, nextItems);
             } catch (e: any) {
                 if (e?.name !== "AbortError" && alive) {
-                    // keep cached items, do not clear state
                     console.error("Failed to load co-chairs:", e);
                 }
             } finally {
@@ -231,25 +254,34 @@ export default function FullWidthSwiperLayout() {
 
         const mapped: CoChair[] = (items || []).map((it, idx) => ({
             id: idx + 1,
-            type: "photo",
             name: pickText(it.name, apiLang, ""),
             role: cleanText(pickText(it.description, apiLang, "")),
             profileUrl: it.profileUrl || null,
+            type: "photo",
         }));
+
+        const stable = [...mapped].sort((a, b) => a.id - b.id);
+        const half = Math.ceil(stable.length / 2);
+
+        const firstHalf = stable.slice(0, half);
+        const secondHalf = stable.slice(half);
+
+        const topHalf = swapRows ? secondHalf : firstHalf;
+        const bottomHalf = swapRows ? firstHalf : secondHalf;
 
         return {
             topRowData: padWithEmpties(
-                mapped.map((x) => ({ ...x, type: "photo" as const })),
+                topHalf.map((x) => ({ ...x, type: "photo" as const })),
                 6,
                 20000
             ),
             bottomRowData: padWithEmpties(
-                mapped.map((x) => ({ ...x, type: "card" as const })),
-                7,
+                bottomHalf.map((x) => ({ ...x, type: "card" as const })),
+                6,
                 30000
             ),
         };
-    }, [items, lang]);
+    }, [items, lang, swapRows]);
 
     const showSkeleton = !mounted || (loading && items.length === 0);
 
@@ -257,8 +289,7 @@ export default function FullWidthSwiperLayout() {
         <section className="py-10 w-full overflow-hidden bg-white">
             <div className="px-8 mb-12">
                 <h1
-                    className={`text-4xl md:text-5xl font-extrabold text-gray-900 ${lang === "kh" ? "khmer-font" : ""
-                        }`}
+                    className={`text-4xl md:text-5xl font-extrabold text-gray-900 ${lang === "kh" ? "khmer-font" : ""}`}
                 >
                     {lang === "kh" ? "សហអធិបតីក្រុមការងារ" : "Working Group Co-Chairs"}
                 </h1>
@@ -281,15 +312,17 @@ export default function FullWidthSwiperLayout() {
                                 modules={[Navigation]}
                                 slidesPerView={1.5}
                                 spaceBetween={4}
-                                loop={true}
+                                loop={false}
+                                rewind={true}
+                                initialSlide={0}
                                 breakpoints={{
                                     640: { slidesPerView: 2.5 },
-                                    1024: { slidesPerView: 4.5 },
+                                    1024: { slidesPerView: 4 },
                                     1440: { slidesPerView: 4 },
                                 }}
                             >
                                 {topRowData.map((item) => (
-                                    <SwiperSlide key={item.id}>
+                                    <SwiperSlide key={`top-${item.id}`}>
                                         <CoChairCard chair={item} lang={lang} />
                                     </SwiperSlide>
                                 ))}
@@ -299,11 +332,11 @@ export default function FullWidthSwiperLayout() {
 
                     <button
                         onClick={() => topSwiperRef.current?.slideNext()}
-                        className="bg-[#2b45a2] hover:bg-[#1e3a8a] text-white flex items-center justify-center shrink-0 transition-all z-10 w-[15%] md:w-[10%] lg:w-[15%]"
+                        className="bg-[#02155b] hover:bg-[#022691] text-white flex items-center justify-center shrink-0 transition-all z-10 w-[15%] md:w-[10%] lg:w-[15%]"
                         aria-label="Next"
                         type="button"
                     >
-                        <ArrowRight className="w-8 h-8 md:w-12 md:h-12" />
+                        <ArrowRight className="w-8 h-8 md:w-14 md:h-14 cursor-pointer border-3 p-2 rounded-full" />
                     </button>
                 </div>
 
@@ -322,15 +355,17 @@ export default function FullWidthSwiperLayout() {
                                 modules={[Navigation]}
                                 slidesPerView={1.5}
                                 spaceBetween={4}
-                                loop={true}
+                                loop={false}
+                                rewind={true}
+                                initialSlide={0}
                                 breakpoints={{
                                     640: { slidesPerView: 2.5 },
-                                    1024: { slidesPerView: 4.5 },
+                                    1024: { slidesPerView: 4 },
                                     1440: { slidesPerView: 4 },
                                 }}
                             >
                                 {bottomRowData.map((item) => (
-                                    <SwiperSlide key={item.id}>
+                                    <SwiperSlide key={`bottom-${item.id}`}>
                                         <CoChairCard chair={item} lang={lang} />
                                     </SwiperSlide>
                                 ))}
@@ -340,11 +375,11 @@ export default function FullWidthSwiperLayout() {
 
                     <button
                         onClick={() => bottomSwiperRef.current?.slidePrev()}
-                        className="bg-[#2b45a2] hover:bg-[#1e3a8a] text-white flex items-center justify-center shrink-0 transition-all z-10 w-[15%] md:w-[10%] lg:w-[15%]"
+                        className="bg-[#021765] hover:bg-[#022691] text-white flex items-center justify-center shrink-0 transition-all z-10 w-[15%] md:w-[10%] lg:w-[15%]"
                         aria-label="Prev"
                         type="button"
                     >
-                        <ArrowLeft className="w-8 h-8 md:w-12 md:h-12" />
+                        <ArrowLeft className="w-8 h-8 md:w-14 md:h-14 cursor-pointer border-3 p-2 rounded-full" />
                     </button>
                 </div>
             </div>
