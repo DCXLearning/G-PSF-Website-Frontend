@@ -152,8 +152,10 @@ const Footer: React.FC = () => {
         [siteData, language]
     );
 
-    const phones = contactInfo?.phones || [];
-    const emails = contactInfo?.desks?.flatMap((desk) => desk.emails || []) || [];
+    const firstPhone = contactInfo?.phones?.[0] || "";
+    const firstEmail =
+        contactInfo?.desks?.flatMap((desk) => desk.emails || [])?.[0] || "";
+
     const socialLinks = siteData?.socialLinks || [];
 
     return (
@@ -178,8 +180,9 @@ const Footer: React.FC = () => {
                         </div>
                     ) : (
                         <p
-                            className={`text-lg text-gray-800 max-w-sm leading-8 ${isKhmer ? "khmer-font" : ""
-                                }`}
+                            className={`text-lg text-gray-800 max-w-sm leading-8 ${
+                                isKhmer ? "khmer-font" : ""
+                            }`}
                         >
                             {description}
                         </p>
@@ -196,40 +199,45 @@ const Footer: React.FC = () => {
                 <div className="space-y-6">
                     <div>
                         <h3
-                            className={`text-2xl font-bold mb-3 ${isKhmer ? "khmer-font" : ""
-                                }`}
+                            className={`text-2xl font-bold mb-3 ${
+                                isKhmer ? "khmer-font" : ""
+                            }`}
                         >
                             {isKhmer ? "ទំនាក់ទំនង" : "CONTACT"}
                         </h3>
 
                         <div className="space-y-3 text-gray-700">
-                            {phones.map((phone) => (
-                                <ContactItem key={phone} icon={<Phone size={18} />} text={phone} />
-                            ))}
+                            {firstPhone ? (
+                                <ContactItem
+                                    icon={<Phone size={18} />}
+                                    text={firstPhone}
+                                />
+                            ) : (
+                                <ContactItem
+                                    icon={<Phone size={18} />}
+                                    text="+855 99 799 579"
+                                />
+                            )}
 
-                            {emails.map((email) => (
-                                <ContactItem key={email} icon={<Mail size={18} />} text={email} />
-                            ))}
-
-                            {!phones.length && !emails.length && (
-                                <>
-                                    <ContactItem
-                                        icon={<Phone size={18} />}
-                                        text="+855 99 799 579"
-                                    />
-                                    <ContactItem
-                                        icon={<Mail size={18} />}
-                                        text="helpdesk@cdc.gov.kh"
-                                    />
-                                </>
+                            {firstEmail ? (
+                                <ContactItem
+                                    icon={<Mail size={18} />}
+                                    text={firstEmail}
+                                />
+                            ) : (
+                                <ContactItem
+                                    icon={<Mail size={18} />}
+                                    text="helpdesk@cdc.gov.kh"
+                                />
                             )}
                         </div>
                     </div>
 
                     <div>
                         <h3
-                            className={`text-2xl font-bold mb-3 ${isKhmer ? "khmer-font" : ""
-                                }`}
+                            className={`text-2xl font-bold mb-3 ${
+                                isKhmer ? "khmer-font" : ""
+                            }`}
                         >
                             {isKhmer ? "តាមដានពួកយើង" : "FOLLOW US"}
                         </h3>
@@ -241,7 +249,10 @@ const Footer: React.FC = () => {
                                         key={`${social.url}-${social.title}`}
                                         href={social.url}
                                         label={social.title || "Social Media"}
-                                        icon={renderSocialIcon(social.icon, social.title)}
+                                        icon={renderSocialIcon(
+                                            social.icon,
+                                            social.title
+                                        )}
                                     />
                                 ))
                             ) : (
@@ -290,8 +301,9 @@ const LinkSection = ({
                 <li key={link.nameEn}>
                     <a
                         href={link.href}
-                        className={`text-lg underline text-gray-700 hover:text-[#0808e1] transition ${isKhmer ? "khmer-font" : ""
-                            }`}
+                        className={`text-lg underline text-gray-700 hover:text-[#0808e1] transition ${
+                            isKhmer ? "khmer-font" : ""
+                        }`}
                     >
                         {isKhmer ? link.nameKh : link.nameEn}
                     </a>

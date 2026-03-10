@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// ✅ src/components/About/History.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -160,7 +159,7 @@ export default function History() {
             try {
                 setError(null);
 
-                const res = await fetch("/api-about/about", {
+                const res = await fetch("/api/about-us-page/section", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
                 });

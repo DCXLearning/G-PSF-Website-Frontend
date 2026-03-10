@@ -92,7 +92,7 @@ export default function Date() {
 
     const t = {
         en: {
-            upNext: "Up next",
+            upNext: "Previous",
             title: "Meeting Schedule",
             btn: "Show More",
         },

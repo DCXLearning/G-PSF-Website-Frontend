@@ -135,7 +135,7 @@ export default function Works() {
             try {
                 setError(null);
 
-                const res = await fetch("/api-about/about", {
+                const res = await fetch("/api/about-us-page/section", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
                 });

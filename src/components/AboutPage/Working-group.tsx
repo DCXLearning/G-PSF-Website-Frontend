@@ -19,11 +19,11 @@ export default function WorkingGroup() {
     const { language } = useLanguage();
     const lang = (language as Lang) ?? "en";
 
-    // ✅ stable className (NO multiline template string -> no hydration mismatch)
+    //  stable className (NO multiline template string -> no hydration mismatch)
     const sectionClass =
         "relative w-full overflow-hidden h-[55vh] min-h-[360px] sm:h-[60vh] sm:min-h-[420px] lg:h-[70vh] lg:min-h-[520px]";
 
-    // ✅ build slides based on language
+    //  build slides based on language
     const slides = useMemo<Slide[]>(() => {
         const content = {
             en: {
@@ -63,7 +63,7 @@ export default function WorkingGroup() {
 
     const [current, setCurrent] = useState(0);
 
-    // ✅ keep current index valid when language changes (slides re-memoized)
+    //  keep current index valid when language changes (slides re-memoized)
     useEffect(() => {
         // ======Not=====
         // setCurrent(0); 

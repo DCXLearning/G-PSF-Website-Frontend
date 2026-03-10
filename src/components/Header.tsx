@@ -42,7 +42,7 @@ const Header: FC = () => {
 
     const searchPlaceholder = language === "en" ? "Search..." : "ស្វែងរក...";
 
-    // ✅ Sticky scroll detect (smooth)
+    //  Sticky scroll detect (smooth)
     useEffect(() => {
         let ticking = false;
 
@@ -169,7 +169,7 @@ const Header: FC = () => {
 
                                     <button
                                         onClick={toggleLanguage}
-                                        className="flex items-center font-medium gap-1 px-2 py-1 cursor-pointer border rounded-md text-sm hover:bg-gray-50"
+                                        className="flex items-center khmer-font font-medium gap-1 px-2 py-1 cursor-pointer border rounded-md text-sm hover:bg-gray-50"
                                         type="button"
                                         aria-label="Language"
                                     >
@@ -179,7 +179,7 @@ const Header: FC = () => {
                                 </>
                             )}
 
-                            {/* ✅ Mobile menu button */}
+                            {/*  Mobile menu button */}
                             <button
                                 onClick={() => {
                                     setIsMenuOpen((m) => !m);
@@ -207,14 +207,14 @@ const Header: FC = () => {
                             <input
                                 type="text"
                                 placeholder={searchPlaceholder}
-                                className="ml-2 outline-none bg-transparent w-full"
+                                className="ml-2 outline-none khmer-font bg-transparent w-full"
                             />
                         </div>
                     </div>
                 )}
 
-                {/* ✅ Mobile menu */}
-                {/* ✅ Mobile menu (Backdrop + Drawer) */}
+                {/*  Mobile menu */}
+                {/*  Mobile menu (Backdrop + Drawer) */}
                 {isMenuOpen && (
                     <div className="lg:hidden fixed inset-0 z-[60]">
                         {/* Backdrop */}
