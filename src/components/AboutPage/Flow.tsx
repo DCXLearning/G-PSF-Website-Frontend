@@ -95,7 +95,7 @@ export default function Flow() {
 
         async function load() {
             try {
-                const res = await fetch("/api-about/about", {
+                const res = await fetch("/api/about-us-page/section", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
                 });
