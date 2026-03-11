@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// ✅ app/api/newupdate-page/section/route.ts
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";

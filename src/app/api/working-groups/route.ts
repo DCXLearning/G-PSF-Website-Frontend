@@ -55,7 +55,7 @@ export async function GET() {
 
     const json = (await res.json()) as WorkingGroupsUpstreamResponse;
 
-    // ✅ total from API (example: 2 -> show "2 Work Groups...")
+    //total from API (example: 2 -> show "2 Work Groups...")
     const total = Number(json?.data?.total ?? 0);
 
     const rawItems: WorkingGroupRaw[] = Array.isArray(json?.data?.items)

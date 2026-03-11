@@ -1,4 +1,3 @@
-// ✅ app/context/LanguageContext.tsx
 "use client";
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
@@ -9,7 +8,7 @@ interface LanguageContextType {
   language: Lang;
   toggleLanguage: () => void;
 
-  // ✅ helpers
+  //  helpers
   apiLang: "en" | "km";
   fontClass: string; // "font-sans" | "font-khmer"
 }
