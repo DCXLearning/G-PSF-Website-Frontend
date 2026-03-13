@@ -7,7 +7,6 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-
 type Lang = "en" | "kh";
 
 const Header: FC = () => {
@@ -16,6 +15,7 @@ const Header: FC = () => {
     const [isSticky, setIsSticky] = useState(false);
 
     const { language, toggleLanguage } = useLanguage();
+    const pathname = usePathname();
 
     type NavItem = { label: string; href: string };
 
@@ -42,7 +42,6 @@ const Header: FC = () => {
 
     const searchPlaceholder = language === "en" ? "Search..." : "ស្វែងរក...";
 
-    //  Sticky scroll detect (smooth)
     useEffect(() => {
         let ticking = false;
 
@@ -59,25 +58,25 @@ const Header: FC = () => {
 
         window.addEventListener("scroll", onScroll, { passive: true });
         onScroll();
+
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
-    const pathname = usePathname();
+
     return (
         <>
-            {/* ===== TOP BAR ===== */}
             <header className="bg-white shadow-md">
-                <div
-
-                >
+                <div>
                     <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-2 xl:px-2 py-2 flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center">
-                        <Image
-                            src="/image/logo2.png"
-                            alt="G-PSF Logo"
-                            width={150}
-                            height={60}
-                            className="object-contain"
-                            priority
-                        />
+                        <Link href="/">
+                            <Image
+                                src="/image/logo2.png"
+                                alt="G-PSF Logo"
+                                width={150}
+                                height={60}
+                                className="object-contain"
+                                priority
+                            />
+                        </Link>
 
                         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
                             <button
@@ -94,7 +93,8 @@ const Header: FC = () => {
                                 <input
                                     type="text"
                                     placeholder={searchPlaceholder}
-                                    className="flex-1 px-3 py-1 text-sm md:text-lg bg-gray-200 outline-none"
+                                    className={`flex-1 px-3 py-1 text-sm md:text-lg bg-gray-200 outline-none ${language === "kh" ? "khmer-font" : ""
+                                        }`}
                                 />
                                 <button className="px-3 bg-white" type="button">
                                     <Search className="w-5 h-5 text-gray-500 cursor-pointer" />
@@ -113,11 +113,9 @@ const Header: FC = () => {
                 </div>
             </header>
 
-            {/* ===== NAVBAR (Sticky) ===== */}
             <section className="bg-white shadow-md sticky top-0 z-50">
                 <nav className="max-w-7xl mx-auto px-4 md:px-2 py-4">
                     <div className="flex justify-between items-center">
-                        {/* Desktop links */}
                         <div className="hidden lg:flex flex-1 justify-center gap-x-12">
                             {navItems[language].map((item) => {
                                 const isActive = pathname === item.href;
@@ -126,36 +124,31 @@ const Header: FC = () => {
                                     <Link
                                         key={item.href}
                                         href={item.href}
-                                        className={`relative pb-1 font-medium text-xl transition-colors
-                                            ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"}
-                                            ${language === "kh" ? "khmer-font" : ""}
-                                        `}
+                                        className={`relative pb-1 font-medium text-xl transition-colors ${isActive
+                                                ? "text-black"
+                                                : "text-gray-700 hover:text-blue-600"
+                                            } ${language === "kh" ? "khmer-font" : ""}`}
                                     >
                                         {item.label}
-
-                                        {/* underline */}
                                         <span
-                                            className={`absolute left-0 -bottom-1 h-[3px] bg-orange-500 transition-all duration-300
-                                                ${isActive ? "w-full" : "w-0"}
-                                            `}
+                                            className={`absolute left-0 -bottom-1 h-[3px] bg-orange-500 transition-all duration-300 ${isActive ? "w-full" : "w-0"
+                                                }`}
                                         />
                                     </Link>
                                 );
                             })}
-
                         </div>
 
-                        {/* Mobile menu title */}
                         <div
-                            className={`lg:hidden ml-3 font-medium text-gray-500 uppercase tracking-wide ${language === "kh" ? "khmer-font text-xs" : "text-[10px] sm:text-xs"
+                            className={`lg:hidden ml-3 font-medium text-gray-500 uppercase tracking-wide ${language === "kh"
+                                    ? "khmer-font text-xs"
+                                    : "text-[10px] sm:text-xs"
                                 }`}
                         >
                             {language === "en" ? "Menu" : "ម៉ឺនុយ"}
                         </div>
 
-                        {/* Right controls */}
                         <div className="flex items-center gap-2 mr-3">
-                            {/* show these when scroll down */}
                             {isSticky && (
                                 <>
                                     <button
@@ -169,7 +162,8 @@ const Header: FC = () => {
 
                                     <button
                                         onClick={toggleLanguage}
-                                        className="flex items-center khmer-font font-medium gap-1 px-2 py-1 cursor-pointer border rounded-md text-sm hover:bg-gray-50"
+                                        className={`flex items-center font-medium gap-1 px-2 py-1 cursor-pointer border rounded-md text-sm hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
+                                            }`}
                                         type="button"
                                         aria-label="Language"
                                     >
@@ -179,7 +173,6 @@ const Header: FC = () => {
                                 </>
                             )}
 
-                            {/*  Mobile menu button */}
                             <button
                                 onClick={() => {
                                     setIsMenuOpen((m) => !m);
@@ -199,7 +192,6 @@ const Header: FC = () => {
                     </div>
                 </nav>
 
-                {/* Search bar dropdown */}
                 {isSearchOpen && (
                     <div className="border-t border-gray-200 px-4 py-3 bg-gray-100">
                         <div className="max-w-7xl mx-auto flex items-center rounded-lg px-4 py-2 bg-white">
@@ -207,17 +199,15 @@ const Header: FC = () => {
                             <input
                                 type="text"
                                 placeholder={searchPlaceholder}
-                                className="ml-2 outline-none khmer-font bg-transparent w-full"
+                                className={`ml-2 outline-none bg-transparent w-full ${language === "kh" ? "khmer-font" : ""
+                                    }`}
                             />
                         </div>
                     </div>
                 )}
 
-                {/*  Mobile menu */}
-                {/*  Mobile menu (Backdrop + Drawer) */}
                 {isMenuOpen && (
                     <div className="lg:hidden fixed inset-0 z-[60]">
-                        {/* Backdrop */}
                         <button
                             type="button"
                             aria-label="Close menu"
@@ -225,9 +215,7 @@ const Header: FC = () => {
                             className="absolute inset-0 bg-black/40"
                         />
 
-                        {/* Drawer */}
                         <div className="absolute right-0 top-0 h-full w-[86%] max-w-[340px] bg-white shadow-2xl">
-                            {/* Drawer header */}
                             <div className="flex items-center justify-between px-4 py-4 border-b">
                                 <div
                                     className={`font-semibold text-gray-800 ${language === "kh" ? "khmer-font" : ""
@@ -246,7 +234,6 @@ const Header: FC = () => {
                                 </button>
                             </div>
 
-                            {/* Links */}
                             <div className="p-3">
                                 <div className="flex flex-col gap-1">
                                     {navItems[language].map((item) => (
@@ -263,7 +250,6 @@ const Header: FC = () => {
                                     ))}
                                 </div>
 
-                                {/* Extra actions */}
                                 <div className="mt-4 border-t pt-4">
                                     <button
                                         onClick={toggleLanguage}
@@ -279,9 +265,7 @@ const Header: FC = () => {
                         </div>
                     </div>
                 )}
-
             </section>
-
         </>
     );
 };

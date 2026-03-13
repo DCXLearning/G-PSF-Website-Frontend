@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-
 import { Geist, Geist_Mono, Kantumruy_Pro } from "next/font/google";
 import { LanguageProvider } from "./context/LanguageContext";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-// import Api from "@/components/Testapi/Api";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +37,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${kantumruyPro.variable} antialiased`}
       >
         <LanguageProvider>
-          {/* <Api /> */}
           <Header />
           <main>{children}</main>
           <Footer />

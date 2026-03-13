@@ -76,8 +76,8 @@ const Slider: React.FC = () => {
     const { language } = useLanguage();
     const isKhmer = language === "kh";
 
-    const subHeading = isKhmer ? "ព័ត៌មានអំពីកំណែទម្រង់" : "More G-PSF News";
-    const mainHeading = isKhmer ? "កំណែទម្រង់ចុងក្រោយ" : "Related content";
+    const subHeading = isKhmer ? "ព័ត៌មាន G-PSF បន្ថែម" : "More G-PSF News";
+    const mainHeading = isKhmer ? "ព័ត៌មានដែលពាក់ព័ន្ធ" : "Related content";
 
     return (
         <>
