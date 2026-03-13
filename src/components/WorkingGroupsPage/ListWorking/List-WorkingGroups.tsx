@@ -11,33 +11,32 @@ type I18nText = {
   km?: string;
 };
 
-type HeroContent = {
-  ctas?: Array<{
-    href?: string;
-    label?: I18nText;
-  }>;
-  title?: I18nText;
-  subtitle?: I18nText;
-  description?: I18nText;
-  backgroundImages?: string[];
+type WgTemplateContent = {
+  heroBanner?: {
+    ctas?: Array<{
+      href?: string;
+      label?: I18nText;
+    }>;
+    title?: I18nText;
+    subtitle?: I18nText;
+    description?: I18nText;
+    backgroundImages?: string[];
+  };
 };
 
-type HeroBlock = {
-  type?: string;
-  enabled?: boolean;
-  title?: I18nText;
-  posts?: Array<{
-    status?: string;
-    content?: {
-      en?: HeroContent;
-      km?: HeroContent;
-    };
-  }>;
-};
-
-type HeroResponse = {
+type WgTemplateResponse = {
   data?: {
-    blocks?: HeroBlock[];
+    blocks?: Array<{
+      type?: string;
+      enabled?: boolean;
+      posts?: Array<{
+        status?: string;
+        content?: {
+          en?: WgTemplateContent;
+          km?: WgTemplateContent;
+        };
+      }>;
+    }>;
   };
 };
 
@@ -73,37 +72,49 @@ function getText(value?: string | null): string {
 }
 
 function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
-  if (!value) return "";
+  if (!value) {
+    return "";
+  }
+
   const primary = apiLang === "km" ? getText(value.km) : getText(value.en);
   return primary || getText(value.en) || getText(value.km);
 }
 
-function mapHeroData(response: HeroResponse, apiLang: ApiLang): HeroData | null {
+function pickTemplateContent(
+  response: WgTemplateResponse,
+  apiLang: ApiLang
+): WgTemplateContent | null {
   const blocks = response.data?.blocks ?? [];
-  const heroBlock =
-    blocks.find((block) => block.enabled !== false && block.type === "hero_banner") ??
-    blocks.find((block) => block.enabled !== false);
+  const block =
+    blocks.find((item) => item.enabled !== false && item.type === "wg_template") ??
+    blocks.find((item) => item.enabled !== false);
 
   const post =
-    heroBlock?.posts?.find((item) => item.status === "published") ??
-    heroBlock?.posts?.[0];
+    block?.posts?.find((item) => item.status === "published") ??
+    block?.posts?.[0];
 
-  const content =
-    post?.content?.[apiLang] ??
-    post?.content?.en ??
-    post?.content?.km;
-
-  if (!content) {
+  if (!post) {
     return null;
   }
 
-  const cta = content.ctas?.[0];
-  const title = pickI18nText(content.title, apiLang);
-  const subtitle = pickI18nText(content.subtitle, apiLang);
-  const description = pickI18nText(content.description, apiLang);
+  return post.content?.[apiLang] ?? post.content?.en ?? post.content?.km ?? null;
+}
+
+function mapHeroData(response: WgTemplateResponse, apiLang: ApiLang): HeroData | null {
+  const content = pickTemplateContent(response, apiLang);
+  const heroBanner = content?.heroBanner;
+
+  if (!heroBanner) {
+    return null;
+  }
+
+  const cta = heroBanner.ctas?.[0];
+  const title = pickI18nText(heroBanner.title, apiLang);
+  const subtitle = pickI18nText(heroBanner.subtitle, apiLang);
+  const description = pickI18nText(heroBanner.description, apiLang);
   const ctaLabel = pickI18nText(cta?.label, apiLang);
   const ctaHref = getText(cta?.href);
-  const imageUrl = getText(content.backgroundImages?.[0]) || DEFAULT_IMAGE_URL;
+  const imageUrl = getText(heroBanner.backgroundImages?.[0]) || DEFAULT_IMAGE_URL;
 
   const hasContent = Boolean(title || subtitle || description || ctaLabel || ctaHref);
   if (!hasContent) {
@@ -151,7 +162,7 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
           return;
         }
 
-        const json = (await response.json()) as HeroResponse;
+        const json = (await response.json()) as WgTemplateResponse;
         setHeroData(mapHeroData(json, apiLang));
       } catch (error) {
         if ((error as { name?: string })?.name !== "AbortError") {

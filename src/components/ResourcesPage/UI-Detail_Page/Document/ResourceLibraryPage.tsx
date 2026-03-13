@@ -1,8 +1,10 @@
 "use client"
-import React, { use, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLanguage } from '@/app/context/LanguageContext';
 
 // --- Types ---
 type ResourceType = 'Publication' | 'Report' | 'Video' | 'Press' | 'Blog' | 'Social' | 'Template' | 'Online';
+type ApiLang = 'en' | 'km'
 
 interface Resource {
     id: number;
@@ -14,6 +16,21 @@ interface Resource {
     description: string;
     languages: string[];
     image: string;
+}
+
+type I18nText = {
+    en?: string
+    km?: string
+}
+
+type CategoryItem = {
+    id?: number
+    name?: I18nText
+}
+
+type CategoryResponse = {
+    data?: CategoryItem[]
+    items?: CategoryItem[]
 }
 
 // --- Mock Data (Based on your images) ---
@@ -118,6 +135,62 @@ const DATA: Resource[] = [
     }
 ];
 
+const DEFAULT_CATEGORY_ITEMS = [
+    'Report',
+    'Publication',
+    'Press',
+    'Blog',
+    'Video',
+    'Online',
+    'Social',
+    'Template',
+    'Audio',
+]
+
+function getText(value?: string | null): string {
+    const text = value?.trim() ?? ''
+    return text === '.' ? '' : text
+}
+
+function pickText(value: I18nText | undefined, apiLang: ApiLang): string {
+    if (!value) {
+        return ''
+    }
+
+    if (apiLang === 'km') {
+        return getText(value.km) || getText(value.en)
+    }
+
+    return getText(value.en) || getText(value.km)
+}
+
+function mapCategoryItems(response: CategoryResponse, apiLang: ApiLang): string[] {
+    const categoryList = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.items)
+            ? response.items
+            : []
+
+    const names: string[] = []
+
+    for (let index = 0; index < categoryList.length; index += 1) {
+        const category = categoryList[index]
+        const name = pickText(category.name, apiLang)
+
+        if (!name) {
+            continue
+        }
+
+        if (names.includes(name)) {
+            continue
+        }
+
+        names.push(name)
+    }
+
+    return names
+}
+
 // --- Sub-Components ---
 
 const FilterSection = ({ title, items }: { title: string; items: string[] }) => (
@@ -198,7 +271,52 @@ const ResourceItem = ({ item }: { item: Resource }) => {
 // --- Main Page ---
 
 export default function ResourceLibraryPage() {
-    const [activeTab, setActiveTab] = useState<'added' | 'published'>('added');
+    const { language } = useLanguage()
+    const apiLang: ApiLang = language === 'kh' ? 'km' : 'en'
+    const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORY_ITEMS)
+    const [isLoadingCategories, setIsLoadingCategories] = useState(false)
+
+    useEffect(() => {
+        const controller = new AbortController()
+
+        async function loadCategories() {
+            try {
+                setIsLoadingCategories(true)
+
+                const response = await fetch('/api/categories', {
+                    cache: 'no-store',
+                    signal: controller.signal,
+                })
+
+                if (!response.ok) {
+                    setCategories(DEFAULT_CATEGORY_ITEMS)
+                    return
+                }
+
+                const data = (await response.json()) as CategoryResponse
+                const categoryItems = mapCategoryItems(data, apiLang)
+
+                if (categoryItems.length === 0) {
+                    setCategories(DEFAULT_CATEGORY_ITEMS)
+                    return
+                }
+
+                setCategories(categoryItems)
+            } catch (error) {
+                if ((error as { name?: string })?.name !== 'AbortError') {
+                    setCategories(DEFAULT_CATEGORY_ITEMS)
+                }
+            } finally {
+                setIsLoadingCategories(false)
+            }
+        }
+
+        loadCategories()
+
+        return () => {
+            controller.abort()
+        }
+    }, [apiLang])
 
     return (
         <div className="bg-[#f2f4f7] min-h-screen">
@@ -222,9 +340,15 @@ export default function ResourceLibraryPage() {
                                 Search Filters
                             </h2>
 
+                            {isLoadingCategories ? (
+                                <p className="mb-6 text-sm text-slate-500">
+                                    Loading categories...
+                                </p>
+                            ) : null}
+
                             <FilterSection
                                 title="Category"
-                                items={['Report', 'Publication', 'Press', 'Blog', 'Video', 'Online', 'Social', 'Template', 'Audio']}
+                                items={categories}
                             />
 
                             <FilterSection

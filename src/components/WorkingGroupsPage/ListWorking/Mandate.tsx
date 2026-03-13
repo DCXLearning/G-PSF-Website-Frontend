@@ -12,29 +12,41 @@ type I18nText = {
   km?: string;
 };
 
-type MandateItem = {
+type WgTemplateIssueItem = {
+  status?: string;
   title?: I18nText;
-  description?: I18nText;
+  link?: string;
+  lastUpdate?: string;
 };
 
-type MandatePost = {
-  status?: string;
-  content?: {
-    en?: { items?: MandateItem[] };
-    km?: { items?: MandateItem[] };
+type WgTemplateContent = {
+  textBlock?: {
+    items?: Array<{
+      title?: I18nText;
+      description?: I18nText;
+    }>;
+  };
+  issuesResponses?: {
+    items?: WgTemplateIssueItem[];
+  };
+  progressSnapshot?: {
+    progress?: string;
   };
 };
 
-type MandateBlock = {
-  type?: string;
-  enabled?: boolean;
-  title?: I18nText;
-  posts?: MandatePost[];
-};
-
-type MandateSectionResponse = {
+type WgTemplateResponse = {
   data?: {
-    blocks?: MandateBlock[];
+    blocks?: Array<{
+      type?: string;
+      enabled?: boolean;
+      posts?: Array<{
+        status?: string;
+        content?: {
+          en?: WgTemplateContent;
+          km?: WgTemplateContent;
+        };
+      }>;
+    }>;
   };
 };
 
@@ -43,6 +55,12 @@ type MandateContent = {
   whatDescription: string;
   pathwayTitle: string;
   pathwayDescription: string;
+  progress: number;
+  issueCounts: {
+    resolved: number;
+    inProgress: number;
+    pending: number;
+  };
 };
 
 type MandateScopePageProps = {
@@ -57,50 +75,81 @@ function getText(value?: string | null): string {
 }
 
 function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
-  if (!value) return "";
+  if (!value) {
+    return "";
+  }
 
   const primary = apiLang === "km" ? getText(value.km) : getText(value.en);
   return primary || getText(value.en) || getText(value.km);
 }
 
-function isMandateBlock(block: MandateBlock): boolean {
-  if (block.type !== "text_block") {
-    return false;
-  }
-
-  const title = `${getText(block.title?.en)} ${getText(block.title?.km)}`.toLowerCase();
-
-  return (
-    title.includes("mandate") ||
-    title.includes("scope") ||
-    title.includes("ភារកិច្ច") ||
-    title.includes("វិសាលភាព")
-  );
-}
-
-function mapMandateContent(
-  response: MandateSectionResponse,
+function pickTemplateContent(
+  response: WgTemplateResponse,
   apiLang: ApiLang
-): MandateContent | null {
+): WgTemplateContent | null {
   const blocks = response.data?.blocks ?? [];
-
-  const mandateBlock =
-    blocks.find((block) => block.enabled !== false && isMandateBlock(block)) ??
-    blocks.find((block) => block.enabled !== false && block.type === "text_block");
+  const block =
+    blocks.find((item) => item.enabled !== false && item.type === "wg_template") ??
+    blocks.find((item) => item.enabled !== false);
 
   const post =
-    mandateBlock?.posts?.find((item) => item.status === "published") ??
-    mandateBlock?.posts?.[0];
+    block?.posts?.find((item) => item.status === "published") ??
+    block?.posts?.[0];
 
   if (!post) {
     return null;
   }
 
-  const items =
-    post.content?.[apiLang]?.items ??
-    post.content?.en?.items ??
-    post.content?.km?.items ??
-    [];
+  return post.content?.[apiLang] ?? post.content?.en ?? post.content?.km ?? null;
+}
+
+function parseProgress(value?: string): number {
+  const progress = Number(getText(value));
+
+  if (!Number.isFinite(progress)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, progress));
+}
+
+function countIssueStatuses(items: WgTemplateIssueItem[] | undefined) {
+  const counts = {
+    resolved: 0,
+    inProgress: 0,
+    pending: 0,
+  };
+
+  for (let index = 0; index < (items ?? []).length; index += 1) {
+    const status = getText(items?.[index]?.status).toLowerCase();
+
+    if (status === "resolved") {
+      counts.resolved += 1;
+      continue;
+    }
+
+    if (status === "in_progress" || status === "in progress" || status === "in-progress") {
+      counts.inProgress += 1;
+      continue;
+    }
+
+    counts.pending += 1;
+  }
+
+  return counts;
+}
+
+function mapMandateContent(
+  response: WgTemplateResponse,
+  apiLang: ApiLang
+): MandateContent | null {
+  const content = pickTemplateContent(response, apiLang);
+
+  if (!content) {
+    return null;
+  }
+
+  const items = content.textBlock?.items ?? [];
 
   const what = items[0];
   const pathway = items[1];
@@ -110,13 +159,19 @@ function mapMandateContent(
     whatDescription: pickI18nText(what?.description, apiLang),
     pathwayTitle: pickI18nText(pathway?.title, apiLang),
     pathwayDescription: pickI18nText(pathway?.description, apiLang),
+    progress: parseProgress(content.progressSnapshot?.progress),
+    issueCounts: countIssueStatuses(content.issuesResponses?.items),
   };
 
   const hasAnyText =
     Boolean(mapped.whatTitle) ||
     Boolean(mapped.whatDescription) ||
     Boolean(mapped.pathwayTitle) ||
-    Boolean(mapped.pathwayDescription);
+    Boolean(mapped.pathwayDescription) ||
+    mapped.progress > 0 ||
+    mapped.issueCounts.resolved > 0 ||
+    mapped.issueCounts.inProgress > 0 ||
+    mapped.issueCounts.pending > 0;
 
   return hasAnyText ? mapped : null;
 }
@@ -169,7 +224,17 @@ function Donut({
   );
 }
 
-function MiniBarChart({ lang }: { lang: Lang }) {
+function MiniBarChart({
+  lang,
+  counts,
+}: {
+  lang: Lang;
+  counts: {
+    resolved: number;
+    inProgress: number;
+    pending: number;
+  };
+}) {
   const labels =
     lang === "kh"
       ? {
@@ -186,9 +251,9 @@ function MiniBarChart({ lang }: { lang: Lang }) {
         };
 
   const data = [
-    { label: labels.resolved, value: 62, color: "#0F3D5E" },
-    { label: labels.inProgress, value: 12, color: "#3A73A5" },
-    { label: labels.pending, value: 5, color: "#F2A53A" },
+    { label: labels.resolved, value: counts.resolved, color: "#0F3D5E" },
+    { label: labels.inProgress, value: counts.inProgress, color: "#3A73A5" },
+    { label: labels.pending, value: counts.pending, color: "#F2A53A" },
   ];
 
   const highestValue = Math.max(...data.map((item) => item.value), 1);
@@ -301,7 +366,7 @@ export default function MandateScopePage({
           return;
         }
 
-        const json = (await response.json()) as MandateSectionResponse;
+        const json = (await response.json()) as WgTemplateResponse;
         const mapped = mapMandateContent(json, apiLang);
         setMandateContent(mapped);
       } catch (error) {
@@ -355,6 +420,12 @@ export default function MandateScopePage({
   const whatDescription = mandateContent?.whatDescription || t.whatDesc;
   const pathwayTitle = mandateContent?.pathwayTitle || t.pathway;
   const pathwayDescription = mandateContent?.pathwayDescription || t.pathwayDesc;
+  const progressValue = mandateContent?.progress ?? 0;
+  const issueCounts = mandateContent?.issueCounts ?? {
+    resolved: 0,
+    inProgress: 0,
+    pending: 0,
+  };
 
   const pathwaySteps = useMemo(
     () => splitPathway(pathwayDescription),
@@ -435,9 +506,9 @@ export default function MandateScopePage({
               <h2 className={`text-2xl font-bold text-slate-900 ${isKh ? "khmer-font" : ""}`}>{t.progress}</h2>
 
               <div className="mt-8 flex items-center gap-8">
-                <Donut value={90} />
+                <Donut value={progressValue} />
                 <div className="flex flex-col">
-                  <span className="text-4xl font-black text-[#0F3D5E]">90%</span>
+                  <span className="text-4xl font-black text-[#0F3D5E]">{progressValue}%</span>
                   <span
                     className={`text-slate-500 font-semibold uppercase tracking-wider text-sm ${
                       isKh ? "khmer-font normal-case" : ""
@@ -452,7 +523,7 @@ export default function MandateScopePage({
             <div className="px-2">
               <h2 className={`mb-6 text-2xl font-bold text-slate-900 ${isKh ? "khmer-font" : ""}`}>{t.issues}</h2>
               <div className="rounded-[30px] border border-slate-100 bg-white p-6 shadow-sm">
-                <MiniBarChart lang={lang} />
+                <MiniBarChart lang={lang} counts={issueCounts} />
               </div>
             </div>
           </aside>

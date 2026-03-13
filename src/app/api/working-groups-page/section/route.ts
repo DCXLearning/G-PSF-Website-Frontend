@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs"; // safer for remote fetch + images
 export const revalidate = 0;     // always fresh (no cache)
 
-const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1hg";
+const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
 
 export async function GET(request: Request) {
   try {

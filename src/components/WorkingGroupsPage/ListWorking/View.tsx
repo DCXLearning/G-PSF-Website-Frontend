@@ -13,29 +13,30 @@ type I18nText = {
   km?: string;
 };
 
-type IssueItem = {
-  link?: string;
-  title?: I18nText;
-  status?: string;
-  lastUpdate?: string;
+type WgTemplateContent = {
+  issuesResponses?: {
+    items?: Array<{
+      link?: string;
+      title?: I18nText;
+      status?: string;
+      lastUpdate?: string;
+    }>;
+  };
 };
 
-type IssuesBlock = {
-  type?: string;
-  enabled?: boolean;
-  title?: I18nText;
-  posts?: Array<{
-    status?: string;
-    content?: {
-      en?: { items?: IssueItem[] };
-      km?: { items?: IssueItem[] };
-    };
-  }>;
-};
-
-type IssuesResponse = {
+type WgTemplateResponse = {
   data?: {
-    blocks?: IssuesBlock[];
+    blocks?: Array<{
+      type?: string;
+      enabled?: boolean;
+      posts?: Array<{
+        status?: string;
+        content?: {
+          en?: WgTemplateContent;
+          km?: WgTemplateContent;
+        };
+      }>;
+    }>;
   };
 };
 
@@ -59,9 +60,32 @@ function getText(value?: string | null): string {
 }
 
 function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
-  if (!value) return "";
+  if (!value) {
+    return "";
+  }
+
   const primary = apiLang === "km" ? getText(value.km) : getText(value.en);
   return primary || getText(value.en) || getText(value.km);
+}
+
+function pickTemplateContent(
+  response: WgTemplateResponse,
+  apiLang: ApiLang
+): WgTemplateContent | null {
+  const blocks = response.data?.blocks ?? [];
+  const block =
+    blocks.find((item) => item.enabled !== false && item.type === "wg_template") ??
+    blocks.find((item) => item.enabled !== false);
+
+  const post =
+    block?.posts?.find((item) => item.status === "published") ??
+    block?.posts?.[0];
+
+  if (!post) {
+    return null;
+  }
+
+  return post.content?.[apiLang] ?? post.content?.en ?? post.content?.km ?? null;
 }
 
 function mapStatus(statusValue?: string): Status {
@@ -82,30 +106,9 @@ function mapStatus(statusValue?: string): Status {
   return "Pending";
 }
 
-function isIssuesBlock(block: IssuesBlock): boolean {
-  if (block.type === "issues_responses") {
-    return true;
-  }
-
-  const title = `${getText(block.title?.en)} ${getText(block.title?.km)}`.toLowerCase();
-  return title.includes("issues") || title.includes("responses");
-}
-
-function mapIssueRows(response: IssuesResponse, apiLang: ApiLang): IssueRow[] {
-  const blocks = response.data?.blocks ?? [];
-  const block =
-    blocks.find((item) => item.enabled !== false && isIssuesBlock(item)) ??
-    blocks.find((item) => item.enabled !== false && item.type === "issues_responses");
-
-  const post =
-    block?.posts?.find((item) => item.status === "published") ??
-    block?.posts?.[0];
-
-  const items =
-    post?.content?.[apiLang]?.items ??
-    post?.content?.en?.items ??
-    post?.content?.km?.items ??
-    [];
+function mapIssueRows(response: WgTemplateResponse, apiLang: ApiLang): IssueRow[] {
+  const content = pickTemplateContent(response, apiLang);
+  const items = content?.issuesResponses?.items ?? [];
 
   const rows: IssueRow[] = [];
 
@@ -221,7 +224,7 @@ export default function RecentIssuesPage({
           return;
         }
 
-        const json = (await response.json()) as IssuesResponse;
+        const json = (await response.json()) as WgTemplateResponse;
         setRows(mapIssueRows(json, apiLang));
       } catch (error) {
         if ((error as { name?: string })?.name !== "AbortError") {
