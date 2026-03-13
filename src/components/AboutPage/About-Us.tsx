@@ -302,7 +302,7 @@ const AboutUs: React.FC = () => {
                                             </h3>
 
                                             <p
-                                                className={`mt-2 text-base sm:text-lg text-gray-600 leading-relaxed max-w-sm ${uiLang === "kh" ? "khmer-font" : ""
+                                                className={`mt-2 text-base sm:text-lg text-gray-600 line-clamp-3 leading-relaxed max-w-sm ${uiLang === "kh" ? "khmer-font" : ""
                                                     }`}
                                             >
                                                 {obj.description}
