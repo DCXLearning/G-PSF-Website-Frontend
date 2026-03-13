@@ -53,25 +53,42 @@ type SiteSettingsResponse = {
     data?: SiteSettingsData;
 };
 
+type FooterMenuItem = {
+    id: number;
+    label: {
+        en: string;
+        km: string;
+    };
+    url: string;
+    orderIndex?: number;
+};
+
+type FooterMenuResponse = {
+    success: boolean;
+    message?: string;
+    data?: {
+        menu?: {
+            id: number;
+            name: string;
+            slug: string;
+        } | null;
+        items?: FooterMenuItem[];
+    };
+};
+
+interface LinkItem {
+    nameEn: string;
+    nameKh: string;
+    href: string;
+}
+
 interface LinkGroup {
     titleEn: string;
     titleKh: string;
-    links: { nameEn: string; nameKh: string; href: string }[];
+    links: LinkItem[];
 }
 
 /* ================= STATIC DATA ================= */
-const keyUpdates: LinkGroup = {
-    titleEn: "KEY UPDATES",
-    titleKh: "ព័ត៌មានចុងក្រោយ",
-    links: [
-        { nameEn: "Announcements", nameKh: "សេចក្តីប្រកាស", href: "#" },
-        { nameEn: "Work Group Members", nameKh: "សមាជិកក្រុមការងារ", href: "#" },
-        { nameEn: "Meeting Schedule", nameKh: "កាលវិភាគប្រជុំ", href: "#" },
-        { nameEn: "Member Engagement", nameKh: "ការចូលរួមរបស់សមាជិក", href: "#" },
-        { nameEn: "Press Kit", nameKh: "ឯកសារផ្សព្វផ្សាយ", href: "#" },
-    ],
-};
-
 const quickLinks: LinkGroup = {
     titleEn: "QUICK LINKS",
     titleKh: "តំណភ្ជាប់លឿន",
@@ -84,6 +101,12 @@ const quickLinks: LinkGroup = {
         { nameEn: "Tourism Toolkit", nameKh: "ឧបករណ៍ទេសចរណ៍", href: "#" },
         { nameEn: "MIS Portal", nameKh: "ផតថល MIS", href: "#" },
     ],
+};
+
+const emptyKeyUpdates: LinkGroup = {
+    titleEn: "KEY UPDATES",
+    titleKh: "ព័ត៌មានចុងក្រោយ",
+    links: [],
 };
 
 /* ================= HELPERS ================= */
@@ -120,6 +143,9 @@ const Footer: React.FC = () => {
     const [siteData, setSiteData] = useState<SiteSettingsData | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const [keyUpdateLinks, setKeyUpdateLinks] = useState<LinkItem[]>([]);
+    const [menuLoading, setMenuLoading] = useState(true);
+
     useEffect(() => {
         const fetchSiteSettings = async () => {
             try {
@@ -142,6 +168,34 @@ const Footer: React.FC = () => {
         fetchSiteSettings();
     }, []);
 
+    useEffect(() => {
+        const fetchFooterMenu = async () => {
+            try {
+                const res = await fetch("/api/footer", {
+                    cache: "no-store",
+                });
+
+                const json: FooterMenuResponse = await res.json();
+
+                if (res.ok && json?.success) {
+                    const items = (json.data?.items || []).map((item) => ({
+                        nameEn: item.label?.en || "Untitled",
+                        nameKh: item.label?.km || item.label?.en || "Untitled",
+                        href: item.url || "#",
+                    }));
+
+                    setKeyUpdateLinks(items);
+                }
+            } catch (error) {
+                console.error("Failed to fetch footer menu:", error);
+            } finally {
+                setMenuLoading(false);
+            }
+        };
+
+        fetchFooterMenu();
+    }, []);
+
     const description = useMemo(
         () => pickText(siteData?.description, language),
         [siteData, language]
@@ -157,6 +211,14 @@ const Footer: React.FC = () => {
         contactInfo?.desks?.flatMap((desk) => desk.emails || [])?.[0] || "";
 
     const socialLinks = siteData?.socialLinks || [];
+
+    const keyUpdates = useMemo(
+        () => ({
+            ...emptyKeyUpdates,
+            links: keyUpdateLinks,
+        }),
+        [keyUpdateLinks]
+    );
 
     return (
         <footer className="bg-white mt-0 shadow-[0_-6px_12px_rgba(0,0,0,0.08)]">
@@ -190,7 +252,11 @@ const Footer: React.FC = () => {
                 </div>
 
                 {/* ========== KEY UPDATES ========== */}
-                <LinkSection group={keyUpdates} isKhmer={isKhmer} />
+                <LinkSection
+                    group={keyUpdates}
+                    isKhmer={isKhmer}
+                    loading={menuLoading}
+                />
 
                 {/* ========== QUICK LINKS ========== */}
                 <LinkSection group={quickLinks} isKhmer={isKhmer} />
@@ -287,29 +353,42 @@ const ContactItem = ({
 const LinkSection = ({
     group,
     isKhmer,
+    loading = false,
 }: {
     group: LinkGroup;
     isKhmer: boolean;
+    loading?: boolean;
 }) => (
     <div>
         <h3 className={`text-2xl font-bold mb-4 ${isKhmer ? "khmer-font" : ""}`}>
             {isKhmer ? group.titleKh : group.titleEn}
         </h3>
 
-        <ul className="space-y-3">
-            {group.links.map((link) => (
-                <li key={link.nameEn}>
-                    <a
-                        href={link.href}
-                        className={`text-lg underline text-gray-700 hover:text-[#0808e1] transition ${
-                            isKhmer ? "khmer-font" : ""
-                        }`}
-                    >
-                        {isKhmer ? link.nameKh : link.nameEn}
-                    </a>
-                </li>
-            ))}
-        </ul>
+        {loading ? (
+            <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="h-5 w-40 bg-gray-200 animate-pulse rounded"
+                    />
+                ))}
+            </div>
+        ) : (
+            <ul className="space-y-3">
+                {group.links.map((link) => (
+                    <li key={`${link.nameEn}-${link.href}`}>
+                        <a
+                            href={link.href}
+                            className={`text-lg underline text-gray-700 hover:text-[#0808e1] transition ${
+                                isKhmer ? "khmer-font" : ""
+                            }`}
+                        >
+                            {isKhmer ? link.nameKh : link.nameEn}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        )}
     </div>
 );
 
