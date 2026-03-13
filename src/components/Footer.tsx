@@ -88,24 +88,16 @@ interface LinkGroup {
     links: LinkItem[];
 }
 
-/* ================= STATIC DATA ================= */
-const quickLinks: LinkGroup = {
-    titleEn: "QUICK LINKS",
-    titleKh: "តំណភ្ជាប់លឿន",
-    links: [
-        { nameEn: "Member Engagement", nameKh: "ការចូលរួមរបស់សមាជិក", href: "#" },
-        { nameEn: "Policy Updates", nameKh: "ព័ត៌មាននយោបាយ", href: "#" },
-        { nameEn: "Market Data", nameKh: "ទិន្នន័យទីផ្សារ", href: "#" },
-        { nameEn: "G-PSF Training", nameKh: "ការបណ្តុះបណ្តាល G-PSF", href: "#" },
-        { nameEn: "Labor Law & Visa", nameKh: "ច្បាប់ការងារ និងវីសា", href: "#" },
-        { nameEn: "Tourism Toolkit", nameKh: "ឧបករណ៍ទេសចរណ៍", href: "#" },
-        { nameEn: "MIS Portal", nameKh: "ផតថល MIS", href: "#" },
-    ],
-};
-
+/* ================= DEFAULT DATA ================= */
 const emptyKeyUpdates: LinkGroup = {
     titleEn: "KEY UPDATES",
     titleKh: "ព័ត៌មានចុងក្រោយ",
+    links: [],
+};
+
+const emptyQuickLinks: LinkGroup = {
+    titleEn: "QUICK LINKS",
+    titleKh: "តំណភ្ជាប់លឿន",
     links: [],
 };
 
@@ -144,7 +136,10 @@ const Footer: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     const [keyUpdateLinks, setKeyUpdateLinks] = useState<LinkItem[]>([]);
+    const [quickLinks, setQuickLinks] = useState<LinkItem[]>([]);
+
     const [menuLoading, setMenuLoading] = useState(true);
+    const [quickLoading, setQuickLoading] = useState(true);
 
     useEffect(() => {
         const fetchSiteSettings = async () => {
@@ -196,6 +191,34 @@ const Footer: React.FC = () => {
         fetchFooterMenu();
     }, []);
 
+    useEffect(() => {
+        const fetchQuickLinks = async () => {
+            try {
+                const res = await fetch("/api/quick-link", {
+                    cache: "no-store",
+                });
+
+                const json: FooterMenuResponse = await res.json();
+
+                if (res.ok && json?.success) {
+                    const items = (json.data?.items || []).map((item) => ({
+                        nameEn: item.label?.en || "Untitled",
+                        nameKh: item.label?.km || item.label?.en || "Untitled",
+                        href: item.url || "#",
+                    }));
+
+                    setQuickLinks(items);
+                }
+            } catch (error) {
+                console.error("Failed to fetch quick links menu:", error);
+            } finally {
+                setQuickLoading(false);
+            }
+        };
+
+        fetchQuickLinks();
+    }, []);
+
     const description = useMemo(
         () => pickText(siteData?.description, language),
         [siteData, language]
@@ -218,6 +241,14 @@ const Footer: React.FC = () => {
             links: keyUpdateLinks,
         }),
         [keyUpdateLinks]
+    );
+
+    const quickLinksGroup = useMemo(
+        () => ({
+            ...emptyQuickLinks,
+            links: quickLinks,
+        }),
+        [quickLinks]
     );
 
     return (
@@ -259,7 +290,11 @@ const Footer: React.FC = () => {
                 />
 
                 {/* ========== QUICK LINKS ========== */}
-                <LinkSection group={quickLinks} isKhmer={isKhmer} />
+                <LinkSection
+                    group={quickLinksGroup}
+                    isKhmer={isKhmer}
+                    loading={quickLoading}
+                />
 
                 {/* ========== CONTACT + SOCIAL ========== */}
                 <div className="space-y-6">
