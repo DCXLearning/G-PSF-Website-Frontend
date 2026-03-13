@@ -243,16 +243,11 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
       ? "WG: 0 Lay, Tex & Governance"
       : "WG: 0 ច្បាប់ បទប្បញ្ញត្តិ និងប្រព័ន្ធអភិបាលកិច្ច");
 
-  const fallbackSubtitle =
-    lang === "en"
-      ? "Cross-cutting reform affecting business regulation, taxation, and governance"
-      : "ការកែទម្រង់ឆ្លងកាត់វិស័យ ដែលមានផលប៉ះពាល់ដល់ការគ្រប់គ្រងអាជីវកម្ម ពន្ធដារ និងអភិបាលកិច្ច";
-
   const fallbackButtonLabel =
     lang === "en" ? "Download WG Brief" : "ទាញយកសង្ខេប WG";
 
   const mainTitle = heroData?.title || fallbackTitle;
-  const subtitle = heroData?.subtitle || heroData?.description || fallbackSubtitle;
+  const subtitle = heroData?.subtitle || heroData?.description || "";
   const buttonLabel = heroData?.ctaLabel || fallbackButtonLabel;
   const buttonHref = heroData?.ctaHref || "";
   const imageUrl = heroData?.imageUrl || DEFAULT_IMAGE_URL;
@@ -283,13 +278,15 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
           {mainTitle}
         </p>
 
-        <p
-          className={`text-base sm:text-lg md:text-2xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${
-            language === "kh" ? "khmer-font" : ""
-          }`}
-        >
-          {subtitle}
-        </p>
+        {subtitle ? (
+          <p
+            className={`text-base sm:text-lg md:text-2xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${
+              language === "kh" ? "khmer-font" : ""
+            }`}
+          >
+            {subtitle}
+          </p>
+        ) : null}
 
         {buttonHref ? (
           <a
