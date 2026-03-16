@@ -1,10 +1,19 @@
-"use client"
-import React, { useEffect, useState } from 'react';
-import { useLanguage } from '@/app/context/LanguageContext';
+"use client";
 
-// --- Types ---
-type ResourceType = 'Publication' | 'Report' | 'Video' | 'Press' | 'Blog' | 'Social' | 'Template' | 'Online';
-type ApiLang = 'en' | 'km'
+import React, { useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
+
+type ResourceType =
+    | "Publication"
+    | "Report"
+    | "Video"
+    | "Press"
+    | "Blog"
+    | "Social"
+    | "Template"
+    | "Online";
+
+type ApiLang = "en" | "km";
 
 interface Resource {
     id: number;
@@ -19,23 +28,26 @@ interface Resource {
 }
 
 type I18nText = {
-    en?: string
-    km?: string
-}
+    en?: string;
+    km?: string;
+};
 
 type CategoryItem = {
-    id?: number
-    name?: I18nText
-}
+    id?: number;
+    name?: I18nText;
+};
 
 type CategoryResponse = {
-    data?: CategoryItem[]
-    items?: CategoryItem[]
-}
+    data?: CategoryItem[];
+    items?: CategoryItem[];
+};
 
-// --- Mock Data (Based on your images) ---
+type ResourceLibraryPageProps = {
+    query?: string;
+};
+
 const DATA: Resource[] = [
-    {
+        {
         id: 1,
         type: 'Publication',
         title: 'Title of Publication',
@@ -136,62 +148,50 @@ const DATA: Resource[] = [
 ];
 
 const DEFAULT_CATEGORY_ITEMS = [
-    'Report',
-    'Publication',
-    'Press',
-    'Blog',
-    'Video',
-    'Online',
-    'Social',
-    'Template',
-    'Audio',
-]
+    "Report",
+    "Publication",
+    "Press",
+    "Blog",
+    "Video",
+    "Online",
+    "Social",
+    "Template",
+    "Audio",
+];
 
 function getText(value?: string | null): string {
-    const text = value?.trim() ?? ''
-    return text === '.' ? '' : text
+    const text = value?.trim() ?? "";
+    return text === "." ? "" : text;
 }
 
 function pickText(value: I18nText | undefined, apiLang: ApiLang): string {
-    if (!value) {
-        return ''
+    if (!value) return "";
+
+    if (apiLang === "km") {
+        return getText(value.km) || getText(value.en);
     }
 
-    if (apiLang === 'km') {
-        return getText(value.km) || getText(value.en)
-    }
-
-    return getText(value.en) || getText(value.km)
+    return getText(value.en) || getText(value.km);
 }
 
 function mapCategoryItems(response: CategoryResponse, apiLang: ApiLang): string[] {
     const categoryList = Array.isArray(response.data)
         ? response.data
         : Array.isArray(response.items)
-            ? response.items
-            : []
+          ? response.items
+          : [];
 
-    const names: string[] = []
+    const names: string[] = [];
 
-    for (let index = 0; index < categoryList.length; index += 1) {
-        const category = categoryList[index]
-        const name = pickText(category.name, apiLang)
+    for (const category of categoryList) {
+        const name = pickText(category.name, apiLang);
 
-        if (!name) {
-            continue
-        }
-
-        if (names.includes(name)) {
-            continue
-        }
-
-        names.push(name)
+        if (!name || names.includes(name)) continue;
+        names.push(name);
     }
 
-    return names
+    return names;
 }
-
-// --- Sub-Components ---
 
 const FilterSection = ({ title, items }: { title: string; items: string[] }) => (
     <div className="mb-10">
@@ -201,7 +201,10 @@ const FilterSection = ({ title, items }: { title: string; items: string[] }) => 
         <div className="space-y-3">
             {items.map((item) => (
                 <label key={item} className="flex items-start gap-3 cursor-pointer group">
-                    <input type="checkbox" className="mt-1 w-5 h-5 border-gray-300 rounded text-blue-800 focus:ring-blue-500" />
+                    <input
+                        type="checkbox"
+                        className="mt-1 w-5 h-5 border-gray-300 rounded text-blue-800 focus:ring-blue-500"
+                    />
                     <span className="text-[15px] text-slate-700 leading-snug group-hover:text-blue-700 transition-colors">
                         {item}
                     </span>
@@ -213,39 +216,41 @@ const FilterSection = ({ title, items }: { title: string; items: string[] }) => 
 
 const ResourceItem = ({ item }: { item: Resource }) => {
     const badgeStyles: Record<ResourceType, string> = {
-        Publication: 'bg-[#3f51b5]',
-        Report: 'bg-[#3949ab]',
-        Video: 'bg-[#5c6bc0]',
-        Press: 'bg-[#1e88e5]',
-        Blog: 'bg-[#3f51b5]',
-        Social: 'bg-[#283593]',
-        Template: 'bg-[#303f9f]',
-        Online: 'bg-[#1a237e]',
+        Publication: "bg-[#3f51b5]",
+        Report: "bg-[#3949ab]",
+        Video: "bg-[#5c6bc0]",
+        Press: "bg-[#1e88e5]",
+        Blog: "bg-[#3f51b5]",
+        Social: "bg-[#283593]",
+        Template: "bg-[#303f9f]",
+        Online: "bg-[#1a237e]",
     };
 
     return (
         <div className="flex flex-col md:flex-row gap-8 py-10 border-b border-gray-200 last:border-0">
-            {/* Cover Image */}
             <div className="w-full md:w-44 flex-shrink-0">
                 <div className="aspect-[3/4] bg-white shadow-xl overflow-hidden border border-gray-100 ring-1 ring-black/5">
                     <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                 </div>
             </div>
 
-            {/* Content */}
             <div className="flex-1">
-                <span className={`inline-block px-3 py-0.5 text-[10px] font-bold text-white uppercase rounded ${badgeStyles[item.type]}`}>
+                <span
+                    className={`inline-block px-3 py-0.5 text-[10px] font-bold text-white uppercase rounded ${badgeStyles[item.type]}`}
+                >
                     {item.type}
                 </span>
+
                 <h2 className="text-2xl font-semibold text-slate-900 mt-2 leading-tight tracking-tight">
                     {item.title}
                 </h2>
+
                 <p className="text-sm font-bold text-slate-800 mt-1">{item.date}</p>
 
                 {(item.org || item.author) && (
                     <div className="mt-2 text-sm text-slate-600 font-medium">
-                        <p>{item.org}</p>
-                        <p>{item.author}</p>
+                        {item.org ? <p>{item.org}</p> : null}
+                        {item.author ? <p>{item.author}</p> : null}
                     </div>
                 )}
 
@@ -257,10 +262,12 @@ const ResourceItem = ({ item }: { item: Resource }) => {
                     More
                 </button>
 
-                <div className="mt-6 flex gap-4 text-xs font-bold items-baseline">
+                <div className="mt-6 flex gap-4 text-xs font-bold items-baseline flex-wrap">
                     <span className="text-slate-400">Language:</span>
-                    {item.languages.map(lang => (
-                        <span key={lang} className="text-slate-900">{lang}</span>
+                    {item.languages.map((lang) => (
+                        <span key={lang} className="text-slate-900">
+                            {lang}
+                        </span>
                     ))}
                 </div>
             </div>
@@ -268,109 +275,147 @@ const ResourceItem = ({ item }: { item: Resource }) => {
     );
 };
 
-// --- Main Page ---
+export default function ResourceLibraryPage({
+    query = "",
+}: ResourceLibraryPageProps) {
+    const { language } = useLanguage();
+    const apiLang: ApiLang = language === "kh" ? "km" : "en";
+    const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORY_ITEMS);
+    const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
-export default function ResourceLibraryPage() {
-    const { language } = useLanguage()
-    const apiLang: ApiLang = language === 'kh' ? 'km' : 'en'
-    const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORY_ITEMS)
-    const [isLoadingCategories, setIsLoadingCategories] = useState(false)
+    const normalizedQuery = query.trim().toLowerCase();
+    const isSearching = normalizedQuery.length > 0;
 
     useEffect(() => {
-        const controller = new AbortController()
+        const controller = new AbortController();
 
         async function loadCategories() {
             try {
-                setIsLoadingCategories(true)
+                setIsLoadingCategories(true);
 
-                const response = await fetch('/api/categories', {
-                    cache: 'no-store',
+                const response = await fetch("/api/categories", {
+                    cache: "no-store",
                     signal: controller.signal,
-                })
+                });
 
                 if (!response.ok) {
-                    setCategories(DEFAULT_CATEGORY_ITEMS)
-                    return
+                    setCategories(DEFAULT_CATEGORY_ITEMS);
+                    return;
                 }
 
-                const data = (await response.json()) as CategoryResponse
-                const categoryItems = mapCategoryItems(data, apiLang)
+                const data = (await response.json()) as CategoryResponse;
+                const categoryItems = mapCategoryItems(data, apiLang);
 
                 if (categoryItems.length === 0) {
-                    setCategories(DEFAULT_CATEGORY_ITEMS)
-                    return
+                    setCategories(DEFAULT_CATEGORY_ITEMS);
+                    return;
                 }
 
-                setCategories(categoryItems)
+                setCategories(categoryItems);
             } catch (error) {
-                if ((error as { name?: string })?.name !== 'AbortError') {
-                    setCategories(DEFAULT_CATEGORY_ITEMS)
+                if ((error as { name?: string })?.name !== "AbortError") {
+                    setCategories(DEFAULT_CATEGORY_ITEMS);
                 }
             } finally {
-                setIsLoadingCategories(false)
+                setIsLoadingCategories(false);
             }
         }
 
-        loadCategories()
+        loadCategories();
 
         return () => {
-            controller.abort()
-        }
-    }, [apiLang])
+            controller.abort();
+        };
+    }, [apiLang]);
+
+    const filteredData = useMemo(() => {
+        if (!normalizedQuery) return DATA;
+
+        return DATA.filter((item) => {
+            const text = [
+                item.title,
+                item.description,
+                item.org ?? "",
+                item.author ?? "",
+                item.type,
+                item.date,
+                item.languages.join(" "),
+            ]
+                .join(" ")
+                .toLowerCase();
+
+            return text.includes(normalizedQuery);
+        });
+    }, [normalizedQuery]);
 
     return (
-        <div className="bg-[#f2f4f7] min-h-screen">
+        <div className="bg-[#f2f4f7]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
-
-                    {/* Main Content Column */}
-                    <main className="flex-1 order-2 lg:order-1">
-                        {/* List */}
+                <div className={`flex flex-col ${isSearching ? "" : "lg:flex-row"} gap-12 lg:gap-20`}>
+                    <main className="flex-1">
                         <div className="divide-gray-200">
-                            {DATA.map((resource) => (
-                                <ResourceItem key={resource.id} item={resource} />
-                            ))}
+                            {filteredData.length > 0 ? (
+                                filteredData.map((resource) => (
+                                    <ResourceItem key={resource.id} item={resource} />
+                                ))
+                            ) : (
+                                <div className="py-10 text-slate-500 text-lg">
+                                    No documents found
+                                </div>
+                            )}
                         </div>
                     </main>
 
-                    {/* Sidebar Filters Column */}
-                    <aside className="w-full lg:w-72 order-1 lg:order-2">
-                        <div className='bg-white px-4 pt-4 pb-20'>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-10 tracking-wide uppercase">
-                                Search Filters
-                            </h2>
+                    {!isSearching ? (
+                        <aside className="w-full lg:w-72">
+                            <div className="bg-white px-4 pt-4 pb-20">
+                                <h2 className="text-2xl font-bold text-slate-800 mb-10 tracking-wide uppercase">
+                                    Search Filters
+                                </h2>
 
-                            {isLoadingCategories ? (
-                                <p className="mb-6 text-sm text-slate-500">
-                                    Loading categories...
-                                </p>
-                            ) : null}
+                                {isLoadingCategories ? (
+                                    <p className="mb-6 text-sm text-slate-500">
+                                        Loading categories...
+                                    </p>
+                                ) : null}
 
-                            <FilterSection
-                                title="Category"
-                                items={categories}
-                            />
+                                <FilterSection title="Category" items={categories} />
 
-                            <FilterSection
-                                title="Dates"
-                                items={['2021-2026', '2015-2020', '2009-2014', '2003-2008', 'before 2003']}
-                            />
+                                <FilterSection
+                                    title="Dates"
+                                    items={[
+                                        "2021-2026",
+                                        "2015-2020",
+                                        "2009-2014",
+                                        "2003-2008",
+                                        "before 2003",
+                                    ]}
+                                />
 
-                            <FilterSection
-                                title="Working Groups"
-                                items={[
-                                    'Agriculture & Agro-Industry', 'Tourism', 'Manufacturing & SMEs',
-                                    'Law, Tax & Governance', 'Banking & Financial Services',
-                                    'Transportation & Infrastructure', 'Export Processing & Trade Facilitation',
-                                    'Industrial Relations', 'Paddy-Rice', 'Energy & Mineral Resources',
-                                    'Education', 'Health', 'Construction & Real Estate',
-                                    'Non-Banking Financial Services', 'Digital Economy, Society & Telecommunications',
-                                    'Land Administration, Security & Public Order'
-                                ]}
-                            />
-                        </div>
-                    </aside>
-
+                                <FilterSection
+                                    title="Working Groups"
+                                    items={[
+                                        "Agriculture & Agro-Industry",
+                                        "Tourism",
+                                        "Manufacturing & SMEs",
+                                        "Law, Tax & Governance",
+                                        "Banking & Financial Services",
+                                        "Transportation & Infrastructure",
+                                        "Export Processing & Trade Facilitation",
+                                        "Industrial Relations",
+                                        "Paddy-Rice",
+                                        "Energy & Mineral Resources",
+                                        "Education",
+                                        "Health",
+                                        "Construction & Real Estate",
+                                        "Non-Banking Financial Services",
+                                        "Digital Economy, Society & Telecommunications",
+                                        "Land Administration, Security & Public Order",
+                                    ]}
+                                />
+                            </div>
+                        </aside>
+                    ) : null}
                 </div>
             </div>
         </div>
