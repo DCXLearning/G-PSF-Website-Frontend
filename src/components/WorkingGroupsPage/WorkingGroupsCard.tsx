@@ -10,14 +10,31 @@ type ApiLang = "en" | "km";
 
 type ApiWG = {
     id: number;
-    title: { en: string; km: string };
+    title: { en?: string; km?: string };
     iconUrl: string;
     slug: string;
 };
 
-type ApiResponse = {
+type GridApiResponse = {
     total: number;
     items: ApiWG[];
+};
+
+type MultiLang = string | { en?: string; km?: string };
+
+type SectionBlock = {
+    id: number;
+    type: string;
+    title?: MultiLang;
+    description?: MultiLang | null;
+};
+
+type SectionApiResponse = {
+    success: boolean;
+    message?: string;
+    data?: {
+        blocks?: SectionBlock[];
+    };
 };
 
 type WorkGroupUI = {
@@ -29,22 +46,28 @@ type WorkGroupUI = {
 
 const CACHE_KEY = "working_groups_grid_cache";
 
-function readCache(): ApiResponse | null {
+function readCache(): GridApiResponse | null {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
-        return JSON.parse(raw) as ApiResponse;
+        return JSON.parse(raw) as GridApiResponse;
     } catch {
         return null;
     }
 }
 
-function writeCache(data: ApiResponse) {
+function writeCache(data: GridApiResponse) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(data));
     } catch {
-        // ignore cache errors
+        //
     }
+}
+
+function getText(value: MultiLang | null | undefined, lang: ApiLang): string {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    return value[lang] || value.en || "";
 }
 
 function WorkGroupCardSkeleton() {
@@ -67,10 +90,18 @@ export default function WorkGroupsGrid() {
     const apiLang: ApiLang = isKh ? "km" : "en";
 
     const [mounted, setMounted] = useState(false);
-    const [loading, setLoading] = useState(true);
+
+    const [loadingGrid, setLoadingGrid] = useState(true);
+    const [loadingFlex, setLoadingFlex] = useState(true);
+
     const [error, setError] = useState<string>("");
     const [total, setTotal] = useState<number>(0);
     const [items, setItems] = useState<ApiWG[]>([]);
+
+    const [flexLabel, setFlexLabel] = useState("Flexible WGs");
+    const [flexTitle, setFlexTitle] = useState(
+        "New Working Groups may be established, merged, or dissolved in response to changing economic conditions and sector needs."
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -79,12 +110,12 @@ export default function WorkGroupsGrid() {
         if (cached) {
             setTotal(Number(cached?.total ?? 0));
             setItems(Array.isArray(cached?.items) ? cached.items : []);
-            setLoading(false);
+            setLoadingGrid(false);
         }
 
         let alive = true;
 
-        async function load() {
+        async function loadGrid() {
             try {
                 setError("");
 
@@ -93,12 +124,12 @@ export default function WorkGroupsGrid() {
                     headers: { Accept: "application/json" },
                 });
 
-                const json = (await res.json()) as ApiResponse;
+                const json = (await res.json()) as GridApiResponse;
                 if (!res.ok) throw new Error((json as any)?.error || "Fetch error");
 
                 if (!alive) return;
 
-                const nextData: ApiResponse = {
+                const nextData: GridApiResponse = {
                     total: Number(json?.total ?? 0),
                     items: Array.isArray(json?.items) ? json.items : [],
                 };
@@ -109,19 +140,54 @@ export default function WorkGroupsGrid() {
             } catch (e: any) {
                 if (!alive) return;
                 setError(e?.message || "Failed to load");
-                // keep cached items, do not clear state
             } finally {
                 if (!alive) return;
-                setLoading(false);
+                setLoadingGrid(false);
             }
         }
 
-        load();
+        async function loadFlexibleBlock() {
+            try {
+                const res = await fetch(
+                    "/api/working-groups-page/section?slug=working-groups",
+                    {
+                        cache: "no-store",
+                        headers: { Accept: "application/json" },
+                    }
+                );
+
+                const json = (await res.json()) as SectionApiResponse;
+
+                if (!res.ok || !json?.success) {
+                    throw new Error(json?.message || "Failed to fetch flexible block");
+                }
+
+                const block44 = json?.data?.blocks?.find(
+                    (item) => item.id === 44 && item.type === "text_block"
+                );
+
+                if (!alive || !block44) return;
+
+                const nextLabel = getText(block44.title, apiLang).trim();
+                const nextTitle = getText(block44.description, apiLang).trim();
+
+                if (nextLabel) setFlexLabel(nextLabel);
+                if (nextTitle) setFlexTitle(nextTitle);
+            } catch (e) {
+                console.error("Failed to load block 44:", e);
+            } finally {
+                if (!alive) return;
+                setLoadingFlex(false);
+            }
+        }
+
+        loadGrid();
+        loadFlexibleBlock();
 
         return () => {
             alive = false;
         };
-    }, []);
+    }, [apiLang]);
 
     const workGroups: WorkGroupUI[] = useMemo(() => {
         return items.map((g) => ({
@@ -138,19 +204,13 @@ export default function WorkGroupsGrid() {
 
     const headerSub = isKh ? "ធ្វើការសម្រាប់អ្នក" : "Working For You";
 
-    const flexLabel = isKh ? "ក្រុមការងារបត់បែន (WGs)" : "Flexible WGs";
-    const flexTitle = isKh
-        ? "អាចបង្កើតក្រុមការងារថ្មី បញ្ចូលជាក្រុមតែមួយ ឬរំលាយក្រុមការងារ ដោយផ្អែកលើការផ្លាស់ប្តូរស្ថានភាពសេដ្ឋកិច្ច និងតម្រូវការរបស់វិស័យនានា។"
-        : "New Working Groups may be established, merged, or dissolved in response to changing economic conditions and sector needs.";
-
-    const showSkeleton = !mounted || (loading && items.length === 0);
+    const showSkeleton = !mounted || (loadingGrid && items.length === 0);
     const showErrorOnly = !showSkeleton && items.length === 0 && !!error;
 
     return (
         <div className="bg-white">
             <div className="bg-gradient-to-br from-[#2B3175] to-[#3B55A4] py-10 px-4 sm:px-6 lg:px-8 font-sans">
                 <div className="max-w-7xl px-4 mx-auto">
-                    {/* Header */}
                     <header className="text-center mb-10 md:mb-16">
                         <h1
                             className={`text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight ${isKh ? "khmer-font" : ""
@@ -168,7 +228,6 @@ export default function WorkGroupsGrid() {
                         ) : null}
                     </header>
 
-                    {/* Grid */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                         {showSkeleton ? (
                             Array.from({ length: 8 }).map((_, i) => (
@@ -176,8 +235,8 @@ export default function WorkGroupsGrid() {
                             ))
                         ) : workGroups.length > 0 ? (
                             workGroups.map((group, index) => {
-                                // no window usage here
-                                const isGray = (Math.floor(index / 4) + (index % 4)) % 2 !== 0;
+                                const isGray =
+                                    (Math.floor(index / 4) + (index % 4)) % 2 !== 0;
 
                                 return (
                                     <Link
@@ -214,20 +273,19 @@ export default function WorkGroupsGrid() {
                 </div>
             </div>
 
-            {/* Responsive title section */}
             <div className="max-w-7xl mx-auto px-4 md:px-4 py-8">
                 <p
                     className={`text-lg md:text-2xl font-semibold text-gray-900 mb-3 ${isKh ? "khmer-font normal-case" : ""
                         }`}
                 >
-                    {flexLabel}
+                    {loadingFlex ? "..." : flexLabel}
                 </p>
 
                 <h2
                     className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-[1.2] max-w-[850px] ${isKh ? "khmer-font" : ""
                         }`}
                 >
-                    {flexTitle}
+                    {loadingFlex ? "..." : flexTitle}
                 </h2>
 
                 <div className="mt-8 h-1.5 w-24" />

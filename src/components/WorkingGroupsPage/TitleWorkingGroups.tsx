@@ -1,58 +1,135 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-type Lang = "en" | "kh";
+type Lang = "en" | "km";
+type MultiLang = string | { en?: string; km?: string };
 
-const WorkingGroups16: React.FC = () => {
+type WorkingGroupsSectionResponse = {
+  success: boolean;
+  message?: string;
+  data?: {
+    blocks?: Array<{
+      id: number;
+      type: string;
+      title?: MultiLang;
+      description?: MultiLang | null;
+    }>;
+  };
+};
+
+function getText(value: MultiLang | null | undefined, lang: Lang): string {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return value[lang] || value.en || "";
+}
+
+export default function WorkingGroups16() {
   const { language } = useLanguage();
-  const lang = (language as Lang) ?? "en";
-  const isKh = lang === "kh";
 
-  const t = {
-    en: {
+  const lang: Lang = useMemo(() => {
+    return language === "kh" ? "km" : "en";
+  }, [language]);
+
+  const isKh = lang === "km";
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadData() {
+      try {
+        setLoading(true);
+
+        const res = await fetch(
+          "/api/working-groups-page/section?slug=working-groups",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const json: WorkingGroupsSectionResponse = await res.json();
+
+        if (!res.ok || !json.success) {
+          throw new Error(json.message || "Failed to fetch data");
+        }
+
+        const block = json.data?.blocks?.find(
+          (item) => item.id === 43 && item.type === "text_block"
+        );
+
+        if (!mounted) return;
+
+        setTitle(getText(block?.title, lang));
+        setDescription(getText(block?.description, lang));
+      } catch (error) {
+        console.error("Failed to load block 43:", error);
+
+        if (!mounted) return;
+
+        setTitle(isKh ? "ក្រុមការងារ (WGs)?" : "Working Groups?");
+        setDescription(
+          isKh
+            ? "ក្រុមការងារ (WGs) គឺជាម៉ាស៊ីនដំណើរការស្នូលរបស់ G-PSF។"
+            : "The Working Groups (WGs) are the core operational engine of the G-PSF."
+        );
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    loadData();
+
+    return () => {
+      mounted = false;
+    };
+  }, [lang, isKh]);
+
+  const titleParts = useMemo(() => {
+    const rawTitle = title.trim();
+
+    if (!rawTitle) {
+      return {
+        small: isKh ? "តើអ្វីទៅជា" : "What are",
+        main: isKh ? "ក្រុមការងារ (WGs)?" : "Working Groups?",
+      };
+    }
+
+    if (isKh) {
+      return {
+        small: "តើអ្វីទៅជា",
+        main: rawTitle,
+      };
+    }
+
+    if (/^what are/i.test(rawTitle)) {
+      return {
+        small: "What are",
+        main: rawTitle.replace(/^what are\s*/i, ""),
+      };
+    }
+
+    return {
       small: "What are",
-      title: "Working Groups?",
-      desc: (
-        <>
-          The Working Groups (WGs) are the core operational engine of the G-PSF.
-          <br />
-          <br />
-          They provide structured platforms where government and private sector
-          representatives meet regularly to identify constraints, propose
-          solutions, and deliver practical policy and regulatory reforms.
-        </>
-      ),
-    },
-    kh: {
-      small: "តើអ្វីទៅជា",
-      title: "ក្រុមការងារ (WGs)?",
-      desc: (
-        <>
-          ក្រុមការងារ (WGs) គឺជាម៉ាស៊ីនដំណើរការស្នូលរបស់ G-PSF។
-          <br />
-          <br />
-          ក្រុមការងារ ផ្តល់វេទិកាសន្ទនារចនាសម្ព័ន្ធ ដែលតំណាងរដ្ឋាភិបាល និងវិស័យឯកជន
-          ជួបពិភាក្សាជាប្រចាំ ដើម្បីកំណត់ឧបសគ្គ ស្នើដំណោះស្រាយ និងជំរុញកែទម្រង់
-          គោលនយោបាយ និងបទប្បញ្ញត្តិដែលអាចអនុវត្តបានជាក់ស្តែង។
-        </>
-      ),
-    },
-  }[lang];
+      main: rawTitle,
+    };
+  }, [title, isKh]);
 
   return (
     <section className="bg-white py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
-          {/* LEFT */}
           <div className="lg:sticky lg:top-10">
             <p
               className={`text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider ${
                 isKh ? "khmer-font normal-case" : ""
               }`}
             >
-              {t.small}
+              {loading ? (isKh ? "កំពុងទាញយក..." : "Loading...") : titleParts.small}
             </p>
 
             <h1
@@ -60,23 +137,21 @@ const WorkingGroups16: React.FC = () => {
                 isKh ? "khmer-font" : ""
               }`}
             >
-              {t.title}
+              {loading ? "..." : titleParts.main}
             </h1>
 
             <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-96 lg:w-[440px] translate-x-0 sm:translate-x-8 md:translate-x-25" />
 
             <p
-              className={`mt-8 max-w-md text-lg sm:text-xl leading-relaxed font-bold text-[#1e3a8a] translate-x-0 sm:translate-x-8 md:translate-x-25 ${
+              className={`mt-8 max-w-md text-lg sm:text-xl leading-relaxed font-bold text-[#1e3a8a] whitespace-pre-line translate-x-0 sm:translate-x-8 md:translate-x-25 ${
                 isKh ? "khmer-font" : ""
               }`}
             >
-              {t.desc}
+              {loading ? "..." : description}
             </p>
           </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default WorkingGroups16;
+}

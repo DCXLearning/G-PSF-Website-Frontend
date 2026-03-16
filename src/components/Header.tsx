@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Menu, X, Search, Globe } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type Lang = "en" | "kh";
 
@@ -13,9 +13,11 @@ const Header: FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isSticky, setIsSticky] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
 
     const { language, toggleLanguage } = useLanguage();
     const pathname = usePathname();
+    const router = useRouter();
 
     type NavItem = { label: string; href: string };
 
@@ -41,6 +43,13 @@ const Header: FC = () => {
     };
 
     const searchPlaceholder = language === "en" ? "Search..." : "ស្វែងរក...";
+
+    const handleSearch = () => {
+        const keyword = searchValue.trim();
+        router.push(`/search${keyword ? `?q=${encodeURIComponent(keyword)}` : ""}`);
+        setIsSearchOpen(false);
+        setIsMenuOpen(false);
+    };
 
     useEffect(() => {
         let ticking = false;
@@ -92,11 +101,20 @@ const Header: FC = () => {
                             <div className="hidden lg:flex rounded-2xl overflow-hidden md:w-72 shadow-sm">
                                 <input
                                     type="text"
+                                    value={searchValue}
+                                    onChange={(e) => setSearchValue(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") handleSearch();
+                                    }}
                                     placeholder={searchPlaceholder}
-                                    className={`flex-1 px-3 py-1 text-sm md:text-lg bg-gray-200 outline-none ${language === "kh" ? "khmer-font" : ""
+                                    className={`flex-1 px-3 py-2 text-sm md:text-base bg-gray-200 outline-none ${language === "kh" ? "khmer-font" : ""
                                         }`}
                                 />
-                                <button className="px-3 bg-white" type="button">
+                                <button
+                                    className="px-3 bg-white"
+                                    type="button"
+                                    onClick={handleSearch}
+                                >
                                     <Search className="w-5 h-5 text-gray-500 cursor-pointer" />
                                 </button>
                             </div>
@@ -198,10 +216,23 @@ const Header: FC = () => {
                             <Search className="w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
+                                value={searchValue}
+                                onChange={(e) => setSearchValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleSearch();
+                                }}
                                 placeholder={searchPlaceholder}
                                 className={`ml-2 outline-none bg-transparent w-full ${language === "kh" ? "khmer-font" : ""
                                     }`}
                             />
+                            <button
+                                type="button"
+                                onClick={handleSearch}
+                                className={`text-sm font-semibold text-orange-500 ${language === "kh" ? "khmer-font" : ""
+                                    }`}
+                            >
+                                {language === "en" ? "Go" : "ស្វែងរក"}
+                            </button>
                         </div>
                     </div>
                 )}
