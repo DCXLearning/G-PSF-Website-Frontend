@@ -199,7 +199,7 @@ export default function History() {
             block18?.posts?.[0]?.content?.[apiLang]?.items?.[0] ||
             block18?.posts?.[0]?.content?.en?.items?.[0];
 
-        const badge = isKh ? "អំពីពួកយើង" : "About Us";
+        const badge = isKh ? "អំពីពួកយើង" : "History";
 
         const hero = pickText(
             heroItem?.title,
@@ -253,15 +253,17 @@ export default function History() {
                 )}
 
                 <p
-                    className={`text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider ${isKh ? "khmer-font normal-case" : ""
+                    className={`text-xl font-bold text-gray-700 mb-2  tracking-wider ${isKh ? "khmer-font normal-case" : ""
                         }`}
                 >
                     {view.badge}
                 </p>
 
                 <h1
-                    className={`text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight whitespace-pre-line ${isKh ? "khmer-font" : ""
-                        }`}
+                    className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold 
+                    max-w-full md:max-w-[800px] 
+                    text-gray-900 leading-tight whitespace-pre-line
+                    ${isKh ? "khmer-font" : ""}`}
                 >
                     {view.hero}
                 </h1>
@@ -285,7 +287,7 @@ export default function History() {
                     {/* RIGHT */}
                     <div className="lg:pt-24 xl:pt-64">
                         <h2
-                            className={`text-4xl md:text-5xl font-extrabold text-gray-900 mb-10 whitespace-pre-line ${isKh ? "khmer-font" : ""
+                            className={`text-4xl md:text-5xl font-bold text-gray-900 mb-10 whitespace-pre-line ${isKh ? "khmer-font" : ""
                                 }`}
                         >
                             {view.rightTitle}

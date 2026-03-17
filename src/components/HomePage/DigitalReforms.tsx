@@ -195,14 +195,14 @@ const DigitalReforms: React.FC = () => {
             {/* Header */}
             <div className="text-center mb-90 mt-20">
                 <p
-                    className={`text-xl font-medium text-indigo-600 uppercase tracking-wider ${isKhmer ? "khmer-font" : ""
+                    className={`text-xl font-medium text-indigo-400 uppercase tracking-wider ${isKhmer ? "khmer-font" : ""
                         }`}
                 >
                     {subHeading}
                 </p>
 
                 <h1
-                    className={`text-6xl font-extrabold text-indigo-900 mt-2 ${isKhmer ? "khmer-font" : ""
+                    className={`text-6xl font-bold text-blue-950 mt-2 ${isKhmer ? "khmer-font" : ""
                         }`}
                 >
                     {mainHeading}

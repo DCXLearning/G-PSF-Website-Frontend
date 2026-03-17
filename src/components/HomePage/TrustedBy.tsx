@@ -73,7 +73,7 @@ const TrustedByCarousel: React.FC = () => {
   return (
     <section className="py-16 md:py-24 bg-white relative overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4 relative">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-center tracking-wider text-blue-900 mb-12 uppercase">
+        <h2 className="text-3xl md:text-4xl font-bold text-center tracking-wider text-blue-950 mb-12 uppercase">
           Trusted By
         </h2>
 

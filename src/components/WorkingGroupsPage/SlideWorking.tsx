@@ -125,6 +125,11 @@ const CoChairCard = ({ chair, lang }: { chair: CoChair; lang: Lang }) => {
                     >
                         {chair.name || (isKh ? "ឈ្មោះសហអធិបតី" : "H.E. NAME NAME")}
                     </h3>
+                    {chair.role ? (
+                <p className={`text-sm mt-2 opacity-90 ${isKh ? "khmer-font" : ""}`}>
+                    {chair.role}
+                </p>
+            ) : null}
                 </div>
             </div>
         );
@@ -288,6 +293,7 @@ export default function FullWidthSwiperLayout() {
     return (
         <section className="py-10 w-full overflow-hidden bg-white">
             <div className="px-8 mb-12">
+                <p className="font-bold text-xl">Meet the</p>
                 <h1
                     className={`text-4xl md:text-5xl font-extrabold text-gray-900 ${lang === "kh" ? "khmer-font" : ""}`}
                 >

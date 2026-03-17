@@ -243,14 +243,14 @@ const AboutUs: React.FC = () => {
                     {/* LEFT */}
                     <div className="lg:sticky lg:top-10">
                         <p
-                            className={`text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider ${uiLang === "kh" ? "khmer-font normal-case" : ""
+                            className={`text-xl font-bold text-gray-700 mb-2 uppercase tracking-wider ${uiLang === "kh" ? "khmer-font normal-case" : ""
                                 }`}
                         >
                             {view.badge}
                         </p>
 
                         <h1
-                            className={`text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight ${uiLang === "kh" ? "khmer-font" : ""
+                            className={`text-4xl md:text-5xl font-bold text-gray-900 leading-tight ${uiLang === "kh" ? "khmer-font" : ""
                                 }`}
                         >
                             {view.title}
@@ -269,7 +269,7 @@ const AboutUs: React.FC = () => {
                     {/* RIGHT */}
                     <div className="lg:pt-24 xl:pt-80">
                         <h2
-                            className={`text-4xl md:text-5xl font-extrabold text-gray-900 mb-10 ${uiLang === "kh" ? "khmer-font" : ""
+                            className={`text-4xl md:text-5xl font-bold text-gray-900 mb-10 ${uiLang === "kh" ? "khmer-font" : ""
                                 }`}
                         >
                             {view.objectivesTitle}
@@ -295,7 +295,7 @@ const AboutUs: React.FC = () => {
 
                                         <div className="pt-1">
                                             <h3
-                                                className={`text-xl font-extrabold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
+                                                className={`text-xl font-bold text-blue-900 ${uiLang === "kh" ? "khmer-font" : ""
                                                     }`}
                                             >
                                                 {obj.title}

@@ -125,7 +125,7 @@ export default function WorkingGroups16() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
           <div className="lg:sticky lg:top-10">
             <p
-              className={`text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider ${
+              className={`text-lg font-bold text-gray-900 mb-2 uppercase tracking-wider ${
                 isKh ? "khmer-font normal-case" : ""
               }`}
             >
@@ -133,7 +133,7 @@ export default function WorkingGroups16() {
             </p>
 
             <h1
-              className={`text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight ${
+              className={`text-4xl md:text-5xl font-bold text-gray-900 leading-tight ${
                 isKh ? "khmer-font" : ""
               }`}
             >

@@ -126,10 +126,10 @@ export default function HeroBanner() {
         <div className="relative min-h-screen flex flex-col overflow-hidden bg-gray-100">
             {/* Background */}
             <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${bgImage})` }}
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url(${bgImage || PLACEHOLDER_IMAGE_URL})` }}
             >
-                <div className="absolute inset-0 bg-black/50" />
+                <div className="absolute inset-0 bg-white/30" />
             </div>
 
             {/* Loading overlay */}
@@ -172,14 +172,14 @@ export default function HeroBanner() {
                             href={ctaHref}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-block bg-blue-900 hover:bg-blue-800 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
+                            className="inline-block bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
                         >
                             {ctaLabel}
                         </a>
                     ) : (
                         <Link
                             href={ctaHref}
-                            className="inline-block bg-blue-900 hover:bg-blue-800 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
+                            className="inline-block bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
                         >
                             {ctaLabel}
                         </Link>
@@ -188,43 +188,70 @@ export default function HeroBanner() {
 
             {/* Stats */}
             <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-4">
-                <div className="max-w-6xl mx-auto">
-                    <div className="h-[2px] bg-white/80" />
+    <div className="max-w-6xl mx-auto">
+        <div className="h-[2px] bg-white/80" />
 
-                    <div className="py-5">
-                        <div className="grid grid-cols-3 text-center text-white">
-                            {(loading && !data ? Array.from({ length: 3 }) : statsItems.slice(0, 3)).map(
-                                (it: any, idx) => {
-                                    if (loading && !data) {
-                                        return (
-                                            <div key={idx} className="px-2">
-                                                <div className="h-10 md:h-12 w-20 mx-auto rounded bg-white/20 animate-pulse" />
-                                                <div className="mt-3 h-4 w-24 mx-auto rounded bg-white/20 animate-pulse" />
-                                            </div>
-                                        );
-                                    }
+        <div className="py-5">
+            <div className="grid grid-cols-3 text-center text-white">
+                {(loading && !data ? Array.from({ length: 3 }) : statsItems.slice(0, 3)).map(
+                    (it: any, idx) => {
+                        // Loading skeleton
+                        if (loading && !data) {
+                            return (
+                                <div key={idx} className="px-2">
+                                    <div className="h-10 md:h-12 w-20 mx-auto rounded bg-white/20 animate-pulse" />
+                                    <div className="mt-3 h-4 w-24 mx-auto rounded bg-white/20 animate-pulse" />
+                                </div>
+                            );
+                        }
 
-                                    const value =
-                                        it?.value?.[langKey] || it?.value?.en || it?.value?.km || "";
-                                    const label =
-                                        it?.label?.[langKey] || it?.label?.en || it?.label?.km || "";
+                        // Get raw value + label
+                        const rawValue =
+                            it?.value?.[langKey] ||
+                            it?.value?.en ||
+                            it?.value?.km ||
+                            "";
 
-                                    return (
-                                        <div key={idx} className="px-2">
-                                            <div className="text-2xl md:text-4xl font-extrabold">
-                                                {value}
-                                            </div>
-                                            <div className="mt-2 text-xs md:text-sm uppercase tracking-wider">
-                                                {label}
-                                            </div>
-                                        </div>
-                                    );
-                                }
-                            )}
-                        </div>
-                    </div>
-                </div>
+                        const label =
+                            it?.label?.[langKey] ||
+                            it?.label?.en ||
+                            it?.label?.km ||
+                            "";
+
+                        const formatNumber = (val: any) => {
+                            if (!val) return "";
+
+                            // Extract number part (e.g. "1000+" → "1000")
+                            const match = String(val).match(/\d+/);
+                            if (!match) return val;
+
+                            const number = Number(match[0]);
+                            const formatted = number.toLocaleString(
+                                langKey === "km" ? "km-KH" : "en-US"
+                            );
+
+                            // Keep suffix like "+" or "K"
+                            const suffix = String(val).replace(match[0], "");
+
+                            return formatted + suffix;
+                        };
+
+                        return (
+                            <div key={idx} className="px-2">
+                                <div className="text-2xl md:text-4xl font-bold">
+                                    {formatNumber(rawValue)}
+                                </div>
+                                <div className="mt-2 text-xs md:text-sm uppercase tracking-wider">
+                                    {label}
+                                </div>
+                            </div>
+                        );
+                    }
+                )}
             </div>
+        </div>
+    </div>
+</div>
         </div>
     );
 }

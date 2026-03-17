@@ -84,11 +84,11 @@ const Engage: React.FC = () => {
                 <div className="w-full lg:w-1/2">
                     {/* Title */}
                     <h2
-                        className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-10 md:mb-14 tracking-tight ${isKh ? "khmer-font" : ""
+                        className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-10 md:mb-14 tracking-tight ${isKh ? "khmer-font" : ""
                             }`}
                     >
                         {titlePrefix}{" "}
-                        <span className="text-[#1e3a8a]">{titleHighlight}</span>
+                        <span className="text-gray-900">{titleHighlight}</span>
                     </h2>
 
                     {/* Timeline */}

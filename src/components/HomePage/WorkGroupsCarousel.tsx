@@ -167,7 +167,7 @@ export default function WorkGroupsCarousel() {
         {/* Header */}
         <div className="text-center mb-10 md:mb-14">
           <h2
-            className={`text-blue-950 font-extrabold leading-[1.05] ${
+            className={`text-blue-950 font-bold leading-[1.05] ${
               isKhmer ? "khmer-font" : ""
             }`}
           >

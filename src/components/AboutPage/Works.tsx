@@ -219,7 +219,7 @@ export default function Works() {
 
                 {/* Title */}
                 <h2
-                    className={`text-4xl md:text-6xl font-extrabold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
+                    className={`text-4xl md:text-6xl font-bold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
                         }`}
                 >
                     {title}
@@ -262,7 +262,7 @@ export default function Works() {
                                     <div>
                                         <h3
                                             className={[
-                                                "font-extrabold",
+                                                "font-bold",
                                                 "text-xl md:text-2xl",
                                                 isDark ? "text-white" : "text-gray-800",
                                                 uiLang === "kh" ? "khmer-font" : "",
