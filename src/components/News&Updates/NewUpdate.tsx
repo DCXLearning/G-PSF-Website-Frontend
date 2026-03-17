@@ -39,28 +39,26 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
     const hasData = data.length > 0;
 
     return (
-        <section className="relative bg-white overflow-hidden py-16">
-
+        <section className="relative overflow-hidden bg-white py-16">
             {/* Header */}
-            <div className="max-w-7xl mx-auto px-4 mb-16 relative z-10">
-                <p className="text-gray-900 font-bold text-3xl mb-1">Latest</p>
-                <h2 className="text-[#1a2b4b] text-5xl font-extrabold mb-4">
+            <div className="relative z-10 mx-auto mb-16 max-w-7xl px-4">
+                <p className="mb-1 text-3xl font-bold text-gray-900">Latest</p>
+                <h2 className="mb-4 text-5xl font-extrabold text-[#1a2b4b]">
                     News & Updates
                 </h2>
-                <div className="h-1.5 bg-orange-500 w-72" />
+                <div className="h-1.5 w-72 bg-orange-500" />
             </div>
 
-            {/* Blue background */}
-            <div className="absolute bottom-0 left-0 w-full h-[350px] bg-[#3b5998]" />
+            {/* Background */}
+            <div className="absolute bottom-0 left-0 h-[350px] w-full bg-[#3b5998]" />
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4">
-
+            <div className="relative z-10 mx-auto max-w-7xl px-4">
                 {hasData ? (
                     <Swiper
                         modules={[Pagination, Autoplay]}
                         spaceBetween={30}
                         slidesPerView={1}
-                        autoplay={{ delay: 5000 }}
+                        autoplay={{ delay: 5000, disableOnInteraction: false }}
                         pagination={{ clickable: true, el: ".custom-pagination" }}
                         breakpoints={{
                             768: { slidesPerView: 2 },
@@ -68,97 +66,102 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                         }}
                         className="pb-20"
                     >
-
                         {data.map((item) => {
-                            // Use slug first. If slug is empty, send id.
-                            const detailQuery = item.slug
-                                ? { slug: item.slug, id: String(item.id) }
-                                : { id: String(item.id) };
+                            const detailHref = {
+                                pathname: "/new-update/view-detail",
+                                query: item.slug
+                                    ? { slug: item.slug, id: String(item.id) }
+                                    : { id: String(item.id) },
+                            };
 
                             return (
-                            <SwiperSlide key={item.id}>
-
-                                <div className="bg-[#e9ecef] flex flex-col shadow-xl min-h-[500px]">
-
-                                    {/* Image */}
-                                    <div className="bg-white m-4 aspect-square relative overflow-hidden">
-                                        {item.imageUrl ? (
-                                            <Image
-                                                src={item.imageUrl}
-                                                alt={item.title}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                No Image
+                                <SwiperSlide key={item.id}>
+                                    <Link
+                                        href={detailHref}
+                                        className="group block h-full focus:outline-none"
+                                    >
+                                        <article className="flex min-h-[500px] h-full flex-col bg-[#e9ecef] shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                                            {/* Image */}
+                                            <div className="relative m-4 aspect-square overflow-hidden bg-white">
+                                                {item.imageUrl ? (
+                                                    <Image
+                                                        src={item.imageUrl}
+                                                        alt={item.title}
+                                                        fill
+                                                        className="object-cover transition duration-500 group-hover:scale-105"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full w-full items-center justify-center text-gray-400">
+                                                        No Image
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
 
-                                    {/* Content */}
-                                    <div className="px-6 pb-8 pt-2 flex flex-col grow">
+                                            {/* Content */}
+                                            <div className="flex grow flex-col px-6 pb-8 pt-2">
+                                                <span className="mb-2 text-xs font-semibold text-[#1a2b4b]">
+                                                    {formatDate(item.createdAt)}
+                                                </span>
 
-                                        <span className="text-xs font-semibold text-[#1a2b4b] mb-2">
-                                            {formatDate(item.createdAt)}
-                                        </span>
+                                                <span className="mb-3 w-fit rounded-full bg-[#1a2b4b] px-3 py-1 text-[10px] font-bold uppercase text-white">
+                                                    {item.group || "PRESS"}
+                                                </span>
 
-                                        <span className="bg-[#1a2b4b] text-white text-[10px] font-bold px-3 py-1 rounded-full w-fit mb-3 uppercase">
-                                            {item.group || "PRESS"}
-                                        </span>
+                                                <h3 className="khmer-font mb-3 min-h-[28px] line-clamp-1 text-xl font-bold uppercase text-[#1a2b4b] group-hover:underline">
+                                                    {item.title}
+                                                </h3>
 
-                                        {/* TITLE 1 ROW */}
-                                        <h3 className="text-[#1a2b4b] text-xl khmer-font font-bold uppercase mb-3 line-clamp-1 min-h-[28px]">
-                                            {item.title}
-                                        </h3>
+                                                <p className="khmer-font mb-6 min-h-[40px] line-clamp-2 text-sm text-gray-700">
+                                                    {item.excerpt || "No description available."}
+                                                </p>
 
-                                        {/* DESCRIPTION 2 ROW */}
-                                        <p className="text-gray-700 text-sm khmer-font mb-6 line-clamp-2 min-h-[40px]">
-                                            {item.excerpt || "No description available."}
-                                        </p>
-
-                                        <Link
-                                            href={{
-                                                pathname: "/new-update/view-detail",
-                                                query: detailQuery,
-                                            }}
-                                            className="text-[#1a2b4b] text-xs font-bold flex items-center mt-auto hover:underline"
-                                        >
-                                            View details <span className="ml-1 text-lg">›</span>
-                                        </Link>
-
-                                    </div>
-
-                                </div>
-
-                            </SwiperSlide>
+                                                <div className="mt-auto flex items-center text-xs font-bold text-[#1a2b4b]">
+                                                    View details
+                                                    <span className="ml-2 text-lg transition-transform duration-300 group-hover:translate-x-1">
+                                                        ›
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    </Link>
+                                </SwiperSlide>
                             );
                         })}
-
                     </Swiper>
                 ) : (
-                    <div className="bg-[#e9ecef] text-center py-12 font-semibold">
+                    <div className="bg-[#e9ecef] py-12 text-center font-semibold">
                         No published news yet.
                     </div>
                 )}
 
                 {/* Pagination */}
-                {hasData && <div className="custom-pagination flex justify-center gap-3 mt-4" />}
+                {hasData && <div className="custom-pagination mt-4 flex justify-center gap-3" />}
+
+                {/* Bottom See More */}
+                {hasData && (
+                    <div className="mt-8 flex justify-center">
+                        <Link
+                            href="/new-update/see-more"
+                            className="rounded-md bg-[#273650] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#24385f]"
+                        >
+                            See More
+                        </Link>
+                    </div>
+                )}
             </div>
 
-            {/* Pagination Style */}
             <style jsx global>{`
-                .custom-pagination .swiper-pagination-bullet {
-                width: 14px;
-                height: 14px;
-                background: #fb923c;
-                opacity: 0.5;
-                }
-                .custom-pagination .swiper-pagination-bullet-active {
-                opacity: 1;
-                }
-            `}</style>
+        .custom-pagination .swiper-pagination-bullet {
+          width: 14px;
+          height: 14px;
+          background: #fb923c;
+          opacity: 0.5;
+        }
 
+        .custom-pagination .swiper-pagination-bullet-active {
+          opacity: 1;
+        }
+      `}</style>
         </section>
     );
 };

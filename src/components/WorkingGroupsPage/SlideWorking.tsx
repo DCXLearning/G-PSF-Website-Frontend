@@ -103,7 +103,7 @@ const CoChairCard = ({ chair, lang }: { chair: CoChair; lang: Lang }) => {
                 <div className="flex flex-col items-center">
                     <div className="mb-4">
                         {chair.profileUrl ? (
-                            <div className="relative w-24 h-24 md:w-34 md:h-34 rounded-full overflow-hidden ring-2 ring-white/20">
+                            <div className="relative bg-gray-100 w-24 h-24 md:w-34 md:h-34 rounded-full overflow-hidden ring-2 ring-white/20">
                                 <Image
                                     src={chair.profileUrl}
                                     alt={chair.name || "Co-chair"}
@@ -134,7 +134,7 @@ const CoChairCard = ({ chair, lang }: { chair: CoChair; lang: Lang }) => {
         <div className="bg-[#1e3a8a] aspect-square w-full p-6 flex flex-col items-center justify-center text-white shadow-inner text-center">
             <div className="mb-4">
                 {chair.profileUrl ? (
-                    <div className="relative w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden ring-2 ring-white/20 mx-auto">
+                    <div className="relative bg-gray-100 w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden ring-2 ring-white/20 mx-auto">
                         <Image
                             src={chair.profileUrl}
                             alt={chair.name || "Co-chair"}

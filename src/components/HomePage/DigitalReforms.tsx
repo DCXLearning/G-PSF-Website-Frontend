@@ -278,7 +278,7 @@ const DigitalReforms: React.FC = () => {
                                             </div>
 
                                             <div className="w-25 h-25 relative rounded-[200px] ml-10 top-8 mb-6">
-                                                <div className="bg-blue-950 w-25 h-25 border-white border-3 rounded-[200px] flex items-center justify-center overflow-hidden">
+                                                <div className="bg-gray-200 w-25 h-25 border-white border-3 rounded-[200px] flex items-center justify-center overflow-hidden">
                                                     {cover ? (
                                                         <img
                                                             src={cover}
