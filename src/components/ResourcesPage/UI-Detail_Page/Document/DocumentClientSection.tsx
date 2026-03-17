@@ -15,11 +15,14 @@ export default function DocumentClientSection({
     featuredItems,
 }: DocumentClientSectionProps) {
     const [query, setQuery] = useState("");
+    const hasSearch = query.trim().length > 0;
 
     return (
         <>
             <Search value={query} onSearch={setQuery} />
-            <FeaturedPublicationsClient items={featuredItems} query={query} />
+            {!hasSearch ? (
+                <FeaturedPublicationsClient items={featuredItems} query={query} />
+            ) : null}
             <ResourceLibraryPage query={query} />
         </>
     );

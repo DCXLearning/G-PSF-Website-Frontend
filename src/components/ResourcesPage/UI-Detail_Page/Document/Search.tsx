@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type SearchProps = {
     value: string;
@@ -9,6 +9,10 @@ type SearchProps = {
 
 export default function Search({ value, onSearch }: SearchProps) {
     const [inputValue, setInputValue] = useState(value);
+
+    useEffect(() => {
+        setInputValue(value);
+    }, [value]);
 
     function onSubmit(e: React.FormEvent) {
         e.preventDefault();
