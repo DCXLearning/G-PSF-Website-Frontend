@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -8,8 +8,26 @@ type Lang = "en" | "kh";
 type ApiLang = "en" | "km";
 
 type I18nText = {
-  en?: string;
-  km?: string;
+  en?: unknown;
+  km?: unknown;
+};
+
+type TiptapNode = {
+  type?: string;
+  text?: string;
+  marks?: TiptapMark[];
+  attrs?: Record<string, unknown>;
+  content?: TiptapNode[];
+};
+
+type TiptapMark = {
+  type?: string;
+  attrs?: Record<string, unknown>;
+};
+
+type RichTextValue = {
+  text: string;
+  doc: TiptapNode | null;
 };
 
 type WgTemplateIssueItem = {
@@ -52,9 +70,9 @@ type WgTemplateResponse = {
 
 type MandateContent = {
   whatTitle: string;
-  whatDescription: string;
+  whatDescription: RichTextValue;
   pathwayTitle: string;
-  pathwayDescription: string;
+  pathwayDescription: RichTextValue;
   progress: number;
   issueCounts: {
     resolved: number;
@@ -74,13 +92,151 @@ function getText(value?: string | null): string {
   return text === "." ? "" : text;
 }
 
+function isTiptapDoc(value: unknown): value is TiptapNode {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const doc = value as TiptapNode;
+  return doc.type === "doc" || Array.isArray(doc.content);
+}
+
+function hasVisibleTiptapContent(node: TiptapNode | undefined): boolean {
+  if (!node) {
+    return false;
+  }
+
+  if (node.type === "text") {
+    return getText(node.text ?? "").length > 0;
+  }
+
+  // These nodes still show something on screen even without text.
+  if (
+    node.type === "image" ||
+    node.type === "youtube" ||
+    node.type === "video" ||
+    node.type === "table" ||
+    node.type === "horizontalRule"
+  ) {
+    return true;
+  }
+
+  const children = node.content ?? [];
+
+  for (let index = 0; index < children.length; index += 1) {
+    if (hasVisibleTiptapContent(children[index])) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function extractTiptapText(node: TiptapNode | undefined): string {
+  if (!node) {
+    return "";
+  }
+
+  if (node.type === "text") {
+    return node.text ?? "";
+  }
+
+  if (node.type === "hardBreak") {
+    return "\n";
+  }
+
+  const childText = (node.content ?? []).map((item) => extractTiptapText(item)).join("");
+
+  // Add a line break after block-level nodes so the final text stays readable.
+  if (
+    node.type === "paragraph" ||
+    node.type === "heading" ||
+    node.type === "blockquote" ||
+    node.type === "bulletList" ||
+    node.type === "orderedList" ||
+    node.type === "listItem"
+  ) {
+    return `${childText}\n`;
+  }
+
+  return childText;
+}
+
+function getRichText(value: unknown): string {
+  if (typeof value === "string") {
+    return getText(value);
+  }
+
+  if (isTiptapDoc(value)) {
+    return getText(
+      extractTiptapText(value)
+        .replace(/\n{3,}/g, "\n\n")
+        .trim()
+    );
+  }
+
+  return "";
+}
+
+function getRichTextValue(value: unknown): RichTextValue {
+  if (typeof value === "string") {
+    return {
+      text: getText(value),
+      doc: null,
+    };
+  }
+
+  if (isTiptapDoc(value)) {
+    const text = getText(
+      extractTiptapText(value)
+        .replace(/\n{3,}/g, "\n\n")
+        .trim()
+    );
+    const hasVisibleContent = hasVisibleTiptapContent(value);
+
+    // Keep the original TipTap document so the page can render full rich text.
+    return {
+      text,
+      doc: hasVisibleContent ? value : null,
+    };
+  }
+
+  return {
+    text: "",
+    doc: null,
+  };
+}
+
 function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
   if (!value) {
     return "";
   }
 
-  const primary = apiLang === "km" ? getText(value.km) : getText(value.en);
-  return primary || getText(value.en) || getText(value.km);
+  const primary = apiLang === "km" ? getRichText(value.km) : getRichText(value.en);
+  return primary || getRichText(value.en) || getRichText(value.km);
+}
+
+function pickI18nRichText(value: I18nText | undefined, apiLang: ApiLang): RichTextValue {
+  if (!value) {
+    return {
+      text: "",
+      doc: null,
+    };
+  }
+
+  const primary = apiLang === "km" ? getRichTextValue(value.km) : getRichTextValue(value.en);
+
+  if (primary.text || primary.doc) {
+    return primary;
+  }
+
+  const fallbackEn = getRichTextValue(value.en);
+
+  if (fallbackEn.text || fallbackEn.doc) {
+    return fallbackEn;
+  }
+
+  return getRichTextValue(value.km);
 }
 
 function pickTemplateContent(
@@ -156,18 +312,20 @@ function mapMandateContent(
 
   const mapped: MandateContent = {
     whatTitle: pickI18nText(what?.title, apiLang),
-    whatDescription: pickI18nText(what?.description, apiLang),
+    whatDescription: pickI18nRichText(what?.description, apiLang),
     pathwayTitle: pickI18nText(pathway?.title, apiLang),
-    pathwayDescription: pickI18nText(pathway?.description, apiLang),
+    pathwayDescription: pickI18nRichText(pathway?.description, apiLang),
     progress: parseProgress(content.progressSnapshot?.progress),
     issueCounts: countIssueStatuses(content.issuesResponses?.items),
   };
 
   const hasAnyText =
     Boolean(mapped.whatTitle) ||
-    Boolean(mapped.whatDescription) ||
+    Boolean(mapped.whatDescription.text) ||
+    Boolean(mapped.whatDescription.doc) ||
     Boolean(mapped.pathwayTitle) ||
-    Boolean(mapped.pathwayDescription) ||
+    Boolean(mapped.pathwayDescription.text) ||
+    Boolean(mapped.pathwayDescription.doc) ||
     mapped.progress > 0 ||
     mapped.issueCounts.resolved > 0 ||
     mapped.issueCounts.inProgress > 0 ||
@@ -181,6 +339,459 @@ function splitPathway(pathwayText: string): string[] {
     .split("→")
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
+}
+
+function containsKhmer(value?: string): boolean {
+  return /[\u1780-\u17FF]/.test(value ?? "");
+}
+
+function MandateRichText({
+  doc,
+  isKh,
+  text,
+}: {
+  doc: TiptapNode;
+  isKh: boolean;
+  text: string;
+}) {
+  // This renderer shows TipTap JSON from the CMS inside the Mandate section.
+  return (
+    <div className={`mt-5 text-slate-500 ${isKh || containsKhmer(text) ? "khmer-font" : ""}`}>
+      {renderTiptapNodes(doc.content ?? [], "mandate-root")}
+    </div>
+  );
+}
+
+function renderTiptapNodes(nodes: TiptapNode[], path: string): ReactNode[] {
+  return nodes.map((node, index) => renderTiptapNode(node, `${path}-${index}`));
+}
+
+function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
+  const type = node.type ?? "";
+  const content = node.content ?? [];
+  const attrs = node.attrs ?? {};
+  const style = getTextAlignStyle(attrs);
+
+  if (type === "doc") {
+    return <React.Fragment key={key}>{renderTiptapNodes(content, key)}</React.Fragment>;
+  }
+
+  if (type === "text") {
+    return (
+      <React.Fragment key={key}>
+        {applyTiptapMarks(node.text ?? "", node.marks, key)}
+      </React.Fragment>
+    );
+  }
+
+  if (type === "hardBreak") {
+    return <br key={key} />;
+  }
+
+  if (type === "paragraph") {
+    return (
+      <p key={key} className="mt-4 text-base leading-relaxed md:text-lg" style={style}>
+        {renderTiptapNodes(content, key)}
+      </p>
+    );
+  }
+
+  if (type === "heading") {
+    const level = normalizeHeadingLevel(attrs.level);
+    const headingClass = getHeadingClass(level);
+
+    if (level === 1) {
+      return (
+        <h1 key={key} className={headingClass} style={style}>
+          {renderTiptapNodes(content, key)}
+        </h1>
+      );
+    }
+
+    if (level === 2) {
+      return (
+        <h2 key={key} className={headingClass} style={style}>
+          {renderTiptapNodes(content, key)}
+        </h2>
+      );
+    }
+
+    if (level === 3) {
+      return (
+        <h3 key={key} className={headingClass} style={style}>
+          {renderTiptapNodes(content, key)}
+        </h3>
+      );
+    }
+
+    if (level === 4) {
+      return (
+        <h4 key={key} className={headingClass} style={style}>
+          {renderTiptapNodes(content, key)}
+        </h4>
+      );
+    }
+
+    if (level === 5) {
+      return (
+        <h5 key={key} className={headingClass} style={style}>
+          {renderTiptapNodes(content, key)}
+        </h5>
+      );
+    }
+
+    return (
+      <h6 key={key} className={headingClass} style={style}>
+        {renderTiptapNodes(content, key)}
+      </h6>
+    );
+  }
+
+  if (type === "bulletList") {
+    return (
+      <ul key={key} className="mt-4 list-disc space-y-2 pl-6" style={style}>
+        {renderTiptapNodes(content, key)}
+      </ul>
+    );
+  }
+
+  if (type === "orderedList") {
+    const start = typeof attrs.start === "number" ? attrs.start : 1;
+
+    return (
+      <ol key={key} start={start} className="mt-4 list-decimal space-y-2 pl-6" style={style}>
+        {renderTiptapNodes(content, key)}
+      </ol>
+    );
+  }
+
+  if (type === "listItem") {
+    return (
+      <li key={key} className="leading-relaxed md:text-lg">
+        {renderTiptapNodes(content, key)}
+      </li>
+    );
+  }
+
+  if (type === "blockquote") {
+    return (
+      <blockquote
+        key={key}
+        className="mt-4 border-l-4 border-amber-500 pl-4 italic text-slate-600"
+        style={style}
+      >
+        {renderTiptapNodes(content, key)}
+      </blockquote>
+    );
+  }
+
+  if (type === "codeBlock") {
+    return (
+      <pre
+        key={key}
+        className="mt-4 overflow-x-auto rounded-xl bg-slate-900 p-4 text-sm text-slate-100"
+        style={style}
+      >
+        <code>{extractPlainText(content)}</code>
+      </pre>
+    );
+  }
+
+  if (type === "horizontalRule") {
+    return <hr key={key} className="my-6 border-slate-300" />;
+  }
+
+  if (type === "image") {
+    const src = getStringAttr(attrs, "src");
+    const alt = getStringAttr(attrs, "alt") || "Image";
+
+    if (!src) {
+      return null;
+    }
+
+    return (
+      <figure key={key} className="mt-6">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} className="w-full rounded-xl border border-slate-200" />
+      </figure>
+    );
+  }
+
+  if (type === "youtube") {
+    const src = normalizeVideoUrl(getStringAttr(attrs, "src"));
+    const title = getStringAttr(attrs, "title") || "YouTube video";
+    const allowFullScreenAttr = getStringAttr(attrs, "allowfullscreen").toLowerCase();
+    const allowFullScreen = allowFullScreenAttr !== "false";
+
+    if (!src) {
+      return null;
+    }
+
+    return (
+      <div key={key} className="mt-6">
+        <div
+          className="relative w-full overflow-hidden rounded-xl border border-slate-200"
+          style={{ paddingBottom: "56.25%" }}
+        >
+          <iframe
+            src={src}
+            title={title}
+            className="absolute inset-0 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen={allowFullScreen}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (type === "video") {
+    const src = normalizeVideoUrl(getStringAttr(attrs, "src"));
+    const poster = getStringAttr(attrs, "poster");
+
+    if (!src) {
+      return null;
+    }
+
+    return (
+      <div key={key} className="mt-6">
+        <video
+          src={src}
+          poster={poster || undefined}
+          controls
+          className="w-full rounded-xl border border-slate-200 bg-black"
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    );
+  }
+
+  if (type === "table") {
+    return (
+      <div key={key} className="mt-6 overflow-x-auto">
+        <table className="min-w-full border-collapse border border-slate-300">
+          <tbody>{renderTiptapNodes(content, key)}</tbody>
+        </table>
+      </div>
+    );
+  }
+
+  if (type === "tableRow") {
+    return <tr key={key}>{renderTiptapNodes(content, key)}</tr>;
+  }
+
+  if (type === "tableHeader") {
+    return (
+      <th
+        key={key}
+        className="border border-slate-300 bg-slate-100 px-3 py-2 text-left font-semibold"
+        style={style}
+      >
+        {renderTiptapNodes(content, key)}
+      </th>
+    );
+  }
+
+  if (type === "tableCell") {
+    return (
+      <td key={key} className="border border-slate-300 px-3 py-2" style={style}>
+        {renderTiptapNodes(content, key)}
+      </td>
+    );
+  }
+
+  if (content.length > 0) {
+    return <div key={key}>{renderTiptapNodes(content, key)}</div>;
+  }
+
+  return null;
+}
+
+function applyTiptapMarks(
+  text: string,
+  marks: TiptapMark[] | undefined,
+  keyBase: string
+): ReactNode {
+  let result: ReactNode = text;
+
+  if (!marks || marks.length === 0) {
+    return result;
+  }
+
+  for (let index = 0; index < marks.length; index += 1) {
+    const mark = marks[index];
+    const markKey = `${keyBase}-mark-${index}`;
+
+    if (mark.type === "bold") {
+      result = <strong key={markKey}>{result}</strong>;
+      continue;
+    }
+
+    if (mark.type === "italic") {
+      result = <em key={markKey}>{result}</em>;
+      continue;
+    }
+
+    if (mark.type === "underline") {
+      result = <u key={markKey}>{result}</u>;
+      continue;
+    }
+
+    if (mark.type === "strike") {
+      result = <s key={markKey}>{result}</s>;
+      continue;
+    }
+
+    if (mark.type === "code") {
+      result = (
+        <code key={markKey} className="rounded bg-slate-100 px-1 text-[0.95em]">
+          {result}
+        </code>
+      );
+      continue;
+    }
+
+    if (mark.type === "subscript") {
+      result = <sub key={markKey}>{result}</sub>;
+      continue;
+    }
+
+    if (mark.type === "superscript") {
+      result = <sup key={markKey}>{result}</sup>;
+      continue;
+    }
+
+    if (mark.type === "link") {
+      const href = getStringAttr(mark.attrs ?? {}, "href") || "#";
+      const target = getStringAttr(mark.attrs ?? {}, "target") || undefined;
+      const rel = getStringAttr(mark.attrs ?? {}, "rel")
+        || (target === "_blank" ? "noopener noreferrer" : undefined);
+
+      result = (
+        <a
+          key={markKey}
+          href={href}
+          target={target}
+          rel={rel}
+          className="break-words underline text-blue-700"
+        >
+          {result}
+        </a>
+      );
+      continue;
+    }
+  }
+
+  return result;
+}
+
+function extractPlainText(nodes: TiptapNode[]): string {
+  let text = "";
+
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index];
+
+    if (node.type === "text") {
+      text += node.text ?? "";
+      continue;
+    }
+
+    if (node.type === "hardBreak") {
+      text += "\n";
+      continue;
+    }
+
+    if (node.content && node.content.length > 0) {
+      text += extractPlainText(node.content);
+    }
+  }
+
+  return text;
+}
+
+function getTextAlignStyle(attrs: Record<string, unknown>): CSSProperties | undefined {
+  const textAlign = getStringAttr(attrs, "textAlign");
+
+  if (
+    textAlign === "left" ||
+    textAlign === "center" ||
+    textAlign === "right" ||
+    textAlign === "justify"
+  ) {
+    return { textAlign };
+  }
+
+  return undefined;
+}
+
+function normalizeHeadingLevel(level: unknown): number {
+  if (typeof level !== "number") {
+    return 2;
+  }
+
+  if (level < 1) {
+    return 1;
+  }
+
+  if (level > 6) {
+    return 6;
+  }
+
+  return level;
+}
+
+function getHeadingClass(level: number): string {
+  if (level === 1) return "mt-6 text-3xl font-bold text-slate-900 md:text-4xl";
+  if (level === 2) return "mt-6 text-2xl font-bold text-slate-900 md:text-3xl";
+  if (level === 3) return "mt-6 text-xl font-bold text-slate-900 md:text-2xl";
+  if (level === 4) return "mt-6 text-lg font-bold text-slate-900 md:text-xl";
+  if (level === 5) return "mt-6 text-base font-bold text-slate-900 md:text-lg";
+  return "mt-6 text-sm font-bold text-slate-900 md:text-base";
+}
+
+function getStringAttr(attrs: Record<string, unknown>, key: string): string {
+  const value = attrs[key];
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeVideoUrl(url: string): string {
+  if (!url) {
+    return "";
+  }
+
+  if (url.includes("youtube.com/watch")) {
+    const value = extractQueryParam(url, "v");
+
+    if (value) {
+      return `https://www.youtube.com/embed/${value}`;
+    }
+  }
+
+  if (url.includes("youtu.be/")) {
+    const value = url.split("youtu.be/")[1]?.split(/[?&/]/)[0] ?? "";
+
+    if (value) {
+      return `https://www.youtube.com/embed/${value}`;
+    }
+  }
+
+  return url;
+}
+
+function extractQueryParam(url: string, key: string): string {
+  const query = url.split("?")[1] ?? "";
+  const params = query.split("&");
+
+  for (let index = 0; index < params.length; index += 1) {
+    const pair = params[index].split("=");
+
+    if (pair[0] === key && pair[1]) {
+      return pair[1];
+    }
+  }
+
+  return "";
 }
 
 function Donut({
@@ -417,9 +1028,15 @@ export default function MandateScopePage({
         };
 
   const whatTitle = mandateContent?.whatTitle || t.what;
-  const whatDescription = mandateContent?.whatDescription || t.whatDesc;
+  const whatDescription = mandateContent?.whatDescription ?? {
+    text: t.whatDesc,
+    doc: null,
+  };
   const pathwayTitle = mandateContent?.pathwayTitle || t.pathway;
-  const pathwayDescription = mandateContent?.pathwayDescription || t.pathwayDesc;
+  const pathwayDescription = mandateContent?.pathwayDescription ?? {
+    text: t.pathwayDesc,
+    doc: null,
+  };
   const progressValue = mandateContent?.progress ?? 0;
   const issueCounts = mandateContent?.issueCounts ?? {
     resolved: 0,
@@ -428,9 +1045,15 @@ export default function MandateScopePage({
   };
 
   const pathwaySteps = useMemo(
-    () => splitPathway(pathwayDescription),
-    [pathwayDescription]
+    () => splitPathway(pathwayDescription.text),
+    [pathwayDescription.text]
   );
+  const whatTitleClass = isKh || containsKhmer(whatTitle) ? "khmer-font" : "";
+  const whatDescriptionClass =
+    isKh || containsKhmer(whatDescription.text) ? "khmer-font" : "";
+  const pathwayTitleClass = isKh || containsKhmer(pathwayTitle) ? "khmer-font" : "";
+  const pathwayDescriptionClass =
+    isKh || containsKhmer(pathwayDescription.text) ? "khmer-font" : "";
 
   return (
     <main className="min-h-screen bg-white">
@@ -454,23 +1077,41 @@ export default function MandateScopePage({
             <div className="rounded-[40px] border border-slate-100 bg-white p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="space-y-12">
                 <div>
-                  <h2 className={`text-2xl font-bold text-slate-900 md:text-3xl ${isKh ? "khmer-font" : ""}`}>
+                  <h2 className={`text-2xl font-bold text-slate-900 md:text-3xl ${whatTitleClass}`}>
                     {whatTitle}
                   </h2>
-                  <p className={`mt-5 text-base leading-relaxed text-slate-500 md:text-lg ${isKh ? "khmer-font" : ""}`}>
-                    {whatDescription}
-                  </p>
+                  {whatDescription.doc ? (
+                    <MandateRichText
+                      doc={whatDescription.doc}
+                      isKh={isKh}
+                      text={whatDescription.text}
+                    />
+                  ) : (
+                    <p
+                      className={`mt-5 whitespace-pre-line text-base leading-relaxed text-slate-500 md:text-lg ${
+                        whatDescriptionClass
+                      }`}
+                    >
+                      {whatDescription.text}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <h3 className={`text-xl font-bold text-slate-900 md:text-2xl ${isKh ? "khmer-font" : ""}`}>
+                  <h3 className={`text-xl font-bold text-slate-900 md:text-2xl ${pathwayTitleClass}`}>
                     {pathwayTitle}
                   </h3>
 
-                  {pathwaySteps.length > 1 ? (
+                  {pathwayDescription.doc ? (
+                    <MandateRichText
+                      doc={pathwayDescription.doc}
+                      isKh={isKh}
+                      text={pathwayDescription.text}
+                    />
+                  ) : pathwaySteps.length > 1 ? (
                     <div
                       className={`mt-5 flex flex-wrap items-center gap-2 text-base font-medium text-slate-500 md:text-lg ${
-                        isKh ? "khmer-font" : ""
+                        pathwayDescriptionClass
                       }`}
                     >
                       {pathwaySteps.map((step, index) => (
@@ -481,8 +1122,12 @@ export default function MandateScopePage({
                       ))}
                     </div>
                   ) : (
-                    <p className={`mt-5 text-base leading-relaxed text-slate-500 md:text-lg ${isKh ? "khmer-font" : ""}`}>
-                      {pathwayDescription}
+                    <p
+                      className={`mt-5 whitespace-pre-line text-base leading-relaxed text-slate-500 md:text-lg ${
+                        pathwayDescriptionClass
+                      }`}
+                    >
+                      {pathwayDescription.text}
                     </p>
                   )}
                 </div>
