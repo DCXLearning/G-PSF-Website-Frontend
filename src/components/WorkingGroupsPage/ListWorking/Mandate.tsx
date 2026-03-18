@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
+import React, { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -28,6 +28,11 @@ type TiptapMark = {
 type RichTextValue = {
   text: string;
   doc: TiptapNode | null;
+};
+
+type MandateSection = {
+  title: string;
+  description: RichTextValue;
 };
 
 type WgTemplateIssueItem = {
@@ -69,10 +74,7 @@ type WgTemplateResponse = {
 };
 
 type MandateContent = {
-  whatTitle: string;
-  whatDescription: RichTextValue;
-  pathwayTitle: string;
-  pathwayDescription: RichTextValue;
+  sections: MandateSection[];
   progress: number;
   issueCounts: {
     resolved: number;
@@ -306,39 +308,38 @@ function mapMandateContent(
   }
 
   const items = content.textBlock?.items ?? [];
+  const sections: MandateSection[] = [];
 
-  const what = items[0];
-  const pathway = items[1];
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+    const title = pickI18nText(item?.title, apiLang);
+    const description = pickI18nRichText(item?.description, apiLang);
+
+    // Keep only sections that have something to show on screen.
+    if (!title && !description.text && !description.doc) {
+      continue;
+    }
+
+    sections.push({
+      title,
+      description,
+    });
+  }
 
   const mapped: MandateContent = {
-    whatTitle: pickI18nText(what?.title, apiLang),
-    whatDescription: pickI18nRichText(what?.description, apiLang),
-    pathwayTitle: pickI18nText(pathway?.title, apiLang),
-    pathwayDescription: pickI18nRichText(pathway?.description, apiLang),
+    sections,
     progress: parseProgress(content.progressSnapshot?.progress),
     issueCounts: countIssueStatuses(content.issuesResponses?.items),
   };
 
   const hasAnyText =
-    Boolean(mapped.whatTitle) ||
-    Boolean(mapped.whatDescription.text) ||
-    Boolean(mapped.whatDescription.doc) ||
-    Boolean(mapped.pathwayTitle) ||
-    Boolean(mapped.pathwayDescription.text) ||
-    Boolean(mapped.pathwayDescription.doc) ||
+    mapped.sections.length > 0 ||
     mapped.progress > 0 ||
     mapped.issueCounts.resolved > 0 ||
     mapped.issueCounts.inProgress > 0 ||
     mapped.issueCounts.pending > 0;
 
   return hasAnyText ? mapped : null;
-}
-
-function splitPathway(pathwayText: string): string[] {
-  return pathwayText
-    .split("→")
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
 }
 
 function containsKhmer(value?: string): boolean {
@@ -1027,33 +1028,30 @@ export default function MandateScopePage({
           issues: "Issues & responses",
         };
 
-  const whatTitle = mandateContent?.whatTitle || t.what;
-  const whatDescription = mandateContent?.whatDescription ?? {
-    text: t.whatDesc,
-    doc: null,
-  };
-  const pathwayTitle = mandateContent?.pathwayTitle || t.pathway;
-  const pathwayDescription = mandateContent?.pathwayDescription ?? {
-    text: t.pathwayDesc,
-    doc: null,
-  };
+  const sections = mandateContent?.sections?.length
+    ? mandateContent.sections
+    : [
+        {
+          title: t.what,
+          description: {
+            text: t.whatDesc,
+            doc: null,
+          },
+        },
+        {
+          title: t.pathway,
+          description: {
+            text: t.pathwayDesc,
+            doc: null,
+          },
+        },
+      ];
   const progressValue = mandateContent?.progress ?? 0;
   const issueCounts = mandateContent?.issueCounts ?? {
     resolved: 0,
     inProgress: 0,
     pending: 0,
   };
-
-  const pathwaySteps = useMemo(
-    () => splitPathway(pathwayDescription.text),
-    [pathwayDescription.text]
-  );
-  const whatTitleClass = isKh || containsKhmer(whatTitle) ? "khmer-font" : "";
-  const whatDescriptionClass =
-    isKh || containsKhmer(whatDescription.text) ? "khmer-font" : "";
-  const pathwayTitleClass = isKh || containsKhmer(pathwayTitle) ? "khmer-font" : "";
-  const pathwayDescriptionClass =
-    isKh || containsKhmer(pathwayDescription.text) ? "khmer-font" : "";
 
   return (
     <main className="min-h-screen bg-white">
@@ -1076,61 +1074,40 @@ export default function MandateScopePage({
           <section className="lg:col-span-7">
             <div className="rounded-[40px] border border-slate-100 bg-white p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="space-y-12">
-                <div>
-                  <h2 className={`text-2xl font-bold text-slate-900 md:text-3xl ${whatTitleClass}`}>
-                    {whatTitle}
-                  </h2>
-                  {whatDescription.doc ? (
-                    <MandateRichText
-                      doc={whatDescription.doc}
-                      isKh={isKh}
-                      text={whatDescription.text}
-                    />
-                  ) : (
-                    <p
-                      className={`mt-5 whitespace-pre-line text-base leading-relaxed text-slate-500 md:text-lg ${
-                        whatDescriptionClass
-                      }`}
-                    >
-                      {whatDescription.text}
-                    </p>
-                  )}
-                </div>
+                {sections.map((section, index) => {
+                  const titleClass =
+                    isKh || containsKhmer(section.title) ? "khmer-font" : "";
+                  const descriptionClass =
+                    isKh || containsKhmer(section.description.text)
+                      ? "khmer-font"
+                      : "";
 
-                <div>
-                  <h3 className={`text-xl font-bold text-slate-900 md:text-2xl ${pathwayTitleClass}`}>
-                    {pathwayTitle}
-                  </h3>
+                  return (
+                    <div key={`${section.title}-${index}`}>
+                      {section.title ? (
+                        <h2
+                          className={`text-2xl font-bold text-slate-900 md:text-3xl ${titleClass}`}
+                        >
+                          {section.title}
+                        </h2>
+                      ) : null}
 
-                  {pathwayDescription.doc ? (
-                    <MandateRichText
-                      doc={pathwayDescription.doc}
-                      isKh={isKh}
-                      text={pathwayDescription.text}
-                    />
-                  ) : pathwaySteps.length > 1 ? (
-                    <div
-                      className={`mt-5 flex flex-wrap items-center gap-2 text-base font-medium text-slate-500 md:text-lg ${
-                        pathwayDescriptionClass
-                      }`}
-                    >
-                      {pathwaySteps.map((step, index) => (
-                        <React.Fragment key={`${step}-${index}`}>
-                          {index > 0 ? <span className="text-slate-300">→</span> : null}
-                          <span>{step}</span>
-                        </React.Fragment>
-                      ))}
+                      {section.description.doc ? (
+                        <MandateRichText
+                          doc={section.description.doc}
+                          isKh={isKh}
+                          text={section.description.text}
+                        />
+                      ) : (
+                        <p
+                          className={`mt-5 whitespace-pre-line text-base leading-relaxed text-slate-500 md:text-lg ${descriptionClass}`}
+                        >
+                          {section.description.text}
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <p
-                      className={`mt-5 whitespace-pre-line text-base leading-relaxed text-slate-500 md:text-lg ${
-                        pathwayDescriptionClass
-                      }`}
-                    >
-                      {pathwayDescription.text}
-                    </p>
-                  )}
-                </div>
+                  );
+                })}
 
                 <div className="pt-4">
                   <Link
