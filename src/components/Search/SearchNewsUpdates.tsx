@@ -6,8 +6,9 @@ import { useLanguage } from "@/app/context/LanguageContext";
 
 type Lang = "en" | "kh";
 
-type NewsItem = {
+export type SearchNewsItem = {
     id: number;
+    category: "announcement" | "news";
     title: {
         en: string;
         kh: string;
@@ -24,47 +25,38 @@ type NewsItem = {
 
 type SearchNewsUpdatesProps = {
     query?: string;
+    items?: SearchNewsItem[];
 };
-
-const NEWS_DATA: NewsItem[] = [
-    {
-        id: 1,
-        title: {
-            en: "Government-Private sector forum marks 25 years of dialogue partnership and reform",
-            kh: "វេទិការាជរដ្ឋាភិបាល-ឯកជន អបអរសាទរខួប ២៥ ឆ្នាំ នៃកិច្ចសន្ទនា ភាពជាដៃគូ និងកំណែទម្រង់",
-        },
-        description: {
-            en: 'H.E. Sun Chanthol said, "As we celebrate 25 years of the G-PSF, this mechanism is more important than ever..."',
-            kh: "ឯកឧត្តម ស៊ុន ចាន់ថុល បានមានប្រសាសន៍ថា ក្នុងឱកាសខួប ២៥ ឆ្នាំ នៃវេទិកា G-PSF យន្តការនេះកាន់តែមានសារៈសំខាន់...",
-        },
-        date: "November 2025",
-        href: "/new-update/2",
-        image: "https://placehold.co/400x530/ffffff/2563eb?text=News",
-        languages: ["English"],
-    },
-    {
-        id: 2,
-        title: {
-            en: "Private sector engagement continues to expand across working groups",
-            kh: "ការចូលរួមរបស់វិស័យឯកជនបន្តពង្រីកនៅក្នុងក្រុមការងារ",
-        },
-        description: {
-            en: "Recent progress shows stronger collaboration, increased participation, and more responsive policy dialogue.",
-            kh: "វឌ្ឍនភាពថ្មីៗបង្ហាញពីកិច្ចសហការខ្លាំងឡើង ការចូលរួមកើនឡើង និងកិច្ចសន្ទនាគោលនយោបាយដែលឆ្លើយតបបានល្អជាងមុន។",
-        },
-        date: "September 2025",
-        href: "/new-update/4",
-        image: "https://placehold.co/400x530/ffffff/0f172a?text=Update",
-        languages: ["English", "Khmer"],
-    },
-];
 
 function getText(
     value: { en: string; kh: string } | undefined,
     lang: Lang
 ): string {
     if (!value) return "";
-    return lang === "kh" ? value.kh : value.en;
+    return lang === "kh" ? value.kh || value.en : value.en || value.kh;
+}
+
+function getCategoryLabel(category: "announcement" | "news", lang: Lang) {
+    const labels = {
+        en: {
+            announcement: "ANNOUNCEMENT",
+            news: "NEWS",
+        },
+        kh: {
+            announcement: "សេចក្តីជូនដំណឹង",
+            news: "ព័ត៌មាន",
+        },
+    };
+
+    return labels[lang][category];
+}
+
+function getCategoryBadgeClass(category: "announcement" | "news") {
+    if (category === "announcement") {
+        return "bg-[#ea580c]";
+    }
+
+    return "bg-[#4a56c5]";
 }
 
 function EmptySectionMessage({ language }: { language: Lang }) {
@@ -85,7 +77,7 @@ function NewsListItem({
     item,
     language,
 }: {
-    item: NewsItem;
+    item: SearchNewsItem;
     language: Lang;
 }) {
     return (
@@ -107,8 +99,12 @@ function NewsListItem({
             </div>
 
             <div className="flex-1 max-w-4xl">
-                <span className="inline-flex px-2.5 py-1 rounded text-[10px] font-bold tracking-wide text-white bg-[#4a56c5]">
-                    {language === "kh" ? "ព័ត៌មាន" : "NEWS"}
+                <span
+                    className={`inline-flex px-2.5 py-1 rounded text-[10px] font-bold tracking-wide text-white ${getCategoryBadgeClass(
+                        item.category
+                    )}`}
+                >
+                    {getCategoryLabel(item.category, language)}
                 </span>
 
                 <h2
@@ -160,6 +156,7 @@ function NewsListItem({
 
 export default function SearchNewsUpdates({
     query = "",
+    items = [],
 }: SearchNewsUpdatesProps) {
     const { language } = useLanguage();
     const normalizedQuery = query.trim().toLowerCase();
@@ -180,14 +177,14 @@ export default function SearchNewsUpdates({
     };
 
     const filtered = useMemo(() => {
-        if (!normalizedQuery) return NEWS_DATA;
+        if (!normalizedQuery) return items;
 
-        return NEWS_DATA.filter((item) => {
+        return items.filter((item) => {
             const title = `${item.title.en} ${item.title.kh}`.toLowerCase();
             const desc = `${item.description.en} ${item.description.kh}`.toLowerCase();
             return title.includes(normalizedQuery) || desc.includes(normalizedQuery);
         });
-    }, [normalizedQuery]);
+    }, [items, normalizedQuery]);
 
     return (
         <div className="min-h-screen bg-[#eef1f5]">
