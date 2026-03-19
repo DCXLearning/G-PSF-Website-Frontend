@@ -142,7 +142,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                     <div className="mt-8 flex justify-center">
                         <Link
                             href="/new-update/see-more"
-                            className="rounded-md bg-[#273650] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#24385f]"
+                            className="rounded-md bg-blue-950 px-4 py-2 text-lg font-semibold text-white transition hover:bg-blue-900"
                         >
                             See More
                         </Link>

@@ -173,7 +173,6 @@ export default function EventsAndAnnouncements() {
                 if (!alive) return;
                 console.error("Failed to fetch announcements:", error);
                 setError("Failed to load");
-                // keep cached posts, do not clear state
             } finally {
                 if (!alive) return;
                 setLoading(false);
@@ -198,6 +197,7 @@ export default function EventsAndAnnouncements() {
             download: language === "kh" ? "ទាញយក" : "Download",
             noData: language === "kh" ? "មិនមានទិន្នន័យ" : "No announcements available",
             untitled: language === "kh" ? "គ្មានចំណងជើង" : "Untitled",
+            seeMore: language === "kh" ? "មើលបន្ថែម" : "See More",
         };
     }, [language, sectionTitle]);
 
@@ -209,7 +209,7 @@ export default function EventsAndAnnouncements() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 {/* Left Column */}
                 <div className="lg:col-span-6">
-                    <h2 className="text-3xl font-bold mb-6">{labels.eventsTitle}</h2>
+                    <h2 className="text-3xl khmer-font font-bold mb-6">{labels.eventsTitle}</h2>
 
                     <div className="bg-[#e9ecef] p-6 rounded-sm">
                         <div className="flex items-center gap-1 bg-white/50 p-1 rounded-full mb-6 border border-gray-200">
@@ -256,6 +256,12 @@ export default function EventsAndAnnouncements() {
                                 ))}
                             </div>
                         </div>
+                    </div>
+                    {/* See More Button for Events */}
+                    <div className="mt-6 text-center">
+                        <Link href="/new-update/seemore_events" className="text-white khmer-font bg-blue-950 hover:bg-blue-900 py-2 px-4 rounded-lg font-semibold">
+                            {labels.seeMore}
+                        </Link>
                     </div>
                 </div>
 
@@ -317,7 +323,7 @@ export default function EventsAndAnnouncements() {
                                                 href={fileUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-[10px] font-bold flex items-center mt-auto uppercase tracking-tighter hover:text-orange-500"
+                                                className="text-[10px] khmer-font font-bold flex items-center mt-auto uppercase tracking-tighter hover:text-orange-500"
                                             >
                                                 {labels.download}
                                                 <span className="ml-1 text-lg">›</span>
@@ -327,6 +333,12 @@ export default function EventsAndAnnouncements() {
                                 );
                             })
                         )}
+                    </div>
+                    {/* See More Button for Announcements */}
+                    <div className="mt-6 text-center">
+                        <Link href="/new-update/seemore_announcements" className="text-white khmer-font bg-blue-950 hover:bg-blue-900 py-2 px-4 rounded-lg font-semibold">
+                            {labels.seeMore}
+                        </Link>
                     </div>
                 </div>
             </div>
