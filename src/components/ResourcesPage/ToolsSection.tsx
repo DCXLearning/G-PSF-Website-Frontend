@@ -173,8 +173,8 @@ export default function ToolsSection() {
     return (
         <section className={`bg-white py-20 px-4 ${fontClass}`}>
             <div className="max-w-6xl mx-auto text-center">
-                <h2 className="text-2xl md:text-3xl font-bold text-[#1e1e4b] uppercase tracking-tight">
-                    {pickText(block?.title, uiLang) || "Templates & Forms"}
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1e1e4b] tracking-tight">
+                    {pickText(block?.title, uiLang) || "Standerd Templates & Forms"}
                 </h2>
 
                 <h1 className="text-5xl md:text-6xl font-bold text-[#1e1e4b] mt-2 mb-6">

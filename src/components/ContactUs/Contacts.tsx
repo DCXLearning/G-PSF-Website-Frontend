@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Facebook, Send, MessageCircle, Loader2 } from "lucide-react";
+import { Facebook, Send, MessageCircle, Loader2, Subtitles } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 /** =========================
  *  TYPES
@@ -33,18 +34,15 @@ type SiteSettingsUI = {
 function normalizeSiteSettings(apiJson: any): SiteSettingsUI {
   const d = apiJson?.data ?? {};
 
-  // address.en
   const addressText = d?.address?.en ?? "";
   const addressLines = String(addressText)
     .split("\n")
     .map((s: string) => s.trim())
     .filter(Boolean);
 
-  // contact.en
   const contactEn = d?.contact?.en ?? {};
   const phones: string[] = Array.isArray(contactEn?.phones) ? contactEn.phones : [];
 
-  // desks: [{ title, emails[] }]
   const desks: Desk[] = Array.isArray(contactEn?.desks)
     ? contactEn.desks
         .map((x: any) => ({
@@ -54,7 +52,6 @@ function normalizeSiteSettings(apiJson: any): SiteSettingsUI {
         .filter((x: Desk) => x.label || x.emails.length)
     : [];
 
-  // openTime.en -> 2 lines
   const openText = String(d?.openTime?.en ?? "").trim();
   const openLines = openText
     .split("\n")
@@ -64,7 +61,6 @@ function normalizeSiteSettings(apiJson: any): SiteSettingsUI {
   const openDaysText = openLines[0] ?? "";
   const openTimeText = openLines.slice(1).join(" ") ?? "";
 
-  // socialLinks -> icon mapping
   const socialLinks: Array<{ url?: string; icon?: string }> = Array.isArray(d?.socialLinks)
     ? d.socialLinks
     : [];
@@ -84,9 +80,50 @@ function normalizeSiteSettings(apiJson: any): SiteSettingsUI {
 }
 
 /** =========================
+ *  TRANSLATIONS
+ *  ========================= */
+const translations = {
+  en: {
+    title: "Contact Us",
+    subtitle_top: "Send Us a Message",
+    subtitle_bottom: "to Start a Conversation",
+    firstName: "First Name",
+    lastName: "Last Name",
+    email: "Email",
+    organisation: "Organisation Name",
+    subject: "Subject",
+    message: "Your Message",
+    send: "Send Message",
+    sending: "Sending...",
+    success: "Message sent successfully!",
+    required: "Please fill in all required fields.",
+    invalidEmail: "Please enter a valid email address.",
+  },
+  kh: {
+    title: "ទាក់ទងមកយើង",
+    subtitle_top: "ផ្ញើសារមកយើង",
+    subtitle_bottom: "ដើម្បីចាប់ផ្តើមការសន្ទនា",
+    firstName: "នាមខ្លួន",
+    lastName: "នាមត្រកូល",
+    email: "អ៊ីមែល",
+    organisation: "ឈ្មោះអង្គការ",
+    subject: "ប្រធានបទ",
+    message: "សារ​របស់​អ្នក",
+    send: "ផ្ញើសារ",
+    sending: "កំពុងផ្ញើ...",
+    success: "ផ្ញើសារជោគជ័យ!",
+    required: "សូមបំពេញព័ត៌មានចាំបាច់ទាំងអស់។",
+    invalidEmail: "សូមបញ្ចូលអ៊ីមែលត្រឹមត្រូវ។",
+  },
+};
+
+/** =========================
  *  COMPONENT
  *  ========================= */
 export default function ContactSection() {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   const [form, setForm] = useState<ContactPayload>({
     firstName: "",
     lastName: "",
@@ -100,33 +137,27 @@ export default function ContactSection() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  //sidebar data
   const [settings, setSettings] = useState<SiteSettingsUI | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsError, setSettingsError] = useState("");
 
-  //REQUIRED: fetch via Next.js API proxy (avoid CORS)
   useEffect(() => {
     let mounted = true;
 
     async function loadSettings() {
       setSettingsLoading(true);
       setSettingsError("");
-
       try {
         const res = await fetch("/api/site-settings", { cache: "no-store" });
-
         const text = await res.text();
         let json: any = null;
         try {
           json = text ? JSON.parse(text) : null;
         } catch {}
-
         if (!res.ok) {
           const msg = json?.message || text || `HTTP ${res.status}`;
           throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
         }
-
         const ui = normalizeSiteSettings(json);
         if (mounted) setSettings(ui);
       } catch (e: any) {
@@ -162,13 +193,13 @@ export default function ContactSection() {
     setErrorMsg("");
 
     if (!canSubmit) {
-      setErrorMsg("Please fill in all required fields.");
+      setErrorMsg(t.required);
       return;
     }
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
     if (!emailOk) {
-      setErrorMsg("Please enter a valid email address.");
+      setErrorMsg(t.invalidEmail);
       return;
     }
 
@@ -199,7 +230,7 @@ export default function ContactSection() {
         throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
       }
 
-      setSuccessMsg("Message sent successfully!");
+      setSuccessMsg(t.success);
       setForm({
         firstName: "",
         lastName: "",
@@ -219,10 +250,9 @@ export default function ContactSection() {
     <div className="max-w-7xl mx-auto px-4 pb-6 pt-6 md:pt-8 md:pb-8 bg-white">
       {/* Header */}
       <div className="text-center mb-12">
-        <h3 className="text-[#1e2653] text-3xl font-semibold mb-2">Contact Us</h3>
-        <h2 className="text-3xl md:text-5xl text-[#1e2653] font-semibold">
-          Send Us a Message <br /> to Start a Conversation
-        </h2>
+        <h3 className="text-[#1e2653] text-3xl khmer-font font-semibold mb-2">{t.title}</h3>
+        <h2 className="text-3xl md:text-5xl text-[#1e2653]  khmer-font font-semibold">{t.subtitle_top}</h2>
+        <h2 className="text-3xl md:text-5xl text-[#1e2653]  khmer-font font-semibold">{t.subtitle_bottom}</h2>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -231,8 +261,12 @@ export default function ContactSection() {
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-lg font-semibold text-[#1e2653] mb-2">
-                  First Name <span className="text-orange-500">*</span>
+                <label
+                  className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                    language === "kh" ? "khmer-font" : ""
+                  }`}
+                >
+                  {t.firstName} <span className="text-orange-500">*</span>
                 </label>
                 <input
                   value={form.firstName}
@@ -244,8 +278,12 @@ export default function ContactSection() {
               </div>
 
               <div>
-                <label className="block text-lg font-semibold text-[#1e2653] mb-2">
-                  Last Name <span className="text-orange-500">*</span>
+                <label
+                  className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                    language === "kh" ? "khmer-font" : ""
+                  }`}
+                >
+                  {t.lastName} <span className="text-orange-500">*</span>
                 </label>
                 <input
                   value={form.lastName}
@@ -259,8 +297,12 @@ export default function ContactSection() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-lg font-semibold text-[#1e2653] mb-2">
-                  Email <span className="text-orange-500">*</span>
+                <label
+                  className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                    language === "kh" ? "khmer-font" : ""
+                  }`}
+                >
+                  {t.email} <span className="text-orange-500">*</span>
                 </label>
                 <input
                   value={form.email}
@@ -272,8 +314,12 @@ export default function ContactSection() {
               </div>
 
               <div>
-                <label className="block text-lg font-semibold text-[#1e2653] mb-2">
-                  Organisation Name
+                <label
+                  className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                    language === "kh" ? "khmer-font" : ""
+                  }`}
+                >
+                  {t.organisation}
                 </label>
                 <input
                   value={form.organisationName || ""}
@@ -286,8 +332,12 @@ export default function ContactSection() {
             </div>
 
             <div>
-              <label className="block text-lg font-semibold text-[#1e2653] mb-2">
-                Subject <span className="text-orange-500">*</span>
+              <label
+                className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                  language === "kh" ? "khmer-font" : ""
+                }`}
+              >
+                {t.subject} <span className="text-orange-500">*</span>
               </label>
               <input
                 value={form.subject}
@@ -299,8 +349,12 @@ export default function ContactSection() {
             </div>
 
             <div>
-              <label className="block text-lg font-semibold text-[#1e2653] mb-2">
-                Your Message <span className="text-orange-500">*</span>
+              <label
+                className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                  language === "kh" ? "khmer-font" : ""
+                }`}
+              >
+                {t.message} <span className="text-orange-500">*</span>
               </label>
               <textarea
                 value={form.message}
@@ -328,17 +382,17 @@ export default function ContactSection() {
               type="submit"
               disabled={loading}
               className={
-                "bg-[#f39233] hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-full transition duration-300 inline-flex items-center gap-2 " +
+                "bg-[#f39233] hover:bg-orange-600 text-white khmer-font font-semibold py-3 px-8 rounded-full transition duration-300 inline-flex items-center gap-2 " +
                 (loading ? "opacity-70 cursor-not-allowed" : "")
               }
             >
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
-              {loading ? "Sending..." : "Send Message"}
+              {loading ? t.sending : t.send}
             </button>
           </form>
         </div>
 
-        {/* Sidebar Information from API */}
+        {/* Sidebar */}
         <div className="bg-[#1e2653] text-white p-8 rounded-2xl space-y-8">
           {settingsLoading ? (
             <div className="text-sm text-gray-300">Loading contact info...</div>
@@ -362,7 +416,6 @@ export default function ContactSection() {
 
               <section className="space-y-4">
                 <h4 className="text-xl font-semibold">Contact</h4>
-
                 <div className="text-sm space-y-1">
                   {settings?.phones?.map((p, idx) => (
                     <p key={idx}>{p}</p>
@@ -423,7 +476,7 @@ export default function ContactSection() {
         </div>
       </div>
 
-      {/* Map Section (static for now) */}
+      {/* Map */}
       <div className="w-full h-[500px] bg-gray-200 overflow-hidden rounded-2xl shadow-inner">
         <iframe
           title="CDC Cambodia Location"

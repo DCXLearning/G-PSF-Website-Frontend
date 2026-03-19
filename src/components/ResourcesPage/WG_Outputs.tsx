@@ -175,7 +175,7 @@ export default function WGOutputs() {
         <section className="bg-white py-16 px-4 max-w-7xl mx-auto font-sans">
             {/* Header */}
             <div className="text-center mb-12">
-                <h3 className="text-[#1e2756] text-xl md:text-2xl font-semibold tracking-wide uppercase">
+                <h3 className="text-[#1e2756] text-xl md:text-2xl font-semibold tracking-wide">
                     Insights — Findings — Results
                 </h3>
 
