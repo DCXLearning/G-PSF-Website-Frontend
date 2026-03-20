@@ -16,6 +16,7 @@ type SchedulePost = {
     id?: number;
     slug?: string | null;
     title?: I18nText;
+    description?: I18nText;
     publishedAt?: string | null;
     createdAt?: string | null;
     updatedAt?: string | null;
@@ -48,6 +49,7 @@ type HighlightedDate = {
     monthKey: string;
     day: number;
     title: string;
+    description: string;
     href: string;
 };
 
@@ -151,13 +153,14 @@ function buildHighlightedDates(
         const day = date.getDate();
         const mapKey = `${monthKey}-${day}`;
         const postTitle = getText(post.title, lang);
-
-        // Save the post title and detail link on each date for hover + click.
+        const postDescription = getText(post.description, lang);
+        // Save title + description so the custom tooltip can show both parts.
         if (!groupedDates.has(mapKey)) {
             groupedDates.set(mapKey, {
                 monthKey,
                 day,
                 title: postTitle,
+                description: postDescription,
                 href: buildDetailHref(post),
             });
             continue;
@@ -165,10 +168,18 @@ function buildHighlightedDates(
 
         const existing = groupedDates.get(mapKey);
 
-        if (existing && postTitle) {
-            existing.title = existing.title
-                ? `${existing.title}\n${postTitle}`
-                : postTitle;
+        if (existing) {
+            if (postTitle) {
+                existing.title = existing.title
+                    ? `${existing.title}\n${postTitle}`
+                    : postTitle;
+            }
+
+            if (postDescription) {
+                existing.description = existing.description
+                    ? `${existing.description}\n\n${postDescription}`
+                    : postDescription;
+            }
         }
     }
 
@@ -213,7 +224,7 @@ function Calendar({
     const days = Array.from({ length: totalDays }, (_, index) => index + 1);
 
     return (
-        <div className="bg-[#f4f6f7] rounded-xl overflow-hidden shadow-sm border border-gray-100 h-full flex flex-col">
+        <div className="bg-[#f4f6f7] rounded-xl overflow-visible shadow-sm border border-gray-100 h-full flex flex-col">
             <div className="py-3 sm:py-4 text-center">
                 <h3
                     className={`text-lg sm:text-xl font-medium tracking-widest text-gray-800 ${
@@ -253,14 +264,31 @@ function Calendar({
                             <Link
                                 key={`${month.key}-${day}`}
                                 href={highlightedDate.href}
-                                className="relative flex items-center justify-center cursor-pointer"
-                                title={highlightedDate.title || undefined}
+                                className="group relative flex items-center justify-center cursor-pointer"
                             >
                                 <div className="absolute w-7 h-7 sm:w-8 sm:h-8 bg-[#ffb347] rounded-full shadow-inner" />
 
                                 <span className="relative z-10 text-xs sm:text-sm font-semibold text-black">
                                     {day}
                                 </span>
+
+                                <div
+                                    className={`pointer-events-none absolute left-1/2 top-full z-20 hidden w-60 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${
+                                        lang === "kh" ? "khmer-font" : ""
+                                    }`}
+                                >
+                                    {highlightedDate.title ? (
+                                        <p className="text-xs sm:text-sm font-semibold whitespace-pre-line">
+                                            {highlightedDate.title}
+                                        </p>
+                                    ) : null}
+
+                                    {highlightedDate.description ? (
+                                        <p className="mt-2 text-[11px] sm:text-xs leading-5 text-white/85 whitespace-pre-line">
+                                            {highlightedDate.description}
+                                        </p>
+                                    ) : null}
+                                </div>
                             </Link>
                         );
                     }
