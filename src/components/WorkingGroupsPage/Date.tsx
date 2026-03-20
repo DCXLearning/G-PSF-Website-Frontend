@@ -24,6 +24,7 @@ type SchedulePost = {
 };
 
 type ScheduleBlock = {
+    id?: number;
     type?: string;
     enabled?: boolean;
     title?: I18nText;
