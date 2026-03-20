@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Grid3X3, List } from "lucide-react";
+import { Grid3X3, List, CalendarDays } from "lucide-react";
 
 type LangText = string | { en?: string; km?: string };
 
@@ -66,6 +66,7 @@ function formatDate(dateValue?: string | null): string {
   if (Number.isNaN(date.getTime())) return dateValue;
 
   return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
     month: "long",
     year: "numeric",
   }).format(date);
@@ -249,31 +250,36 @@ export default function NewsUpdateListPage() {
                   </div>
                 </Link>
 
-                <div className="min-w-0 pt-1">
-                  <span className="inline-block rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
-                    {item.type}
-                  </span>
+                <div className="flex min-w-0 flex-col justify-between pt-1">
+                  <div>
+                    <span className="inline-block rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
+                      {item.type}
+                    </span>
 
-                  <Link href={item.detailHref} className="block">
-                    <h2 className="mt-3 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline md:text-xl lg:text-[25px]">
-                      {item.title}
-                    </h2>
-                  </Link>
+                    <Link href={item.detailHref} className="block">
+                      <h2 className="mt-3 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline md:text-xl lg:text-[25px]">
+                        {item.title}
+                      </h2>
+                    </Link>
 
-                  <p className="mt-2 text-lg font-bold khmer-font text-[#0f2347] md:text-2xl lg:text-[28px]">
-                    {item.date}
-                  </p>
+                    <p className="mt-4 max-w-4xl text-sm leading-7 khmer-font text-[#4f6482] md:text-base md:leading-8 lg:text-[19px]">
+                      {item.excerpt || "No description available."}
+                    </p>
+                  </div>
 
-                  <p className="mt-4 max-w-4xl text-sm leading-7 khmer-font text-[#4f6482] md:text-base md:leading-8 lg:text-[19px]">
-                    {item.excerpt || "No description available."}
-                  </p>
+                  <div className="mt-6 flex flex-col gap-3 pt-4">
+                    <Link
+                      href={item.detailHref}
+                      className="inline-block w-fit text-base font-bold text-[#0f2347] underline md:text-lg lg:text-[18px]"
+                    >
+                      View details
+                    </Link>
 
-                  <Link
-                    href={item.detailHref}
-                    className="mt-4 inline-block text-base font-bold text-[#0f2347] underline md:text-lg lg:text-[18px]"
-                  >
-                    View details
-                  </Link>
+                    <div className="flex items-center gap-2 text-sm font-medium text-[#6a7b96] md:text-base">
+                      <CalendarDays className="h-4 w-4 shrink-0" />
+                      <span className="khmer-font">{item.date || "No date"}</span>
+                    </div>
+                  </div>
                 </div>
               </article>
             ))}
@@ -304,31 +310,36 @@ export default function NewsUpdateListPage() {
                   </div>
                 </Link>
 
-                <div className="flex grow flex-col p-5">
-                  <span className="inline-block w-fit rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
-                    {item.type}
-                  </span>
+                <div className="flex h-full grow flex-col justify-between p-5">
+                  <div>
+                    <span className="inline-block w-fit rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
+                      {item.type}
+                    </span>
 
-                  <Link href={item.detailHref} className="block">
-                    <h2 className="mt-3 line-clamp-2 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline">
-                      {item.title}
-                    </h2>
-                  </Link>
+                    <Link href={item.detailHref} className="block">
+                      <h2 className="mt-3 line-clamp-2 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline">
+                        {item.title}
+                      </h2>
+                    </Link>
 
-                  <p className="mt-2 text-lg khmer-font font-bold text-[#0f2347]">
-                    {item.date}
-                  </p>
+                    <p className="mt-4 line-clamp-3 khmer-font text-sm leading-7 text-[#4f6482]">
+                      {item.excerpt || "No description available."}
+                    </p>
+                  </div>
 
-                  <p className="mt-4 line-clamp-4 khmer-font text-sm leading-7 text-[#4f6482]">
-                    {item.excerpt || "No description available."}
-                  </p>
+                  <div className="mt-6 flex flex-col gap-3 pt-5">
+                    <Link
+                      href={item.detailHref}
+                      className="inline-block w-fit text-base font-bold text-[#0f2347] underline"
+                    >
+                      View details
+                    </Link>
 
-                  <Link
-                    href={item.detailHref}
-                    className="mt-auto pt-5 text-base font-bold text-[#0f2347] underline"
-                  >
-                    View details
-                  </Link>
+                    <div className="flex items-center gap-2 text-sm font-medium text-[#6a7b96]">
+                      <CalendarDays className="h-4 w-4 shrink-0" />
+                      <span className="khmer-font">{item.date || "No date"}</span>
+                    </div>
+                  </div>
                 </div>
               </article>
             ))}
@@ -337,4 +348,4 @@ export default function NewsUpdateListPage() {
       </div>
     </section>
   );
-} 
+}
