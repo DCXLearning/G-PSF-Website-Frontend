@@ -2,7 +2,7 @@ import React from 'react'
 import BannerWorkingGroups from '../WorkingGroupsPage/BannerWorking'
 import WorkingGroups16 from '../WorkingGroupsPage/TitleWorkingGroups'
 import WorkGroupsGrid from '../WorkingGroupsPage/WorkingGroupsCard'
-import Date from '../WorkingGroupsPage/Date'
+import WorkingGroupsDate from '../WorkingGroupsPage/Date'
 import SubmissionForm from '../WorkingGroupsPage/SubmissionForm'
 import Engage from '../WorkingGroupsPage/Engage'
 import SlideWorking from '../WorkingGroupsPage/SlideWorking'
@@ -15,7 +15,7 @@ export default function RouterWorkingGroups() {
             <BannerWorkingGroups />
             <WorkingGroups16 />
             <WorkGroupsGrid />
-            <Date />
+            <WorkingGroupsDate />
             <Engage />
             <SubmissionForm />
             <SlideWorking />

@@ -10,6 +10,11 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug")?.trim() || "working-groups";
+    // Let the frontend ask for only the block types it needs.
+    const types = (searchParams.get("types") ?? "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
     const apiBase = process.env.NEXT_PUBLIC_API_URL || FALLBACK_API_BASE;
     const upstream = `${apiBase}/pages/${encodeURIComponent(slug)}/section`;
 
@@ -27,6 +32,13 @@ export async function GET(request: Request) {
     }
 
     const data = await res.json();
+
+    // Allow components to request only the block types they need.
+    if (types.length > 0 && Array.isArray(data?.data?.blocks)) {
+      data.data.blocks = data.data.blocks.filter((block: { type?: string }) =>
+        types.includes(block.type ?? "")
+      );
+    }
 
     // Pass-through (you can also "shape" the response here if you want)
     return NextResponse.json(data, { status: 200 });
