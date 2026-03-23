@@ -383,10 +383,8 @@ export default function WorkingGroupsDate() {
                 setSectionTitle(getText(scheduleBlock?.title, apiLang));
                 setCalendarMonths(buildCalendarMonths(posts));
                 setHighlightedDates(buildHighlightedDates(posts, apiLang));
-                // Use the section id for the "Show More" page.
-                setShowMoreHref(
-                    scheduleBlock?.id ? `/sections/${scheduleBlock.id}/posts` : ""
-                );
+                // The See More button now opens the shared events list page.
+                setShowMoreHref("/events-meetings");
             } catch (error) {
                 console.error("Failed to load working groups dates:", error);
 
