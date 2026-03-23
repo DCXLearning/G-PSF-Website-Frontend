@@ -1,11 +1,68 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 type Lang = "en" | "kh";
+type ApiLang = "en" | "km";
 type SearchItemType = "news" | "resource" | "event";
+
+type I18nText = {
+    en?: string | null;
+    km?: string | null;
+};
+
+type ApiFile = {
+    url?: string | null;
+    thumbnailUrl?: string | null;
+} | null;
+
+type ApiPost = {
+    id: number;
+    slug?: string | null;
+    title?: I18nText | null;
+    description?: I18nText | null;
+    publishedAt?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    status?: string | null;
+    isPublished?: boolean | null;
+    expiredAt?: string | null;
+    coverImage?: string | null;
+    documents?: {
+        en?: ApiFile;
+        km?: ApiFile;
+    } | null;
+    documentThumbnails?: {
+        en?: string | null;
+        km?: string | null;
+    } | null;
+    author?: {
+        displayName?: string | null;
+    } | null;
+    category?: {
+        id?: number | null;
+        name?: I18nText | null;
+    } | null;
+    page?: {
+        id?: number | null;
+        slug?: string | null;
+        title?: I18nText | null;
+    } | null;
+    section?: {
+        pageId?: number | null;
+        blockType?: string | null;
+        title?: I18nText | null;
+    } | null;
+};
+
+type PostsResponse = {
+    success?: boolean;
+    message?: string;
+    data?: ApiPost[];
+    items?: ApiPost[];
+};
 
 type SearchItem = {
     id: number;
@@ -36,72 +93,172 @@ type SearchPageClientProps = {
     query?: string;
 };
 
-const SEARCH_DATA: SearchItem[] = [
-    {
-        id: 1,
-        type: "resource",
+const ALLOWED_BLOCK_TYPES = new Set(["post_list", "announcement"]);
+
+function cleanText(value?: string | null) {
+    return value?.trim() ?? "";
+}
+
+function getDateValue(post: ApiPost) {
+    return (
+        cleanText(post.publishedAt) ||
+        cleanText(post.createdAt) ||
+        cleanText(post.updatedAt)
+    );
+}
+
+function formatPostDate(post: ApiPost, lang: ApiLang) {
+    const value = getDateValue(post);
+
+    if (!value) {
+        return "";
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    return new Intl.DateTimeFormat(lang === "km" ? "km-KH" : "en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+    }).format(date);
+}
+
+function buildDetailHref(post: ApiPost) {
+    const slug = cleanText(post.slug);
+
+    if (slug) {
+        return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
+    }
+
+    return `/new-update/view-detail?id=${post.id}`;
+}
+
+function pickImage(post: ApiPost, lang: ApiLang) {
+    return (
+        cleanText(post.coverImage) ||
+        cleanText(post.documentThumbnails?.[lang]) ||
+        cleanText(post.documentThumbnails?.en) ||
+        cleanText(post.documents?.[lang]?.thumbnailUrl) ||
+        cleanText(post.documents?.en?.thumbnailUrl)
+    );
+}
+
+function getLanguages(post: ApiPost) {
+    const languages: string[] = [];
+
+    // Show which language versions exist for the current post.
+    if (
+        cleanText(post.title?.en) ||
+        cleanText(post.description?.en) ||
+        cleanText(post.documents?.en?.url)
+    ) {
+        languages.push("English");
+    }
+
+    if (
+        cleanText(post.title?.km) ||
+        cleanText(post.description?.km) ||
+        cleanText(post.documents?.km?.url)
+    ) {
+        languages.push("Khmer");
+    }
+
+    return languages;
+}
+
+function isPostVisible(post: ApiPost) {
+    if (post.isPublished !== true && post.status !== "published") {
+        return false;
+    }
+
+    if (post.expiredAt) {
+        const expiredTime = new Date(post.expiredAt).getTime();
+
+        if (!Number.isNaN(expiredTime) && expiredTime < Date.now()) {
+            return false;
+        }
+    }
+
+    return ALLOWED_BLOCK_TYPES.has(cleanText(post.section?.blockType));
+}
+
+function getItemType(post: ApiPost): SearchItemType {
+    const pageSlug = cleanText(post.page?.slug);
+    const pageId = post.page?.id ?? post.section?.pageId ?? 0;
+    const sectionTitle = cleanText(post.section?.title?.en).toLowerCase();
+    const categoryId = post.category?.id ?? 0;
+    const blockType = cleanText(post.section?.blockType);
+
+    if (pageSlug === "resources" || pageId === 12) {
+        return "resource";
+    }
+
+    if (
+        pageSlug === "working-groups" ||
+        pageId === 29 ||
+        categoryId === 8 ||
+        sectionTitle === "event & meetings schedule"
+    ) {
+        return "event";
+    }
+
+    // Announcements and news-updates posts both stay in the news section UI.
+    if (blockType === "announcement") {
+        return "news";
+    }
+
+    return "news";
+}
+
+function mapPostToSearchItem(post: ApiPost): SearchItem {
+    const languages = getLanguages(post);
+    const orgEn =
+        cleanText(post.page?.title?.en) || cleanText(post.category?.name?.en);
+    const orgKh =
+        cleanText(post.page?.title?.km) || cleanText(post.category?.name?.km);
+    const authorName = cleanText(post.author?.displayName);
+
+    return {
+        id: post.id,
+        type: getItemType(post),
         title: {
-            en: "Title of Publication",
-            kh: "ចំណងជើងនៃការបោះពុម្ពផ្សាយ",
+            en: cleanText(post.title?.en) || cleanText(post.title?.km) || "Untitled",
+            kh: cleanText(post.title?.km) || cleanText(post.title?.en) || "គ្មានចំណងជើង",
         },
         description: {
-            en: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.",
-            kh: "ខ្លឹមសារពិពណ៌នាឧទាហរណ៍ សម្រាប់ការបោះពុម្ពផ្សាយនេះ។",
+            en: cleanText(post.description?.en) || cleanText(post.description?.km),
+            kh: cleanText(post.description?.km) || cleanText(post.description?.en),
         },
-        date: "December 2025",
-        href: "/resources",
-        image: "https://placehold.co/400x530/ffffff/111827?text=G-PSF+Cover",
-        org: {
-            en: "Organisation or Agency Name",
-            kh: "ឈ្មោះអង្គការ ឬស្ថាប័ន",
-        },
-        author: {
-            en: "Author Name",
-            kh: "ឈ្មោះអ្នកនិពន្ធ",
-        },
-        languages: ["Khmer"],
-    },
-    {
-        id: 2,
-        type: "event",
-        title: {
-            en: "Title of Video",
-            kh: "ចំណងជើងវីដេអូ",
-        },
-        description: {
-            en: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.",
-            kh: "ខ្លឹមសារពិពណ៌នាឧទាហរណ៍ សម្រាប់វីដេអូនេះ។",
-        },
-        date: "January 2024",
-        href: "/event",
-        image: "https://placehold.co/400x530/f8fafc/ef4444?text=Play+Icon",
-        org: {
-            en: "Organisation or Agency Name",
-            kh: "ឈ្មោះអង្គការ ឬស្ថាប័ន",
-        },
-        author: {
-            en: "Author Name",
-            kh: "ឈ្មោះអ្នកនិពន្ធ",
-        },
-        languages: ["English"],
-    },
-    {
-        id: 3,
-        type: "news",
-        title: {
-            en: "Government-Private sector forum marks 25 years of dialogue partnership and reform",
-            kh: "វេទិការាជរដ្ឋាភិបាល-ឯកជន អបអរសាទរខួប ២៥ ឆ្នាំ នៃកិច្ចសន្ទនា ភាពជាដៃគូ និងកំណែទម្រង់",
-        },
-        description: {
-            en: 'H.E. Sun Chanthol said, "As we celebrate 25 years of the G-PSF, this mechanism is more important than ever. In the face of new regional challenges..."',
-            kh: "ឯកឧត្តម ស៊ុន ចាន់ថុល បានមានប្រសាសន៍ថា ក្នុងឱកាសខួប ២៥ ឆ្នាំ នៃវេទិកា G-PSF យន្តការនេះកាន់តែមានសារៈសំខាន់...",
-        },
-        date: "December 2025",
-        href: "/new-update",
-        image: "https://placehold.co/400x530/ffffff/1d4ed8?text=CAPRED",
-        languages: ["English"],
-    },
-];
+        date: formatPostDate(post, "en"),
+        href: buildDetailHref(post),
+        image: pickImage(post, "en"),
+        org:
+            orgEn || orgKh
+                ? {
+                      en: orgEn || orgKh,
+                      kh: orgKh || orgEn,
+                  }
+                : undefined,
+        author: authorName
+            ? {
+                  en: authorName,
+                  kh: authorName,
+              }
+            : undefined,
+        languages: languages.length > 0 ? languages : undefined,
+    };
+}
+
+function sortPosts(posts: ApiPost[]) {
+    return [...posts].sort((firstPost, secondPost) => {
+        const firstTime = new Date(getDateValue(firstPost) || 0).getTime();
+        const secondTime = new Date(getDateValue(secondPost) || 0).getTime();
+        return secondTime - firstTime;
+    });
+}
 
 function getText(
     value: { en: string; kh: string } | undefined,
@@ -279,40 +436,95 @@ export default function SearchPageClient({
     query = "",
 }: SearchPageClientProps) {
     const { language } = useLanguage();
-    const normalizedQuery = query.trim().toLowerCase();
+    const [items, setItems] = useState<SearchItem[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const normalizedQuery = query.trim();
 
     const content = {
         en: {
             title: "Search Results",
             subtitle: "Find content across New & Updates, Resources, and Events.",
             resultFor: "Showing results for",
+            loading: "Loading search results...",
+            error: "Failed to load search results.",
         },
         kh: {
             title: "លទ្ធផលស្វែងរក",
             subtitle: "ស្វែងរកមាតិកាក្នុងព័ត៌មាន និងបច្ចុប្បន្នភាព ធនធាន និងព្រឹត្តិការណ៍។",
             resultFor: "បង្ហាញលទ្ធផលសម្រាប់",
+            loading: "កំពុងទាញយកលទ្ធផលស្វែងរក...",
+            error: "មិនអាចទាញយកលទ្ធផលស្វែងរកបានទេ។",
         },
     };
 
-    const filtered = useMemo(() => {
-        if (!normalizedQuery) return SEARCH_DATA;
+    useEffect(() => {
+        let alive = true;
 
-        return SEARCH_DATA.filter((item) => {
-            const title = `${item.title.en} ${item.title.kh}`.toLowerCase();
-            const desc = `${item.description.en} ${item.description.kh}`.toLowerCase();
-            const org = `${item.org?.en ?? ""} ${item.org?.kh ?? ""}`.toLowerCase();
-            const author = `${item.author?.en ?? ""} ${item.author?.kh ?? ""}`.toLowerCase();
+        async function loadSearchResults() {
+            if (!normalizedQuery) {
+                setItems([]);
+                setError("");
+                setLoading(false);
+                return;
+            }
 
-            return (
-                title.includes(normalizedQuery) ||
-                desc.includes(normalizedQuery) ||
-                org.includes(normalizedQuery) ||
-                author.includes(normalizedQuery)
-            );
-        });
+            try {
+                setLoading(true);
+                setError("");
+
+                // Keep the UI the same, but replace the mock data with the real search endpoint.
+                const response = await fetch(
+                    `/api/posts?search=${encodeURIComponent(normalizedQuery)}&types=post_list,announcement`,
+                    {
+                        cache: "no-store",
+                    }
+                );
+
+                const json = (await response.json()) as PostsResponse;
+
+                if (!response.ok) {
+                    throw new Error(json.message || "Failed to fetch search results");
+                }
+
+                const posts = Array.isArray(json.data)
+                    ? json.data
+                    : Array.isArray(json.items)
+                      ? json.items
+                      : [];
+
+                const visiblePosts = sortPosts(posts).filter(isPostVisible);
+                const mappedItems = visiblePosts.map(mapPostToSearchItem);
+
+                if (!alive) {
+                    return;
+                }
+
+                setItems(mappedItems);
+            } catch (error) {
+                if (!alive) {
+                    return;
+                }
+
+                const message =
+                    error instanceof Error ? error.message : "Failed to fetch search results";
+                setItems([]);
+                setError(message);
+            } finally {
+                if (alive) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        loadSearchResults();
+
+        return () => {
+            alive = false;
+        };
     }, [normalizedQuery]);
 
-    const grouped = useMemo(() => groupByType(filtered), [filtered]);
+    const grouped = useMemo(() => groupByType(items), [items]);
 
     return (
         <div className="min-h-screen bg-[#eef1f5]">
@@ -347,6 +559,26 @@ export default function SearchPageClient({
                         </div>
                     ) : null}
                 </div>
+
+                {loading ? (
+                    <div
+                        className={`mb-8 text-[16px] text-[#64748b] ${
+                            language === "kh" ? "khmer-font" : ""
+                        }`}
+                    >
+                        {content[language].loading}
+                    </div>
+                ) : null}
+
+                {error ? (
+                    <div
+                        className={`mb-8 text-[16px] text-red-600 ${
+                            language === "kh" ? "khmer-font" : ""
+                        }`}
+                    >
+                        {content[language].error}
+                    </div>
+                ) : null}
 
                 <div className="bg-transparent">
                     <section className="mb-10">
