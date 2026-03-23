@@ -99,7 +99,19 @@ function writeCache(block: ApiBlock | null) {
 }
 
 /** ---------- UI ---------- */
+type WGOutputsSectionProps = {
+    showAllPosts?: boolean;
+    showSeeMoreButton?: boolean;
+};
+
 export default function WGOutputs() {
+    return <WGOutputsSection />;
+}
+
+export function WGOutputsSection({
+    showAllPosts = false,
+    showSeeMoreButton = true,
+}: WGOutputsSectionProps = {}) {
     // const { language } = useLanguage();
     // const apiLang: "en" | "km" = language === "kh" ? "km" : "en";
 
@@ -159,11 +171,15 @@ export default function WGOutputs() {
 
     const posts = useMemo(() => {
         const arr = block?.posts || [];
-        return arr.filter((p) => (p.status ? p.status === "published" : true));
-    }, [block]);
+        const publishedPosts = arr.filter((p) => (p.status ? p.status === "published" : true));
+
+        // Homepage keeps the hero card + 2 side cards.
+        // The dedicated page shows all published WG output posts.
+        return showAllPosts ? publishedPosts : publishedPosts.slice(0, 3);
+    }, [block, showAllPosts]);
 
     const featured = posts[0];
-    const sidePosts = posts.slice(1, 3);
+    const sidePosts = posts.slice(1);
 
     const title = pickText(block?.title, apiLang, "WG Outputs");
     const desc = pickText(block?.description, apiLang, "");
@@ -346,6 +362,17 @@ export default function WGOutputs() {
                     </div>
                 </div>
             )}
+
+            {showSeeMoreButton && posts.length > 0 ? (
+                <div className="mt-10 flex justify-center">
+                    <Link
+                        href="/wg-outputs"
+                        className="bg-[#1e2756] hover:bg-[#161d44] text-white py-2 px-6 rounded-md font-semibold transition-colors"
+                    >
+                        See More
+                    </Link>
+                </div>
+            ) : null}
         </section>
     );
 }

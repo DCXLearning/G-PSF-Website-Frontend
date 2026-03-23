@@ -126,6 +126,18 @@ function FeaturedSkeleton() {
 }
 
 export default function CaseStudies() {
+    return <CaseStudiesSection />;
+}
+
+type CaseStudiesSectionProps = {
+    showSeeMoreButton?: boolean;
+    showAllPosts?: boolean;
+};
+
+export function CaseStudiesSection({
+    showSeeMoreButton = true,
+    showAllPosts = false,
+}: CaseStudiesSectionProps = {}) {
     const { language, apiLang, fontClass } = useLanguage();
     const uiLang = (language as UiLang) ?? "en";
     const apiLanguage = (apiLang as ApiLang) ?? "en";
@@ -193,9 +205,16 @@ export default function CaseStudies() {
 
     const posts = useMemo(() => {
         const p = block?.posts || [];
+
+        // On the homepage we keep the CMS limit.
+        // On the dedicated page we show the full list.
+        if (showAllPosts) {
+            return p;
+        }
+
         const limit = block?.settings?.limit ?? 3;
         return p.slice(0, limit);
-    }, [block]);
+    }, [block, showAllPosts]);
 
     const featured = posts[0];
     const side = posts.slice(1, 3);
@@ -391,6 +410,19 @@ export default function CaseStudies() {
                 ) : (
                     <div className="text-slate-600 text-sm">No case studies found.</div>
                 )}
+
+                {showSeeMoreButton && posts.length > 0 ? (
+                    <div className="mt-10 flex justify-center">
+                        <Link
+                            href="/case-studies"
+                            className={`text-white bg-blue-950 hover:bg-blue-900 py-2 px-6 rounded-lg font-semibold ${
+                                uiLang === "kh" ? "khmer-font" : ""
+                            }`}
+                        >
+                            {uiLang === "kh" ? "មើលបន្ថែម" : "See More"}
+                        </Link>
+                    </div>
+                ) : null}
             </div>
         </section>
     );

@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 type I18n = { en?: string; km?: string };
@@ -103,7 +104,19 @@ function ToolCardSkeleton() {
     );
 }
 
+type ToolsSectionProps = {
+    showAllPosts?: boolean;
+    showSeeMoreButton?: boolean;
+};
+
 export default function ToolsSection() {
+    return <ToolsSectionContent />;
+}
+
+export function ToolsSectionContent({
+    showAllPosts = false,
+    showSeeMoreButton = true,
+}: ToolsSectionProps = {}) {
     const { language, apiLang, fontClass } = useLanguage();
     const uiLang = (language as UiLang) ?? "en";
     const currentApiLang = (apiLang as ApiLang) ?? "en";
@@ -162,9 +175,14 @@ export default function ToolsSection() {
 
     const posts = useMemo(() => {
         const p = block?.posts || [];
+        // Homepage keeps the short list.
+        // The dedicated page shows all available items.
+        if (showAllPosts) {
+            return p;
+        }
         const limit = block?.settings?.limit ?? 3;
         return p.slice(0, limit);
-    }, [block]);
+    }, [block, showAllPosts]);
 
     const showSkeleton = !mounted || (loading && !block);
     const showErrorOnly = !showSkeleton && !block && !!error;
@@ -249,6 +267,19 @@ export default function ToolsSection() {
                         })}
                     </div>
                 )}
+
+                {showSeeMoreButton && posts.length > 0 ? (
+                    <div className="mt-12 flex justify-center">
+                        <Link
+                            href="/templates-and-forms"
+                            className={`bg-[#1e1e4b] hover:bg-[#15153a] text-white py-2 px-6 rounded-lg font-semibold transition-colors ${
+                                uiLang === "kh" ? "khmer-font" : ""
+                            }`}
+                        >
+                            {uiLang === "kh" ? "មើលបន្ថែម" : "See More"}
+                        </Link>
+                    </div>
+                ) : null}
             </div>
         </section>
     );

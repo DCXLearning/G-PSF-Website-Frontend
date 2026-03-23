@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronRight, Hexagon } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -83,7 +84,19 @@ function pickAnnualReportsBlock(json: ApiResponse): ApiBlock | null {
     );
 }
 
+type AnnualReportsSectionProps = {
+    showAllItems?: boolean;
+    showSeeMoreButton?: boolean;
+};
+
 export default function AnnualReports() {
+    return <AnnualReportsSection />;
+}
+
+export function AnnualReportsSection({
+    showAllItems = false,
+    showSeeMoreButton = true,
+}: AnnualReportsSectionProps = {}) {
     const { language, apiLang, fontClass } = useLanguage();
     const uiLang = (language as UiLang) ?? "en";
     const apiLanguage = (apiLang as ApiLang) ?? "en";
@@ -149,8 +162,11 @@ export default function AnnualReports() {
             const list = p?.content?.[key]?.items || [];
             out.push(...list);
         }
-        return out;
-    }, [block, apiLanguage]);
+
+        // Homepage keeps only the first 3 cards.
+        // The dedicated /annual-report page shows the full list.
+        return showAllItems ? out : out.slice(0, 3);
+    }, [block, apiLanguage, showAllItems]);
 
     const showSkeleton = !mounted || (loading && !block);
     const showErrorOnly = !showSkeleton && !block && !!error;
@@ -278,6 +294,19 @@ export default function AnnualReports() {
                         })}
                     </div>
                 )}
+
+                {showSeeMoreButton && items.length > 0 ? (
+                    <div className="mt-10 flex justify-center">
+                        <Link
+                            href="/annual-report"
+                            className={`bg-[#f39c12] hover:bg-[#e67e22] text-white py-2 px-6 rounded transition-all font-semibold ${
+                                uiLang === "kh" ? "khmer-font" : ""
+                            }`}
+                        >
+                            {uiLang === "kh" ? "មើលបន្ថែម" : "See More"}
+                        </Link>
+                    </div>
+                ) : null}
             </div>
         </section>
     );

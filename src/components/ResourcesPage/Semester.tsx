@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import { Navigation } from "swiper/modules";
@@ -153,7 +154,19 @@ function ReportCardSkeleton() {
     );
 }
 
+type SemesterReportsSectionProps = {
+    showAllPosts?: boolean;
+    showSeeMoreButton?: boolean;
+};
+
 export default function SemesterReportsSwiper() {
+    return <SemesterReportsSection />;
+}
+
+export function SemesterReportsSection({
+    showAllPosts = false,
+    showSeeMoreButton = true,
+}: SemesterReportsSectionProps = {}) {
     const { language, apiLang } = useLanguage();
     const lang = (language as UiLang) ?? "en";
     const currentApiLang = (apiLang as ApiLang) ?? "en";
@@ -215,9 +228,14 @@ export default function SemesterReportsSwiper() {
 
     const posts = useMemo(() => {
         const p = block?.posts || [];
+        // Homepage keeps the CMS limit.
+        // The dedicated page shows the full list.
+        if (showAllPosts) {
+            return p;
+        }
         const limit = block?.settings?.limit ?? p.length;
         return p.slice(0, limit);
-    }, [block]);
+    }, [block, showAllPosts]);
 
     const topPosts = useMemo(() => posts.filter((_, i) => i % 2 === 0), [posts]);
     const bottomPosts = useMemo(() => posts.filter((_, i) => i % 2 === 1), [posts]);
@@ -346,6 +364,19 @@ export default function SemesterReportsSwiper() {
             ) : (
                 <div className="text-center text-sm text-slate-600">No semester reports found.</div>
             )}
+
+            {showSeeMoreButton && posts.length > 0 ? (
+                <div className="mt-8 flex justify-center">
+                    <Link
+                        href="/semester-reports"
+                        className={`bg-[#1e3a8a] hover:bg-[#17306f] text-white py-2 px-6 rounded-md font-semibold transition-colors ${
+                            lang === "kh" ? "khmer-font" : ""
+                        }`}
+                    >
+                        {lang === "kh" ? "មើលបន្ថែម" : "See More"}
+                    </Link>
+                </div>
+            ) : null}
         </section>
     );
 }
