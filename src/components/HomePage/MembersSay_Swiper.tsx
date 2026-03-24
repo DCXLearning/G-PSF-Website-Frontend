@@ -249,18 +249,18 @@ const MembersSaySwiperSlider: React.FC = () => {
             <div className="custom-pagination mt-6 flex justify-center space-x-2"></div>
 
             <style>{`
-        .custom-pagination .swiper-pagination-bullet {
-          width: 16px;
-          height: 16px;
-          background-color: white !important;
-          opacity: 1;
-          border-radius: 9999px;
-        }
-        .custom-pagination .swiper-pagination-bullet-active {
-          background-color: white !important;
-          transform: scale(1.25);
-        }
-      `}</style>
+                .custom-pagination .swiper-pagination-bullet {
+                width: 16px;
+                height: 16px;
+                background-color: white !important;
+                opacity: 1;
+                border-radius: 9999px;
+                }
+                .custom-pagination .swiper-pagination-bullet-active {
+                background-color: white !important;
+                transform: scale(1.25);
+                }
+            `}</style>
         </div>
     );
 };

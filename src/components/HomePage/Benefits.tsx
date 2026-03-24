@@ -262,7 +262,7 @@ export default function Benefits() {
             className={`bg-white px-4 sm:px-8 md:px-16 lg:px-34 py-12 md:py-16 ${fontClass}`}
         >
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
-                <div className="mb-32 sm:mb-10 md:mb-0">
+                <div className="mb-32 sm:mb-25 md:mb-38">
                     <h2
                         className={`text-3xl w-80 sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-gray-900 leading-tight ${isKhmer ? "khmer-font" : ""
                             }`}
@@ -271,9 +271,9 @@ export default function Benefits() {
                     </h2>
 
                     <div className="mt-6 sm:mt-8 relative">
-                        <div className="absolute top-0 left-0 sm:left-4 md:left-28 w-20 sm:w-24 md:w-72 h-1 bg-orange-500 rounded-full mb-4" />
+                        <div className="absolute top-0 left-0 sm:left-4 md:left-22 w-20 sm:w-24 md:w-72 h-1 bg-orange-500 rounded-full mb-4" />
                         <p
-                            className={`absolute top-0 left-0 sm:left-4 md:left-28 text-gray-700 text-sm sm:text-base md:text-xl leading-relaxed mt-6 ${isKhmer ? "khmer-font" : ""
+                            className={`absolute top-0 left-0 sm:left-4 md:left-22 text-gray-700 text-sm sm:text-base md:text-xl leading-relaxed mt-6 ${isKhmer ? "khmer-font" : ""
                                 }`}
                         >
                             {heading.d}

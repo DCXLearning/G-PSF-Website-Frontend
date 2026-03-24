@@ -152,7 +152,7 @@ export default function ResourcesHero() {
   const bg = hero.backgroundImages?.[0];
 
   return (
-    <section className="w-full bg-white px-6 py-12 md:px-16 md:py-24">
+    <section className="w-full bg-white px-6 py-6 md:px-8 md:py-12">
       <div className="mx-auto max-w-7xl px-4 flex flex-col md:flex-row items-center gap-12">
         <div className="flex-1 space-y-8">
           {title && (

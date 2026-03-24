@@ -34,19 +34,19 @@ export async function GET() {
 
                 rating: Number(t?.rating ?? 5),
 
-                // ✅ title
+                // title
                 title: {
                     en: t?.title?.en ?? "",
                     km: t?.title?.km ?? "",
                 },
 
-                // ✅ quote (main text)
+                // quote (main text)
                 quote: {
                     en: t?.quote?.en ?? "",
                     km: t?.quote?.km ?? "",
                 },
 
-                // ✅ author info
+                // author info
                 authorName: {
                     en: t?.authorName?.en ?? "",
                     km: t?.authorName?.km ?? "",

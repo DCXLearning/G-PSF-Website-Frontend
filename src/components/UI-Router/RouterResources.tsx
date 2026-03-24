@@ -9,11 +9,11 @@ import ToolsSection from '../ResourcesPage/ToolsSection'
 function RouterResources() {
     return (
         <>
+            <SemesterSlider />
             <ResourcesHero />
             <Policy_Documents />
             <WGOutputs />
             <AnnualReports />
-            <SemesterSlider />
             <ToolsSection />
         </>
     )

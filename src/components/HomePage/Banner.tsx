@@ -143,24 +143,24 @@ export default function HeroBanner() {
                     }`}
             >
                 {subtitle && (
-                    <p className="text-lg md:text-3xl text-white mb-8 mt-14 whitespace-pre-line">
+                    <p className="text-lg md:text-5xl font-medium text-white mb-8 mt-14 whitespace-pre-line">
                         {subtitle}
                     </p>
                 )}
 
-                {!title && loading && !data ? (
+                {/* {!title && loading && !data ? (
                     <div className="w-full max-w-3xl">
                     </div>
                 ) : (
                     title && (
-                        <h1 className="text-3xl md:text-5xl font-bold text-white mb-8 whitespace-pre-line leading-tight">
+                        <h1 className="text-3xl md:text-6xl font-bold text-white mb-8 whitespace-pre-line leading-tight">
                             {title}
                         </h1>
                     )
-                )}
+                )} */}
 
                 {description && (
-                    <p className="text-base md:text-lg max-w-4xl text-white mb-10 whitespace-pre-line">
+                    <p className="text-base md:text-2xl max-w-4xl text-white mb-10 whitespace-pre-line">
                         {description}
                     </p>
                 )}

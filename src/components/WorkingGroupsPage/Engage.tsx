@@ -1,132 +1,243 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-type Lang = "en" | "kh";
+type UiLang = "en" | "kh";
+type ApiLang = "en" | "km";
 
-type Objective = {
+type I18n = {
+    en?: string;
+    km?: string;
+};
+
+type EngageItem = {
+    title?: I18n;
+    description?: I18n;
+};
+
+type Block = {
     id: number;
-    title: string;
-    description: string;
+    type: string;
+    title?: I18n;
+    posts?: Array<{
+        id: number;
+        content?: {
+            en?: { items?: EngageItem[] };
+            km?: { items?: EngageItem[] };
+        };
+    }>;
 };
 
-const objectivesByLang: Record<Lang, Objective[]> = {
-    en: [
-        {
-            id: 1,
-            title: "Participate",
-            description:
-                "Engage through your Business Membership Organisation or chamber to have your voice heard at the policy level.",
-        },
-        {
-            id: 2,
-            title: "Contribute",
-            description:
-                "Provide issues and evidence through Private Sector Working Groups (PSWGs) to drive regulatory change.",
-        },
-        {
-            id: 3,
-            title: "Engage",
-            description:
-                "Join consultations, technical discussions, and Working Group meetings to shape economic conditions.",
-        },
-    ],
-    kh: [
-        {
-            id: 1,
-            title: "ចូលរួម",
-            description:
-                "ចូលរួមតាមរយៈអង្គការសមាជិកធុរកិច្ច ឬសមាគម/សភាពាណិជ្ជកម្ម ដើម្បីឱ្យសំឡេងរបស់អ្នកត្រូវបានស្តាប់នៅកម្រិតគោលនយោបាយ។",
-        },
-        {
-            id: 2,
-            title: "ចូលរួមចំណែក",
-            description:
-                "ផ្តល់បញ្ហា និងភស្តុតាងតាមរយៈក្រុមការងារវិស័យឯកជន (PSWGs) ដើម្បីជំរុញការកែប្រែបទប្បញ្ញត្តិ និងកំណែទម្រង់។",
-        },
-        {
-            id: 3,
-            title: "សហការនិងពិភាក្សា",
-            description:
-                "ចូលរួមការពិគ្រោះយោបល់ ការពិភាក្សាបច្ចេកទេស និងអង្គប្រជុំក្រុមការងារ ដើម្បីរួមចំណែកកំណត់លក្ខខណ្ឌសេដ្ឋកិច្ច។",
-        },
-    ],
+type ApiResponse = {
+    success: boolean;
+    message?: string;
+    data?: {
+        blocks?: Block[];
+    };
 };
 
-const HexNode = () => (
-    <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
-        <svg viewBox="0 0 100 100" className="w-12 h-12">
-            <polygon
-                points="50,6 86,28 86,72 50,94 14,72 14,28"
-                fill="white"
-                stroke="#1e3a8a"
-                strokeWidth="6"
-            />
-        </svg>
-        <span className="absolute w-3.5 h-3.5 rounded-full bg-[#1e3a8a]" />
-    </div>
-);
+const CACHE_KEY = "working-groups-engage-blocks-cache";
 
-const Engage: React.FC = () => {
-    const { language } = useLanguage();
-    const lang = (language as Lang) ?? "en";
-    const isKh = lang === "kh";
+function pickText(obj: I18n | undefined, lang: ApiLang, fallback = "") {
+    if (!obj) return fallback;
+    const primary = lang === "km" ? obj.km : obj.en;
+    return primary || obj.en || obj.km || fallback;
+}
 
-    const titlePrefix = lang === "kh" ? "របៀប" : "How To";
-    const titleHighlight = lang === "kh" ? "ចូលរួម" : "Engage";
+function readCache(): Block[] {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
 
-    const objectivesData = objectivesByLang[lang];
+function writeCache(blocks: Block[]) {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
+    } catch {
+        // ignore cache error
+    }
+}
 
+function EngageSkeleton({ isKh }: { isKh: boolean }) {
     return (
-        <section className="bg-white mt-5 sm:mt-5 md:mt-10 lg:mt-15 py-8 md:py-10">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 flex justify-center lg:justify-end">
-                <div className="w-full lg:w-1/2">
-                    {/* Title */}
-                    <h2
-                        className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-10 md:mb-14 tracking-tight ${isKh ? "khmer-font" : ""
-                            }`}
-                    >
-                        {titlePrefix}{" "}
-                        <span className="text-gray-900">{titleHighlight}</span>
-                    </h2>
+        <section className="bg-white mt-5 md:mt-10 lg:mt-14 py-8 md:py-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 animate-pulse">
+                <div className="h-10 w-64 rounded bg-slate-200 mb-8" />
+                <div className="mb-8 h-1.5 bg-orange-200 w-40 sm:w-52 rounded-full" />
 
-                    {/* Timeline */}
-                    <div className="relative">
-                        {/* Vertical line */}
-                        <div className="absolute left-[23px] top-1 bottom-0 w-[3px] bg-orange-500" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                            key={index}
+                            className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm h-full"
+                        >
+                            <div className="mb-3 flex items-center gap-3">
+                                <div className="h-2.5 w-2.5 rounded-full bg-orange-200" />
+                                <div className="h-6 w-36 rounded bg-slate-200" />
+                            </div>
 
-                        <div className="space-y-10 sm:space-y-12">
-                            {objectivesData.map((obj) => (
-                                <div
-                                    key={obj.id}
-                                    className="relative flex items-start gap-5 sm:gap-6"
-                                >
-                                    <HexNode />
-
-                                    <div className="pt-1 max-w-md">
-                                        <h3
-                                            className={`text-lg sm:text-xl md:text-2xl font-bold text-gray-900 hover:text-[#1e3a8a] transition-colors ${isKh ? "khmer-font" : ""
-                                                }`}
-                                        >
-                                            {obj.title}
-                                        </h3>
-
-                                        <p
-                                            className={`mt-2 text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed ${isKh ? "khmer-font" : ""
-                                                }`}
-                                        >
-                                            {obj.description}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                            <div className="h-4 w-full rounded bg-slate-200 mb-2" />
+                            <div className="h-4 w-5/6 rounded bg-slate-200 mb-2" />
+                            <div className="h-4 w-4/6 rounded bg-slate-200" />
                         </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </section>
     );
-};
+}
 
-export default Engage;
+export default function Engage() {
+    const { language } = useLanguage();
+    const uiLang: UiLang = (language as UiLang) || "en";
+    const apiLang: ApiLang = uiLang === "kh" ? "km" : "en";
+    const isKh = uiLang === "kh";
+
+    const [mounted, setMounted] = useState(false);
+    const [blocks, setBlocks] = useState<Block[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        setMounted(true);
+
+        const cached = readCache();
+        if (cached.length > 0) {
+            setBlocks(cached);
+            setLoading(false);
+        }
+
+        let alive = true;
+
+        async function loadData() {
+            try {
+                setError(null);
+
+                const res = await fetch(
+                    "/api/working-groups-page/section?slug=working-groups&types=text_block",
+                    {
+                        cache: "no-store",
+                        headers: { Accept: "application/json" },
+                    }
+                );
+
+                const json: ApiResponse = await res.json();
+
+                if (!alive) return;
+
+                if (!res.ok || !json?.success) {
+                    throw new Error(json?.message || "Failed to fetch engage section.");
+                }
+
+                const nextBlocks = json?.data?.blocks || [];
+                setBlocks(nextBlocks);
+                writeCache(nextBlocks);
+            } catch (err: any) {
+                if (!alive) return;
+                setError(err?.message || "Failed to fetch engage section.");
+                // keep cached data if any
+            } finally {
+                if (!alive) return;
+                setLoading(false);
+            }
+        }
+
+        loadData();
+
+        return () => {
+            alive = false;
+        };
+    }, []);
+
+    const view = useMemo(() => {
+        const engageBlock = blocks.find(
+            (block) => block.type === "text_block" && block.id === 23
+        );
+
+        const sectionTitle = pickText(
+            engageBlock?.title,
+            apiLang,
+            isKh ? "របៀបចូលរួម" : "How To Engage"
+        );
+
+        const rawItems =
+            engageBlock?.posts?.[0]?.content?.[apiLang]?.items ||
+            engageBlock?.posts?.[0]?.content?.en?.items ||
+            [];
+
+        const items = rawItems
+            .map((item, index) => ({
+                id: index + 1,
+                title: pickText(item.title, apiLang, ""),
+                description: pickText(item.description, apiLang, ""),
+            }))
+            .filter((item) => item.title || item.description);
+
+        return { sectionTitle, items };
+    }, [blocks, apiLang, isKh]);
+
+    const showSkeleton = !mounted || (loading && blocks.length === 0);
+    const showErrorOnly = !showSkeleton && blocks.length === 0 && !!error;
+
+    if (showSkeleton) {
+        return <EngageSkeleton isKh={isKh} />;
+    }
+
+    if (view.items.length === 0 && !showErrorOnly) {
+        return null;
+    }
+
+    return (
+        <section className="bg-white mt-4 md:mt-6 lg:mt-8 py-8 md:py-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                {showErrorOnly && (
+                    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                        {error}
+                    </div>
+                )}
+
+                <h2
+                    className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-8 md:mb-10 tracking-tight ${isKh ? "khmer-font" : ""
+                        }`}
+                >
+                    {view.sectionTitle}
+                </h2>
+
+                <div className="mb-8 h-1.5 bg-orange-500 w-40 sm:w-52 rounded-full" />
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    {view.items.map((item) => (
+                        <div
+                            key={item.id}
+                            className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm h-full"
+                        >
+                            <div className="mb-3 flex items-center gap-3">
+                                <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-orange-500" />
+                                <h3
+                                    className={`text-lg sm:text-xl md:text-2xl font-bold text-gray-900 ${isKh ? "khmer-font" : ""
+                                        }`}
+                                >
+                                    {item.title}
+                                </h3>
+                            </div>
+
+                            <p
+                                className={`text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed ${isKh ? "khmer-font" : ""
+                                    }`}
+                            >
+                                {item.description}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}

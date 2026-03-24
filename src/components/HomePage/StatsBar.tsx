@@ -183,7 +183,7 @@ const StatsBar: React.FC = () => {
             <div className="container mx-auto px-4 max-w-7xl">
                 {descriptionText && (
                     <p
-                        className={`text-center text-gray-600 mb-12 text-lg ${isKhmer ? "khmer-font" : ""
+                        className={`text-center text-gray-600 mb-12 text-xl font-medium ${isKhmer ? "khmer-font" : ""
                             }`}
                     >
                         {descriptionText}

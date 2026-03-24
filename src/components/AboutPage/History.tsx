@@ -273,15 +273,17 @@ export default function History() {
                     <div className="lg:sticky lg:top-1">
                         <div className="mt-20 h-1.5 bg-orange-500 w-72 sm:w-[520px] lg:w-[528px]" />
 
-                        {view.paras.map((p, i) => (
-                            <p
-                                key={i}
-                                className={`mt-8 max-w-xl text-lg sm:text-lg leading-relaxed font-bold text-[#1e3a8a] ${isKh ? "khmer-font" : ""
-                                    }`}
-                            >
-                                {p}
-                            </p>
-                        ))}
+                        <ul className="mt-8 space-y-7 list-disc pl-4">
+                            {view.paras.map((p, i) => (
+                                <li
+                                    key={i}
+                                    className={`max-w-xl text-lg leading-relaxed font-bold text-[#1e3a8a] ${isKh ? "khmer-font" : ""
+                                        }`}
+                                >
+                                    {p}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
 
                     {/* RIGHT */}

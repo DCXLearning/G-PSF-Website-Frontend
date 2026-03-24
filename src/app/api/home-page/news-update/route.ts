@@ -1,74 +1,100 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { API_URL } from "@/config/api";
 import { NextResponse } from "next/server";
 
-/* ---------- helpers ---------- */
-function cleanText(v: any): string {
-    const s = typeof v === "string" ? v.trim() : "";
-    return !s || s === "." ? "" : s;
-}
+export const runtime = "nodejs";
+export const revalidate = 0;
 
-function cleanI18n(obj: any) {
-    const en = cleanText(obj?.en);
-    const km = cleanText(obj?.km);
-    return { en, km: km || en };
+const UPSTREAM_URL =
+    "https://api-gpsf.datacolabx.com/api/v1/pages/news-and-updates/section";
+
+function normalizeText(value: any) {
+    if (!value) return { en: "", km: "" };
+
+    if (typeof value === "string") {
+        return { en: value, km: value };
+    }
+
+    return {
+        en: value?.en ?? "",
+        km: value?.km ?? value?.kh ?? "",
+    };
 }
 
 export async function GET() {
     try {
-        const res = await fetch(`${API_URL}/pages/home/section`, { cache: "no-store" });
+        const res = await fetch(UPSTREAM_URL, {
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+        });
 
         if (!res.ok) {
             return NextResponse.json(
-                { error: "Failed to fetch home sections" },
-                { status: res.status }
+                { success: false, message: `Upstream error ${res.status}` },
+                { status: 502 }
+            );
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+            const text = await res.text();
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Upstream did not return JSON",
+                    preview: text.slice(0, 200),
+                },
+                { status: 502 }
             );
         }
 
         const json = await res.json();
-        const blocks = json?.data?.blocks ?? [];
+        const blocks = Array.isArray(json?.data?.blocks) ? json.data.blocks : [];
 
-        // ✅ block: enabled + post_list + categoryId = 1
-        const newsBlock = blocks.find(
-            (b: any) =>
-                b?.enabled === true &&
-                b?.type === "post_list" &&
-                b?.settings?.categoryIds?.includes(1)
-        );
+        const newsBlock =
+            blocks.find(
+                (block: any) =>
+                    block?.enabled !== false &&
+                    block?.type === "post_list" &&
+                    Array.isArray(block?.posts) &&
+                    block.posts.length > 0 &&
+                    (block?.title?.en === "News & Updates" || block?.id === 4)
+            ) || null;
 
-        if (!newsBlock) {
-            return NextResponse.json({ error: "News/Update block not found" }, { status: 404 });
-        }
+        const posts = Array.isArray(newsBlock?.posts) ? newsBlock.posts : [];
 
-        const blockTitle = cleanI18n(newsBlock?.title);
-        const blockDesc = cleanI18n(newsBlock?.description);
+        const items = posts.map((post: any) => {
+            const id = post?.id ?? "";
+            const slug = post?.slug ?? "";
+            const safeId = encodeURIComponent(String(id));
+            const safeSlug = encodeURIComponent(String(slug));
 
-        const items = (newsBlock?.posts ?? [])
-            .filter((p: any) => p?.status === "published")
-            .map((p: any) => {
-                const title = cleanI18n(p?.title);
-                const description = cleanI18n(p?.description);
-                const group = cleanI18n(p?.category?.name);
-
-                return {
-                    id: p?.id ?? 0,
-                    slug: cleanText(p?.slug) || String(p?.id ?? ""),
-                    // ✅ USE coverImage (your data has it)
-                    icon: cleanText(p?.coverImage),
-                    title,
-                    description,
-                    group,
-                    createdAt: cleanText(p?.createdAt) || cleanText(p?.updatedAt),
-                };
-            });
-
-        return NextResponse.json({
-            heading: blockTitle.en || "News & Updates",
-            description: blockDesc,
-            items,
+            return {
+                id,
+                slug,
+                image: post?.coverImage || "",
+                title: normalizeText(post?.title),
+                description: normalizeText(post?.description),
+                link:
+                    post?.link ||
+                    (slug
+                        ? `/new-update/view-detail?id=${safeId}&slug=${safeSlug}`
+                        : `/new-update/view-detail?id=${safeId}`),
+            };
         });
-    } catch (err) {
-        console.error(err);
-        return NextResponse.json({ error: "Failed to fetch news/update" }, { status: 500 });
+
+        return NextResponse.json(
+            {
+                success: true,
+                heading: normalizeText(newsBlock?.title),
+                description: normalizeText(newsBlock?.description),
+                items,
+            },
+            { status: 200 }
+        );
+    } catch (e: any) {
+        return NextResponse.json(
+            { success: false, message: e?.message || "Fetch failed" },
+            { status: 500 }
+        );
     }
 }

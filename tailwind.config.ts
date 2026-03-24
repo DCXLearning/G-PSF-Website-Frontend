@@ -1,4 +1,3 @@
-// ✅ tailwind.config.ts (make font-sans = Kantumruy Pro)
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -11,8 +10,27 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-kantumruy-pro)", "system-ui", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
+        sans: [
+          "Airbnb Cereal",
+          "var(--font-kantumruy-pro)",
+          "system-ui",
+          "sans-serif",
+        ],
+        airbnb: [
+          "Airbnb Cereal",
+          "system-ui",
+          "sans-serif",
+        ],
+        khmer: [
+          "var(--font-kantumruy-pro)",
+          "sans-serif",
+        ],
+        mono: [
+          "var(--font-geist-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "monospace",
+        ],
       },
     },
   },

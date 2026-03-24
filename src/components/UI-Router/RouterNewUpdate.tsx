@@ -1,12 +1,12 @@
 //RouterNewUpdate.tsx
 import React from 'react'
-import NewUpdate from '../News&Updates/Banner'
+// import NewUpdate from '../News&Updates/Banner'
 import Select from '../News&Updates/Select'
 import NewUpdateSection from '../News&Updates/NewUpdate'
 import EventsAndAnnouncements from '../News&Updates/EventAndAnnouncements'
-import Achievements from '../News&Updates/Achievements'
+// import Achievements from '../News&Updates/Achievements'
 import CaseStudies from '../News&Updates/CaseStudies'
-import SubmissionForm from '../News&Updates/SubmissionForm'
+// import SubmissionForm from '../News&Updates/SubmissionForm'
 import type { NewUpdateSectionProps } from '../News&Updates/NewUpdate'
 
 type RouterNewUpdateProps = {
@@ -32,13 +32,13 @@ export default function RouterNewUpdate({
 
     return (
         <>
-            <NewUpdate />
+            {/* <NewUpdate /> */}
             <Select />
             <NewUpdateSection data={newUpdateSectionData} />
             <EventsAndAnnouncements />
-            <Achievements />
+            {/* <Achievements /> */}
             <CaseStudies />
-            <SubmissionForm />
+            {/* <SubmissionForm /> */}
         </>
     )
 }
