@@ -190,7 +190,7 @@ const AboutUs: React.FC = () => {
         const title = pickText(
             postList?.title,
             apiLang,
-            uiLang === "kh" ? "G-PSF គឺជាអ្វី?" : "What is the G-PSF?"
+            uiLang === "kh" ? "G-PSF គឺជាអ្វី?" : "What is G-PSF?"
         );
 
         const desc = pickText(

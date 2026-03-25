@@ -78,14 +78,16 @@ function EngageSkeleton({ isKh }: { isKh: boolean }) {
                             key={index}
                             className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm h-full"
                         >
-                            <div className="mb-3 flex items-center gap-3">
-                                <div className="h-2.5 w-2.5 rounded-full bg-orange-200" />
-                                <div className="h-6 w-36 rounded bg-slate-200" />
+                            <div className="mb-3 flex items-start gap-3">
+                                <div className="h-8 w-8 rounded-full bg-orange-200 shrink-0" />
+                                <div className="h-6 w-36 rounded bg-slate-200 mt-1" />
                             </div>
 
-                            <div className="h-4 w-full rounded bg-slate-200 mb-2" />
-                            <div className="h-4 w-5/6 rounded bg-slate-200 mb-2" />
-                            <div className="h-4 w-4/6 rounded bg-slate-200" />
+                            <div className="pl-11">
+                                <div className="h-4 w-full rounded bg-slate-200 mb-2" />
+                                <div className="h-4 w-5/6 rounded bg-slate-200 mb-2" />
+                                <div className="h-4 w-4/6 rounded bg-slate-200" />
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -142,7 +144,6 @@ export default function Engage() {
             } catch (err: any) {
                 if (!alive) return;
                 setError(err?.message || "Failed to fetch engage section.");
-                // keep cached data if any
             } finally {
                 if (!alive) return;
                 setLoading(false);
@@ -212,16 +213,19 @@ export default function Engage() {
 
                 <div className="mb-8 h-1.5 bg-orange-500 w-40 sm:w-52 rounded-full" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    {view.items.map((item) => (
-                        <div
+                <ol className="grid grid-cols-1 lg:grid-cols-3 gap-5 list-none p-0 m-0">
+                    {view.items.map((item, index) => (
+                        <li
                             key={item.id}
                             className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm h-full"
                         >
-                            <div className="mb-3 flex items-center gap-3">
-                                <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-orange-500" />
+                            <div className="mb-3 flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white text-sm sm:text-base font-bold">
+                                    {index + 1}
+                                </div>
+
                                 <h3
-                                    className={`text-lg sm:text-xl md:text-2xl font-bold text-gray-900 ${isKh ? "khmer-font" : ""
+                                    className={`text-lg sm:text-xl md:text-2xl font-bold text-gray-900 leading-snug ${isKh ? "khmer-font" : ""
                                         }`}
                                 >
                                     {item.title}
@@ -229,14 +233,14 @@ export default function Engage() {
                             </div>
 
                             <p
-                                className={`text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed ${isKh ? "khmer-font" : ""
+                                className={`pl-11 text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed ${isKh ? "khmer-font" : ""
                                     }`}
                             >
                                 {item.description}
                             </p>
-                        </div>
+                        </li>
                     ))}
-                </div>
+                </ol>
             </div>
         </section>
     );

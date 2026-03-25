@@ -182,7 +182,7 @@ export default function Flow() {
             </div>
 
             <div className="w-full px-4 sm:px-6 lg:px-8">
-                <div className="max-w-7xl mx-auto border border-slate-200 rounded-2xl bg-white p-4 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                <div className="max-w-7xl mx-auto border border-slate-400 rounded-2xl bg-white p-4 shadow-xl hover:shadow-2xl transition-shadow duration-300">
                     <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[650px] rounded-xl overflow-hidden bg-slate-50">
                         <Image
                             src={view.imageUrl}

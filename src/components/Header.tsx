@@ -25,24 +25,28 @@ const Header: FC = () => {
         en: [
             { label: "Home", href: "/" },
             { label: "About Us", href: "/about-us" },
-            { label: "Working Groups (WGs)", href: "/working-groups" },
+            { label: "Working Groups", href: "/working-groups" },
             { label: "Resources", href: "/resources" },
             { label: "News & Updates", href: "/new-update" },
-            { label: "MIS Dashboard", href: "/mis" },
+            { label: "MIS", href: "/mis" },
             { label: "Contact Us", href: "/contact-us" },
         ],
         kh: [
             { label: "ទំព័រដើម", href: "/" },
             { label: "អំពីពួកយើង", href: "/about-us" },
-            { label: "ក្រុមការងារ (WGs)", href: "/working-groups" },
+            { label: "ក្រុមការងារ", href: "/working-groups" },
             { label: "ធនធាន", href: "/resources" },
             { label: "ព័ត៌មាន និងបច្ចុប្បន្នភាព", href: "/new-update" },
-            { label: "ផ្ទាំង MIS", href: "/mis" },
+            { label: "MIS", href: "/mis" },
             { label: "ទាក់ទងមកពួកយើង", href: "/contact-us" },
         ],
     };
 
     const searchPlaceholder = language === "en" ? "Search..." : "ស្វែងរក...";
+    const languageButtonText = language === "en" ? "ខ្មែរ" : "English";
+    const languageShortText = language === "en" ? "ខ្មែរ" : "EN";
+    const mobileLanguageText =
+        language === "en" ? "Switch to Khmer" : "ប្ដូរទៅ English";
 
     const handleSearch = () => {
         const keyword = searchValue.trim();
@@ -80,9 +84,9 @@ const Header: FC = () => {
                             <Image
                                 src="/image/logo2.png"
                                 alt="G-PSF Logo"
-                                width={150}
+                                width={160}
                                 height={60}
-                                className="object-contain"
+                                className="object-cover"
                                 priority
                             />
                         </Link>
@@ -90,12 +94,18 @@ const Header: FC = () => {
                         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
                             <button
                                 onClick={toggleLanguage}
-                                className={`flex items-center cursor-pointer gap-1 px-3 py-1 rounded-full border text-sm md:text-lg ${language === "kh" ? "khmer-font" : ""
+                                className={`flex items-center cursor-pointer gap-2 px-3 py-1 rounded-full border text-sm md:text-lg ${language === "kh" ? "khmer-font" : ""
                                     }`}
                                 type="button"
                             >
-                                <Globe className="w-4 h-4" />
-                                {language === "en" ? "English" : "ខ្មែរ"}
+                                <Image
+                                    src={language === "en" ? "/image/flagkhmer.jpg" : "/image/english.png"}
+                                    alt={language === "en" ? "Khmer" : "English"}
+                                    width={18}
+                                    height={18}
+                                    className="object-cover h-4 w-6"
+                                />
+                                {languageButtonText}
                             </button>
 
                             <div className="hidden lg:flex rounded-2xl overflow-hidden md:w-72 shadow-sm">
@@ -186,7 +196,7 @@ const Header: FC = () => {
                                         aria-label="Language"
                                     >
                                         <Globe className="w-4 h-4" />
-                                        {language === "en" ? "EN" : "ខ្មែរ"}
+                                        {languageShortText}
                                     </button>
                                 </>
                             )}
@@ -289,7 +299,7 @@ const Header: FC = () => {
                                             }`}
                                     >
                                         <Globe className="w-4 h-4" />
-                                        {language === "en" ? "Switch to Khmer" : "ប្ដូរទៅ English"}
+                                        {mobileLanguageText}
                                     </button>
                                 </div>
                             </div>

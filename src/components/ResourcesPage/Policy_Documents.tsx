@@ -50,7 +50,6 @@ function formatMonthYear(iso?: string) {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "";
 
-    // fixed locale to avoid hydration mismatch
     return new Intl.DateTimeFormat("en-US", {
         year: "numeric",
         month: "long",
@@ -104,7 +103,6 @@ function writeCachedBlock(block: ApiBlock | null) {
 }
 
 export default function PolicyDocuments() {
-    // IMPORTANT: same initial render on server and client
     const [block, setBlock] = useState<ApiBlock | null>(null);
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
@@ -199,15 +197,12 @@ export default function PolicyDocuments() {
                             {Array.from({ length: 3 }).map((_, i) => (
                                 <div
                                     key={i}
-                                    className="bg-[#e9ecef] flex flex-col shadow-xl min-h-[500px] animate-pulse"
+                                    className="bg-[#e9ecef] flex flex-col shadow-xl min-h-[560px] animate-pulse overflow-hidden"
                                 >
-                                    <div className="bg-white m-4 aspect-[3/4] border border-gray-100">
-                                        <div className="w-full h-full bg-slate-200" />
-                                    </div>
-
+                                    <div className="m-4 h-[300px] bg-[#dfe3e6] rounded-sm" />
                                     <div className="px-6 pb-8 pt-2 flex flex-col grow">
                                         <div className="h-4 w-24 bg-slate-200 rounded mb-4" />
-                                        <div className="h-7 w-3/4 bg-slate-200 rounded mb-3" />
+                                        <div className="h-8 w-3/4 bg-slate-200 rounded mb-3" />
                                         <div className="h-4 w-full bg-slate-200 rounded mb-2" />
                                         <div className="h-4 w-5/6 bg-slate-200 rounded mb-6" />
                                         <div className="mt-auto h-4 w-28 bg-slate-200 rounded" />
@@ -248,14 +243,16 @@ export default function PolicyDocuments() {
                                     const docUrl = pickDocUrl(p);
 
                                     return (
-                                        <SwiperSlide key={p.id} className="h-full">
-                                            <Card
-                                                thumb={thumb}
-                                                title={title}
-                                                desc={desc}
-                                                dateText={dateText}
-                                                docUrl={docUrl}
-                                            />
+                                        <SwiperSlide key={p.id} className="h-auto">
+                                            <div className="h-full">
+                                                <Card
+                                                    thumb={thumb}
+                                                    title={title}
+                                                    desc={desc}
+                                                    dateText={dateText}
+                                                    docUrl={docUrl}
+                                                />
+                                            </div>
                                         </SwiperSlide>
                                     );
                                 })}
@@ -295,11 +292,13 @@ export default function PolicyDocuments() {
                                         </div>
 
                                         {thumb ? (
-                                            <img
-                                                src={thumb}
-                                                alt={title}
-                                                className="mt-2 w-full h-32 object-cover border"
-                                            />
+                                            <div className="mt-2 h-48 border bg-[#f4f4f4] flex items-center justify-center overflow-hidden">
+                                                <img
+                                                    src={thumb}
+                                                    alt={title}
+                                                    className="max-h-full max-w-full object-contain"
+                                                />
+                                            </div>
                                         ) : null}
 
                                         {desc ? (
@@ -364,54 +363,58 @@ function Card({
     docUrl: string;
 }) {
     return (
-        <div className="bg-[#e9ecef] flex flex-col shadow-xl h-full min-h-[500px]">
-            <div className="bg-white m-4 aspect-[3/4] flex flex-col items-center justify-center border border-gray-100 overflow-hidden">
+        <div className="bg-[#e9ecef] flex flex-col shadow-xl h-full min-h-[560px] overflow-hidden">
+            <div className="m-4 h-[300px] bg-[#dfe3e6] flex items-center justify-center overflow-hidden rounded-sm">
                 {thumb ? (
-                    <img
-                        src={thumb}
-                        alt={title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                    />
+                    <div className="w-full h-full flex items-center justify-center p-4">
+                        <img
+                            src={thumb}
+                            alt={title}
+                            className="max-h-full max-w-full object-contain drop-shadow-[0_10px_18px_rgba(0,0,0,0.18)]"
+                            loading="lazy"
+                        />
+                    </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center px-6 text-center">
-                        <span className="text-gray-500 font-medium text-lg mt-2">
+                    <div className="flex h-full w-full flex-col items-center justify-center px-6 text-center">
+                        <span className="text-gray-500 font-medium text-lg">
                             No thumbnail
                         </span>
                     </div>
                 )}
             </div>
 
-            <div className="px-6 pb-8 pt-2 flex flex-col grow">
-                <span className="text-[#1a2b4b] text-xs font-semibold mb-3">
+            <div className="px-6 pb-8 pt-2 flex flex-col grow min-h-[220px]">
+                <span className="text-[#1a2b4b] text-xs font-semibold mb-3 shrink-0">
                     {dateText}
                 </span>
 
-                <h3 className="text-[#1a2b4b] khmer-font text-2xl font-bold mb-3 uppercase line-clamp-1">
+                <h3 className="text-[#1a2b4b] khmer-font text-2xl font-bold mb-3 uppercase line-clamp-1 leading-tight">
                     {title}
                 </h3>
 
-                <p className="text-gray-700 khmer-font text-sm mb-6 flex-grow line-clamp-1">
+                <p className="text-gray-700 khmer-font text-sm mb-4 line-clamp-3 min-h-[32x]">
                     {desc || title}
                 </p>
 
-                {docUrl ? (
-                    <a
-                        href={docUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#1a2b4b] text-xs font-bold flex items-center hover:underline uppercase tracking-wider"
-                    >
-                        Download <span className="ml-1 text-lg">›</span>
-                    </a>
-                ) : (
-                    <button
-                        disabled
-                        className="text-gray-400 text-xs font-bold flex items-center uppercase tracking-wider cursor-not-allowed"
-                    >
-                        No document
-                    </button>
-                )}
+                <div className="mt-auto pt-2">
+                    {docUrl ? (
+                        <a
+                            href={docUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#1a2b4b] text-xs font-bold flex items-center hover:underline uppercase tracking-wider"
+                        >
+                            Download <span className="ml-1 text-lg">›</span>
+                        </a>
+                    ) : (
+                        <button
+                            disabled
+                            className="text-gray-400 text-xs font-bold flex items-center uppercase tracking-wider cursor-not-allowed"
+                        >
+                            No document
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

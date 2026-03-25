@@ -10,7 +10,7 @@ function RouterResources() {
     return (
         <>
             <SemesterSlider />
-            <ResourcesHero />
+            {/* <ResourcesHero /> */}
             <Policy_Documents />
             <WGOutputs />
             <AnnualReports />

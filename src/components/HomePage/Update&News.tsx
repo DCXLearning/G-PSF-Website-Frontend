@@ -151,7 +151,7 @@ export default function Update_News() {
                 <SwiperSlide key={item.id}>
                   <Link href={item.link} className="block h-full group">
                     <div
-                      className="bg-white overflow-hidden rounded-xl h-[450px] flex flex-col transition-all duration-300 group-hover:-translate-y-2"
+                      className="bg-white overflow-hidden rounded-xl h-[450px] border border-gray-500 shadow-sm flex flex-col transition-all duration-300 group-hover:-translate-y-2"
                       style={{ boxShadow: "0 10px 25px rgba(0,0,0,0.3)" }}
                     >
                       {/* Fixed Aspect Ratio for Images */}

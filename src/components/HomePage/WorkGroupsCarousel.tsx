@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 // src/components/HomePage/WorkGroupsCarousel.tsx
 "use client";
 
@@ -81,9 +82,11 @@ function WorkGroupCardSkeleton() {
       h-[210px] w-full px-4 py-6 rounded-2xl
       bg-gray-50 border border-gray-100 shadow-sm animate-pulse"
     >
-      <div className="w-20 h-20 rounded-full mb-4 bg-slate-200" />
-      <div className="h-4 w-24 bg-slate-200 rounded mb-2" />
-      <div className="h-4 w-20 bg-slate-200 rounded" />
+      <div className="w-20 h-20 rounded-full mb-4 bg-slate-200 shrink-0" />
+      <div className="h-[52px] flex flex-col items-center justify-center">
+        <div className="h-4 w-24 bg-slate-200 rounded mb-2" />
+        <div className="h-4 w-20 bg-slate-200 rounded" />
+      </div>
     </div>
   );
 }
@@ -150,14 +153,12 @@ export default function WorkGroupsCarousel() {
     };
   }, []);
 
-  const groupWord = !isKhmer && total === 1 ? "Work Group" : "Work Groups";
+  const groupWord = !isKhmer && total === 1 ? "Work Group" : "Working Groups";
   const numberText = isKhmer ? toKhmerNumber(total) : String(total);
 
   const titleRow1 = isKhmer
     ? `${numberText} ក្រុមការងារ`
     : `${numberText} ${groupWord}`;
-
-  const titleRow2 = isKhmer ? `ធ្វើការសម្រាប់អ្នក` : `Working For You`;
 
   const showSkeleton = !mounted || (loading && groups.length === 0);
 
@@ -173,10 +174,6 @@ export default function WorkGroupsCarousel() {
           >
             <span className="block text-4xl sm:text-5xl md:text-6xl">
               {titleRow1}
-            </span>
-
-            <span className="block text-4xl sm:text-5xl md:text-6xl">
-              {titleRow2}
             </span>
           </h2>
         </div>
@@ -253,7 +250,7 @@ export default function WorkGroupsCarousel() {
                         transition"
                       >
                         <div
-                          className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
+                          className="w-20 h-20 rounded-full flex items-center justify-center shrink-0 mb-4"
                           style={{ backgroundColor: ICON_BG }}
                         >
                           <img
@@ -263,14 +260,16 @@ export default function WorkGroupsCarousel() {
                           />
                         </div>
 
-                        <p
-                          className={`text-center font-semibold text-gray-900 leading-snug ${
-                            isKhmer ? "khmer-font" : ""
-                          } line-clamp-2 max-w-[170px]`}
-                          title={title}
-                        >
-                          {title}
-                        </p>
+                        <div className="h-[52px] flex items-center justify-center">
+                          <p
+                            className={`text-center font-semibold text-gray-900 leading-snug m-0 ${
+                              isKhmer ? "khmer-font" : ""
+                            } line-clamp-2 max-w-[170px]`}
+                            title={title}
+                          >
+                            {title}
+                          </p>
+                        </div>
                       </Link>
                     </SwiperSlide>
                   );
