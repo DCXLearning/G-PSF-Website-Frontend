@@ -6,7 +6,7 @@ import Works from '../AboutPage/Works';
 import Flow from '../AboutPage/Flow';
 import WorkingGroup from '../AboutPage/Working-group';
 import History from '../AboutPage/History';
-import Bannerpdf from '../AboutPage/downloadPdf';
+// import Bannerpdf from '../AboutPage/downloadPdf';
 
 
 function RouterAbout() {
@@ -18,7 +18,7 @@ function RouterAbout() {
             <Flow />
             <WorkingGroup />
             <History />
-            <Bannerpdf />
+            {/* <Bannerpdf /> */}
         </>
     )
 }

@@ -1,4 +1,4 @@
-//  src/components/About/Flow.tsx
+// src/components/About/Flow.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -66,8 +66,10 @@ function FlowSkeleton() {
                 </div>
             </div>
 
-            <div className="w-full">
-                <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px] bg-slate-100" />
+            <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="max-w-6xl mx-auto border border-slate-300 rounded-2xl bg-white p-4 shadow-xl">
+                    <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px] bg-slate-100 rounded-xl" />
+                </div>
             </div>
         </section>
     );
@@ -112,7 +114,6 @@ export default function Flow() {
                 writeCache(nextBlocks);
             } catch {
                 if (!alive) return;
-                // keep cached blocks, do not clear state
             } finally {
                 if (!alive) return;
                 setLoading(false);
@@ -161,8 +162,8 @@ export default function Flow() {
     }
 
     return (
-        <section className="bg-white py-5 md:py-7">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="bg-white py-5 md:py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-6">
                 <div className="text-center mb-10">
                     <p
                         className={`mt-3 max-w-2xl mx-auto text-xl font-bold sm:text-3xl text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
@@ -180,15 +181,17 @@ export default function Flow() {
                 </div>
             </div>
 
-            <div className="w-full">
-                <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px]">
-                    <Image
-                        src={view.imageUrl}
-                        alt={view.title || "Reform Flow"}
-                        fill
-                        priority
-                        className="object-contain"
-                    />
+            <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto border border-slate-200 rounded-2xl bg-white p-4 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                    <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[650px] rounded-xl overflow-hidden bg-slate-50">
+                        <Image
+                            src={view.imageUrl}
+                            alt={view.title || "Reform Flow"}
+                            fill
+                            priority
+                            className="object-contain"
+                        />
+                    </div>
                 </div>
             </div>
         </section>
