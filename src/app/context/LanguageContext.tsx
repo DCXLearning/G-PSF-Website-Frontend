@@ -27,7 +27,8 @@ const isLang = (value: string | null): value is Lang => {
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState<Lang>("en");
+  // Default = Khmer
+  const [language, setLanguageState] = useState<Lang>("kh");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -35,6 +36,10 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     if (isLang(savedLanguage)) {
       setLanguageState(savedLanguage);
+    } else {
+      // first open website -> Khmer by default
+      setLanguageState("kh");
+      localStorage.setItem("app-language", "kh");
     }
 
     setMounted(true);
@@ -45,6 +50,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     localStorage.setItem("app-language", language);
     document.documentElement.lang = language === "kh" ? "km" : "en";
+    document.documentElement.dir = "ltr";
+
     document.title =
       language === "kh"
         ? "វេទិការាជរដ្ឋាភិបាល-វិស័យឯកជន"

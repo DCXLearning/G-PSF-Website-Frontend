@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useEffect, useMemo, useState } from "react";
-import { Facebook, Send, MessageCircle } from "lucide-react";
+import { Facebook, Send, MessageCircle, Loader2 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 /** =========================
@@ -84,24 +85,42 @@ function normalizeSiteSettings(apiJson: any): SiteSettingsUI {
  *  ========================= */
 const translations = {
   en: {
-    title: "Contact Us",
-    subtitle_top: "Send Us a Message",
-    subtitle_bottom: "to Start a Conversation",
+    firstName: "First Name",
+    lastName: "Last Name",
+    email: "Email",
+    organisation: "Organisation Name",
+    subject: "Subject",
+    message: "Your Message",
+    send: "Send Message",
+    sending: "Sending...",
+    success: "Message sent successfully!",
+    required: "Please fill in all required fields.",
+    invalidEmail: "Please enter a valid email address.",
     address: "Address",
     contact: "Contact",
     openTime: "Open Time",
-    stayConnected: "Stay Connected",
-    loadingContact: "Loading contact info...",
+    connected: "Stay Connected",
+    loadingInfo: "Loading contact info...",
+    failed: "Failed to send message.",
   },
   kh: {
-    title: "ទាក់ទងមកយើង",
-    subtitle_top: "ផ្ញើសារមកយើង",
-    subtitle_bottom: "ដើម្បីចាប់ផ្តើមការសន្ទនា",
+    firstName: "នាមខ្លួន",
+    lastName: "នាមត្រកូល",
+    email: "អ៊ីមែល",
+    organisation: "ឈ្មោះអង្គការ",
+    subject: "ប្រធានបទ",
+    message: "សាររបស់អ្នក",
+    send: "ផ្ញើសារ",
+    sending: "កំពុងផ្ញើ...",
+    success: "ផ្ញើសារជោគជ័យ!",
+    required: "សូមបំពេញព័ត៌មានចាំបាច់ទាំងអស់។",
+    invalidEmail: "សូមបញ្ចូលអ៊ីមែលត្រឹមត្រូវ។",
     address: "អាសយដ្ឋាន",
     contact: "ទំនាក់ទំនង",
     openTime: "ម៉ោងបើកធ្វើការ",
-    stayConnected: "ភ្ជាប់ទំនាក់ទំនង",
-    loadingContact: "កំពុងទាញព័ត៌មានទំនាក់ទំនង...",
+    connected: "ភ្ជាប់ទំនាក់ទំនង",
+    loadingInfo: "កំពុងផ្ទុកព័ត៌មានទំនាក់ទំនង...",
+    failed: "ផ្ញើសារមិនបានជោគជ័យ។",
   },
 };
 
@@ -110,7 +129,7 @@ const translations = {
  *  ========================= */
 export default function ContactSection() {
   const { language } = useLanguage();
-  const t = translations[language as "en" | "kh"] ?? translations.en;
+  const t = translations[language];
 
   const [form, setForm] = useState<ContactPayload>({
     firstName: "",
@@ -153,7 +172,9 @@ export default function ContactSection() {
         const ui = normalizeSiteSettings(json);
         if (mounted) setSettings(ui);
       } catch (e: any) {
-        if (mounted) setSettingsError(e?.message || "Failed to load contact info.");
+        if (mounted) {
+          setSettingsError(e?.message || "Failed to load contact info.");
+        }
       } finally {
         if (mounted) setSettingsLoading(false);
       }
@@ -176,8 +197,8 @@ export default function ContactSection() {
     );
   }, [form]);
 
-  function set<K extends keyof ContactPayload>(key: K, value: ContactPayload[K]) {
-    setForm((p) => ({ ...p, [key]: value }));
+  function setField<K extends keyof ContactPayload>(key: K, value: ContactPayload[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -185,12 +206,19 @@ export default function ContactSection() {
     setSuccessMsg("");
     setErrorMsg("");
 
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      setErrorMsg(t.required);
+      return;
+    }
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
-    if (!emailOk) return;
+    if (!emailOk) {
+      setErrorMsg(t.invalidEmail);
+      return;
+    }
 
     setLoading(true);
+
     try {
       const res = await fetch("/api/contact/contact-form", {
         method: "POST",
@@ -206,6 +234,7 @@ export default function ContactSection() {
       });
 
       const text = await res.text();
+
       let json: any = null;
       try {
         json = text ? JSON.parse(text) : null;
@@ -217,7 +246,7 @@ export default function ContactSection() {
         throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
       }
 
-      setSuccessMsg("Message sent successfully!");
+      setSuccessMsg(t.success);
       setForm({
         firstName: "",
         lastName: "",
@@ -227,126 +256,280 @@ export default function ContactSection() {
         message: "",
       });
     } catch (err: any) {
-      setErrorMsg(err?.message || "Failed to send message.");
+      setErrorMsg(err?.message || t.failed);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pb-6 pt-6 md:pt-8 md:pb-8 bg-white">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h3 className="text-[#1e2653] text-3xl font-semibold mb-2 khmer-font">{t.title}</h3>
-        <h2 className="text-3xl md:text-5xl text-[#1e2653] font-semibold khmer-font">
-          {t.subtitle_top}
-        </h2>
-        <h2 className="text-3xl md:text-5xl text-[#1e2653] font-semibold khmer-font">
-          {t.subtitle_bottom}
-        </h2>
-      </div>
+    <section className="max-w-7xl mx-auto px-4 pt-8 pb-10 md:pt-10 md:pb-14 bg-white">
 
-      {/* Sidebar + Map */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-stretch">
-        {/* Map on right */}
-        <div className="lg:col-span-2 h-[400px] md:h-[600px] bg-gray-200 overflow-hidden rounded-2xl shadow-inner">
-          <iframe
-            title="CDC Cambodia Location"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.770535316462!2d104.9255855758416!3d11.568305044030615!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109515ad9d95963%3A0xf0260c4d444dee3a!2sThe%20Council%20for%20the%20Development%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1704810000000!5m2!1sen!2skh"
-            className="w-full h-full border-0"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch mb-10">
+        <div className="xl:col-span-8">
+          <div className="w-full h-[380px] md:h-[520px] xl:h-[620px] overflow-hidden rounded-3xl shadow-lg border border-gray-200">
+            <iframe
+              title="CDC Cambodia Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.770535316462!2d104.9255855758416!3d11.568305044030615!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109515ad9d95963%3A0xf0260c4d444dee3a!2sThe%20Council%20for%20the%20Development%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1704810000000!5m2!1sen!2skh"
+              className="w-full h-full border-0"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="bg-[#1e2653] text-white p-8 rounded-2xl space-y-8">
-          {settingsLoading ? (
-            <div className="text-sm text-gray-300">{t.loadingContact}</div>
-          ) : settingsError ? (
-            <div className="text-sm rounded-lg border border-red-200 bg-red-50 text-red-700 p-3">
-              {settingsError}
+        <div className="xl:col-span-4">
+          <div className="h-full bg-[#1e2653] text-white p-6 md:p-8 rounded-3xl space-y-8 shadow-lg">
+            {settingsLoading ? (
+              <div className={`text-sm text-gray-300 ${language === "kh" ? "khmer-font" : ""}`}>
+                {t.loadingInfo}
+              </div>
+            ) : settingsError ? (
+              <div className="text-sm rounded-lg border border-red-200 bg-red-50 text-red-700 p-3">
+                {settingsError}
+              </div>
+            ) : (
+              <>
+                <section>
+                  <h4
+                    className={`text-xl font-semibold mb-3 ${
+                      language === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
+                    {t.address}
+                  </h4>
+                  <p className="text-gray-300 text-sm leading-7">
+                    {settings?.addressLines?.map((line, idx) => (
+                      <span key={idx}>
+                        {line}
+                        <br />
+                      </span>
+                    ))}
+                  </p>
+                </section>
+
+                <section className="space-y-4">
+                  <h4
+                    className={`text-xl font-semibold ${
+                      language === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
+                    {t.contact}
+                  </h4>
+
+                  <div className="text-sm space-y-1 text-gray-200">
+                    {settings?.phones?.map((p, idx) => (
+                      <p key={idx}>{p}</p>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 pt-2">
+                    {settings?.desks?.map((desk) => (
+                      <div key={desk.label}>
+                        <p className="font-semibold text-white">{desk.label}</p>
+                        {desk.emails.map((em) => (
+                          <p key={em} className="text-gray-300 break-all">
+                            {em}
+                          </p>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h4
+                    className={`text-xl font-semibold mb-3 ${
+                      language === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
+                    {t.openTime}
+                  </h4>
+                  <p className="text-sm text-gray-300">{settings?.openDaysText}</p>
+                  <p className="text-sm text-white">{settings?.openTimeText}</p>
+                </section>
+
+                <section>
+                  <h4
+                    className={`text-xl font-semibold mb-4 ${
+                      language === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
+                    {t.connected}
+                  </h4>
+
+                  <div className="flex items-center gap-4">
+                    <a
+                      href={settings?.social?.facebook || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
+                    >
+                      <Facebook size={20} />
+                    </a>
+                    <a
+                      href={settings?.social?.telegram || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
+                    >
+                      <Send size={20} />
+                    </a>
+                    <a
+                      href={settings?.social?.messenger || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
+                    >
+                      <MessageCircle size={20} />
+                    </a>
+                  </div>
+                </section>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+
+      {/* ===============from contact========== */}
+
+      {/* <div className="max-w-7xl mx-auto">
+        <form onSubmit={onSubmit} className="space-y-6 bg-white rounded-3xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                  language === "kh" ? "khmer-font" : ""
+                }`}
+              >
+                {t.firstName} <span className="text-orange-500">*</span>
+              </label>
+              <input
+                value={form.firstName}
+                onChange={(e) => setField("firstName", e.target.value)}
+                type="text"
+                placeholder="Ex. Pheak"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
             </div>
-          ) : (
-            <>
-              <section>
-                <h4 className="text-xl font-semibold mb-3">{t.address}</h4>
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {settings?.addressLines?.map((line, idx) => (
-                    <span key={idx}>
-                      {line}
-                      <br />
-                    </span>
-                  ))}
-                </p>
-              </section>
 
-              <section className="space-y-4">
-                <h4 className="text-xl font-semibold">{t.contact}</h4>
+            <div>
+              <label
+                className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                  language === "kh" ? "khmer-font" : ""
+                }`}
+              >
+                {t.lastName} <span className="text-orange-500">*</span>
+              </label>
+              <input
+                value={form.lastName}
+                onChange={(e) => setField("lastName", e.target.value)}
+                type="text"
+                placeholder="Ex. Kdey"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+          </div>
 
-                <div className="text-sm space-y-1">
-                  {settings?.phones?.map((p, idx) => (
-                    <p key={idx}>{p}</p>
-                  ))}
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                  language === "kh" ? "khmer-font" : ""
+                }`}
+              >
+                {t.email} <span className="text-orange-500">*</span>
+              </label>
+              <input
+                value={form.email}
+                onChange={(e) => setField("email", e.target.value)}
+                type="email"
+                placeholder="example@gmail.com"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
 
-                <div className="grid grid-cols-1 gap-4 pt-3">
-                  {settings?.desks?.map((desk) => (
-                    <div key={desk.label}>
-                      <p className="font-semibold">{desk.label}</p>
-                      {desk.emails.map((em) => (
-                        <p key={em} className="text-gray-300">
-                          {em}
-                        </p>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </section>
+            <div>
+              <label
+                className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                  language === "kh" ? "khmer-font" : ""
+                }`}
+              >
+                {t.organisation}
+              </label>
+              <input
+                value={form.organisationName || ""}
+                onChange={(e) => setField("organisationName", e.target.value)}
+                type="text"
+                placeholder="Enter Organisation Name"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+          </div>
 
-              <section>
-                <h4 className="text-xl font-semibold mb-3">{t.openTime}</h4>
-                <p className="text-sm text-gray-300">{settings?.openDaysText}</p>
-                <p className="text-sm">{settings?.openTimeText}</p>
-              </section>
+          <div>
+            <label
+              className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                language === "kh" ? "khmer-font" : ""
+              }`}
+            >
+              {t.subject} <span className="text-orange-500">*</span>
+            </label>
+            <input
+              value={form.subject}
+              onChange={(e) => setField("subject", e.target.value)}
+              type="text"
+              placeholder="Enter subject here..."
+              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
 
-              <section>
-                <h4 className="text-xl font-semibold mb-4">{t.stayConnected}</h4>
-                <div className="flex space-x-4">
-                  <a
-                    href={settings?.social?.facebook || "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-[#f39233] p-2 rounded-full hover:bg-orange-400 transition"
-                  >
-                    <Facebook size={20} />
-                  </a>
+          <div>
+            <label
+              className={`block text-lg font-semibold text-[#1e2653] mb-2 ${
+                language === "kh" ? "khmer-font" : ""
+              }`}
+            >
+              {t.message} <span className="text-orange-500">*</span>
+            </label>
+            <textarea
+              value={form.message}
+              onChange={(e) => setField("message", e.target.value)}
+              rows={7}
+              placeholder="Enter here..."
+              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+            />
+          </div>
 
-                  <a
-                    href={settings?.social?.telegram || "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-[#f39233] p-2 rounded-full hover:bg-orange-400 transition"
-                  >
-                    <Send size={20} />
-                  </a>
-
-                  <a
-                    href={settings?.social?.messenger || "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-[#f39233] p-2 rounded-full hover:bg-orange-400 transition"
-                  >
-                    <MessageCircle size={20} />
-                  </a>
-                </div>
-              </section>
-            </>
+          {(successMsg || errorMsg) && (
+            <div
+              className={
+                "rounded-lg border p-3 text-sm " +
+                (successMsg
+                  ? "border-green-200 bg-green-50 text-green-700"
+                  : "border-red-200 bg-red-50 text-red-700")
+              }
+            >
+              {successMsg || errorMsg}
+            </div>
           )}
-        </div>
 
-      </div>
-    </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className={
+              "bg-[#f39233] hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-full transition duration-300 inline-flex items-center gap-2 " +
+              (language === "kh" ? "khmer-font " : "") +
+              (loading ? "opacity-70 cursor-not-allowed" : "")
+            }
+          >
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+            {loading ? t.sending : t.send}
+          </button>
+        </form>
+      </div> */}
+    </section>
   );
 }
