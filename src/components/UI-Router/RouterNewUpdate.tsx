@@ -1,7 +1,7 @@
 //RouterNewUpdate.tsx
 import React from 'react'
 // import NewUpdate from '../News&Updates/Banner'
-import Select from '../News&Updates/Select'
+// import Select from '../News&Updates/Select'
 import NewUpdateSection from '../News&Updates/NewUpdate'
 import EventsAndAnnouncements from '../News&Updates/EventAndAnnouncements'
 // import Achievements from '../News&Updates/Achievements'
@@ -33,7 +33,7 @@ export default function RouterNewUpdate({
     return (
         <>
             {/* <NewUpdate /> */}
-            <Select />
+            {/* <Select /> */}
             <NewUpdateSection data={newUpdateSectionData} />
             <EventsAndAnnouncements />
             {/* <Achievements /> */}

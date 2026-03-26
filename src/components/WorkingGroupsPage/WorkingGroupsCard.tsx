@@ -200,9 +200,8 @@ export default function WorkGroupsGrid() {
 
     const headerTitle = isKh
         ? `ក្រុមការងារ ${total || workGroups.length}`
-        : `${total || workGroups.length} Work Groups`;
+        : `${total || workGroups.length} Working Groups`;
 
-    const headerSub = isKh ? "ធ្វើការសម្រាប់អ្នក" : "Working For You";
 
     const showSkeleton = !mounted || (loadingGrid && items.length === 0);
     const showErrorOnly = !showSkeleton && items.length === 0 && !!error;
@@ -217,8 +216,6 @@ export default function WorkGroupsGrid() {
                                 }`}
                         >
                             {headerTitle}
-                            <br />
-                            <span className="opacity-90">{headerSub}</span>
                         </h1>
 
                         {showErrorOnly ? (
