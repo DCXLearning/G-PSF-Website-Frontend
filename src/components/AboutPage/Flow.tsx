@@ -1,4 +1,3 @@
-// src/components/About/Flow.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -10,15 +9,39 @@ type ApiLang = "en" | "km";
 
 type I18n = { en?: string; km?: string };
 
+type RichContentImage = {
+    type?: string;
+    attrs?: {
+        src?: string;
+        media?: {
+            thumbnail?: string;
+            url?: string;
+        };
+    };
+};
+
+type RichContentDoc = {
+    type?: string;
+    content?: RichContentImage[];
+};
+
+type PostContent = {
+    en?: RichContentDoc;
+    km?: RichContentDoc;
+};
+
+type Post = {
+    id: number;
+    title?: I18n;
+    coverImage?: string;
+    content?: PostContent;
+};
+
 type Block = {
     id: number;
     type: string;
     title?: I18n;
-    posts?: Array<{
-        id: number;
-        title?: I18n;
-        coverImage?: string;
-    }>;
+    posts?: Post[];
 };
 
 type ApiResponse = {
@@ -35,6 +58,22 @@ function pickText(obj: I18n | undefined, lang: ApiLang, fallback = "") {
     if (!obj) return fallback;
     const primary = lang === "km" ? obj.km : obj.en;
     return primary || obj.en || obj.km || fallback;
+}
+
+function getThumbnail(content: PostContent | undefined, lang: ApiLang) {
+    try {
+        const doc = content?.[lang];
+        const firstImage = doc?.content?.find((item) => item?.type === "image");
+
+        return (
+            firstImage?.attrs?.media?.thumbnail ||
+            firstImage?.attrs?.media?.url ||
+            firstImage?.attrs?.src ||
+            ""
+        );
+    } catch {
+        return "";
+    }
 }
 
 function readCache(): Block[] {
@@ -58,17 +97,15 @@ function writeCache(blocks: Block[]) {
 
 function FlowSkeleton() {
     return (
-        <section className="bg-white py-5 md:py-7 animate-pulse">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-10">
+        <section className="bg-white py-8 md:py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-pulse">
+                <div className="text-center mb-8 md:mb-10">
                     <div className="mt-3 max-w-md mx-auto h-8 bg-slate-200 rounded" />
                     <div className="mt-4 max-w-xl mx-auto h-12 bg-slate-200 rounded" />
                 </div>
-            </div>
 
-            <div className="w-full px-4 sm:px-6 lg:px-8">
-                <div className="max-w-6xl mx-auto border border-slate-300 rounded-2xl bg-white p-4 shadow-xl">
-                    <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px] bg-slate-100 rounded-xl" />
+                <div className="border border-slate-200 rounded-2xl bg-white p-3 sm:p-4 md:p-5 shadow-md">
+                    <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[650px] bg-slate-100 rounded-xl" />
                 </div>
             </div>
         </section>
@@ -146,11 +183,14 @@ export default function Flow() {
             post?.title,
             apiLang,
             uiLang === "kh"
-                ? "គំរូលំដាប់កម្រិត G-PSF"
+                ? "គំរូយន្ដការបញ្ជូនបញ្ហាបន្ដរបស់ G-PSF"
                 : "The G-PSF Escalatory Model"
         );
 
-        const imageUrl = post?.coverImage || "/image/s.png";
+        const imageUrl =
+            getThumbnail(post?.content, apiLang) ||
+            post?.coverImage ||
+            "/image/s.png";
 
         return { subtitle, title, imageUrl };
     }, [blocks, apiLang, uiLang]);
@@ -162,34 +202,32 @@ export default function Flow() {
     }
 
     return (
-        <section className="bg-white py-5 md:py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-6">
-                <div className="text-center mb-10">
+        <section className="bg-white py-8 md:py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4">
+                <div className="text-center mb-8 md:mb-10">
                     <p
-                        className={`mt-3 max-w-2xl mx-auto text-xl font-bold sm:text-3xl text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
+                        className={`mt-2 max-w-2xl mx-auto text-xl sm:text-3xl font-bold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
                             }`}
                     >
                         {view.subtitle}
                     </p>
 
                     <h1
-                        className={`text-3xl sm:text-5xl font-bold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
+                        className={`mt-3 text-3xl sm:text-5xl font-bold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
                             }`}
                     >
                         {view.title}
                     </h1>
                 </div>
-            </div>
 
-            <div className="w-full px-4 sm:px-6 lg:px-8">
-                <div className="max-w-7xl mx-auto border border-slate-400 rounded-2xl bg-white p-4 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-                    <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[650px] rounded-xl overflow-hidden bg-slate-50">
+                <div className="border border-slate-200 rounded-2xl bg-white p-3 sm:p-4 md:p-5 lg:p-6 shadow-md">
+                    <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[720px] rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
                         <Image
                             src={view.imageUrl}
                             alt={view.title || "Reform Flow"}
                             fill
                             priority
-                            className="object-contain"
+                            className="object-cover p-4"
                         />
                     </div>
                 </div>

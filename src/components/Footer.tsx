@@ -219,6 +219,11 @@ const Footer: React.FC = () => {
         fetchQuickLinks();
     }, []);
 
+    const title = useMemo(
+        () => pickText(siteData?.title, language),
+        [siteData, language]
+    );
+
     const description = useMemo(
         () => pickText(siteData?.description, language),
         [siteData, language]
@@ -253,13 +258,13 @@ const Footer: React.FC = () => {
 
     return (
         <footer className="bg-white mt-0 shadow-[0_-6px_12px_rgba(0,0,0,0.08)]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-14 lg:gap-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-14 lg:gap-20">
                 {/* ========== LOGO + DESCRIPTION ========== */}
-                <div>
-                    <div className="relative w-60 h-20 mb-4">
+                <div className="flex flex-col items-center text-center">
+                    <div className="relative w-60 h-20 mb-4 mr-2 -mt-1 mx-auto">
                         <Image
                             src={siteData?.logo || "/image/logo1.png"}
-                            alt={pickText(siteData?.title, language) || "G-PSF Logo"}
+                            alt={title || "G-PSF Logo"}
                             fill
                             className="object-cover"
                             sizes="300px"
@@ -267,13 +272,13 @@ const Footer: React.FC = () => {
                     </div>
 
                     {loading ? (
-                        <div className="space-y-3">
+                        <div className="space-y-3 flex flex-col items-center">
                             <div className="h-5 w-56 bg-gray-200 animate-pulse rounded" />
                             <div className="h-5 w-48 bg-gray-200 animate-pulse rounded" />
                         </div>
                     ) : (
                         <p
-                            className={`text-lg text-gray-800 max-w-sm leading-8 ${
+                            className={`text-lg text-gray-800 max-w-sm leading-8 text-center ${
                                 isKhmer ? "khmer-font" : ""
                             }`}
                         >
