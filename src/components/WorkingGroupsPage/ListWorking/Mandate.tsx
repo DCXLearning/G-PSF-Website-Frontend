@@ -1108,17 +1108,16 @@ export default function MandateScopePage({
                     </div>
                   );
                 })}
-
-                <div className="pt-4">
-                  <Link
-                    href="/contact-us"
-                    className={`inline-flex h-14 items-center rounded-2xl bg-[#0F3D5E] px-10 text-lg font-bold text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                      isKh ? "khmer-font" : ""
-                    }`}
-                  >
-                    {t.submit}
-                  </Link>
-                </div>
+                {/*<div className="pt-4">*/}
+                {/*  <Link*/}
+                {/*    href="/contact-us"*/}
+                {/*    className={`inline-flex h-14 items-center rounded-2xl bg-[#0F3D5E] px-10 text-lg font-bold text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] ${*/}
+                {/*      isKh ? "khmer-font" : ""*/}
+                {/*    }`}*/}
+                {/*  >*/}
+                {/*    {t.submit}*/}
+                {/*  </Link>*/}
+                {/*</div>*/}
               </div>
             </div>
           </section>
