@@ -189,7 +189,7 @@ export function ToolsSectionContent({
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
     return (
-        <section className={`bg-white py-12 px-4 ${fontClass}`}>
+        <section className={`bg-white pt-4 pb-12 px-4 ${fontClass}`}>
             <div className="max-w-7xl mx-auto text-center">
                 <h2 className="text-2xl md:text-3xl font-bold text-[#1e1e4b] tracking-tight">
                     {pickText(block?.title, uiLang) || "Standerd Templates & Forms"}

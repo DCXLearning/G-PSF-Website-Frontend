@@ -251,7 +251,7 @@ export function SemesterReportsSection({
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
     return (
-        <section className={`py-12 px-4 sm:py-20 ${fontClass || ""}`}>
+        <section className={`pt-16 pb-4 px-4 ${fontClass || ""}`}>
             <div className="max-w-7xl mx-auto px-4">
                 <div className="text-center mb-10 md:mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold text-blue-950 mb-4">
@@ -333,7 +333,7 @@ export function SemesterReportsSection({
 
                                         <div className="absolute inset-x-0 bottom-0 top-[45%] bg-white/40 md:bg-white/60 backdrop-blur-md p-5 md:p-6 flex flex-col justify-between border-t border-white/20">
                                             <div>
-                                                <p className="text-[#3b5998] text-xl md:text-2xl font-extrabold mb-4 line-clamp-2">
+                                                <p className="text-[#3b5998] text-xl md:text-2xl font-bold mb-4 line-clamp-2">
                                                     {title}
                                                 </p>
 
