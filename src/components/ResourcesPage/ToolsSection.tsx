@@ -189,8 +189,8 @@ export function ToolsSectionContent({
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
     return (
-        <section className={`bg-white py-20 px-4 ${fontClass}`}>
-            <div className="max-w-6xl mx-auto text-center">
+        <section className={`bg-white py-12 px-4 ${fontClass}`}>
+            <div className="max-w-7xl mx-auto text-center">
                 <h2 className="text-2xl md:text-3xl font-bold text-[#1e1e4b] tracking-tight">
                     {pickText(block?.title, uiLang) || "Standerd Templates & Forms"}
                 </h2>
@@ -226,7 +226,7 @@ export function ToolsSectionContent({
                                     key={post.id}
                                     className="flex flex-col items-center rounded-2xl p-6 transition hover:shadow-lg"
                                 >
-                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-lg overflow-hidden bg-[#1e1e4b]">
+                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm overflow-hidden">
                                         {post.coverImage ? (
                                             <Image
                                                 src={post.coverImage}
