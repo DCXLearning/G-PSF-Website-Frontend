@@ -315,9 +315,9 @@ export default function WorkingGroupsDate() {
     const apiLang: ApiLang = lang === "kh" ? "km" : "en";
 
     const [isLoading, setIsLoading] = useState(true);
-    const [calendarMonths, setCalendarMonths] = useState<CalendarMonth[]>(() =>
-        buildCalendarMonths([])
-    );
+    // Start with an empty list so the first server render matches the first client render.
+    // We fill the real months after the browser fetches the schedule data.
+    const [calendarMonths, setCalendarMonths] = useState<CalendarMonth[]>([]);
     const [highlightedDates, setHighlightedDates] = useState<HighlightedDate[]>([]);
     const [sectionTitle, setSectionTitle] = useState("");
     const [showMoreHref, setShowMoreHref] = useState("");
@@ -439,14 +439,44 @@ export default function WorkingGroupsDate() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-12">
-                    {calendarMonths.map((month) => (
-                        <Calendar
-                            key={month.key}
-                            month={month}
-                            lang={lang}
-                            highlightedDates={highlightedDates}
-                        />
-                    ))}
+                    {calendarMonths.length > 0
+                        ? calendarMonths.map((month) => (
+                              <Calendar
+                                  key={month.key}
+                                  month={month}
+                                  lang={lang}
+                                  highlightedDates={highlightedDates}
+                              />
+                          ))
+                        : Array.from({ length: 3 }).map((_, index) => (
+                              // Keep the old calendar card layout visible while data is loading.
+                              <div
+                                  key={`calendar-placeholder-${index}`}
+                                  className="bg-[#f4f6f7] rounded-xl overflow-visible shadow-sm border border-gray-100 h-full flex flex-col"
+                              >
+                                  <div className="py-3 sm:py-4 text-center">
+                                      <div className="mx-auto h-7 w-24 rounded bg-gray-200/80" />
+                                  </div>
+
+                                  <div className="bg-gray-200/50 grid grid-cols-7 py-2">
+                                      {Array.from({ length: 7 }).map((__, dayIndex) => (
+                                          <div
+                                              key={`placeholder-day-label-${index}-${dayIndex}`}
+                                              className="h-4"
+                                          />
+                                      ))}
+                                  </div>
+
+                                  <div className="p-3 sm:p-4 grid grid-cols-7 gap-y-2 flex-grow auto-rows-[32px]">
+                                      {Array.from({ length: 35 }).map((__, dayIndex) => (
+                                          <div
+                                              key={`placeholder-day-cell-${index}-${dayIndex}`}
+                                              className="mx-auto h-6 w-6 rounded-full bg-gray-200/70"
+                                          />
+                                      ))}
+                                  </div>
+                              </div>
+                          ))}
                 </div>
 
                 <div className="flex justify-center mt-8 sm:mt-12">
