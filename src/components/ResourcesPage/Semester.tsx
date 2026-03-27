@@ -331,13 +331,13 @@ export function SemesterReportsSection({
                                             <div className="w-full h-full bg-slate-100" />
                                         )}
 
-                                        <div className="absolute inset-x-0 bottom-0 top-[45%] bg-white/40 md:bg-white/60 backdrop-blur-md p-5 md:p-6 flex flex-col justify-between border-t border-white/20">
+                                        <div className="absolute inset-x-0 bottom-0 top-[60%] bg-white/40 md:bg-white/60 backdrop-blur-md p-5 md:p-6 flex flex-col justify-between border-t border-white/20">
                                             <div>
                                                 <p className="text-[#3b5998] text-xl md:text-2xl font-bold mb-4 line-clamp-2">
                                                     {title}
                                                 </p>
 
-                                                <ul className="space-y-2 md:space-y-3">
+                                                {/* <ul className="space-y-2 md:space-y-3">
                                                     {highlights.map((item, index) => (
                                                         <li
                                                             key={index}
@@ -347,7 +347,7 @@ export function SemesterReportsSection({
                                                             <span className="line-clamp-1">{item}</span>
                                                         </li>
                                                     ))}
-                                                </ul>
+                                                </ul> */}
                                             </div>
 
                                             <a
