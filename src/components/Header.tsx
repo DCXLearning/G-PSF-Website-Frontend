@@ -65,7 +65,7 @@ const Header: FC = () => {
                 label: "News & Update",
                 href: "/new-update",
                 children: [
-                    { label: "Featured", href: "/resources/detail" },
+                    { label: "Featured", href: "/new-update/featured" },
                     {
                         label: "Plenary",
                         children: [
@@ -94,7 +94,7 @@ const Header: FC = () => {
             },
             {
                 label: "MIS",
-                href: "/mis",
+                href: "/mis-dashboard",
             },
             {
                 label: "Contact Us",
@@ -155,7 +155,7 @@ const Header: FC = () => {
             },
             {
                 label: "MIS",
-                href: "/mis",
+                href: "/mis-dashboard",
             },
             {
                 label: "ទាក់ទងមកពួកយើង",
@@ -321,7 +321,7 @@ const Header: FC = () => {
                                                             return (
                                                                 <div key={child.label} className="relative group/sub">
                                                                     <div
-                                                                        className={`flex items-center justify-between px-4 py-3 text-sm cursor-pointer transition-colors ${isChildActive
+                                                                        className={`flex items-center justify-between px-4 py-3 text-lg font-medium cursor-pointer transition-colors ${isChildActive
                                                                                 ? "bg-orange-50 text-orange-600 font-semibold"
                                                                                 : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                                                                             } ${language === "kh" ? "khmer-font" : ""}`}
@@ -358,7 +358,7 @@ const Header: FC = () => {
                                                             <Link
                                                                 key={child.href}
                                                                 href={child.href || "#"}
-                                                                className={`block px-4 py-3 text-sm transition-colors ${isChildActive
+                                                                className={`block px-4 py-3 text-lg font-medium transition-colors ${isChildActive
                                                                         ? "bg-orange-50 text-orange-600 font-semibold"
                                                                         : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                                                                     } ${language === "kh" ? "khmer-font" : ""}`}
