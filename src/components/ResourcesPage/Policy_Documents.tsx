@@ -316,32 +316,31 @@ export default function PolicyDocuments() {
                         </div>
 
                         <style jsx global>{`
-              .custom-pagination .swiper-pagination-bullet {
-                width: 16px;
-                height: 16px;
-                background-color: #fb923c !important;
-                opacity: 0.6;
-                margin: 0 6px;
-              }
+                            .custom-pagination .swiper-pagination-bullet {
+                                width: 16px;
+                                height: 16px;
+                                background-color: #fb923c !important;
+                                opacity: 0.6;
+                            }
 
-              .custom-pagination .swiper-pagination-bullet-active {
-                opacity: 1;
-              }
+                            .custom-pagination .swiper-pagination-bullet-active {
+                                opacity: 1;
+                            }
 
-              @media print {
-                @page {
-                  size: A4;
-                  margin: 12mm;
-                }
+                            @media print {
+                                @page {
+                                size: A4;
+                                margin: 12mm;
+                                }
 
-                html,
-                body {
-                  background: #fff !important;
-                  -webkit-print-color-adjust: exact;
-                  print-color-adjust: exact;
-                }
-              }
-            `}</style>
+                                html,
+                                body {
+                                background: #fff !important;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                                }
+                            }
+                        `}</style>
                     </>
                 )}
             </div>

@@ -4,8 +4,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, Hexagon } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/pagination";
 
 type UiLang = "en" | "kh";
 type ApiLang = "en" | "km";
@@ -27,6 +33,7 @@ type ApiPost = {
     } | null;
     link?: string | null;
     publishedAt?: string | null;
+    slug?: string | null;
     category?: {
         id: number;
         name?: I18n;
@@ -59,7 +66,7 @@ type SemesterReportsSectionProps = {
     showSeeMoreButton?: boolean;
 };
 
-const CACHE_KEY_PREFIX = "semester-reports-annual-ui-cache";
+const CACHE_KEY_PREFIX = "semester-reports-ui-cache-v6";
 
 function pickText(value: I18n | null | undefined, lang: UiLang): string {
     return (lang === "kh" ? value?.km : value?.en) || value?.en || value?.km || "";
@@ -84,7 +91,7 @@ function writeCache(apiLanguage: ApiLang, block: ApiBlock | null) {
     try {
         sessionStorage.setItem(getCacheKey(apiLanguage), JSON.stringify(block));
     } catch {
-        // ignore cache errors
+        // ignore
     }
 }
 
@@ -132,18 +139,13 @@ function pickThumbUrl(post: ApiPost, apiLanguage: ApiLang): string {
     );
 }
 
-function extractYear(text: string): string {
-    const match = text.match(/\b(20\d{2})\b/);
-    return match?.[1] || "";
-}
-
-function formatDate(dateString: string | null | undefined, lang: UiLang): string {
+function formatPublishedDate(dateString: string | null | undefined, lang: UiLang): string {
     if (!dateString) return "";
 
     try {
         return new Intl.DateTimeFormat(lang === "kh" ? "km-KH" : "en-GB", {
             day: "2-digit",
-            month: "short",
+            month: "long",
             year: "numeric",
         }).format(new Date(dateString));
     } catch {
@@ -151,19 +153,9 @@ function formatDate(dateString: string | null | undefined, lang: UiLang): string
     }
 }
 
-function buildHighlights(post: ApiPost, lang: UiLang): string[] {
-    const published = formatDate(post.publishedAt, lang);
-
-    return [
-        published
-            ? lang === "kh"
-                ? `ចេញផ្សាយ: ${published}`
-                : `Published: ${published}`
-            : lang === "kh"
-                ? "ឯកសារ PDF"
-                : "PDF Document",
-        lang === "kh" ? "ទាញយកឯកសារ PDF" : "Download PDF document",
-    ];
+function getDetailHref(post: ApiPost): string {
+    if (post.slug) return `/plenary/${post.slug}`;
+    return `/plenary/${post.id}`;
 }
 
 export default function SemesterReportsAnnualUi() {
@@ -219,9 +211,7 @@ export function SemesterReportsSection({
                 }
             } catch (err: unknown) {
                 if (!alive) return;
-
-                const message =
-                    err instanceof Error ? err.message : "Fetch failed";
+                const message = err instanceof Error ? err.message : "Fetch failed";
                 setError(message);
             } finally {
                 if (!alive) return;
@@ -238,148 +228,189 @@ export function SemesterReportsSection({
 
     const posts = useMemo(() => {
         const allPosts = block?.posts || [];
-
-        if (showAllPosts) {
-            return allPosts;
-        }
-
-        return allPosts.slice(0, 3);
+        return showAllPosts ? allPosts : allPosts;
     }, [block, showAllPosts]);
+
+    const sectionTitle = pickText(block?.title, uiLang) || "Semester Reports";
+    const sectionDescription = pickText(block?.description, uiLang);
 
     const showSkeleton = !mounted || (loading && !block);
     const showErrorOnly = !showSkeleton && !block && !!error;
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
     return (
-        <section className={`pt-16 pb-4 px-4 ${fontClass || ""}`}>
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="text-center mb-10 md:mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold text-blue-950 mb-4">
-                        {pickText(block?.title, uiLang) || "Semester Reports"}
+        <section className={`relative overflow-hidden ${fontClass || ""}`}>
+            <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-[#3f5fa8]" />
+
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 pt-10 pb-14">
+                <div className="mb-8 text-center">
+                    <h2 className="text-3xl md:text-5xl font-bold text-[#1e2f5d]">
+                        {sectionTitle}
                     </h2>
 
-                    <p className="text-blue-950 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed px-2">
-                        {pickText(block?.description, uiLang) ||
-                            (uiLang === "kh"
-                                ? "សូមទាញយករបាយការណ៍វឌ្ឍនភាព និងសកម្មភាពការងារតាមឆមាស។"
-                                : "Browse and download semester progress reports and activity summaries.")}
-                    </p>
-
-                    {showErrorOnly ? (
-                        <div className="text-red-200 text-center mt-4">Failed: {error}</div>
+                    {sectionDescription ? (
+                        <p className="max-w-4xl mx-auto mt-4 text-sm md:text-lg leading-7 text-[#51607f]">
+                            {sectionDescription}
+                        </p>
                     ) : null}
                 </div>
 
+                {showErrorOnly ? (
+                    <div className="text-center text-red-500 mb-6">{error}</div>
+                ) : null}
+
                 {showSkeleton ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-pulse">
-                        {Array.from({ length: 3 }).map((_, index) => (
-                            <div
-                                key={index}
-                                className="bg-white p-3 md:p-4 shadow-2xl flex flex-col h-full"
-                            >
-                                <div className="relative aspect-[3/4.2] overflow-hidden bg-gray-100 flex-grow">
-                                    <div className="w-full h-full bg-slate-200" />
-
-                                    <div className="absolute inset-x-0 bottom-0 top-[35%] bg-white/60 backdrop-blur-md p-5 md:p-6 flex flex-col justify-between border-t border-white/20">
-                                        <div>
-                                            <div className="h-4 w-16 bg-slate-300 rounded mb-3" />
-                                            <div className="h-8 w-3/4 bg-slate-300 rounded mb-4" />
-
-                                            <div className="space-y-3">
-                                                {Array.from({ length: 2 }).map((__, i) => (
-                                                    <div key={i} className="flex items-center">
-                                                        <div className="w-3 h-3 mr-2 rounded-full bg-slate-300 shrink-0" />
-                                                        <div className="h-4 w-full bg-slate-300 rounded" />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="h-10 w-full bg-slate-300 rounded mt-5" />
-                                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                            <div key={index} className="h-full">
+                                <div className="bg-[#dfe3ea] p-4 animate-pulse h-full flex flex-col">
+                                    <div className="bg-[#cfd4db] h-[280px] w-full mb-5 shrink-0" />
+                                    <div className="h-5 w-32 bg-slate-300 rounded mb-3 shrink-0" />
+                                    <div className="h-7 w-full bg-slate-300 rounded mb-3 shrink-0" />
+                                    <div className="h-5 w-full bg-slate-300 rounded mb-2 shrink-0" />
+                                    <div className="h-5 w-4/5 bg-slate-300 rounded mb-6 shrink-0" />
+                                    <div className="mt-auto h-11 w-full bg-slate-300 rounded shrink-0" />
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : showEmpty ? (
-                    <div className="text-white/80 text-center">
+                    <div className="text-center text-slate-700 py-10">
                         {uiLang === "kh" ? "មិនមានរបាយការណ៍ឆមាសទេ។" : "No semester reports found."}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                        {posts.map((post) => {
-                            const title = pickText(post.title, uiLang) || "Semester Report";
-
-                            const highlights = buildHighlights(post, uiLang);
-                            const docUrl = pickDocUrl(post, apiLanguage);
-                            const thumb = pickThumbUrl(post, apiLanguage);
-
-                            return (
-                                <div
-                                    key={post.id}
-                                    className="bg-white p-3 md:p-4 shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full"
-                                >
-                                    <div className="relative aspect-[3/4.2] overflow-hidden bg-gray-100 flex-grow">
-                                        {thumb ? (
-                                            <Image
-                                                src={thumb}
-                                                alt={title}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full bg-slate-100" />
-                                        )}
-
-                                        <div className="absolute inset-x-0 bottom-0 top-[50%] bg-white/60 md:bg-white/60 backdrop-blur-md p-5 md:p-6 flex flex-col justify-between border-t border-white/20">
-                                            <div>
-                                                <p className="text-[#122a5e] text-xl md:text-2xl font-bold mb-4 line-clamp-2">
-                                                    {title}
-                                                </p>
-
-                                                <ul className="space-y-2 md:space-y-3">
-                                                    {highlights.map((item, index) => (
-                                                        <li
-                                                            key={index}
-                                                            className="flex items-center text-gray-700 text-xs md:text-sm font-medium"
-                                                        >
-                                                            <Hexagon className="w-3 h-3 mr-2 text-[#3b5998] fill-[#3b5998]/10 shrink-0" />
-                                                            <span className="line-clamp-1">{item}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-
-                                            <a
-                                                href={docUrl || "#"}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className={`w-full mt-3 md:mt-5 bg-[#f39c12] hover:bg-[#e67e22] text-white py-2 px-3 rounded transition-all flex items-center justify-center group ${!docUrl ? "pointer-events-none opacity-60" : ""
-                                                    }`}
-                                            >
-                                                <span>{uiLang === "kh" ? "ទាញយក" : "Download"}</span>
-                                                <ChevronRight className="ml-1 w-5 h-5 transition-transform group-hover:translate-x-1" />
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {showSeeMoreButton && posts.length > 0 ? (
-                    <div className="mt-10 flex justify-center">
-                        <Link
-                            href="/semester-reports"
-                            className={`bg-[#f39c12] hover:bg-[#e67e22] text-white py-2 px-6 rounded transition-all font-semibold ${uiLang === "kh" ? "khmer-font" : ""
-                                }`}
+                    <>
+                        <Swiper
+                            modules={[Pagination, Autoplay]}
+                            spaceBetween={24}
+                            slidesPerView={1}
+                            loop={posts.length > 5}
+                            autoplay={{
+                                delay: 3200,
+                                disableOnInteraction: false,
+                            }}
+                            pagination={{
+                                clickable: true,
+                            }}
+                            breakpoints={{
+                                640: {
+                                    slidesPerView: 2,
+                                },
+                                768: {
+                                    slidesPerView: 2,
+                                },
+                                1024: {
+                                    slidesPerView: 2,
+                                },
+                                1280: {
+                                    slidesPerView: 3,
+                                },
+                            }}
+                            className="semesterReportsSwiper !pb-16"
                         >
-                            {uiLang === "kh" ? "មើលបន្ថែម" : "See More"}
-                        </Link>
-                    </div>
-                ) : null}
+                            {posts.map((post) => {
+                                const title = pickText(post.title, uiLang) || "Semester Report";
+                                const description = pickText(post.description, uiLang);
+                                const docUrl = pickDocUrl(post, apiLanguage);
+                                const thumb = pickThumbUrl(post, apiLanguage);
+                                const publishedDate = formatPublishedDate(post.publishedAt, uiLang);
+                                const detailHref = getDetailHref(post);
+
+                                return (
+                                    <SwiperSlide key={post.id} className="!h-auto">
+                                        <div className="h-full">
+                                            <article className="bg-[#dfe3ea] p-4 shadow-sm h-full flex flex-col">
+                                                <div className="block shrink-0">
+                                                    <div className="bg-[#d0d3d9] p-4 flex items-center justify-center h-[280px] mb-5">
+                                                        <div className="relative w-[192px] h-[257px]">
+                                                            {thumb ? (
+                                                                <Image
+                                                                    src={thumb}
+                                                                    alt={title}
+                                                                    fill
+                                                                    className="object-contain p-1"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-white" />
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col flex-1">
+                                                    <p className="text-[#2f416b] text-sm md:text-base font-medium mb-3 min-h-[24px] shrink-0">
+                                                        {publishedDate}
+                                                    </p>
+
+                                                    <div className="block shrink-0">
+                                                        <h3 className="text-[#16264d] text-xl md:text-2xl leading-tight font-bold line-clamp-1 min-h-[14px] mb-3 transition">
+                                                            {title}
+                                                        </h3>
+                                                    </div>
+
+                                                    <p className="text-[#5e687b] text-sm md:text-base leading-7 line-clamp-2 min-h-[44px] mb-6">
+                                                        {description}
+                                                    </p>
+
+                                                    <a
+                                                        href={docUrl || "#"}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className={`mt-auto w-full inline-flex items-center justify-center gap-2 px-10 bg-[#f5a20a] hover:bg-[#ea9805] text-white text-base md:text-lg font-medium rounded-md py-2 transition shrink-0 ${!docUrl ? "pointer-events-none opacity-50" : ""
+                                                            }`}
+                                                    >
+                                                        <span>{uiLang === "kh" ? "ទាញយក" : "Download"}</span>
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </a>
+                                                </div>
+                                            </article>
+                                        </div>
+                                    </SwiperSlide>
+                                );
+                            })}
+                        </Swiper>
+
+                        {showSeeMoreButton && posts.length > 0 ? (
+                            <div className="flex justify-center mt-2">
+                                <Link
+                                    href="/plenary/semester-reports"
+                                    className={`inline-flex items-center gap-2 bg-[#f79a3b] hover:bg-[#ee8f2d] text-white font-semibold uppercase tracking-wide px-4 py-3 rounded-full shadow-md transition ${uiLang === "kh" ? "khmer-font" : ""
+                                        }`}
+                                >
+                                    <span>{uiLang === "kh" ? "មើលបន្ថែម" : "View More"}</span>
+                                    <ChevronRight className="w-4 h-4" />
+                                </Link>
+                            </div>
+                        ) : null}
+                    </>
+                )}
             </div>
+
+            <style jsx global>{`
+                .semesterReportsSwiper .swiper-wrapper {
+                align-items: stretch;
+                }
+
+                .semesterReportsSwiper .swiper-slide {
+                height: 10px;
+                display: flex;
+                }
+
+                .semesterReportsSwiper .swiper-pagination {
+                bottom: 0 !important;
+                }
+
+                .semesterReportsSwiper .swiper-pagination-bullet {
+                width: 16px;
+                height: 16px;
+                background: #c98c64;
+                opacity: 1;
+                }
+
+                .semesterReportsSwiper .swiper-pagination-bullet-active {
+                background: #f39c3d;
+                }
+            `}</style>
         </section>
     );
 }
