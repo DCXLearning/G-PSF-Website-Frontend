@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/app/api/latest-reforms/route.ts
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
-const API_URL = "https://api-gpsf.datacolabx.com/api/v1/pages/home/section";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
+const API_BASE = API_URL || "";
+const UPSTREAM = `${API_BASE}/pages/home/section`;
+const BASE_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, "");
 const BLOCK_ID = 6; // Latest Reforms
 
 function cleanText(v: any) {
@@ -16,29 +21,50 @@ function cleanI18n(obj: any) {
     return { en, km: km || en };
 }
 
-// Make absolute URL if thumbnail is relative like "/uploads/thumbnails/xxx.png"
 function toAbsoluteUrl(url: string) {
     if (!url) return "";
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    return `https://api-gpsf.datacolabx.com${url}`;
+    return `${BASE_ORIGIN}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
 export async function GET() {
     try {
-        const res = await fetch(API_URL, {
-            cache: "no-store",
-            headers: { Accept: "application/json" },
-        });
-
-        if (!res.ok) {
+        if (!API_BASE) {
             return NextResponse.json(
-                { success: false, message: `Upstream error: ${res.status}` },
-                { status: res.status }
+                { success: false, message: "Missing API_URL in environment" },
+                { status: 500 }
             );
         }
 
-        const json = await res.json();
-        const blocks = json?.data?.blocks ?? [];
+        const res = await fetch(UPSTREAM, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                Accept: "application/json",
+            },
+        });
+
+        const text = await res.text();
+
+        let json: any = null;
+        try {
+            json = text ? JSON.parse(text) : null;
+        } catch {
+            json = null;
+        }
+
+        if (!res.ok) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: json?.message || `Upstream error: ${res.status}`,
+                    upstreamStatus: res.status,
+                },
+                { status: 502 }
+            );
+        }
+
+        const blocks = Array.isArray(json?.data?.blocks) ? json.data.blocks : [];
 
         const rawBlock = blocks.find(
             (b: any) => b?.type === "post_list" && b?.id === BLOCK_ID
@@ -51,7 +77,6 @@ export async function GET() {
             );
         }
 
-        //  normalize block + posts so UI can use post.images[0].url
         const normalizedBlock = {
             id: rawBlock.id,
             type: rawBlock.type,
@@ -75,11 +100,7 @@ export async function GET() {
                         content: p?.content ?? null,
                         createdAt: p?.createdAt,
                         updatedAt: p?.updatedAt,
-
-                        // IMPORTANT: create images[] for your UI
                         images: cover ? [{ id: 1, url: cover, sortOrder: 1 }] : [],
-
-                        // keep originals too (optional)
                         coverImage: p?.coverImage ?? null,
                         document: p?.document ?? null,
                         documentThumbnail: p?.documentThumbnail ?? null,
@@ -90,7 +111,15 @@ export async function GET() {
 
         return NextResponse.json(
             { success: true, block: normalizedBlock },
-            { status: 200 }
+            {
+                status: 200,
+                headers: {
+                    "Cache-Control":
+                        "no-store, no-cache, must-revalidate, proxy-revalidate",
+                    Pragma: "no-cache",
+                    Expires: "0",
+                },
+            }
         );
     } catch (err: any) {
         return NextResponse.json(

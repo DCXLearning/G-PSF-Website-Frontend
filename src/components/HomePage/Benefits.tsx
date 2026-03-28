@@ -1,12 +1,11 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 type UiLang = "en" | "kh";
-type ApiLang = "en" | "km";
 type I18n = { en?: string; km?: string };
 
 type ApiPost = {
@@ -35,23 +34,10 @@ type ApiResponse = {
 };
 
 const CACHE_KEY = "benefits_block_cache";
+const FALLBACK_ICON = "/icon_home_page/Benefits1.svg";
 
 function pickText(i18n: I18n | null | undefined, lang: UiLang) {
     return (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || "";
-}
-
-function iconFallback(idx: number) {
-    const map = [
-        "/icon_home_page/Benefits1.svg",
-        "/icon_home_page/Benefits2.svg",
-        "/icon_home_page/Benefits3.svg",
-        "/icon_home_page/Benefits4.svg",
-    ];
-    return map[idx % map.length];
-}
-
-function pickIcon(post: ApiPost, idx: number) {
-    return post.coverImage || iconFallback(idx);
 }
 
 function buildDetailHref(post: ApiPost): string {
@@ -77,18 +63,48 @@ function writeCache(block: ApiBlock | null) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(block));
     } catch {
-        // ignore
+        //
     }
 }
 
+function getImageSrc(src?: string | null) {
+    if (!src || !src.trim()) return FALLBACK_ICON;
+    return src;
+}
+
 type BenefitCardProps = {
-    icon: string;
+    icon?: string | null;
     title: string;
     description: string;
     isKhmer: boolean;
     href: string;
     disabled?: boolean;
 };
+
+function SafeBenefitImage({
+    src,
+    alt,
+}: {
+    src?: string | null;
+    alt: string;
+}) {
+    const [imgSrc, setImgSrc] = useState(getImageSrc(src));
+
+    useEffect(() => {
+        setImgSrc(getImageSrc(src));
+    }, [src]);
+
+    return (
+        <img
+            src={imgSrc}
+            alt={alt || "benefit"}
+            width={64}
+            height={64}
+            className="w-16 h-16 object-contain"
+            onError={() => setImgSrc(FALLBACK_ICON)}
+        />
+    );
+}
 
 const BenefitCard: React.FC<BenefitCardProps> = ({
     icon,
@@ -103,13 +119,7 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
             }`}
     >
         <div className="p-4 md:p-3 mt-6 flex-shrink-0">
-            <Image
-                src={icon}
-                alt={title || "benefit"}
-                width={64}
-                height={64}
-                className="w-16 h-16 object-contain"
-            />
+            <SafeBenefitImage src={icon} alt={title || "benefit"} />
         </div>
 
         <div className="flex-1">
@@ -141,17 +151,15 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
 );
 
 function BenefitCardSkeleton({
-    idx,
     isKhmer,
 }: {
-    idx: number;
     isKhmer: boolean;
 }) {
     return (
         <div className="flex flex-col md:flex-row items-start gap-4 md:gap-10 animate-pulse">
             <div className="p-4 md:p-3 mt-6 flex-shrink-0">
-                <Image
-                    src={iconFallback(idx)}
+                <img
+                    src={FALLBACK_ICON}
                     alt="benefit"
                     width={64}
                     height={64}
@@ -205,14 +213,17 @@ export default function Benefits() {
                     headers: { Accept: "application/json" },
                 });
 
-                if (!res.ok) throw new Error(`API error ${res.status}`);
+                const json = await res.json();
 
-                const json = (await res.json()) as ApiResponse;
+                if (!res.ok || !json?.success) {
+                    throw new Error(json?.message || `API error ${res.status}`);
+                }
+
                 const blocks = json?.data?.blocks || [];
 
                 const picked =
                     blocks.find(
-                        (b) =>
+                        (b: ApiBlock) =>
                             b?.enabled !== false &&
                             b?.type === "post_list" &&
                             (b?.id === 2 || b?.title?.en === "G-PSF Benefit")
@@ -284,13 +295,13 @@ export default function Benefits() {
                 <div className="flex flex-col gap-6 sm:gap-8 md:gap-10">
                     {showSkeleton ? (
                         Array.from({ length: limit }).map((_, idx) => (
-                            <BenefitCardSkeleton key={idx} idx={idx} isKhmer={isKhmer} />
+                            <BenefitCardSkeleton key={idx} isKhmer={isKhmer} />
                         ))
                     ) : posts.length > 0 ? (
-                        posts.map((p, idx) => (
+                        posts.map((p) => (
                             <BenefitCard
                                 key={p.id}
-                                icon={pickIcon(p, idx)}
+                                icon={p.coverImage}
                                 title={pickText(p.title, uiLang) || "\u00A0"}
                                 description={pickText(p.description ?? undefined, uiLang) || "\u00A0"}
                                 isKhmer={isKhmer}

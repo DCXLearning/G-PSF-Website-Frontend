@@ -1,53 +1,75 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-const UPSTREAM_URL =
-    "https://api-gpsf.datacolabx.com/api/v1/pages/news-and-updates/section";
+const API_BASE = API_URL || "";
+const UPSTREAM_URL = `${API_BASE}/pages/news-and-updates/section`;
+const BASE_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, "");
 
 function normalizeText(value: any) {
     if (!value) return { en: "", km: "" };
 
     if (typeof value === "string") {
-        return { en: value, km: value };
+        const text = value.trim();
+        return { en: text, km: text };
     }
 
     return {
-        en: value?.en ?? "",
-        km: value?.km ?? value?.kh ?? "",
+        en: typeof value?.en === "string" ? value.en.trim() : "",
+        km:
+            (typeof value?.km === "string" ? value.km.trim() : "") ||
+            (typeof value?.kh === "string" ? value.kh.trim() : "") ||
+            (typeof value?.en === "string" ? value.en.trim() : ""),
     };
+}
+
+function toAbsoluteUrl(url?: string | null) {
+    const value = typeof url === "string" ? url.trim() : "";
+    if (!value) return "";
+    if (value.startsWith("http://") || value.startsWith("https://")) return value;
+    return `${BASE_ORIGIN}${value.startsWith("/") ? "" : "/"}${value}`;
 }
 
 export async function GET() {
     try {
-        const res = await fetch(UPSTREAM_URL, {
-            cache: "no-store",
-            headers: { Accept: "application/json" },
-        });
-
-        if (!res.ok) {
+        if (!API_BASE) {
             return NextResponse.json(
-                { success: false, message: `Upstream error ${res.status}` },
-                { status: 502 }
+                { success: false, message: "Missing API_URL in environment" },
+                { status: 500 }
             );
         }
 
-        const contentType = res.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
-            const text = await res.text();
+        const res = await fetch(UPSTREAM_URL, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                Accept: "application/json",
+            },
+        });
+
+        const text = await res.text();
+
+        let json: any = null;
+        try {
+            json = text ? JSON.parse(text) : null;
+        } catch {
+            json = null;
+        }
+
+        if (!res.ok) {
             return NextResponse.json(
                 {
                     success: false,
-                    message: "Upstream did not return JSON",
-                    preview: text.slice(0, 200),
+                    message: json?.message || `Upstream error ${res.status}`,
+                    upstreamStatus: res.status,
                 },
                 { status: 502 }
             );
         }
 
-        const json = await res.json();
         const blocks = Array.isArray(json?.data?.blocks) ? json.data.blocks : [];
 
         const newsBlock =
@@ -71,7 +93,7 @@ export async function GET() {
             return {
                 id,
                 slug,
-                image: post?.coverImage || "",
+                image: toAbsoluteUrl(post?.coverImage || ""),
                 title: normalizeText(post?.title),
                 description: normalizeText(post?.description),
                 link:
@@ -89,7 +111,15 @@ export async function GET() {
                 description: normalizeText(newsBlock?.description),
                 items,
             },
-            { status: 200 }
+            {
+                status: 200,
+                headers: {
+                    "Cache-Control":
+                        "no-store, no-cache, must-revalidate, proxy-revalidate",
+                    Pragma: "no-cache",
+                    Expires: "0",
+                },
+            }
         );
     } catch (e: any) {
         return NextResponse.json(

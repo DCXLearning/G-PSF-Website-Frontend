@@ -1,23 +1,70 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/members/route.ts
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
-const TESTIMONIALS_API = "https://api-gpsf.datacolabx.com/api/v1/testimonials";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
+const API_BASE = API_URL || "";
+const UPSTREAM = `${API_BASE}/testimonials`;
+
+function cleanText(v: any) {
+    return typeof v === "string" ? v.trim() : "";
+}
+
+function cleanI18n(v: any) {
+    return {
+        en: cleanText(v?.en),
+        km: cleanText(v?.km) || cleanText(v?.en),
+    };
+}
+
+function toAbsoluteUrl(url?: string | null) {
+    const value = typeof url === "string" ? url.trim() : "";
+    if (!value) return "";
+    if (value.startsWith("http://") || value.startsWith("https://")) return value;
+
+    const baseOrigin = API_BASE.replace(/\/api\/v1\/?$/, "");
+    return `${baseOrigin}${value.startsWith("/") ? "" : "/"}${value}`;
+}
 
 export async function GET() {
     try {
-        const res = await fetch(TESTIMONIALS_API, { cache: "no-store" });
-
-        if (!res.ok) {
+        if (!API_BASE) {
             return NextResponse.json(
-                { error: "Failed to fetch testimonials" },
-                { status: res.status }
+                { success: false, message: "Missing API_URL in environment" },
+                { status: 500 }
             );
         }
 
-        const json = await res.json();
+        const res = await fetch(UPSTREAM, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                Accept: "application/json",
+            },
+        });
 
-        // support multiple shapes: {data:[...]}, {data:{items:[...]}}, direct array
+        const text = await res.text();
+
+        let json: any = null;
+        try {
+            json = text ? JSON.parse(text) : null;
+        } catch {
+            json = null;
+        }
+
+        if (!res.ok) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: json?.message || `Failed to fetch testimonials: ${res.status}`,
+                    upstreamStatus: res.status,
+                },
+                { status: 502 }
+            );
+        }
+
         const raw =
             json?.data?.items ??
             json?.data ??
@@ -31,39 +78,30 @@ export async function GET() {
             .map((t: any) => ({
                 id: t?.id,
                 orderIndex: t?.orderIndex ?? 0,
-
                 rating: Number(t?.rating ?? 5),
-
-                // title
-                title: {
-                    en: t?.title?.en ?? "",
-                    km: t?.title?.km ?? "",
-                },
-
-                // quote (main text)
-                quote: {
-                    en: t?.quote?.en ?? "",
-                    km: t?.quote?.km ?? "",
-                },
-
-                // author info
-                authorName: {
-                    en: t?.authorName?.en ?? "",
-                    km: t?.authorName?.km ?? "",
-                },
-                authorRole: {
-                    en: t?.authorRole?.en ?? "",
-                    km: t?.authorRole?.km ?? "",
-                },
-
-                company: t?.company ?? "",
-                avatarUrl: t?.avatarUrl ?? "",
+                title: cleanI18n(t?.title),
+                quote: cleanI18n(t?.quote),
+                authorName: cleanI18n(t?.authorName),
+                authorRole: cleanI18n(t?.authorRole),
+                company: cleanText(t?.company),
+                avatarUrl: toAbsoluteUrl(t?.avatarUrl),
             }));
 
-        return NextResponse.json({ items });
-    } catch (e) {
         return NextResponse.json(
-            { error: "Server error fetching testimonials" },
+            { success: true, items },
+            {
+                status: 200,
+                headers: {
+                    "Cache-Control":
+                        "no-store, no-cache, must-revalidate, proxy-revalidate",
+                    Pragma: "no-cache",
+                    Expires: "0",
+                },
+            }
+        );
+    } catch (e: any) {
+        return NextResponse.json(
+            { success: false, message: e?.message || "Server error fetching testimonials" },
             { status: 500 }
         );
     }
