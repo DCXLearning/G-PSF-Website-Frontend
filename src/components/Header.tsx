@@ -46,12 +46,12 @@ const Header: FC = () => {
                 href: "/",
             },
             {
-                label: "Plenary",
-                href: "/plenary",
-            },
-            {
                 label: "About Us",
                 href: "/about-us",
+            },
+            {
+                label: "Plenary",
+                href: "/plenary",
             },
             {
                 label: "Working Groups",
@@ -60,28 +60,18 @@ const Header: FC = () => {
             {
                 label: "Resources",
                 href: "/resources",
+                children: [
+                    { label: "Laws & Regulations", href: "/new-update/plenary/laws-regulations" },
+                    { label: "Decisions", href: "/new-update/plenary/decisions" },
+                    { label: "Reform Tracker", href: "/new-update/plenary/reform-tracker" },
+                    { label: "Reports", href: "/new-update/working-groups/reports" },
+                ],
             },
             {
                 label: "News & Update",
                 href: "/new-update",
                 children: [
                     { label: "Featured", href: "/new-update/featured" },
-                    {
-                        label: "Plenary",
-                        children: [
-                            { label: "Laws & Regulations", href: "/new-update/plenary/laws-regulations" },
-                            { label: "Decisions", href: "/new-update/plenary/decisions" },
-                            { label: "Reform Tracker", href: "/new-update/plenary/reform-tracker" },
-                        ],
-                    },
-                    {
-                        label: "Working Groups",
-                        children: [
-                            { label: "Reports", href: "/new-update/working-groups/reports" },
-                            { label: "Co-Chairs", href: "/new-update/working-groups/co-chairs" },
-                            { label: "WG Profiles", href: "/new-update/working-groups/wg-profiles" },
-                        ],
-                    },
                     {
                         label: "Media",
                         children: [
@@ -107,12 +97,12 @@ const Header: FC = () => {
                 href: "/",
             },
             {
-                label: "កិច្ចប្រជុំពេញអង្គ",
-                href: "/plenary",
-            },
-            {
                 label: "អំពីពួកយើង",
                 href: "/about-us",
+            },
+            {
+                label: "កិច្ចប្រជុំពេញអង្គ",
+                href: "/plenary",
             },
             {
                 label: "ក្រុមការងារ",
@@ -121,32 +111,22 @@ const Header: FC = () => {
             {
                 label: "ធនធាន",
                 href: "/resources",
+                children: [
+                    { label: "ច្បាប់ និងបទប្បញ្ញត្តិ", href: "/new-update/plenary/laws-regulations" },
+                    { label: "សេចក្តីសម្រេច", href: "/new-update/plenary/decisions" },
+                    { label: "តាមដានកំណែទម្រង់", href: "/new-update/plenary/reform-tracker" },
+                    { label: "របាយការណ៍", href: "/new-update/working-groups/reports" },
+                ],
             },
             {
                 label: "ព័ត៌មាន និងបច្ចុប្បន្នភាព",
                 href: "/new-update",
                 children: [
-                    { label: "ព័ត៌មានលេចធ្លោ", href: "/resoreces/detail" },
-                    {
-                        label: "កិច្ចប្រជុំពេញអង្គ",
-                        children: [
-                            { label: "ច្បាប់ និងបទប្បញ្ញត្តិ", href: "/new-update/plenary/laws-regulations" },
-                            { label: "សេចក្តីសម្រេច", href: "/new-update/plenary/decisions" },
-                            { label: "តាមដានកំណែទម្រង់", href: "/new-update/plenary/reform-tracker" },
-                        ],
-                    },
-                    {
-                        label: "ក្រុមការងារ",
-                        children: [
-                            { label: "របាយការណ៍", href: "/new-update/working-groups/reports" },
-                            { label: "សហប្រធាន", href: "/new-update/working-groups/co-chairs" },
-                            { label: "ប្រវត្តិក្រុមការងារ", href: "/new-update/working-groups/wg-profiles" },
-                        ],
-                    },
+                    { label: "ព័ត៌មានលេចធ្លោ", href: "/new-update/featured" },
                     {
                         label: "មេឌៀ",
                         children: [
-                            { label: "សារព័ត៌មាន", href: "/new-update/media/press" },
+                            { label: "ពត៌មានលេចធ្លោ", href: "/new-update/media/press" },
                             { label: "រូបថត", href: "/new-update/media/photos" },
                             { label: "វីដេអូ", href: "/new-update/media/video" },
                         ],
@@ -197,6 +177,7 @@ const Header: FC = () => {
 
     const isParentActive = (item: NavItem) => {
         if (item.href && pathname === item.href) return true;
+
         if (item.children) {
             return item.children.some((child) => {
                 if (child.href && pathname === child.href) return true;
@@ -204,6 +185,7 @@ const Header: FC = () => {
                 return false;
             });
         }
+
         return false;
     };
 
@@ -299,7 +281,7 @@ const Header: FC = () => {
                                         <div key={`${item.label}-${index}`} className="relative group">
                                             <Link
                                                 href={item.href || "#"}
-                                                className={`relative flex items-center gap-2 pb-1 font-medium text-xl transition-colors ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"
+                                                className={`relative flex items-center gap-2 pb-1 font-medium text-lg transition-colors ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"
                                                     } ${language === "kh" ? "khmer-font" : ""}`}
                                             >
                                                 {item.label}
@@ -485,10 +467,7 @@ const Header: FC = () => {
 
                         <div className="absolute right-0 top-0 h-full w-[86%] max-w-[340px] bg-white shadow-2xl overflow-y-auto">
                             <div className="flex items-center justify-between px-4 py-4 border-b">
-                                <div
-                                    className={`font-semibold text-gray-800 ${language === "kh" ? "khmer-font" : ""
-                                        }`}
-                                >
+                                <div className={`font-semibold text-gray-800 ${language === "kh" ? "khmer-font" : ""}`}>
                                     {language === "en" ? "Menu" : "ម៉ឺនុយ"}
                                 </div>
 
@@ -560,7 +539,7 @@ const Header: FC = () => {
                                                                     className={`block px-6 py-2 text-sm font-medium text-orange-600 hover:bg-orange-50 ${language === "kh" ? "khmer-font" : ""
                                                                         }`}
                                                                 >
-                                                                    {language === "en" ? "All News & Update" : "ព័ត៌មាន និងបច្ចុប្បន្នភាពទាំងអស់"}
+                                                                    {item.label}
                                                                 </Link>
                                                             )}
 
@@ -616,6 +595,7 @@ const Header: FC = () => {
                                                                         onClick={() => {
                                                                             setIsMenuOpen(false);
                                                                             setOpenMobileDropdown(null);
+                                                                            setOpenMobileSubDropdown(null);
                                                                         }}
                                                                         className={`block px-6 py-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
                                                                             }`}

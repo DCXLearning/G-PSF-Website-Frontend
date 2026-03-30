@@ -143,7 +143,7 @@ export default function HeroBanner() {
                     }`}
             >
                 {subtitle && (
-                    <p className="text-lg md:text-5xl font-medium text-white mb-8 mt-14 whitespace-pre-line">
+                    <p className="text-lg md:text-5xl font-medium text-blue-600 mb-8 mt-14 whitespace-pre-line">
                         {subtitle}
                     </p>
                 )}
@@ -160,7 +160,7 @@ export default function HeroBanner() {
                 )} */}
 
                 {description && (
-                    <p className="text-base md:text-2xl max-w-4xl text-white mb-10 whitespace-pre-line">
+                    <p className="text-base md:text-2xl max-w-4xl text-blue-600 mb-10 whitespace-pre-line">
                         {description}
                     </p>
                 )}

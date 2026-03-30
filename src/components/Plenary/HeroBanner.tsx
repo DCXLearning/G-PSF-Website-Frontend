@@ -46,7 +46,7 @@ export default function HeroBanner() {
                 <div className="relative w-full shadow-lg">
                     <div className="relative h-[260px] sm:h-[400px] md:h-[550px] lg:h-[700px] xl:h-[820px]">
                         <Image
-                            src="/image/Subpages_plenary_mock_up.23.03.bmp"
+                            src="/image/Subpages_plenary_Banner.bmp"
                             alt="Plenary"
                             fill
                             priority

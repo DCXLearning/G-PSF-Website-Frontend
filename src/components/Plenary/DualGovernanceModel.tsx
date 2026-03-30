@@ -134,7 +134,7 @@ export default function DualGovernanceModel() {
                         {/* BOTTOM LEFT */}
                         <div className="bg-white px-6 py-10 md:px-8 lg:px-10">
                             <p
-                                className={`text-base font-semibold leading-relaxed text-gray-800 md:text-lg ${lang === "kh" ? "khmer-font" : ""
+                                className={`text-base font-semibold leading-relaxed text-gray-800 md:text-xl ${lang === "kh" ? "khmer-font" : ""
                                     }`}
                             >
                                 <span className="text-orange-500">{text.platform}</span>{" "}
@@ -145,7 +145,7 @@ export default function DualGovernanceModel() {
                                 <div className="flex items-start gap-4">
                                     <LuClipboardList className="mt-1 shrink-0 text-[34px] text-black md:text-[42px]" />
                                     <p
-                                        className={`text-base font-semibold leading-relaxed text-gray-800 md:text-lg ${lang === "kh" ? "khmer-font" : ""
+                                        className={`text-base font-semibold leading-relaxed text-gray-800 md:text-xl ${lang === "kh" ? "khmer-font" : ""
                                             }`}
                                     >
                                         {text.d1}
@@ -155,7 +155,7 @@ export default function DualGovernanceModel() {
                                 <div className="flex items-start gap-4">
                                     <LuFileSearch className="mt-1 shrink-0 text-[34px] text-black md:text-[42px]" />
                                     <p
-                                        className={`text-base font-semibold leading-relaxed text-gray-800 md:text-lg ${lang === "kh" ? "khmer-font" : ""
+                                        className={`text-base font-semibold leading-relaxed text-gray-800 md:text-xl ${lang === "kh" ? "khmer-font" : ""
                                             }`}
                                     >
                                         {text.d2}
@@ -165,7 +165,7 @@ export default function DualGovernanceModel() {
                                 <div className="flex items-start gap-4">
                                     <LuTarget className="mt-1 shrink-0 text-[34px] text-black md:text-[42px]" />
                                     <p
-                                        className={`text-base font-semibold leading-relaxed text-gray-800 md:text-lg ${lang === "kh" ? "khmer-font" : ""
+                                        className={`text-base font-semibold leading-relaxed text-gray-800 md:text-xl ${lang === "kh" ? "khmer-font" : ""
                                             }`}
                                     >
                                         {text.d3}
@@ -175,7 +175,7 @@ export default function DualGovernanceModel() {
                                 <div className="flex items-start gap-4">
                                     <LuFileBadge className="mt-1 shrink-0 text-[34px] text-black md:text-[42px]" />
                                     <p
-                                        className={`text-base font-semibold leading-relaxed text-gray-800 md:text-lg ${lang === "kh" ? "khmer-font" : ""
+                                        className={`text-base font-semibold leading-relaxed text-gray-800 md:text-xl ${lang === "kh" ? "khmer-font" : ""
                                             }`}
                                     >
                                         {text.d4}
