@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-// import { useLanguage } from "@/app/context/LanguageContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 type I18n = { en?: string; km?: string };
 
@@ -46,6 +46,10 @@ type ApiResponse = {
 };
 
 const CACHE_KEY = "wg-outputs-block-cache";
+
+function containsKhmer(value?: string | null): boolean {
+    return /[\u1780-\u17FF]/.test(value ?? "");
+}
 
 function pickText(
     obj: I18n | null | undefined,
@@ -112,10 +116,10 @@ export function WGOutputsSection({
     showAllPosts = false,
     showSeeMoreButton = true,
 }: WGOutputsSectionProps = {}) {
-    // const { language } = useLanguage();
-    // const apiLang: "en" | "km" = language === "kh" ? "km" : "en";
-
-    const apiLang: "en" | "km" = "km";
+    const { language, fontClass } = useLanguage();
+    const uiLang: "en" | "kh" = language === "kh" ? "kh" : "en";
+    const apiLang: "en" | "km" = uiLang === "kh" ? "km" : "en";
+    const isKh = uiLang === "kh";
 
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -183,24 +187,33 @@ export function WGOutputsSection({
 
     const title = pickText(block?.title, apiLang, "WG Outputs");
     const desc = pickText(block?.description, apiLang, "");
+    const titleClass = isKh || containsKhmer(title) ? "khmer-font" : "";
+    const descClass = isKh || containsKhmer(desc) ? "khmer-font" : "";
 
     const showSkeleton = !mounted || (loading && !block);
     const showErrorOnly = !showSkeleton && !block && !!error;
 
     return (
-        <section className="bg-white py-16 px-4 max-w-7xl mx-auto font-sans">
+        <section className={`bg-white py-16 px-4 max-w-7xl mx-auto ${fontClass}`}>
             {/* Header */}
             <div className="text-center mb-12">
-                <h3 className="text-[#1e2756] text-xl md:text-2xl font-semibold tracking-wide">
-                    Insights — Findings — Results
+                <h3
+                    className={`text-[#1e2756] text-xl md:text-2xl font-semibold tracking-wide ${
+                        isKh ? "khmer-font normal-case" : ""
+                    }`}
+                >
+                    {/* This subtitle is static text, but it still changes with the current language. */}
+                    {isKh
+                        ? "ការយល់ដឹង — របកគំហើញ — លទ្ធផល"
+                        : "Insights — Findings — Results"}
                 </h3>
 
-                <h2 className="text-[#1e2756] text-5xl md:text-6xl font-semibold mt-2 mb-6 khmer-font">
+                <h2 className={`text-[#1e2756] text-5xl md:text-6xl font-semibold mt-2 mb-6 ${titleClass}`}>
                     {title}
                 </h2>
 
                 {!!desc && (
-                    <p className="text-gray-700 max-w-3xl mx-auto text-lg leading-relaxed">
+                    <p className={`text-gray-700 max-w-3xl mx-auto text-lg leading-relaxed ${descClass}`}>
                         {desc}
                     </p>
                 )}
@@ -274,19 +287,51 @@ export function WGOutputsSection({
                                 />
                             </div>
 
-                            <p className="text-[#1e2756] font-bold uppercase tracking-wider mb-2">
+                            <p
+                                className={`text-[#1e2756] font-bold tracking-wider mb-2 ${
+                                    isKh || containsKhmer(
+                                        featured?.category
+                                            ? pickText(featured.category.name, apiLang, "Category")
+                                            : "Category"
+                                    )
+                                        ? "khmer-font normal-case"
+                                        : "uppercase"
+                                }`}
+                            >
                                 {featured?.category
                                     ? pickText(featured.category.name, apiLang, "Category")
                                     : "Category"}
                             </p>
 
-                            <h4 className="text-[#1e2756] text-3xl md:text-4xl khmer-font font-extrabold mb-4 line-clamp-3">
+                            <h4
+                                className={`text-[#1e2756] text-3xl md:text-4xl font-extrabold mb-4 line-clamp-3 ${
+                                    isKh ||
+                                    containsKhmer(
+                                        featured
+                                            ? pickText(featured.title, apiLang, "Featured Report")
+                                            : "—"
+                                    )
+                                        ? "khmer-font"
+                                        : ""
+                                }`}
+                            >
                                 {featured
                                     ? pickText(featured.title, apiLang, "Featured Report")
                                     : "—"}
                             </h4>
 
-                            <p className="text-gray-800 mb-8 khmer-font font-medium line-clamp-4">
+                            <p
+                                className={`text-gray-800 mb-8 font-medium line-clamp-4 ${
+                                    isKh ||
+                                    containsKhmer(
+                                        featured
+                                            ? pickText(featured.description || undefined, apiLang, "")
+                                            : ""
+                                    )
+                                        ? "khmer-font"
+                                        : ""
+                                }`}
+                            >
                                 {featured
                                     ? pickText(featured.description || undefined, apiLang, "")
                                     : ""}
@@ -348,6 +393,7 @@ export function WGOutputsSection({
                                 downloadUrl={pickDocUrl(p, apiLang)}
                                 slug={p.slug}
                                 link={p.link}
+                                isKh={isKh}
                             />
                         ))}
 
@@ -357,6 +403,7 @@ export function WGOutputsSection({
                                 category="—"
                                 headline="No more posts"
                                 description="Add more published posts in the WG Outputs block."
+                                isKh={isKh}
                             />
                         )}
                     </div>
@@ -386,6 +433,7 @@ function ArticleCard({
     downloadUrl,
     slug,
     link,
+    isKh,
 }: {
     icon?: string;
     category: string;
@@ -394,7 +442,12 @@ function ArticleCard({
     downloadUrl?: string;
     slug?: string | null;
     link?: string | null;
+    isKh: boolean;
 }) {
+    const categoryClass = isKh || containsKhmer(category) ? "khmer-font normal-case" : "uppercase";
+    const headlineClass = isKh || containsKhmer(headline) ? "khmer-font" : "";
+    const descriptionClass = isKh || containsKhmer(description || "") ? "khmer-font" : "";
+
     return (
         <div className="border border-gray-200 p-10 flex flex-col items-center justify-center text-center flex-1">
             <div className="bg-[#1e2756] w-14 h-14 rounded-full flex items-center justify-center mb-4 overflow-hidden">
@@ -407,15 +460,19 @@ function ArticleCard({
                 />
             </div>
 
-            <p className="text-[#1e2756] text-sm font-bold uppercase tracking-widest mb-1">
+            <p
+                className={`text-[#1e2756] text-sm font-bold tracking-widest mb-1 ${categoryClass}`}
+            >
                 {category}
             </p>
 
-            <h4 className="text-[#1e2756] text-2xl khmer-font md:text-3xl font-bold mb-3 line-clamp-2">
+            <h4
+                className={`text-[#1e2756] text-2xl md:text-3xl font-bold mb-3 line-clamp-2 ${headlineClass}`}
+            >
                 {headline}
             </h4>
 
-            <p className="text-gray-700 khmer-font text-sm max-w-sm mb-6 line-clamp-3">
+            <p className={`text-gray-700 text-sm max-w-sm mb-6 line-clamp-3 ${descriptionClass}`}>
                 {description || ""}
             </p>
 

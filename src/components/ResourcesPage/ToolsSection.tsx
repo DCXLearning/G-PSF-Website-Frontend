@@ -195,8 +195,13 @@ export function ToolsSectionContent({
                     {pickText(block?.title, uiLang) || "Standerd Templates & Forms"}
                 </h2>
 
-                <h1 className="text-5xl md:text-6xl font-bold text-[#1e1e4b] mt-2 mb-6">
-                    Tools
+                <h1
+                    className={`text-5xl md:text-6xl font-bold text-[#1e1e4b] mt-2 mb-6 ${
+                        uiLang === "kh" ? "khmer-font" : ""
+                    }`}
+                >
+                    {/* Show the Khmer heading when the site language is Khmer. */}
+                    {uiLang === "kh" ? "បែបបទ" : "Tools"}
                 </h1>
 
                 <p className="max-w-3xl mx-auto text-[#1e1e4b] text-xl leading-relaxed mb-16">
