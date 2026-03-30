@@ -10,8 +10,18 @@ import { usePathname, useRouter } from "next/navigation";
 type Lang = "en" | "kh";
 
 type SubChildItem = {
-    label: string;
     href: string;
+    label: string;
+};
+
+type ApiNavItem = {
+    id?: number;
+    label?: {
+        en?: string;
+        km?: string;
+    };
+    url?: string;
+    children?: ApiNavItem[];
 };
 
 type ChildItem = {
@@ -27,6 +37,165 @@ type NavItem = {
     children?: ChildItem[];
 };
 
+const HOME_ICON_SRC = "/image/home.png";
+const MENU_API_ENDPOINT = "/api/main-nav";
+
+const FALLBACK_NAV_ITEMS: Record<Lang, NavItem[]> = {
+    en: [
+        {
+            image: HOME_ICON_SRC,
+            href: "/",
+        },
+        {
+            label: "About Us",
+            href: "/about-us",
+        },
+        {
+            label: "Plenary",
+            href: "/plenary",
+        },
+        {
+            label: "Working Groups",
+            href: "/working-groups",
+        },
+        {
+            label: "Publication",
+            href: "/resources",
+            children: [
+                { label: "Laws & Regulations", href: "/new-update/plenary/laws-regulations" },
+                { label: "Decisions", href: "/new-update/plenary/decisions" },
+                { label: "Reform Tracker", href: "/new-update/plenary/reform-tracker" },
+                { label: "Reports", href: "/new-update/working-groups/reports" },
+            ],
+        },
+        {
+            label: "News & Update",
+            href: "/new-update",
+            children: [
+                { label: "Featured", href: "/feature" },
+                {
+                    label: "Media",
+                    children: [
+                        { label: "Press", href: "/new-update/media/press" },
+                        { label: "Photos", href: "/new-update/media/photos" },
+                        { label: "Video", href: "/new-update/media/video" },
+                    ],
+                },
+            ],
+        },
+        {
+            label: "MIS",
+            href: "/mis-dashboard",
+        },
+        {
+            label: "Contact Us",
+            href: "/contact-us",
+        },
+    ],
+    kh: [
+        {
+            image: HOME_ICON_SRC,
+            href: "/",
+        },
+        {
+            label: "អំពីពួកយើង",
+            href: "/about-us",
+        },
+        {
+            label: "កិច្ចប្រជុំពេញអង្គ",
+            href: "/plenary",
+        },
+        {
+            label: "ក្រុមការងារ",
+            href: "/working-groups",
+        },
+        {
+            label: "បណ្ដុំឯកសារ",
+            href: "/resources",
+            children: [
+                { label: "ច្បាប់ និងបទប្បញ្ញត្តិ", href: "/new-update/plenary/laws-regulations" },
+                { label: "សេចក្តីសម្រេច", href: "/new-update/plenary/decisions" },
+                { label: "តាមដានកំណែទម្រង់", href: "/new-update/plenary/reform-tracker" },
+                { label: "របាយការណ៍", href: "/new-update/working-groups/reports" },
+            ],
+        },
+        {
+            label: "ព័ត៌មាន និងបច្ចុប្បន្នភាព",
+            href: "/new-update",
+            children: [
+                { label: "ព័ត៌មានលេចធ្លោ", href: "/feature" },
+                {
+                    label: "មេឌៀ",
+                    children: [
+                        { label: "ពត៌មានលេចធ្លោ", href: "/new-update/media/press" },
+                        { label: "រូបថត", href: "/new-update/media/photos" },
+                        { label: "វីដេអូ", href: "/new-update/media/video" },
+                    ],
+                },
+            ],
+        },
+        {
+            label: "ផ្ទាំង MIS",
+            href: "/mis-dashboard",
+        },
+        {
+            label: "ទាក់ទងមកពួកយើង",
+            href: "/contact-us",
+        },
+    ],
+};
+
+function getApiLabel(item: ApiNavItem, language: Lang) {
+    return language === "kh"
+        ? item.label?.km || item.label?.en || "Untitled"
+        : item.label?.en || item.label?.km || "Untitled";
+}
+
+function isHomeItem(item: ApiNavItem) {
+    const englishLabel = item.label?.en?.trim().toLowerCase();
+    const khmerLabel = item.label?.km?.trim();
+
+    return item.url === "/" || englishLabel === "home" || khmerLabel === "ទំព័រដើម";
+}
+
+function buildSubChildItems(items: ApiNavItem[] = [], language: Lang): SubChildItem[] {
+    return items.map((item) => ({
+        label: getApiLabel(item, language),
+        href: item.url || "#",
+    }));
+}
+
+function buildChildItems(items: ApiNavItem[] = [], language: Lang): ChildItem[] {
+    return items.map((item) => ({
+        label: getApiLabel(item, language),
+        href: item.url || "#",
+        children:
+            item.children && item.children.length > 0
+                ? buildSubChildItems(item.children, language)
+                : undefined,
+    }));
+}
+
+function buildNavItems(items: ApiNavItem[] = [], language: Lang): NavItem[] {
+    return items.map((item) => {
+        if (isHomeItem(item)) {
+            return {
+                image: HOME_ICON_SRC,
+                href: item.url || "/",
+            };
+        }
+
+        return {
+            label: getApiLabel(item, language),
+            href: item.url || "#",
+            children:
+                item.children && item.children.length > 0
+                    ? buildChildItems(item.children, language)
+                    : undefined,
+        };
+    });
+}
+
 const Header: FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -34,115 +203,11 @@ const Header: FC = () => {
     const [searchValue, setSearchValue] = useState("");
     const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
     const [openMobileSubDropdown, setOpenMobileSubDropdown] = useState<string | null>(null);
+    const [navItems, setNavItems] = useState<Record<Lang, NavItem[]>>(FALLBACK_NAV_ITEMS);
 
     const { language, toggleLanguage } = useLanguage();
     const pathname = usePathname();
     const router = useRouter();
-
-    const navItems: Record<Lang, NavItem[]> = {
-        en: [
-            {
-                image: "/image/home.png",
-                href: "/",
-            },
-            {
-                label: "About Us",
-                href: "/about-us",
-            },
-            {
-                label: "Plenary",
-                href: "/plenary",
-            },
-            {
-                label: "Working Groups",
-                href: "/working-groups",
-            },
-            {
-                label: "Publication",
-                href: "/resources",
-                children: [
-                    { label: "Laws & Regulations", href: "/new-update/plenary/laws-regulations" },
-                    { label: "Decisions", href: "/new-update/plenary/decisions" },
-                    { label: "Reform Tracker", href: "/new-update/plenary/reform-tracker" },
-                    { label: "Reports", href: "/new-update/working-groups/reports" },
-                ],
-            },
-            {
-                label: "News & Update",
-                href: "/new-update",
-                children: [
-                    { label: "Featured", href: "/new-update/featured" },
-                    {
-                        label: "Media",
-                        children: [
-                            { label: "Press", href: "/new-update/media/press" },
-                            { label: "Photos", href: "/new-update/media/photos" },
-                            { label: "Video", href: "/new-update/media/video" },
-                        ],
-                    },
-                ],
-            },
-            {
-                label: "MIS",
-                href: "/mis-dashboard",
-            },
-            {
-                label: "Contact Us",
-                href: "/contact-us",
-            },
-        ],
-        kh: [
-            {
-                image: "/image/home.png",
-                href: "/",
-            },
-            {
-                label: "អំពីពួកយើង",
-                href: "/about-us",
-            },
-            {
-                label: "កិច្ចប្រជុំពេញអង្គ",
-                href: "/plenary",
-            },
-            {
-                label: "ក្រុមការងារ",
-                href: "/working-groups",
-            },
-            {
-                label: "បណ្ដុំឯកសារ",
-                href: "/resources",
-                children: [
-                    { label: "ច្បាប់ និងបទប្បញ្ញត្តិ", href: "/new-update/plenary/laws-regulations" },
-                    { label: "សេចក្តីសម្រេច", href: "/new-update/plenary/decisions" },
-                    { label: "តាមដានកំណែទម្រង់", href: "/new-update/plenary/reform-tracker" },
-                    { label: "របាយការណ៍", href: "/new-update/working-groups/reports" },
-                ],
-            },
-            {
-                label: "ព័ត៌មាន និងបច្ចុប្បន្នភាព",
-                href: "/new-update",
-                children: [
-                    { label: "ព័ត៌មានលេចធ្លោ", href: "/new-update/featured" },
-                    {
-                        label: "មេឌៀ",
-                        children: [
-                            { label: "ពត៌មានលេចធ្លោ", href: "/new-update/media/press" },
-                            { label: "រូបថត", href: "/new-update/media/photos" },
-                            { label: "វីដេអូ", href: "/new-update/media/video" },
-                        ],
-                    },
-                ],
-            },
-            {
-                label: "MIS",
-                href: "/mis-dashboard",
-            },
-            {
-                label: "ទាក់ទងមកពួកយើង",
-                href: "/contact-us",
-            },
-        ],
-    };
 
     const searchPlaceholder = language === "en" ? "Search..." : "ស្វែងរក...";
     const languageButtonText = language === "en" ? "" : "";
@@ -154,6 +219,42 @@ const Header: FC = () => {
         setIsSearchOpen(false);
         setIsMenuOpen(false);
     };
+
+    useEffect(() => {
+        const controller = new AbortController();
+
+        const loadMenu = async () => {
+            try {
+                const response = await fetch(MENU_API_ENDPOINT, {
+                    cache: "no-store",
+                    signal: controller.signal,
+                    headers: {
+                        Accept: "application/json",
+                    },
+                });
+
+                if (!response.ok) return;
+
+                const result = await response.json();
+
+                // Build the same bilingual menu shape that the old header UI already expects.
+                if (Array.isArray(result?.data?.items) && result.data.items.length > 0) {
+                    setNavItems({
+                        en: buildNavItems(result.data.items, "en"),
+                        kh: buildNavItems(result.data.items, "kh"),
+                    });
+                }
+            } catch (error) {
+                if (error instanceof DOMException && error.name === "AbortError") return;
+                console.error("Failed to load main nav menu:", error);
+            }
+        };
+
+        // Load the CMS menu after mount so the header can stay interactive.
+        void loadMenu();
+
+        return () => controller.abort();
+    }, []);
 
     useEffect(() => {
         let ticking = false;
@@ -178,10 +279,12 @@ const Header: FC = () => {
     const isParentActive = (item: NavItem) => {
         if (item.href && pathname === item.href) return true;
 
-        if (item.children) {
+        if (item.children && item.children.length > 0) {
             return item.children.some((child) => {
                 if (child.href && pathname === child.href) return true;
-                if (child.children) return child.children.some((sub) => pathname === sub.href);
+                if (child.children && child.children.length > 0) {
+                    return child.children.some((sub) => pathname === sub.href);
+                }
                 return false;
             });
         }
@@ -263,7 +366,7 @@ const Header: FC = () => {
                                         <Link
                                             key={`${item.href}-${index}`}
                                             href={item.href}
-                                            className="flex items-center"
+                                            className="flex shrink-0 items-center"
                                         >
                                             <Image
                                                 src={item.image}
@@ -276,12 +379,12 @@ const Header: FC = () => {
                                     );
                                 }
 
-                                if (item.children) {
+                                if (item.children && item.children.length > 0) {
                                     return (
-                                        <div key={`${item.label}-${index}`} className="relative group">
+                                        <div key={`${item.label}-${index}`} className="relative group shrink-0">
                                             <Link
                                                 href={item.href || "#"}
-                                                className={`relative flex items-center gap-2 pb-1 font-medium text-lg transition-colors ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"
+                                                className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap pb-1 font-medium text-lg transition-colors ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"
                                                     } ${language === "kh" ? "khmer-font" : ""}`}
                                             >
                                                 {item.label}
@@ -299,7 +402,7 @@ const Header: FC = () => {
                                                             (child.href && pathname === child.href) ||
                                                             child.children?.some((sub) => pathname === sub.href);
 
-                                                        if (child.children) {
+                                                        if (child.children && child.children.length > 0) {
                                                             return (
                                                                 <div key={child.label} className="relative group/sub">
                                                                     <div
@@ -359,7 +462,7 @@ const Header: FC = () => {
                                     <Link
                                         key={item.href}
                                         href={item.href || "#"}
-                                        className={`relative pb-1 font-medium text-xl transition-colors ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"
+                                        className={`relative shrink-0 whitespace-nowrap pb-1 font-medium text-xl transition-colors ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"
                                             } ${language === "kh" ? "khmer-font" : ""}`}
                                     >
                                         {item.label}
@@ -503,7 +606,7 @@ const Header: FC = () => {
                                             );
                                         }
 
-                                        if (item.children) {
+                                        if (item.children && item.children.length > 0) {
                                             const isOpen = openMobileDropdown === item.label;
 
                                             return (
@@ -544,7 +647,7 @@ const Header: FC = () => {
                                                             )}
 
                                                             {item.children.map((child) => {
-                                                                if (child.children) {
+                                                                if (child.children && child.children.length > 0) {
                                                                     const subKey = `${item.label}-${child.label}`;
                                                                     const isSubOpen = openMobileSubDropdown === subKey;
 
