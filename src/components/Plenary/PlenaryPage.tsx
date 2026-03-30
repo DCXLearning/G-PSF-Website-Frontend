@@ -12,56 +12,32 @@ type Objective = {
 };
 
 const objectivesData: Record<Lang, Objective[]> = {
-    en: [
-        {
-            id: 1,
-            title: "A Cabinet-level meeting",
-            description:
-                "The plenary operates at Cabinet level, ensuring alignment with national priorities and enabling coordinated action across ministries.",
-        },
-        {
-            id: 2,
-            title: "Chaired by the Prime Minister",
-            description:
-                "Led by the Prime Minister, the plenary benefits from strong executive oversight and the authority to drive timely decisions.",
-        },
-        {
-            id: 3,
-            title: "The highest authority within the G-PSF framework",
-            description:
-                "As the top decision-making body, the plenary serves as the final escalation point for unresolved issues, shaping policy and reform outcomes.",
-        },
-        {
-            id: 4,
-            title: "The G-PSF Plenary serves as the final decision-making platform",
-            description: "",
-        },
-    ],
-    kh: [
-        {
-            id: 1,
-            title: "កិច្ចប្រជុំថ្នាក់គណៈរដ្ឋមន្ត្រី",
-            description:
-                "កិច្ចប្រជុំពេញអង្គដំណើរការនៅថ្នាក់គណៈរដ្ឋមន្ត្រី ដើម្បីធានាការសម្របសម្រួលជាមួយអាទិភាពជាតិ និងអនុញ្ញាតឱ្យមានសកម្មភាពសម្របសម្រួលរវាងក្រសួងនានា។",
-        },
-        {
-            id: 2,
-            title: "ដឹកនាំដោយនាយករដ្ឋមន្ត្រី",
-            description:
-                "ក្រោមការដឹកនាំរបស់នាយករដ្ឋមន្ត្រី កិច្ចប្រជុំពេញអង្គទទួលបានការត្រួតពិនិត្យថ្នាក់ដឹកនាំខ្ពស់ និងសិទ្ធិអំណាចក្នុងការជំរុញការសម្រេចចិត្តឱ្យបានទាន់ពេលវេលា។",
-        },
-        {
-            id: 3,
-            title: "អាជ្ញាធរខ្ពស់បំផុតក្នុងក្របខណ្ឌ G-PSF",
-            description:
-                "ក្នុងនាមជាស្ថាប័នសម្រេចចិត្តកំពូល កិច្ចប្រជុំពេញអង្គជាចំណុចចុងក្រោយសម្រាប់លើកបញ្ហាដែលមិនទាន់ដោះស្រាយ និងកំណត់ទិសដៅគោលនយោបាយ និងលទ្ធផលកំណែទម្រង់។",
-        },
-        {
-            id: 4,
-            title: "កិច្ចប្រជុំពេញអង្គ G-PSF ជាវេទិកាចុងក្រោយសម្រាប់ការសម្រេចចិត្ត",
-            description: "",
-        },
-    ],
+  en: [
+    { id: 1, title: "Adjusting the business and investment climate", description: "" },
+    { id: 2, title: "Easing the compliance burden", description: "" },
+    { id: 3, title: "Facilitating businesses under tax authorities", description: "" },
+    { id: 4, title: "Trade facilitation under customs authority jurisdiction", description: "" },
+    { id: 5, title: "Improving transportation and infrastructure", description: "" },
+    { id: 6, title: "Rehabilitation and development of tourism", description: "" },
+    { id: 7, title: "Developing agriculture and agro-industry", description: "" },
+    { id: 8, title: "Banking and the finance sector", description: "" },
+    { id: 9, title: "Mining and the energy sector", description: "" },
+    { id: 10, title: "Construction and the real estate sector", description: "" },
+    { id: 11, title: "Other issues", description: "" },
+  ],
+  kh: [
+    { id: 1, title: "ការកែសម្រួលបរិយាកាសធុរកិច្ច និងការវិនិយោគ", description: "" },
+    { id: 2, title: "ការសម្រាលបន្ទុកលើអនុលោមភាព", description: "" },
+    { id: 3, title: "ការសម្រួលដល់ធុរកិច្ចក្រោមដែនសមត្ថកិច្ចពន្ធដារ", description: "" },
+    { id: 4, title: "កិច្ចសម្រួលពាណិជ្ជកម្មក្រោមដែនសមត្ថកិច្ចគយ", description: "" },
+    { id: 5, title: "ការលើកកម្ពស់ការដឹកជញ្ជូន និងហេដ្ឋារចនាសម្ព័ន្ធ", description: "" },
+    { id: 6, title: "ការស្តារ និងការលើកស្ទួយការអភិវឌ្ឍវិស័យទេសចរណ៍", description: "" },
+    { id: 7, title: "ការអភិវឌ្ឍវិស័យកសិកម្ម និងកសិឧស្សាហកម្ម", description: "" },
+    { id: 8, title: "វិស័យធនាគារ និងហិរញ្ញវត្ថុ", description: "" },
+    { id: 9, title: "វិស័យរ៉ែ និងថាមពល", description: "" },
+    { id: 10, title: "វិស័យសំណង់ និងអចលនទ្រព្យ", description: "" },
+    { id: 11, title: "បញ្ហាផ្សេងៗ", description: "" },
+  ],
 };
 
 const HexNode = () => (
@@ -86,23 +62,13 @@ const PlenaryPage: React.FC = () => {
         en: {
             badge: "Plenary",
             title: "G-PSF\nPlenary",
-            desc: `The Government-Private Sector Forum (G-PSF) Plenary is Cambodia’s
-                    highest-level platform for public-private dialogue.
-
-                    The institution brings together senior government leaders and private sector
-                    representatives to resolve critical economic and business issues, driving reforms
-                    that improve the national investment climate for Cambodia.`,
+            desc: `Roles and responsibilities of the plenary Allowing private sector to raise concerns and challenges seeking resolution and intervention from the Royal Government`,
             objectives: "The plenary is:",
         },
         kh: {
             badge: "កិច្ចប្រជុំពេញអង្គ",
             title: "កិច្ចប្រជុំពេញអង្គ\nG-PSF",
-            desc: `កិច្ចប្រជុំពេញអង្គនៃវេទិការាជរដ្ឋាភិបាល-ផ្នែកឯកជន (G-PSF) គឺជាវេទិកាថ្នាក់ខ្ពស់បំផុត
-                    សម្រាប់កិច្ចសន្ទនារវាងរដ្ឋ និងឯកជន។
-
-                    ស្ថាប័ននេះប្រមូលផ្តុំថ្នាក់ដឹកនាំជាន់ខ្ពស់របស់រាជរដ្ឋាភិបាល និងតំណាងវិស័យឯកជន
-                    ដើម្បីដោះស្រាយបញ្ហាសេដ្ឋកិច្ច និងធុរកិច្ចសំខាន់ៗ និងជំរុញកំណែទម្រង់
-                    ដែលធ្វើឱ្យប្រសើរឡើងនូវបរិយាកាសវិនិយោគសម្រាប់កម្ពុជា។`,
+            desc: `អនុញ្ញាតឱ្យផ្នែកឯកជនលើកឡើងនូវសំណូមពរ និងបញ្ហាប្រឈម ដើម្បីស្នើសុំដំណោះស្រាយ និងអន្តរាគមន៍ពីផ្នែករាជរដ្ឋាភិបាល។`,
             objectives: "កិច្ចប្រជុំពេញអង្គគឺ៖",
         },
     }[lang];
@@ -113,7 +79,7 @@ const PlenaryPage: React.FC = () => {
         <section className="bg-white py-16 md:py-24">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
-                    <div className="lg:sticky lg:top-10">
+                    <div className="lg:sticky lg:top-40">
                         <h1
                             className={`whitespace-pre-line text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight ${
                                 lang === "kh" ? "khmer-font" : ""

@@ -254,7 +254,7 @@ const Header: FC = () => {
             <section className="bg-white shadow-md sticky top-0 z-50">
                 <nav className="max-w-7xl mx-auto px-4 md:px-2 py-4">
                     <div className="flex justify-between items-center">
-                        <div className="hidden lg:flex flex-1 justify-center items-center gap-x-12">
+                        <div className="hidden lg:flex flex-1 justify-center items-center gap-x-13">
                             {navItems[language].map((item, index) => {
                                 const isActive = isParentActive(item);
 
@@ -379,7 +379,7 @@ const Header: FC = () => {
                             {language === "en" ? "Menu" : "ម៉ឺនុយ"}
                         </div>
 
-                        <div className="flex items-center gap-3 ml-3 mr-2">
+                        <div className="flex items-center gap-3 ml-3 mr-1">
                             {isSticky && (
                                 <>
                                     <button
