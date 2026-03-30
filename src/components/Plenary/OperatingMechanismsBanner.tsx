@@ -17,20 +17,25 @@ export default function OperatingMechanismsBanner({
     imageAltKh = "យន្តការប្រតិបត្តិការនៃកិច្ចប្រជុំពេញអង្គ G-PSF",
 }: OperatingMechanismsBannerProps) {
     const { language } = useLanguage();
-
     const isKhmer = language === "kh";
 
     return (
-        <section className="w-full bg-[#e9e9e9] py-6 md:py-10">
-            <div className="mx-auto max-w-7xl px-4 md:px-4">
-                <div className="overflow-hidden">
-                    <div className="relative w-full aspect-[16/9] md:aspect-[14/8.5]">
+        <section className="bg-white py-8 md:py-12">
+            <div className="mx-auto max-w-7xl px-4 sm:px-4 lg:px-4">
+
+                {/* FRAME (Same as Flow & PlenaryStructure) */}
+                <div className="border border-slate-200 rounded-2xl bg-white p-3 sm:p-4 md:p-5 lg:p-6 shadow-md">
+
+                    {/* IMAGE CONTAINER */}
+                    <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[720px] rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
+
                         <Image
                             src={isKhmer ? imageSrcKh : imageSrcEn}
                             alt={isKhmer ? imageAltKh : imageAltEn}
                             fill
                             priority
-                            className="object-contain"
+                            className="object-contain p-4"
+                            sizes="(max-width: 768px) 100vw, 1200px"
                         />
                     </div>
                 </div>

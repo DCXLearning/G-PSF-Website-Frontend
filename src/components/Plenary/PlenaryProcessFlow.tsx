@@ -1,80 +1,102 @@
 "use client";
 
-import Image from "next/image";
-import { ChevronRight } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Download } from "lucide-react";
 
-const steps = [
+type Doc = {
+    titleEn: string;
+    titleKh: string;
+    file: string;
+    label: string;
+};
+
+const documents: Doc[] = [
     {
-        image: "/image/Subpages_plenary_mock_up.bmp",
-        alt: "Collaborate",
+        label: "Sub-Decree 307",
+        titleEn:
+            "Sub-Decree No. 307 on the Organization and Functioning of the G-PSF Coordination Committee (Oct 6, 2023)",
+        titleKh:
+            "អនុក្រឹត្យលេខ ៣០៧ អនក្រ.បក ចុះថ្ងៃទី៦ ខែតុលា ឆ្នាំ២០២៣ ស្តីពីការរៀបចំ និងការប្រព្រឹត្តទៅរបស់គណៈកម្មាធិការសម្របសម្រួលការងារ សម្រាប់យន្តការវេទិការាជរដ្ឋាភិបាល-ផ្នែកឯកជន",
+        file: "/docs/sub-decree-307.pdf",
     },
     {
-        image: "/image/Subpages_plenary_mock2.bmp",
-        alt: "Implement",
+        label: "Decision 153",
+        titleEn:
+            "Decision No. 153 on Appointment of G-PSF Coordination Committee Members (Nov 3, 2023)",
+        titleKh:
+            "សេចក្តីសម្រេចលេខ ១៥៣ សសរ ចុះថ្ងៃទី៣ ខែវិច្ឆិកា ឆ្នាំ២០២៣ ស្តីពីការតែងតាំងសមាសភាពគណៈកម្មាធិការសម្របសម្រួលការងារ",
+        file: "/docs/decision-153.pdf",
     },
     {
-        image: "/image/Subpages_plenary_mock_up.23.bmp",
-        alt: "Innovate",
+        label: "Notification 1772",
+        titleEn:
+            "Notification No. 1772 on the Results of the 19th G-PSF Forum (Nov 22, 2023)",
+        titleKh:
+            "សេចក្តីជូនដំណឹងលេខ ១៧៧២ សជណ.អកទ ចុះថ្ងៃទី២២ ខែវិច្ឆិកា ឆ្នាំ២០២៣ ស្តីពីលទ្ធផលនៃវេទិការាជរដ្ឋាភិបាល-ផ្នែកឯកជនលើកទី១៩",
+        file: "/docs/notification-1772.pdf",
     },
     {
-        image: "/image/Subpages_plenary_mock_up.23.03df.bmp",
-        alt: "Evaluate",
+        label: "Decision 97",
+        titleEn:
+            "Decision No. 97 on Recognition of 16 Private Sector Working Groups (May 21, 2024)",
+        titleKh:
+            "សេចក្តីសម្រេចលេខ ៩៧ សសរ ចុះថ្ងៃទី២១ ខែឧសភា ឆ្នាំ២០២៤ ស្តីពីការទទួលស្គាល់ជាផ្លូវការនូវសមាសភាពក្រុមការងារទាំង១៦",
+        file: "/docs/decision-97.pdf",
     },
 ];
 
 export default function PlenaryProcessFlow() {
     const { language } = useLanguage();
-    const lang = language === "kh" ? "kh" : "en";
-
-    const t = {
-        en: {
-            footer:
-                "The G-PSF Plenary is more than a discussion forum—it is a results-driven governance mechanism.",
-        },
-        kh: {
-            footer:
-                "កិច្ចប្រជុំពេញអង្គ G-PSF មិនត្រឹមតែជាវេទិកាពិភាក្សាប៉ុណ្ណោះទេ ប៉ុន្តែជាយន្តការគ្រប់គ្រងផ្អែកលើលទ្ធផលជាក់ស្តែង។",
-        },
-    };
+    const isKh = language === "kh";
 
     return (
-        <section className="w-full bg-[#efefef]">
-            <div className="mx-auto max-w-7xl px-4 py-10 md:px4 md:py-12">
-                <div className="flex flex-col items-center justify-between gap-6 md:flex-row md:gap-4">
-                    {steps.map((step, index) => (
-                        <div key={index} className="flex items-center gap-4 md:gap-6">
-                            <div className="flex flex-col items-center">
-                                <div className="flex h-[150px] w-[190px] items-center justify-center md:h-[180px] md:w-[210px]">
-                                    <div className="relative h-full w-full">
-                                        <Image
-                                            src={step.image}
-                                            alt={step.alt}
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+        <section className="bg-[#efefef] py-10 md:py-12">
+            <div className="mx-auto max-w-7xl px-4">
+                {/* Title */}
+                <h2
+                    className={`text-center text-2xl md:text-3xl font-bold mb-10 ${
+                        isKh ? "khmer-font" : ""
+                    }`}
+                >
+                    {isKh ? "ឯកសារគតិយុត្ត" : "Legal Documents"}
+                </h2>
 
-                            {index < steps.length - 1 && (
-                                <ChevronRight
-                                    className="hidden h-12 w-12 text-[#8c8c8c] md:block"
-                                    strokeWidth={3}
-                                />
-                            )}
+                {/* Document Grid */}
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    {documents.map((doc, index) => (
+                        <div
+                            key={index}
+                            className="bg-white border border-slate-200 rounded-2xl shadow-md p-5 flex flex-col justify-between hover:shadow-lg transition"
+                        >
+                            {/* Label */}
+                            <span className="text-xl font-semibold text-indigo-600 mb-2">
+                                {doc.label}
+                            </span>
+
+                            {/* Title */}
+                            <p
+                                className={`text-lg text-gray-700 mb-6 leading-relaxed ${
+                                    isKh ? "khmer-font" : ""
+                                }`}
+                            >
+                                {isKh ? doc.titleKh : doc.titleEn}
+                            </p>
+
+                            {/* Download Button */}
+                            <div className="flex gap-3 mt-auto">
+                                {/* Download */}
+                                <a
+                                    href={doc.file}
+                                    download
+                                    className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg"
+                                >
+                                    <Download size={16} />
+                                    {isKh ? "ទាញយក" : "Download"}
+                                </a>
+                            </div>
                         </div>
                     ))}
                 </div>
-            </div>
-
-            <div className="bg-[#20266d] px-4 py-14 md:py-20">
-                <p
-                    className={`mx-auto max-w-7xl text-center text-lg font-medium leading-relaxed text-white md:text-[26px] ${lang === "kh" ? "khmer-font" : ""
-                        }`}
-                >
-                    {t[lang].footer}
-                </p>
             </div>
         </section>
     );

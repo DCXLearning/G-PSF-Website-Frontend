@@ -111,7 +111,7 @@ const PlenaryPage: React.FC = () => {
                         <div className="relative">
                             <div className="absolute left-[23px] top-0 bottom-0 w-[4px] bg-orange-500" />
 
-                            <div className="space-y-12">
+                            <div className="space-y-6">
                                 {data.map((obj) => (
                                     <div key={obj.id} className="relative flex items-start gap-6">
                                         <div className="relative z-10">
@@ -127,13 +127,13 @@ const PlenaryPage: React.FC = () => {
                                                 {obj.title}
                                             </h3>
 
-                                            <p
+                                            {/* <p
                                                 className={`mt-2 text-base sm:text-lg text-gray-600 leading-relaxed max-w-sm ${
                                                     lang === "kh" ? "khmer-font" : ""
                                                 }`}
                                             >
                                                 {obj.description}
-                                            </p>
+                                            </p> */}
                                         </div>
                                     </div>
                                 ))}
