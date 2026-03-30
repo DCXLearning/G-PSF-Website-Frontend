@@ -157,7 +157,7 @@ export default function WorkGroupsCarousel() {
   const numberText = isKhmer ? toKhmerNumber(total) : String(total);
 
   const titleRow1 = isKhmer
-    ? `${numberText} ក្រុមការងារ`
+    ? `ក្រុមការងារតាមវិស័យទាំង ${numberText}`
     : `${numberText} ${groupWord}`;
 
   const showSkeleton = !mounted || (loading && groups.length === 0);

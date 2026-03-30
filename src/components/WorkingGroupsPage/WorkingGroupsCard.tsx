@@ -199,7 +199,7 @@ export default function WorkGroupsGrid() {
     }, [items, apiLang]);
 
     const headerTitle = isKh
-        ? `ក្រុមការងារ ${total || workGroups.length}`
+        ? `ក្រុមការងារតាមវិស័យទាំង ${total || workGroups.length}`
         : `${total || workGroups.length} Working Groups`;
 
 
