@@ -65,17 +65,23 @@ export default function DualGovernanceModel() {
             <div className="mx-auto">
                 <div className="overflow-hidden">
                     {/* TOP */}
-                <div className="px-4 py-10 md:px-33">
-                    <h2 className={`text-3xl md:text-5xl font-extrabold text-gray-800 ${lang === "kh" ? "khmer-font" : ""}`}>
-                        A Dual Public–Private <br /> Governance Model
-                    </h2>
+                    <div className="px-4 py-10 md:px-33">
+                        <h2
+                            className={`text-3xl md:text-5xl max-w-3xl font-extrabold text-gray-800 leading-tight ${lang === "kh" ? "khmer-font leading-relaxed" : ""
+                                }`}
+                        >
+                            {text.title}
+                        </h2>
 
-                    <div className="mt-6 w-90 border-t-5 border-orange-500 translate-x-0 sm:translate-x-8 md:translate-x-32" />
+                        <div className="mt-6 h-[5px] w-95 bg-orange-500 translate-x-0 sm:translate-x-8 md:translate-x-24" />
 
-                    <p className="mt-4 max-w-sm text-xl text-[#1f3d6d] leading-relaxed translate-x-0 sm:translate-x-8 md:translate-x-32">
-                        The effectiveness of the G-PSF Plenary stems from a combination of strong political authority, structured escalation processes, continuous stakeholder engagement, and clear implementation and monitoring mechanisms.
-                    </p>
-                </div>
+                        <p
+                            className={`mt-4 max-w-sm text-lg md:text-xl text-[#1f3d6d] leading-relaxed translate-x-0 sm:translate-x-8 md:translate-x-24 ${lang === "kh" ? "khmer-font" : ""
+                                }`}
+                        >
+                            {text.desc}
+                        </p>
+                    </div>
 
                     {/* GRID */}
                     <div className="grid grid-cols-1 md:grid-cols-2">
