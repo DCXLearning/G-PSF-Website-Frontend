@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
+import { useLanguage } from "@/app/context/LanguageContext";
 import "swiper/css";
 
 interface Logo {
@@ -14,8 +15,10 @@ interface Logo {
 }
 
 const TrustedByCarousel: React.FC = () => {
+  const { language } = useLanguage();
   const [logos, setLogos] = useState<Logo[]>([]);
   const [loading, setLoading] = useState(true);
+  const isKh = language === "kh";
 
   useEffect(() => {
     let alive = true;
@@ -73,8 +76,13 @@ const TrustedByCarousel: React.FC = () => {
   return (
     <section className="py-6 pb-24 bg-white relative overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4 relative">
-        <h2 className="text-3xl md:text-4xl font-bold text-center tracking-wider text-blue-950 mb-12 uppercase">
-          Trusted By
+        <h2
+          className={`text-3xl md:text-4xl font-bold text-center tracking-wider text-blue-950 mb-12 ${
+            isKh ? "khmer-font normal-case" : "uppercase"
+          }`}
+        >
+          {/* Show the Khmer heading when the site language is Khmer. */}
+          {isKh ? "ជឿទុកចិត្តដោយ" : "Trusted By"}
         </h2>
 
         <Swiper
