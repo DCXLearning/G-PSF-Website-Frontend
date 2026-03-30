@@ -77,6 +77,10 @@ const DAYS_OF_WEEK: Record<ApiLang, string[]> = {
     km: ["អា", "ច", "អ", "ពុ", "ព្រ", "សុ", "ស"],
 };
 
+function containsKhmer(value?: string | null) {
+    return /[\u1780-\u17FF]/.test(value ?? "");
+}
+
 function pickText(i18n: I18n | null | undefined, lang: ApiLang) {
     if (!i18n) return "";
     return i18n[lang] || i18n.en || i18n.km || "";
@@ -562,7 +566,15 @@ export default function EventsAndAnnouncements() {
                 </div>
 
                 <div className="lg:col-span-6">
-                    <h2 className="text-3xl font-bold mb-6">{announcementsTitle}</h2>
+                    <h2
+                        className={`text-3xl font-bold mb-6 ${
+                            apiLang === "km" || containsKhmer(announcementsTitle)
+                                ? "khmer-font"
+                                : ""
+                        }`}
+                    >
+                        {announcementsTitle}
+                    </h2>
 
                     <div className="space-y-6">
                         {showAnnouncementSkeleton ? (
@@ -571,7 +583,13 @@ export default function EventsAndAnnouncements() {
                                 <PostCardSkeleton />
                             </>
                         ) : announcementPosts.length === 0 ? (
-                            <div className="border border-gray-200 p-8 text-sm text-gray-500">
+                            <div
+                                className={`border border-gray-200 p-8 text-sm text-gray-500 ${
+                                    apiLang === "km" || containsKhmer(labels.noAnnouncements)
+                                        ? "khmer-font"
+                                        : ""
+                                }`}
+                            >
                                 {announcementError || labels.noAnnouncements}
                             </div>
                         ) : (
@@ -582,6 +600,11 @@ export default function EventsAndAnnouncements() {
                                     pickText(post.category?.name, apiLang) ||
                                     labels.announcementsTitle;
                                 const documentUrl = pickDocumentUrl(post, apiLang);
+                                const useKhmerFont =
+                                    apiLang === "km" ||
+                                    containsKhmer(categoryName) ||
+                                    containsKhmer(title) ||
+                                    containsKhmer(description);
 
                                 return (
                                     <div
@@ -597,18 +620,32 @@ export default function EventsAndAnnouncements() {
                                         </div>
 
                                         <div className="flex flex-col min-w-0 flex-1">
-                                            <span className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#1a2b4b]">
+                                            <span
+                                                className={`text-[10px] font-bold mb-1 text-[#1a2b4b] ${
+                                                    useKhmerFont
+                                                        ? "khmer-font normal-case"
+                                                        : "uppercase tracking-wider"
+                                                }`}
+                                            >
                                                 {categoryName}
                                                 {post.publishedAt
                                                     ? ` • ${formatDate(post.publishedAt, apiLang)}`
                                                     : ""}
                                             </span>
 
-                                            <h3 className="text-2xl font-bold mb-3 leading-tight text-[#1a2b4b]">
+                                            <h3
+                                                className={`text-2xl font-bold mb-3 leading-tight text-[#1a2b4b] ${
+                                                    useKhmerFont ? "khmer-font" : ""
+                                                }`}
+                                            >
                                                 {title}
                                             </h3>
 
-                                            <p className="text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3">
+                                            <p
+                                                className={`text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3 ${
+                                                    useKhmerFont ? "khmer-font" : ""
+                                                }`}
+                                            >
                                                 {description || "-"}
                                             </p>
 
@@ -617,7 +654,11 @@ export default function EventsAndAnnouncements() {
                                                     href={documentUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-[10px] khmer-font font-bold flex items-center mt-auto uppercase tracking-tighter hover:text-orange-500"
+                                                    className={`text-[10px] font-bold flex items-center mt-auto hover:text-orange-500 ${
+                                                        useKhmerFont
+                                                            ? "khmer-font normal-case"
+                                                            : "uppercase tracking-tighter"
+                                                    }`}
                                                 >
                                                     {labels.download}
                                                     <span className="ml-1 text-lg">›</span>
@@ -633,7 +674,9 @@ export default function EventsAndAnnouncements() {
                     <div className="mt-6 text-center">
                         <Link
                             href="/announcement"
-                            className="text-white khmer-font bg-blue-950 hover:bg-blue-900 py-2 px-4 rounded-lg font-semibold"
+                            className={`text-white bg-blue-950 hover:bg-blue-900 py-2 px-4 rounded-lg font-semibold ${
+                                apiLang === "km" ? "khmer-font" : ""
+                            }`}
                         >
                             {labels.seeMore}
                         </Link>

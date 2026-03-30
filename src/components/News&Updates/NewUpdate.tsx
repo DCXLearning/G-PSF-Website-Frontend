@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import Link from "next/link";
+import { useLanguage } from "@/app/context/LanguageContext";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -36,15 +37,20 @@ function formatDate(dateValue: string): string {
 }
 
 const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
+    const { language } = useLanguage();
     const hasData = data.length > 0;
+    const isKh = language === "kh";
 
     return (
         <section className="relative overflow-hidden bg-white py-16">
             {/* Header */}
             <div className="relative z-10 mx-auto mb-16 max-w-7xl px-4">
-                <p className="mb-1 text-3xl font-bold text-gray-900">Latest</p>
-                <h2 className="mb-4 text-5xl font-extrabold text-[#1a2b4b]">
-                    News & Updates
+                <p className={`mb-1 text-3xl font-bold text-gray-900 ${isKh ? "khmer-font" : ""}`}>
+                    {/* Switch the section heading text by the current site language. */}
+                    {isKh ? "ថ្មីៗបំផុត" : "Latest"}
+                </p>
+                <h2 className={`mb-4 text-5xl font-extrabold text-[#1a2b4b] ${isKh ? "khmer-font" : ""}`}>
+                    {isKh ? "ព័ត៌មាន និងបច្ចុប្បន្នភាព" : "News & Updates"}
                 </h2>
                 <div className="h-1.5 w-72 bg-orange-500" />
             </div>
