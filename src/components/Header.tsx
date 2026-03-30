@@ -58,7 +58,7 @@ const Header: FC = () => {
                 href: "/working-groups",
             },
             {
-                label: "Resources",
+                label: "Publication",
                 href: "/resources",
                 children: [
                     { label: "Laws & Regulations", href: "/new-update/plenary/laws-regulations" },
@@ -109,7 +109,7 @@ const Header: FC = () => {
                 href: "/working-groups",
             },
             {
-                label: "ធនធាន",
+                label: "បណ្ដុំឯកសារ",
                 href: "/resources",
                 children: [
                     { label: "ច្បាប់ និងបទប្បញ្ញត្តិ", href: "/new-update/plenary/laws-regulations" },
@@ -254,7 +254,7 @@ const Header: FC = () => {
             <section className="bg-white shadow-md sticky top-0 z-50">
                 <nav className="max-w-7xl mx-auto px-4 md:px-2 py-4">
                     <div className="flex justify-between items-center">
-                        <div className="hidden lg:flex flex-1 justify-center items-center gap-x-14">
+                        <div className="hidden lg:flex flex-1 justify-center items-center gap-x-12">
                             {navItems[language].map((item, index) => {
                                 const isActive = isParentActive(item);
 
