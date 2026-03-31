@@ -212,7 +212,7 @@ export default function WorkingGroups16() {
               {titleParts.main}
             </h1>
 
-            <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-94 lg:w-[750px] translate-x-0 sm:translate-x-8 md:translate-x-52" />
+            <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-94 lg:w-[756px] translate-x-0 sm:translate-x-8 md:translate-x-52" />
 
             <p
               className={`mt-8 max-w-4xl text-lg sm:text-2xl leading-relaxed font-bold text-[#1e3a8a] whitespace-pre-line translate-x-0 sm:translate-x-8 md:translate-x-52 ${
