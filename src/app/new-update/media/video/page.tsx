@@ -1,4 +1,4 @@
-import Video from '@/components/News&Updates/list/page/Video'
+import Video from '@/components/News&Updates/list-New&Update/page/Video'
 
 export default function page() {
   return (

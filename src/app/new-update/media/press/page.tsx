@@ -1,4 +1,4 @@
-import Press from '@/components/News&Updates/list/page/Press'
+import Press from '@/components/News&Updates/list-New&Update/page/Press'
 
 export default function page() {
   return (

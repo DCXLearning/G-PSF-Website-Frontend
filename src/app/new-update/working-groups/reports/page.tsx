@@ -1,4 +1,4 @@
-import Reports from "@/components/News&Updates/list/page/Reports";
+import Reports from "@/components/News&Updates/list-New&Update/page/Reports";
 
 export default function page() {
     return (

@@ -1,10 +1,10 @@
 import React from 'react'
 // import ResourcesHero from '../ResourcesPage/ResourcesHero'
-import Policy_Documents from '../ResourcesPage/Policy_Documents'
-import WGOutputs from '../ResourcesPage/WG_Outputs'
+import Policy_Documents from '../PublicationPage/Policy_Documents'
+import WGOutputs from '../PublicationPage/WG_Outputs'
 // import AnnualReports from '../ResourcesPage/AnnualReports'
-import Semester from '../ResourcesPage/Semester'
-import ToolsSection from '../ResourcesPage/ToolsSection'
+import Semester from '../PublicationPage/Semester'
+import ToolsSection from '../PublicationPage/ToolsSection'
 
 function RouterResources() {
     return (

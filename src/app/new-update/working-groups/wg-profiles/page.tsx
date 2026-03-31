@@ -1,4 +1,4 @@
-import WGProfiles from "@/components/News&Updates/list/page/WG-Profiles";
+import WGProfiles from "@/components/News&Updates/list-New&Update/page/WG-Profiles";
 
 export default function page() {
     return (

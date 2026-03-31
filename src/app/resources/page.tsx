@@ -1,4 +1,4 @@
-import RouterResources from '@/components/UI-Router/RouterResources'
+import RouterResources from '@/components/UI-Router/RouterPublication'
 import React from 'react'
 
 export default function page() {

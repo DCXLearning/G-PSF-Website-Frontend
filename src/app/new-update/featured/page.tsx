@@ -1,4 +1,4 @@
-import FeaturedPage from '@/components/News&Updates/list/page/Featured'
+import FeaturedPage from '@/components/News&Updates/list-New&Update/page/Featured'
 
 export default function page() {
   return (

@@ -1,8 +1,8 @@
 import React from 'react'
-import ListWorkingGroups from '../ListWorking/List-WorkingGroups'
-import Mandate from '../ListWorking/Mandate'
-import View from '../ListWorking/View'
-import Start from '../ListWorking/Start'
+import ListWorkingGroups from '../List-WorkingGroups/List-WorkingGroups'
+import Mandate from '../List-WorkingGroups/Mandate'
+import View from '../List-WorkingGroups/View'
+import Start from '../List-WorkingGroups/Start'
 
 type RoutProps = {
     pageSlug?: string

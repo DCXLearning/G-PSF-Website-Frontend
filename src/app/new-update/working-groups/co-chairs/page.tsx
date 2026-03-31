@@ -1,4 +1,4 @@
-import CoChairs from "@/components/News&Updates/list/page/Co-Chairs";
+import CoChairs from "@/components/News&Updates/list-New&Update/page/Co-Chairs";
 
 export default function page() {
     return (

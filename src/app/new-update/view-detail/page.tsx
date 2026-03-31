@@ -1,5 +1,5 @@
-import Rout from '@/components/News&Updates/list/Rout'
-import type { DetailPageData, TiptapNode } from '@/components/News&Updates/list/Detail_top'
+import Rout from '@/components/News&Updates/list-New&Update/Rout'
+import type { DetailPageData, TiptapNode } from '@/components/News&Updates/list-New&Update/Detail_top'
 import { API_URL } from '@/config/api'
 import { notFound } from 'next/navigation'
 

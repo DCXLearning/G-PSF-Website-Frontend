@@ -1,4 +1,4 @@
-import ReformTracker from "@/components/News&Updates/list/page/Reform-Tracker";
+import ReformTracker from "@/components/News&Updates/list-New&Update/page/Reform-Tracker";
 
 export default function page() {
   return (
