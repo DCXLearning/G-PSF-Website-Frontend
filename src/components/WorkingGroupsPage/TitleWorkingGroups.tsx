@@ -194,7 +194,7 @@ export default function WorkingGroups16() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+        <div className="items-start">
           <div className="lg:sticky lg:top-10">
             <p
               className={`text-xl font-bold text-gray-900 mb-2 uppercase tracking-wider ${
@@ -205,17 +205,17 @@ export default function WorkingGroups16() {
             </p>
 
             <h1
-              className={`text-4xl w-3xl md:text-5xl font-bold text-gray-900 leading-tight ${
+              className={`text-4xl w-5xl md:text-5xl font-bold text-gray-900 leading-tight ${
                 isKh ? "khmer-font" : ""
               }`}
             >
               {titleParts.main}
             </h1>
 
-            <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-94 lg:w-[410px] translate-x-0 sm:translate-x-8 md:translate-x-40" />
+            <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-94 lg:w-[750px] translate-x-0 sm:translate-x-8 md:translate-x-52" />
 
             <p
-              className={`mt-8 max-w-md text-lg sm:text-xl leading-relaxed font-bold text-[#1e3a8a] whitespace-pre-line translate-x-0 sm:translate-x-8 md:translate-x-40 ${
+              className={`mt-8 max-w-4xl text-lg sm:text-2xl leading-relaxed font-bold text-[#1e3a8a] whitespace-pre-line translate-x-0 sm:translate-x-8 md:translate-x-52 ${
                 isKh ? "khmer-font" : ""
               }`}
             >
