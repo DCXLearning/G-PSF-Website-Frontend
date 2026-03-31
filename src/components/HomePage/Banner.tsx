@@ -131,7 +131,7 @@ export default function HeroBanner() {
 
             {/* Content */}
             <div
-                className={`relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-32 max-w-5xl w-full mx-auto ${
+                className={`relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-36 max-w-5xl w-full mx-auto ${
                     langKey === "km" ? "khmer-font" : ""
                 }`}
             >

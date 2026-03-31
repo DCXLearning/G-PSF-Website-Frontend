@@ -205,17 +205,17 @@ export default function WorkingGroups16() {
             </p>
 
             <h1
-              className={`text-4xl md:text-5xl font-bold text-gray-900 leading-tight ${
+              className={`text-4xl w-3xl md:text-5xl font-bold text-gray-900 leading-tight ${
                 isKh ? "khmer-font" : ""
               }`}
             >
               {titleParts.main}
             </h1>
 
-            <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-96 lg:w-[410px] translate-x-0 sm:translate-x-8 md:translate-x-24" />
+            <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-94 lg:w-[410px] translate-x-0 sm:translate-x-8 md:translate-x-40" />
 
             <p
-              className={`mt-8 max-w-md text-lg sm:text-xl leading-relaxed font-bold text-[#1e3a8a] whitespace-pre-line translate-x-0 sm:translate-x-8 md:translate-x-24 ${
+              className={`mt-8 max-w-md text-lg sm:text-xl leading-relaxed font-bold text-[#1e3a8a] whitespace-pre-line translate-x-0 sm:translate-x-8 md:translate-x-40 ${
                 isKh ? "khmer-font" : ""
               }`}
             >
