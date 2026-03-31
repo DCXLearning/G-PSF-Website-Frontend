@@ -4,8 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, LayoutGrid, List } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
-// Import your language context
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 type ViewMode = "list" | "grid";
@@ -21,21 +20,12 @@ type FeaturedItem = {
     href: string;
 };
 
-// Simple utility to handle I18n objects if the API returns them
 function pickText(value: any, lang: UiLang): string {
-    if (typeof value === 'string') return value;
+    if (typeof value === "string") return value;
     return (lang === "kh" ? value?.km : value?.en) || value?.en || value?.km || "";
 }
 
-function NewsImage({
-    src,
-    alt,
-    className = "",
-}: {
-    src?: string | null;
-    alt: string;
-    className?: string;
-}) {
+function NewsImage({ src, alt, className = "" }: any) {
     const [error, setError] = useState(false);
     const isValid = !!src && !error;
 
@@ -51,140 +41,112 @@ function NewsImage({
                 />
             ) : (
                 <div className="flex h-full w-full items-center justify-center bg-[#ECECEC]">
-                    <div className="flex h-[218px] w-[156px] flex-col items-center justify-center bg-[#F6F6F6]">
-                        <div className="flex h-[70px] w-[70px] items-center justify-center bg-[#D9D9D9]">
-                            <div className="flex h-[46px] w-[46px] items-center justify-center rounded-sm bg-[#BBBBBB]">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="white"
-                                    strokeWidth="1.7"
-                                    className="h-7 w-7"
-                                >
-                                    <circle cx="8.5" cy="8.5" r="1.8" fill="white" stroke="none" />
-                                    <path d="M4 17l4.5-4.5a1 1 0 011.5.08L13 16l2.2-2.8a1 1 0 011.62.04L20 17" />
-                                    <rect x="3.5" y="5" width="17" height="14" rx="1.5" />
-                                </svg>
-                            </div>
-                        </div>
-                        <p className="mt-6 text-center text-[12px] leading-[18px] text-[#777777]">
-                            document image
-                        </p>
-                    </div>
+                    <p className="text-xs text-gray-500">No Image</p>
                 </div>
             )}
         </div>
     );
 }
 
-function Badge({ type, lang }: { type: FeaturedItem["type"]; lang: UiLang }) {
-    const label = lang === "kh" ? "ការបោះពុម្ពផ្សាយ" : type;
+function Badge({ lang }: { lang: UiLang }) {
     return (
-        <span className="inline-flex rounded-[3px] bg-[#3F51D7] px-2 py-[3px] text-[9px] font-bold uppercase tracking-wide text-white">
-            {label}
+        <span className="inline-flex rounded bg-[#3F51D7] px-2 py-1 text-xs font-bold text-white">
+            {lang === "kh" ? "ការបោះពុម្ពផ្សាយ" : "Publication"}
         </span>
     );
 }
 
-function Header({ view, setView, lang }: { view: ViewMode; setView: (v: ViewMode) => void; lang: UiLang }) {
+function Header({ view, setView, lang }: any) {
     return (
-        <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-            <div>
-                <h1 className="mt-1 text-[32px] md:text-[44px] font-extrabold leading-none text-[#0B2C5F]">
-                    {lang === "kh" ? "របាយការណ៍ឆមាស" : "Semester Reports"}
-                </h1>
-                <div className="mt-4 h-[4px] w-[150px] bg-[#F59E0B]" />
-            </div>
+        <div className="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-[#0B2C5F]">
+                {lang === "kh" ? "របាយការណ៍ឆមាស" : "Semester Reports"}
+            </h1>
 
-            <div className="flex items-center gap-2 self-start rounded-md border border-[#D1D5DB] bg-white p-1 shadow-sm">
+            <div className="flex gap-2 border border-gray-300 p-1 rounded-md bg-white shadow-sm">
                 <button
-                    type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-semibold transition ${view === "list" ? "bg-[#23395D] text-white" : "text-[#475569] hover:bg-slate-100"}`}
+                    className={`px-3 py-1 rounded ${
+                        view === "list" ? "bg-[#23395D] text-white" : "text-gray-600"
+                    }`}
                 >
-                    <List className="h-4 w-4" />
-                    {lang === "kh" ? "បញ្ជី" : "List"}
+                    <List size={18} />
                 </button>
-
                 <button
-                    type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-semibold transition ${view === "grid" ? "bg-[#23395D] text-white" : "text-[#475569] hover:bg-slate-100"}`}
+                    className={`px-3 py-1 rounded ${
+                        view === "grid" ? "bg-[#23395D] text-white" : "text-gray-600"
+                    }`}
                 >
-                    <LayoutGrid className="h-4 w-4" />
-                    {lang === "kh" ? "Grid" : "Grid"}
+                    <LayoutGrid size={18} />
                 </button>
             </div>
         </div>
     );
 }
 
-function ListCard({ item, lang }: { item: FeaturedItem; lang: UiLang }) {
+function ListCard({ item, lang }: any) {
     return (
-        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)]">
-            <Link href={item.href} className="block">
-                <NewsImage src={item.image} alt={item.title} className="h-[164px] w-full md:w-[136px]" />
-            </Link>
+        <div className="group border-b border-gray-200 py-6 transition hover:bg-gray-50">
+            <div className="grid md:grid-cols-[140px_1fr] gap-4">
+                <NewsImage src={item.image} alt={item.title} className="h-36 rounded-md" />
 
-            <div className="min-w-0">
-                <Badge type={item.type} lang={lang} />
-                <h2 className="mt-3 text-lg md:text-2xl font-bold leading-[1.5] text-[#0B2C5F]">
-                    <Link href={item.href} className="hover:text-[#1D4ED8]">
+                <div>
+                    <Badge lang={lang} />
+
+                    <h2 className="font-bold text-xl mt-2 text-[#0B2C5F] group-hover:text-blue-600 transition">
                         {item.title}
+                    </h2>
+
+                    <p className="text-gray-500 mt-2 line-clamp-2">
+                        {item.description}
+                    </p>
+
+                    <Link href={item.href} className="underline mt-3 inline-block font-medium">
+                        {lang === "kh" ? "ទាញយក" : "Download"}
                     </Link>
-                </h2>
-                <p className="mt-3 line-clamp-2 text-[14px] leading-7 text-[#64748B]">
-                    {item.description}
-                </p>
-                <Link
-                    href={item.href}
-                    className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
-                >
-                    {lang === "kh" ? "ទាញយក" : "Download"}
-                </Link>
-                <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date}</span>
+
+                    <div className="text-sm mt-3 flex gap-2 items-center text-gray-500">
+                        <CalendarDays size={14} />
+                        {item.date}
+                    </div>
                 </div>
             </div>
-        </article>
+        </div>
     );
 }
 
-function GridCard({ item, lang }: { item: FeaturedItem; lang: UiLang }) {
+function GridCard({ item, lang }: any) {
     return (
-        <article className="overflow-hidden rounded-md border border-[#D9DEE7] bg-white transition hover:shadow-md">
-            <Link href={item.href} className="block">
-                <NewsImage src={item.image} alt={item.title} className="h-[240px] w-full" />
-            </Link>
+        <div className="group rounded-xl border border-gray-200 bg-white overflow-hidden transition hover:shadow-lg hover:-translate-y-1">
+            <NewsImage src={item.image} alt={item.title} className="h-48 w-full" />
+
             <div className="p-5">
-                <Badge type={item.type} lang={lang} />
-                <h2 className="mt-3 line-clamp-2 text-2xl font-bold leading-snug text-[#0B2C5F]">
-                    <Link href={item.href} className="hover:text-[#1D4ED8]">
-                        {item.title}
-                    </Link>
+                <Badge lang={lang} />
+
+                <h2 className="font-bold mt-3 text-lg text-[#0B2C5F] group-hover:text-blue-600 transition line-clamp-2">
+                    {item.title}
                 </h2>
-                <p className="mt-3 line-clamp-3 text-[15px] leading-7 text-[#64748B]">
+
+                <p className="text-gray-500 mt-2 line-clamp-3">
                     {item.description}
                 </p>
-                <Link
-                    href={item.href}
-                    className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
-                >
+
+                <Link href={item.href} className="underline mt-3 inline-block font-medium">
                     {lang === "kh" ? "ទាញយក" : "Download"}
                 </Link>
-                <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date}</span>
+
+                <div className="text-sm mt-3 flex gap-2 items-center text-gray-500">
+                    <CalendarDays size={14} />
+                    {item.date}
                 </div>
             </div>
-        </article>
+        </div>
     );
 }
 
-export default function SemesterViewMorePage() {
-    const { language, fontClass } = useLanguage();
+export default function SemesterPage() {
+    const { language } = useLanguage();
     const uiLang = (language as UiLang) ?? "en";
 
     const [view, setView] = useState<ViewMode>("list");
@@ -196,8 +158,13 @@ export default function SemesterViewMorePage() {
         async function fetchData() {
             try {
                 setLoading(true);
-                const res = await fetch("https://api-gpsf.datacolabx.com/api/v1/posts/category/17");
-                if (!res.ok) throw new Error("Failed to fetch");
+
+                const res = await fetch("/api/resources-page/semester");
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text);
+                }
 
                 const json = await res.json();
 
@@ -208,19 +175,21 @@ export default function SemesterViewMorePage() {
                         type: "PUBLICATION",
                         title: pickText(post.title, uiLang),
                         description: pickText(post.description, uiLang),
-                        image: post.documentThumbnails?.[uiLang === "kh" ? "km" : "en"] || post.documentThumbnails?.en || post.documentThumbnails?.km || null,
+                        image:
+                            post.documentThumbnails?.[uiLang === "kh" ? "km" : "en"] ||
+                            post.documentThumbnails?.en ||
+                            null,
                         date: post.publishedAt
-                            ? new Intl.DateTimeFormat(uiLang === "kh" ? "km-KH" : "en-GB", {
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                            }).format(new Date(post.publishedAt))
+                            ? new Date(post.publishedAt).toLocaleDateString()
                             : "",
-                        href: post.documents?.[uiLang === "kh" ? "km" : "en"]?.url || post.documents?.en?.url || "#",
+                        href:
+                            post.documents?.[uiLang === "kh" ? "km" : "en"]?.url ||
+                            "#",
                     }));
 
                 setItems(mapped);
             } catch (err: any) {
+                console.error(err);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -228,47 +197,35 @@ export default function SemesterViewMorePage() {
         }
 
         fetchData();
-    }, [uiLang]); // Refetch or remap when language changes
+    }, [uiLang]);
 
     return (
-        <main className={`min-h-screen ${fontClass || ""}`}>
-            <section className="mx-auto max-w-7xl px-4 py-10">
-                <Header view={view} setView={setView} lang={uiLang} />
+        <main className="max-w-7xl mx-auto px-4 py-12">
+            <Header view={view} setView={setView} lang={uiLang} />
 
-                {loading && (
-                    <p className="text-center py-10">
-                        {uiLang === "kh" ? "កំពុងផ្ទុក..." : "Loading..."}
-                    </p>
-                )}
-                
-                {error && (
-                    <p className="text-red-500 text-center py-10">{error}</p>
-                )}
+            {loading && <p className="text-center py-10">Loading...</p>}
 
-                {!loading && !error && items.length === 0 && (
-                    <p className="text-center py-10 text-slate-500">
-                        {uiLang === "kh" ? "មិនមានទិន្នន័យ" : "No reports found."}
-                    </p>
-                )}
+            {error && (
+                <p className="text-center text-red-500 py-10">{error}</p>
+            )}
 
-                {!loading && !error && (
-                    <>
-                        {view === "list" ? (
-                            <div className="flex flex-col">
-                                {items.map((item) => (
-                                    <ListCard key={item.id} item={item} lang={uiLang} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                                {items.map((item) => (
-                                    <GridCard key={item.id} item={item} lang={uiLang} />
-                                ))}
-                            </div>
-                        )}
-                    </>
-                )}
-            </section>
+            {!loading && !error && (
+                <>
+                    {view === "list" ? (
+                        <div className="border-t border-gray-200">
+                            {items.map((item) => (
+                                <ListCard key={item.id} item={item} lang={uiLang} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {items.map((item) => (
+                                <GridCard key={item.id} item={item} lang={uiLang} />
+                            ))}
+                        </div>
+                    )}
+                </>
+            )}
         </main>
     );
 }
