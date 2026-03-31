@@ -63,9 +63,7 @@ export default function HeroBanner() {
                     },
                 });
 
-                if (!res.ok) {
-                    throw new Error("Failed to fetch home post");
-                }
+                if (!res.ok) throw new Error("Failed to fetch");
 
                 const json = await res.json();
                 const newData = json?.data ?? null;
@@ -78,15 +76,10 @@ export default function HeroBanner() {
                 }
             } catch (err: any) {
                 if (err?.name !== "AbortError") {
-                    console.error("HeroBanner fetch error:", err);
-                    if (!ignore && !data) {
-                        setData(null);
-                    }
+                    console.error("HeroBanner error:", err);
                 }
             } finally {
-                if (!ignore) {
-                    setLoading(false);
-                }
+                if (!ignore) setLoading(false);
             }
         };
 
@@ -101,9 +94,10 @@ export default function HeroBanner() {
     const langKey: "en" | "km" = language === "kh" ? "km" : "en";
 
     const hero = data?.hero;
-    const title = hero?.title?.[langKey] || hero?.title?.en || hero?.title?.km || "";
+
     const subtitle =
         hero?.subtitle?.[langKey] || hero?.subtitle?.en || hero?.subtitle?.km || "";
+
     const description =
         hero?.description?.[langKey] ||
         hero?.description?.en ||
@@ -113,7 +107,9 @@ export default function HeroBanner() {
     const bgImage = hero?.backgroundImages?.[0] || PLACEHOLDER_IMAGE_URL;
 
     const cta = hero?.ctas?.[0];
-    const ctaLabel = cta?.label?.[langKey] || cta?.label?.en || cta?.label?.km || "";
+    const ctaLabel =
+        cta?.label?.[langKey] || cta?.label?.en || cta?.label?.km || "";
+
     const ctaHref = cta?.href?.trim() ? cta.href : "#";
     const isExternal = ctaHref.startsWith("http");
 
@@ -123,41 +119,27 @@ export default function HeroBanner() {
             : data?.bannerStats?.itemsEn ?? [];
 
     return (
-        <div className="relative min-h-screen flex flex-col overflow-hidden bg-gray-100">
+        <div className="relative flex flex-col overflow-hidden bg-gray-100">
+
             {/* Background */}
             <div
                 className="absolute inset-0 bg-cover bg-bottom bg-no-repeat"
-                style={{ backgroundImage: `url(${bgImage || PLACEHOLDER_IMAGE_URL})` }}
+                style={{ backgroundImage: `url(${bgImage})` }}
             >
                 <div className="absolute inset-0 bg-white/30" />
             </div>
 
-            {/* Loading overlay */}
-            {loading && !data && (
-                <div className="absolute inset-0 z-30 flex items-center justify-center" />
-            )}
-
             {/* Content */}
             <div
-                className={`relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-56 max-w-5xl w-full mx-auto ${langKey === "km" ? "khmer-font" : ""
-                    }`}
+                className={`relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-32 max-w-5xl w-full mx-auto ${
+                    langKey === "km" ? "khmer-font" : ""
+                }`}
             >
                 {subtitle && (
-                    <p className="text-lg md:text-5xl font-medium text-blue-600 mb-8 mt-14 whitespace-pre-line">
+                    <p className="text-lg md:text-5xl font-medium text-blue-600 mb-4 mt-10 whitespace-pre-line">
                         {subtitle}
                     </p>
                 )}
-
-                {/* {!title && loading && !data ? (
-                    <div className="w-full max-w-3xl">
-                    </div>
-                ) : (
-                    title && (
-                        <h1 className="text-3xl md:text-6xl font-bold text-white mb-8 whitespace-pre-line leading-tight">
-                            {title}
-                        </h1>
-                    )
-                )} */}
 
                 {description && (
                     <p className="text-base md:text-2xl max-w-4xl text-blue-600 mb-10 whitespace-pre-line">
@@ -165,93 +147,92 @@ export default function HeroBanner() {
                     </p>
                 )}
 
-                {!!ctaLabel &&
-                    !loading &&
-                    (isExternal ? (
+                {!!ctaLabel && !loading && (
+                    isExternal ? (
                         <a
                             href={ctaHref}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-block bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
+                            className="inline-block mt-10 bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
                         >
                             {ctaLabel}
                         </a>
                     ) : (
                         <Link
                             href={ctaHref}
-                            className="inline-block bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
+                            className="inline-block absolute top-74 mt-4 bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
                         >
                             {ctaLabel}
                         </Link>
-                    ))}
-            </div>
-
-            {/* Stats */}
-            <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-4">
-    <div className="max-w-6xl mx-auto">
-        <div className="h-[2px] bg-white/80" />
-
-        <div className="py-5">
-            <div className="grid grid-cols-3 text-center text-white">
-                {(loading && !data ? Array.from({ length: 3 }) : statsItems.slice(0, 3)).map(
-                    (it: any, idx) => {
-                        // Loading skeleton
-                        if (loading && !data) {
-                            return (
-                                <div key={idx} className="px-2">
-                                    <div className="h-10 md:h-12 w-20 mx-auto rounded bg-white/20 animate-pulse" />
-                                    <div className="mt-3 h-4 w-24 mx-auto rounded bg-white/20 animate-pulse" />
-                                </div>
-                            );
-                        }
-
-                        // Get raw value + label
-                        const rawValue =
-                            it?.value?.[langKey] ||
-                            it?.value?.en ||
-                            it?.value?.km ||
-                            "";
-
-                        const label =
-                            it?.label?.[langKey] ||
-                            it?.label?.en ||
-                            it?.label?.km ||
-                            "";
-
-                        const formatNumber = (val: any) => {
-                            if (!val) return "";
-
-                            // Extract number part (e.g. "1000+" → "1000")
-                            const match = String(val).match(/\d+/);
-                            if (!match) return val;
-
-                            const number = Number(match[0]);
-                            const formatted = number.toLocaleString(
-                                langKey === "km" ? "km-KH" : "en-US"
-                            );
-
-                            // Keep suffix like "+" or "K"
-                            const suffix = String(val).replace(match[0], "");
-
-                            return formatted + suffix;
-                        };
-
-                        return (
-                            <div key={idx} className="px-2">
-                                <div className="text-2xl md:text-4xl font-bold">
-                                    {formatNumber(rawValue)}
-                                </div>
-                                <div className="mt-2 text-xs md:text-sm uppercase tracking-wider">
-                                    {label}
-                                </div>
-                            </div>
-                        );
-                    }
+                    )
                 )}
             </div>
-        </div>
-    </div>
-</div>
+
+            {/* Stats (NO absolute → no overlap) */}
+            <div className="relative z-20 px-4 pb-6 mt-6">
+                <div className="max-w-6xl mx-auto">
+
+                    <div className="h-[2px] bg-white/80" />
+
+                    <div className="py-5">
+                        <div className="grid grid-cols-3 text-center text-blue-600">
+                            {(loading && !data
+                                ? Array.from({ length: 3 })
+                                : statsItems.slice(0, 3)
+                            ).map((it: any, idx) => {
+
+                                if (loading && !data) {
+                                    return (
+                                        <div key={idx} className="px-2">
+                                            <div className="h-10 w-20 mx-auto bg-white/20 animate-pulse rounded" />
+                                            <div className="mt-3 h-4 w-24 mx-auto bg-white/20 animate-pulse rounded" />
+                                        </div>
+                                    );
+                                }
+
+                                const rawValue =
+                                    it?.value?.[langKey] ||
+                                    it?.value?.en ||
+                                    it?.value?.km ||
+                                    "";
+
+                                const label =
+                                    it?.label?.[langKey] ||
+                                    it?.label?.en ||
+                                    it?.label?.km ||
+                                    "";
+
+                                const formatNumber = (val: any) => {
+                                    if (!val) return "";
+
+                                    const match = String(val).match(/\d+/);
+                                    if (!match) return val;
+
+                                    const number = Number(match[0]);
+                                    const formatted = number.toLocaleString(
+                                        langKey === "km" ? "km-KH" : "en-US"
+                                    );
+
+                                    const suffix = String(val).replace(match[0], "");
+                                    return formatted + suffix;
+                                };
+
+                                return (
+                                    <div key={idx} className="px-2">
+                                        <div className="text-2xl md:text-4xl font-bold">
+                                            {formatNumber(rawValue)}
+                                        </div>
+                                        <div className="mt-2 text-xs md:text-sm uppercase tracking-wider">
+                                            {label}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     );
 }
