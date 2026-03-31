@@ -123,7 +123,7 @@ const FALLBACK_NAV_ITEMS: Record<Lang, NavItem[]> = {
             label: "ព័ត៌មាន និងបច្ចុប្បន្នភាព",
             href: "/new-update",
             children: [
-                { label: "ព័ត៌មានលេចធ្លោ", href: "/feature" },
+                { label: "ព័ត៌មានលេចធ្លោ", href: "/new-update/feature" },
                 {
                     label: "មេឌៀ",
                     children: [
