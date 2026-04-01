@@ -33,7 +33,7 @@ export default function Dashboard() {
         <section className="bg-white py-8 md:py-12">
             <div className="mx-auto max-w-7xl px-4 sm:px-4 lg:px-4">
                 <div className="border border-slate-200 rounded-2xl bg-white p-3 sm:p-4 md:p-5 lg:p-6 shadow-md">
-                    <div className="relative w-full h-[220px] sm:h-[320px] md:h-[420px] lg:h-[720px] rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
+                    <div className="relative w-full h-[220px] sm:h-[320px] md:h-[420px] lg:h-[620px] rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
                         {image ? (
                             <Image
                                 src={image}
