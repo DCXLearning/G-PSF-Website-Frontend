@@ -2,8 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { CalendarDays, LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -12,12 +11,34 @@ type UiLang = "en" | "kh";
 
 type FeaturedItem = {
     id: number;
-    type: "PUBLICATION";
     title: string;
     description: string;
     image?: string | null;
     date: string;
     href: string;
+    languages: ResourceLanguage[];
+};
+
+type ResourceLanguage = {
+    label: string;
+    href: string;
+};
+
+type HeaderProps = {
+    view: ViewMode;
+    setView: (view: ViewMode) => void;
+    lang: UiLang;
+};
+
+type CardProps = {
+    item: FeaturedItem;
+    lang: UiLang;
+};
+
+type DocumentPreviewProps = {
+    src?: string | null;
+    alt: string;
+    className?: string;
 };
 
 function pickText(value: any, lang: UiLang): string {
@@ -25,48 +46,123 @@ function pickText(value: any, lang: UiLang): string {
     return (lang === "kh" ? value?.km : value?.en) || value?.en || value?.km || "";
 }
 
-function NewsImage({ src, alt, className = "" }: any) {
+function normalizeFileUrl(value?: string | null): string {
+    const url = typeof value === "string" ? value.trim() : "";
+
+    if (url.startsWith("/https://") || url.startsWith("/http://")) {
+        return url.slice(1);
+    }
+
+    return url;
+}
+
+function buildDownloadHref(value?: string | null): string {
+    const fileUrl = normalizeFileUrl(value);
+
+    if (!fileUrl) {
+        return "";
+    }
+
+    return `/api/download?url=${encodeURIComponent(fileUrl)}`;
+}
+
+function formatDate(value?: string | null, lang: UiLang = "en"): string {
+    const raw = typeof value === "string" ? value.trim() : "";
+
+    if (!raw) {
+        return "";
+    }
+
+    const date = new Date(raw);
+
+    if (Number.isNaN(date.getTime())) {
+        return raw;
+    }
+
+    return new Intl.DateTimeFormat(lang === "kh" ? "km-KH" : "en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+    }).format(date);
+}
+
+function DocumentPreview({ src, alt, className = "" }: DocumentPreviewProps) {
     const [error, setError] = useState(false);
     const isValid = !!src && !error;
 
     return (
-        <div className={`relative overflow-hidden bg-[#ECECEC] ${className}`}>
-            {isValid ? (
-                <Image
-                    src={src}
-                    alt={alt}
-                    fill
-                    className="object-cover"
-                    onError={() => setError(true)}
-                />
+        <div className={`w-full ${className}`}>
+            <div className="relative w-full aspect-[3/4] overflow-hidden bg-white">
+                {isValid ? (
+                    <Image
+                        src={src}
+                        alt={alt}
+                        fill
+                        className="object-cover"
+                        onError={() => setError(true)}
+                    />
+                ) : (
+                    <div className="flex h-full w-full items-center justify-center px-6 text-center">
+                        <p className="text-xs leading-snug text-slate-500">
+                            Document cover is not available
+                        </p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function TypeBadge({ lang }: { lang: UiLang }) {
+    return (
+        <span className="inline-block rounded bg-[#3f51b5] px-3 py-0.5 text-[10px] font-bold uppercase text-white">
+            {lang === "kh" ? "របាយការណ៍ឆមាស" : "Semester Report"}
+        </span>
+    );
+}
+
+function LanguageLinks({
+    languages,
+    lang,
+}: {
+    languages: ResourceLanguage[];
+    lang: UiLang;
+}) {
+    return (
+        <div className="mt-6 flex flex-wrap items-baseline gap-4 text-xs font-bold">
+            <span className="text-slate-400">{lang === "kh" ? "ភាសា:" : "Language:"}</span>
+            {languages.length > 0 ? (
+                languages.map((languageItem) => (
+                    <a
+                        key={languageItem.label}
+                        href={languageItem.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-900 underline hover:text-blue-800"
+                    >
+                        {languageItem.label}
+                    </a>
+                ))
             ) : (
-                <div className="flex h-full w-full items-center justify-center bg-[#ECECEC]">
-                    <p className="text-xs text-gray-500">No Image</p>
-                </div>
+                <span className="text-slate-400">{lang === "kh" ? "គ្មានឯកសារ" : "No file"}</span>
             )}
         </div>
     );
 }
 
-function Badge({ lang }: { lang: UiLang }) {
+function Header({ view, setView, lang }: HeaderProps) {
     return (
-        <span className="inline-flex rounded bg-[#3F51D7] px-2 py-1 text-xs font-bold text-white">
-            {lang === "kh" ? "ការបោះពុម្ពផ្សាយ" : "Publication"}
-        </span>
-    );
-}
+        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <h1 className="text-3xl font-bold text-[#0B2C5F] md:text-4xl">
+                    {lang === "kh" ? "របាយការណ៍ឆមាស" : "Semester Reports"}
+                </h1>
+            </div>
 
-function Header({ view, setView, lang }: any) {
-    return (
-        <div className="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h1 className="text-3xl md:text-4xl font-bold text-[#0B2C5F]">
-                {lang === "kh" ? "របាយការណ៍ឆមាស" : "Semester Reports"}
-            </h1>
-
-            <div className="flex gap-2 border border-gray-300 p-1 rounded-md bg-white shadow-sm">
+            <div className="flex gap-2 rounded-xl border border-gray-300 bg-white p-1 shadow-sm">
                 <button
                     onClick={() => setView("list")}
-                    className={`px-3 py-1 rounded ${
+                    className={`rounded-lg px-3 py-2 ${
                         view === "list" ? "bg-[#23395D] text-white" : "text-gray-600"
                     }`}
                 >
@@ -74,7 +170,7 @@ function Header({ view, setView, lang }: any) {
                 </button>
                 <button
                     onClick={() => setView("grid")}
-                    className={`px-3 py-1 rounded ${
+                    className={`rounded-lg px-3 py-2 ${
                         view === "grid" ? "bg-[#23395D] text-white" : "text-gray-600"
                     }`}
                 >
@@ -85,63 +181,63 @@ function Header({ view, setView, lang }: any) {
     );
 }
 
-function ListCard({ item, lang }: any) {
+function ListCard({ item, lang }: CardProps) {
     return (
-        <div className="group border-b border-gray-200 py-6 transition hover:bg-gray-50">
-            <div className="grid md:grid-cols-[140px_1fr] gap-4">
-                <NewsImage src={item.image} alt={item.title} className="h-36 rounded-md" />
-
-                <div>
-                    <Badge lang={lang} />
-
-                    <h2 className="font-bold text-xl mt-2 text-[#0B2C5F] group-hover:text-blue-600 transition">
-                        {item.title}
-                    </h2>
-
-                    <p className="text-gray-500 mt-2 line-clamp-2">
-                        {item.description}
-                    </p>
-
-                    <Link href={item.href} className="underline mt-3 inline-block font-medium">
-                        {lang === "kh" ? "ទាញយក" : "Download"}
-                    </Link>
-
-                    <div className="text-sm mt-3 flex gap-2 items-center text-gray-500">
-                        <CalendarDays size={14} />
-                        {item.date}
-                    </div>
-                </div>
+        <article className="flex flex-col gap-8 py-10 md:flex-row">
+            <div className="w-full flex-shrink-0 md:w-44">
+                <DocumentPreview
+                    src={item.image}
+                    alt={item.title}
+                    className="overflow-hidden border border-gray-100 bg-white shadow-xl ring-1 ring-black/5"
+                />
             </div>
-        </div>
-    );
-}
 
-function GridCard({ item, lang }: any) {
-    return (
-        <div className="group rounded-xl border border-gray-200 bg-white overflow-hidden transition hover:shadow-lg hover:-translate-y-1">
-            <NewsImage src={item.image} alt={item.title} className="h-48 w-full" />
+            <div className="flex-1">
+                <TypeBadge lang={lang} />
 
-            <div className="p-5">
-                <Badge lang={lang} />
-
-                <h2 className="font-bold mt-3 text-lg text-[#0B2C5F] group-hover:text-blue-600 transition line-clamp-2">
+                <h2 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900">
                     {item.title}
                 </h2>
 
-                <p className="text-gray-500 mt-2 line-clamp-3">
-                    {item.description}
+                <p className="mt-1 text-sm font-bold text-slate-800">
+                    {item.date || (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
                 </p>
 
-                <Link href={item.href} className="underline mt-3 inline-block font-medium">
-                    {lang === "kh" ? "ទាញយក" : "Download"}
-                </Link>
+                <p className="mt-4 text-[15px] leading-relaxed text-slate-600 line-clamp-3">
+                    {item.description || (lang === "kh" ? "គ្មានការពិពណ៌នា" : "No description")}
+                </p>
 
-                <div className="text-sm mt-3 flex gap-2 items-center text-gray-500">
-                    <CalendarDays size={14} />
-                    {item.date}
-                </div>
+                <LanguageLinks languages={item.languages} lang={lang} />
             </div>
-        </div>
+        </article>
+    );
+}
+
+function GridCard({ item, lang }: CardProps) {
+    return (
+        <article className="group flex h-full flex-col overflow-hidden bg-[#e9ecef]">
+            <div className="border-b border-slate-200 bg-white">
+                <DocumentPreview src={item.image} alt={item.title} />
+            </div>
+
+            <div className="flex flex-1 flex-col px-5 py-5">
+                <TypeBadge lang={lang} />
+
+                <div className="mt-3 text-[11px] font-semibold text-[#1a2b4b]">
+                    {item.date || (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
+                </div>
+
+                <h2 className="mt-1 text-base font-extrabold leading-snug text-[#1a2b4b] transition  line-clamp-2">
+                    {item.title}
+                </h2>
+
+                <p className="mt-2 flex-1 text-[11px] leading-relaxed text-slate-700 line-clamp-3">
+                    {item.description || (lang === "kh" ? "គ្មានការពិពណ៌នា" : "No description")}
+                </p>
+
+                <LanguageLinks languages={item.languages} lang={lang} />
+            </div>
+        </article>
     );
 }
 
@@ -172,19 +268,32 @@ export default function SemesterPage() {
                     .filter((post: any) => post.isPublished)
                     .map((post: any) => ({
                         id: post.id,
-                        type: "PUBLICATION",
                         title: pickText(post.title, uiLang),
                         description: pickText(post.description, uiLang),
                         image:
                             post.documentThumbnails?.[uiLang === "kh" ? "km" : "en"] ||
                             post.documentThumbnails?.en ||
                             null,
-                        date: post.publishedAt
-                            ? new Date(post.publishedAt).toLocaleDateString()
-                            : "",
+                        date: formatDate(post.publishedAt, uiLang),
                         href:
-                            post.documents?.[uiLang === "kh" ? "km" : "en"]?.url ||
+                            buildDownloadHref(post.documents?.[uiLang === "kh" ? "km" : "en"]?.url) ||
+                            buildDownloadHref(post.documents?.en?.url) ||
+                            buildDownloadHref(post.documents?.km?.url) ||
                             "#",
+                        languages: [
+                            buildDownloadHref(post.documents?.en?.url)
+                                ? {
+                                      label: "English",
+                                      href: buildDownloadHref(post.documents?.en?.url),
+                                  }
+                                : null,
+                            buildDownloadHref(post.documents?.km?.url)
+                                ? {
+                                      label: "Khmer",
+                                      href: buildDownloadHref(post.documents?.km?.url),
+                                  }
+                                : null,
+                        ].filter(Boolean),
                     }));
 
                 setItems(mapped);
@@ -200,32 +309,39 @@ export default function SemesterPage() {
     }, [uiLang]);
 
     return (
-        <main className="max-w-7xl mx-auto px-4 py-12">
-            <Header view={view} setView={setView} lang={uiLang} />
+        <main className="bg-[#f5f7fb]">
+            <div className="mx-auto max-w-7xl px-4 py-12">
+                <Header view={view} setView={setView} lang={uiLang} />
 
-            {loading && <p className="text-center py-10">Loading...</p>}
+                {loading && <p className="py-10 text-center">Loading...</p>}
 
-            {error && (
-                <p className="text-center text-red-500 py-10">{error}</p>
-            )}
+                {error && (
+                    <p className="py-10 text-center text-red-500">{error}</p>
+                )}
 
-            {!loading && !error && (
-                <>
-                    {view === "list" ? (
-                        <div className="border-t border-gray-200">
-                            {items.map((item) => (
-                                <ListCard key={item.id} item={item} lang={uiLang} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {items.map((item) => (
-                                <GridCard key={item.id} item={item} lang={uiLang} />
-                            ))}
-                        </div>
-                    )}
-                </>
-            )}
+                {!loading && !error && (
+                    <>
+                        {view === "list" ? (
+                            <div>
+                                {items.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className={item.id !== items[items.length - 1]?.id ? "mb-10 border-b border-gray-300" : ""}
+                                    >
+                                        <ListCard item={item} lang={uiLang} />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {items.map((item) => (
+                                    <GridCard key={item.id} item={item} lang={uiLang} />
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
         </main>
     );
 }
