@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import Pagination from "@/components/Pagination";
 
 type ApiLang = "en" | "km";
+type DateRangeId =
+    | "2021-2026"
+    | "2015-2020"
+    | "2009-2014"
+    | "2003-2008"
+    | "before-2003";
 
 interface Resource {
     id: number;
@@ -11,6 +18,7 @@ interface Resource {
     type: string;
     title: string;
     date: string;
+    publishedDate: string;
     org?: string;
     author?: string;
     description: string;
@@ -31,6 +39,11 @@ type CategoryItem = {
 
 type CategoryOption = {
     id: number;
+    label: string;
+};
+
+type DateRangeOption = {
+    id: DateRangeId;
     label: string;
 };
 
@@ -64,6 +77,14 @@ type ResourceSectionResponse = {
 
 const RESOURCE_LIBRARY_SECTION_TYPES = "post_list,announcement";
 const RESOURCE_PLACEHOLDER_IMAGE = "https://placehold.co/400x530/white/black?text=G-PSF+Cover";
+const RESOURCE_ITEMS_PER_PAGE = 6;
+const DATE_FILTER_OPTIONS: DateRangeOption[] = [
+    { id: "2021-2026", label: "2021-2026" },
+    { id: "2015-2020", label: "2015-2020" },
+    { id: "2009-2014", label: "2009-2014" },
+    { id: "2003-2008", label: "2003-2008" },
+    { id: "before-2003", label: "before 2003" },
+];
 
 type ApiDocumentFile = {
     url?: string;
@@ -164,6 +185,68 @@ function formatDate(value?: string | null): string {
     }).format(date);
 }
 
+function getDateYear(value?: string | null): number | null {
+    const raw = getText(value);
+
+    if (!raw) {
+        return null;
+    }
+
+    const yearText = raw.match(/^(\d{4})/)?.[1];
+
+    if (yearText) {
+        return Number(yearText);
+    }
+
+    const date = new Date(raw);
+
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    return date.getFullYear();
+}
+
+function pickPublishedDate(post: ApiResourcePost): string {
+    // Prefer the published date, but keep created date as a fallback
+    // so older items without publishedAt can still be shown and filtered.
+    return getText(post.publishedAt) || getText(post.createdAt);
+}
+
+function matchesDateRange(year: number, rangeId: DateRangeId): boolean {
+    switch (rangeId) {
+        case "2021-2026":
+            return year >= 2021 && year <= 2026;
+        case "2015-2020":
+            return year >= 2015 && year <= 2020;
+        case "2009-2014":
+            return year >= 2009 && year <= 2014;
+        case "2003-2008":
+            return year >= 2003 && year <= 2008;
+        case "before-2003":
+            return year < 2003;
+        default:
+            return false;
+    }
+}
+
+function matchesSelectedDateRanges(
+    publishedDate: string,
+    selectedDateRangeIds: DateRangeId[]
+): boolean {
+    if (selectedDateRangeIds.length === 0) {
+        return true;
+    }
+
+    const year = getDateYear(publishedDate);
+
+    if (year === null) {
+        return false;
+    }
+
+    return selectedDateRangeIds.some((rangeId) => matchesDateRange(year, rangeId));
+}
+
 function pickImage(post: ApiResourcePost, apiLang: ApiLang): string {
     if (apiLang === "km") {
         return (
@@ -246,12 +329,15 @@ function mapResourcePosts(response: ResourcePostResponse, apiLang: ApiLang): Res
             continue;
         }
 
+        const publishedDate = pickPublishedDate(post);
+
         resources.push({
             id: post.id ?? index + 1,
             categoryId: post.category?.id,
             type: pickText(post.category?.name, apiLang) || "Document",
             title,
-            date: formatDate(post.publishedAt) || formatDate(post.createdAt),
+            date: formatDate(publishedDate),
+            publishedDate,
             org: pickText(post.category?.name, apiLang),
             author: getText(post.author?.displayName),
             description: pickText(post.description ?? undefined, apiLang),
@@ -318,6 +404,42 @@ const FilterSection = ({ title, items }: { title: string; items: string[] }) => 
         </div>
     </div>
 );
+
+function DateFilterSection({
+    title,
+    items,
+    selectedDateRangeIds,
+    onToggle,
+}: {
+    title: string;
+    items: DateRangeOption[];
+    selectedDateRangeIds: DateRangeId[];
+    onToggle: (dateRangeId: DateRangeId) => void;
+}) {
+    return (
+        <div className="mb-10">
+            <h3 className="text-xl font-bold mb-4 border-b-2 border-orange-500 w-fit pb-1 text-slate-800 tracking-tight">
+                {title}
+            </h3>
+
+            <div className="space-y-3">
+                {items.map((item) => (
+                    <label key={item.id} className="flex items-start gap-3 cursor-pointer group">
+                        <input
+                            type="checkbox"
+                            checked={selectedDateRangeIds.includes(item.id)}
+                            onChange={() => onToggle(item.id)}
+                            className="mt-1 w-5 h-5 border-gray-300 rounded text-blue-800 focus:ring-blue-500"
+                        />
+                        <span className="text-[15px] text-slate-700 leading-snug group-hover:text-blue-700 transition-colors">
+                            {item.label}
+                        </span>
+                    </label>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 function CategoryFilterSection({
     title,
@@ -389,12 +511,6 @@ const ResourceItem = ({ item }: { item: Resource }) => {
 
                 <p className="text-sm font-bold text-slate-800 mt-1">{item.date}</p>
 
-                {(item.org || item.author) && (
-                    <div className="mt-2 text-sm text-slate-600 font-medium">
-                        {item.org ? <p>{item.org}</p> : null}
-                        {item.author ? <p>{item.author}</p> : null}
-                    </div>
-                )}
 
                 <p className="mt-4 text-slate-600 khmer-font text-[15px] leading-relaxed line-clamp-3">
                     {item.description}
@@ -426,6 +542,8 @@ export default function ResourceLibraryPage({
     const [isLoadingPageId, setIsLoadingPageId] = useState(true);
     const [categories, setCategories] = useState<CategoryOption[]>([]);
     const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+    const [selectedDateRangeIds, setSelectedDateRangeIds] = useState<DateRangeId[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
     const [isLoadingCategories, setIsLoadingCategories] = useState(false);
     const [hasLoadedCategories, setHasLoadedCategories] = useState(false);
     const [resources, setResources] = useState<Resource[]>([]);
@@ -433,6 +551,22 @@ export default function ResourceLibraryPage({
 
     const normalizedQuery = query.trim().toLowerCase();
     const isSearching = normalizedQuery.length > 0;
+    const visibleResources = useMemo(() => {
+        return resources.filter((resource) =>
+            matchesSelectedDateRanges(resource.publishedDate, selectedDateRangeIds)
+        );
+    }, [resources, selectedDateRangeIds]);
+    const totalPages = Math.ceil(visibleResources.length / RESOURCE_ITEMS_PER_PAGE);
+    const paginatedResources = useMemo(() => {
+        const startIndex = (currentPage - 1) * RESOURCE_ITEMS_PER_PAGE;
+        const endIndex = startIndex + RESOURCE_ITEMS_PER_PAGE;
+
+        return visibleResources.slice(startIndex, endIndex);
+    }, [currentPage, visibleResources]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [normalizedQuery, resources, selectedCategoryIds, selectedDateRangeIds]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -676,6 +810,24 @@ export default function ResourceLibraryPage({
         });
     }
 
+    function toggleDateRange(dateRangeId: DateRangeId) {
+        setSelectedDateRangeIds((currentIds) => {
+            if (currentIds.includes(dateRangeId)) {
+                return currentIds.filter((id) => id !== dateRangeId);
+            }
+
+            return [...currentIds, dateRangeId];
+        });
+    }
+
+    function changePage(page: number) {
+        if (page < 1 || page > totalPages) {
+            return;
+        }
+
+        setCurrentPage(page);
+    }
+
     return (
         <div className="bg-[#f2f4f7]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -686,10 +838,21 @@ export default function ResourceLibraryPage({
                                 <div className="py-10 text-slate-500 text-lg">
                                     Loading documents...
                                 </div>
-                            ) : resources.length > 0 ? (
-                                resources.map((resource) => (
-                                    <ResourceItem key={resource.id} item={resource} />
-                                ))
+                            ) : visibleResources.length > 0 ? (
+                                <>
+                                    {paginatedResources.map((resource) => (
+                                        <ResourceItem key={resource.id} item={resource} />
+                                    ))}
+
+                                    {totalPages > 1 ? (
+                                        <Pagination
+                                            currentPage={currentPage}
+                                            totalItems={visibleResources.length}
+                                            itemsPerPage={RESOURCE_ITEMS_PER_PAGE}
+                                            onPageChange={changePage}
+                                        />
+                                    ) : null}
+                                </>
                             ) : (
                                 <div className="py-10 text-slate-500 text-lg">
                                     No documents found
@@ -718,15 +881,11 @@ export default function ResourceLibraryPage({
                                     onToggle={toggleCategory}
                                 />
 
-                                <FilterSection
+                                <DateFilterSection
                                     title="Dates"
-                                    items={[
-                                        "2021-2026",
-                                        "2015-2020",
-                                        "2009-2014",
-                                        "2003-2008",
-                                        "before 2003",
-                                    ]}
+                                    items={DATE_FILTER_OPTIONS}
+                                    selectedDateRangeIds={selectedDateRangeIds}
+                                    onToggle={toggleDateRange}
                                 />
 
                                 <FilterSection

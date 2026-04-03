@@ -373,7 +373,7 @@ export function SemesterReportsSection({
                         {showSeeMoreButton && posts.length > 0 ? (
                             <div className="flex justify-center mt-2">
                                 <Link
-                                    href="/resources/semester-reports/semester-view-more"
+                                    href="/publication/semester-reports/semester-view-more"
                                     className={`inline-flex items-center gap-2 bg-[#f79a3b] hover:bg-[#ee8f2d] text-white font-semibold uppercase tracking-wide px-4 py-3 rounded-full shadow-md transition ${uiLang === "kh" ? "khmer-font" : ""
                                         }`}
                                 >

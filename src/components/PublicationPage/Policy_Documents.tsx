@@ -294,7 +294,7 @@ export default function PolicyDocuments() {
 
                             <div className="mt-8 -mb-[30px] flex justify-center">
                                 <Link
-                                    href="/resources/detail"
+                                    href="/publication/detail"
                                     className="inline-flex items-center justify-center rounded-full bg-[#fb923c] px-6 py-2 text-sm font-semibold uppercase tracking-wider text-white shadow-md hover:opacity-90"
                                 >
                                     View More <span className="ml-2 text-lg">›</span>
