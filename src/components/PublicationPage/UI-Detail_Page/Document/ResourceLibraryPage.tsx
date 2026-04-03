@@ -22,10 +22,15 @@ interface Resource {
     org?: string;
     author?: string;
     description: string;
-    languages: string[];
+    languages: ResourceLanguage[];
     image: string;
     href: string;
 }
+
+type ResourceLanguage = {
+    label: string;
+    href: string;
+};
 
 type I18nText = {
     en?: string;
@@ -271,27 +276,65 @@ function pickImage(post: ApiResourcePost, apiLang: ApiLang): string {
     );
 }
 
-function buildLanguages(post: ApiResourcePost): string[] {
-    const languages: string[] = [];
+function normalizeFileUrl(value?: string | null): string {
+    const url = getText(value);
 
-    if (
-        getText(post.title?.en) ||
-        getText(post.description?.en) ||
-        getText(post.documents?.en?.url)
-    ) {
-        languages.push("English");
+    if (url.startsWith("/https://") || url.startsWith("/http://")) {
+        return url.slice(1);
     }
 
-    if (
-        getText(post.title?.km) ||
-        getText(post.description?.km) ||
-        getText(post.documents?.km?.url)
-    ) {
-        languages.push("Khmer");
+    return url;
+}
+
+function getFileExtension(fileUrl: string): string {
+    try {
+        const url = new URL(fileUrl);
+        const fileName = url.pathname.split("/").pop() ?? "";
+        const extension = fileName.split(".").pop() ?? "";
+
+        if (!extension || extension === fileName) {
+            return "";
+        }
+
+        return `.${extension}`;
+    } catch {
+        return "";
+    }
+}
+
+function buildFileName(title: string, languageLabel: string, fileUrl: string): string {
+    const extension = getFileExtension(fileUrl);
+    const safeTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    const safeLanguageLabel = languageLabel.toLowerCase();
+    const baseName = [safeTitle, safeLanguageLabel].filter(Boolean).join("-");
+
+    return `${baseName || "document"}${extension}`;
+}
+
+function buildDownloadHref(fileUrl: string, fileName: string): string {
+    return `/api/download?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(fileName)}`;
+}
+
+function buildLanguages(post: ApiResourcePost, title: string): ResourceLanguage[] {
+    const languages: ResourceLanguage[] = [];
+    const englishUrl = normalizeFileUrl(post.documents?.en?.url);
+    const khmerUrl = normalizeFileUrl(post.documents?.km?.url);
+
+    if (englishUrl) {
+        languages.push({
+            label: "English",
+            href: buildDownloadHref(englishUrl, buildFileName(title, "english", englishUrl)),
+        });
     }
 
-    if (languages.length === 0) {
-        languages.push("English");
+    if (khmerUrl) {
+        languages.push({
+            label: "Khmer",
+            href: buildDownloadHref(khmerUrl, buildFileName(title, "khmer", khmerUrl)),
+        });
     }
 
     return languages;
@@ -341,7 +384,7 @@ function mapResourcePosts(response: ResourcePostResponse, apiLang: ApiLang): Res
             org: pickText(post.category?.name, apiLang),
             author: getText(post.author?.displayName),
             description: pickText(post.description ?? undefined, apiLang),
-            languages: buildLanguages(post),
+            languages: buildLanguages(post, title),
             image: pickImage(post, apiLang),
             href: buildPostHref(post),
         });
@@ -522,11 +565,22 @@ const ResourceItem = ({ item }: { item: Resource }) => {
 
                 <div className="mt-6 flex gap-4 text-xs font-bold items-baseline flex-wrap">
                     <span className="text-slate-400">Language:</span>
-                    {item.languages.map((lang) => (
-                        <span key={lang} className="text-slate-900">
-                            {lang}
-                        </span>
-                    ))}
+                    {item.languages.length > 0 ? (
+                        item.languages.map((languageItem) => (
+                            <a
+                                key={languageItem.label}
+                                href={languageItem.href}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-900 underline hover:text-blue-800"
+                            >
+                                {languageItem.label}
+                            </a>
+                        ))
+                    ) : (
+                        <span className="text-slate-400">No file</span>
+                    )}
                 </div>
             </div>
         </div>
