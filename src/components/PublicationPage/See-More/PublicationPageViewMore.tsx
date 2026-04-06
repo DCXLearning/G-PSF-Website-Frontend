@@ -32,6 +32,10 @@ type ApiPost = {
         en?: { url?: string | null; thumbnailUrl?: string | null } | null;
         km?: { url?: string | null; thumbnailUrl?: string | null } | null;
     } | null;
+    category?: {
+        id?: number;
+        name?: I18n | null;
+    } | null;
 };
 
 type ApiBlock = {
@@ -52,6 +56,16 @@ type ApiBlock = {
 type CategoryPostsResponse = {
     data?: ApiPost[];
     items?: ApiPost[];
+};
+
+type ApiCategory = {
+    id?: number;
+    name?: I18n | null;
+};
+
+type CategoriesResponse = {
+    data?: ApiCategory[];
+    items?: ApiCategory[];
 };
 
 type ApiPage = {
@@ -208,6 +222,18 @@ function getPostsFromResponse(response: CategoryPostsResponse) {
     return [];
 }
 
+function getCategoriesFromResponse(response: CategoriesResponse) {
+    if (Array.isArray(response.data)) {
+        return response.data;
+    }
+
+    if (Array.isArray(response.items)) {
+        return response.items;
+    }
+
+    return [];
+}
+
 function sortPosts(posts: ApiPost[], sortValue?: string | null) {
     const normalizedSort = (sortValue || "latest").trim().toLowerCase();
     const sortedPosts = [...posts].sort((leftPost, rightPost) => {
@@ -273,6 +299,35 @@ export default function PublicationPageViewMore({
                 const pageData = json.data?.page;
 
                 let posts = Array.isArray(primaryBlock?.posts) ? primaryBlock.posts : [];
+                const categoryLabelById = new Map<number, string>();
+
+                if (pageSlug) {
+                    const categoriesResponse = await fetch(
+                        `/api/categories?pageSlug=${encodeURIComponent(pageSlug)}`,
+                        {
+                            cache: "no-store",
+                        }
+                    );
+
+                    if (categoriesResponse.ok) {
+                        const categoriesJson =
+                            (await categoriesResponse.json()) as CategoriesResponse;
+                        const categories = getCategoriesFromResponse(categoriesJson);
+
+                        for (let index = 0; index < categories.length; index += 1) {
+                            const category = categories[index];
+                            const categoryId = category.id;
+                            const categoryLabel = pickText(category.name, uiLang);
+
+                            if (
+                                typeof categoryId === "number" &&
+                                categoryLabel
+                            ) {
+                                categoryLabelById.set(categoryId, categoryLabel);
+                            }
+                        }
+                    }
+                }
 
                 if (categoryIds.length > 0) {
                     const categoryResponses = await Promise.all(
@@ -326,6 +381,9 @@ export default function PublicationPageViewMore({
                     "";
 
                 const nextBadgeText =
+                    categoryIds
+                        .map((categoryId) => categoryLabelById.get(categoryId) || "")
+                        .find((categoryLabel) => categoryLabel.length > 0) ||
                     pickText(primaryBlock?.title, uiLang) ||
                     nextTitle;
 
@@ -336,6 +394,12 @@ export default function PublicationPageViewMore({
 
                 const orderedItems = orderedPosts.map((post) => ({
                     id: post.id,
+                    badgeText:
+                        pickText(post.category?.name, uiLang) ||
+                        (typeof post.category?.id === "number"
+                            ? categoryLabelById.get(post.category.id) || ""
+                            : "") ||
+                        nextBadgeText,
                     title: pickText(post.title, uiLang),
                     description: pickText(post.description, uiLang),
                     image: pickThumbnail(post, uiLang),

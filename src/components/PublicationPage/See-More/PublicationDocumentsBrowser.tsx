@@ -15,6 +15,7 @@ export type PublicationDocumentLanguage = {
 
 export type PublicationDocumentItem = {
     id: number;
+    badgeText?: string;
     title: string;
     description: string;
     image?: string | null;
@@ -152,6 +153,8 @@ function Header({ view, setView, title, description }: HeaderProps) {
 }
 
 function ListCard({ item, lang, badgeText }: CardProps) {
+    const resolvedBadgeText = item.badgeText || badgeText;
+
     return (
         <article className="flex flex-col gap-8 py-10 md:flex-row">
             <div className="w-full flex-shrink-0 md:w-44">
@@ -163,7 +166,7 @@ function ListCard({ item, lang, badgeText }: CardProps) {
             </div>
 
             <div className="flex-1">
-                <TypeBadge text={badgeText} />
+                <TypeBadge text={resolvedBadgeText} />
 
                 <h2 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900">
                     {item.title}
@@ -184,6 +187,8 @@ function ListCard({ item, lang, badgeText }: CardProps) {
 }
 
 function GridCard({ item, lang, badgeText }: CardProps) {
+    const resolvedBadgeText = item.badgeText || badgeText;
+
     return (
         <article className="group flex h-full flex-col overflow-hidden bg-[#e9ecef]">
             <div className="border-b border-slate-200 bg-white">
@@ -191,7 +196,7 @@ function GridCard({ item, lang, badgeText }: CardProps) {
             </div>
 
             <div className="flex flex-1 flex-col px-5 py-5">
-                <TypeBadge text={badgeText} />
+                <TypeBadge text={resolvedBadgeText} />
 
                 <div className="mt-3 text-[11px] font-semibold text-[#1a2b4b]">
                     {item.date || (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
