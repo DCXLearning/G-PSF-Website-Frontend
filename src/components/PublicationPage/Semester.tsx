@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -151,11 +150,6 @@ function formatPublishedDate(dateString: string | null | undefined, lang: UiLang
     } catch {
         return "";
     }
-}
-
-function getDetailHref(post: ApiPost): string {
-    if (post.slug) return `/plenary/${post.slug}`;
-    return `/plenary/${post.id}`;
 }
 
 export default function SemesterReportsAnnualUi() {
@@ -314,8 +308,6 @@ export function SemesterReportsSection({
                                 const docUrl = pickDocUrl(post, apiLanguage);
                                 const thumb = pickThumbUrl(post, apiLanguage);
                                 const publishedDate = formatPublishedDate(post.publishedAt, uiLang);
-                                const detailHref = getDetailHref(post);
-
                                 return (
                                     <SwiperSlide key={post.id} className="!h-auto">
                                         <div className="h-full">
@@ -373,7 +365,7 @@ export function SemesterReportsSection({
                         {showSeeMoreButton && posts.length > 0 ? (
                             <div className="flex justify-center mt-2">
                                 <Link
-                                    href="/publication/semester-reports/semester-view-more"
+                                    href="/publication/semester-reports/semester-view-more/17"
                                     className={`inline-flex items-center gap-2 bg-[#f79a3b] hover:bg-[#ee8f2d] text-white font-semibold uppercase tracking-wide px-4 py-3 rounded-full shadow-md transition ${uiLang === "kh" ? "khmer-font" : ""
                                         }`}
                                 >

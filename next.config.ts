@@ -1,9 +1,24 @@
 import type { NextConfig } from "next";
 
+const isDevelopment = process.env.NODE_ENV !== "production";
+
 const nextConfig: NextConfig = {
   output: "standalone",
   images: {
+    dangerouslyAllowLocalIP: isDevelopment,
     remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3001",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "3001",
+        pathname: "/uploads/**",
+      },
       {
         protocol: "https",
         hostname: "pub-5ad5f7c802a843e0a594defda4055bb9.r2.dev",
@@ -14,11 +29,10 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
-      // ✅ add this
       {
         protocol: "https",
         hostname: "api-gpsf.datacolabx.com",
-        pathname: "/uploads/**",
+        pathname: "/**",
       },
     ],
   },

@@ -60,12 +60,12 @@ const FALLBACK_NAV_ITEMS: Record<Lang, NavItem[]> = {
         },
         {
             label: "Publication",
-            href: "/resources",
+            href: "/publication",
             children: [
-                { label: "Laws & Regulations", href: "/new-update/plenary/laws-regulations" },
-                { label: "Decisions", href: "/new-update/plenary/decisions" },
-                { label: "Reform Tracker", href: "/new-update/plenary/reform-tracker" },
-                { label: "Reports", href: "/new-update/working-groups/reports" },
+                { label: "Laws & Regulations", href: "/publication/laws-regulations" },
+                { label: "Decisions", href: "/publication/decisions" },
+                { label: "Reform Tracker", href: "/publication/reform-tracker" },
+                { label: "Reports", href: "/publication/reports" },
             ],
         },
         {
@@ -111,12 +111,12 @@ const FALLBACK_NAV_ITEMS: Record<Lang, NavItem[]> = {
         },
         {
             label: "បណ្ដុំឯកសារ",
-            href: "/resources",
+            href: "/publication",
             children: [
-                { label: "ច្បាប់ និងបទប្បញ្ញត្តិ", href: "/new-update/plenary/laws-regulations" },
-                { label: "សេចក្តីសម្រេច", href: "/new-update/plenary/decisions" },
-                { label: "តាមដានកំណែទម្រង់", href: "/new-update/plenary/reform-tracker" },
-                { label: "របាយការណ៍", href: "/new-update/working-groups/reports" },
+                { label: "ច្បាប់ និងបទប្បញ្ញត្តិ", href: "/publication/laws-regulations" },
+                { label: "សេចក្តីសម្រេច", href: "/publication/decisions" },
+                { label: "តាមដានកំណែទម្រង់", href: "/publication/reform-tracker" },
+                { label: "របាយការណ៍", href: "/publication/reports" },
             ],
         },
         {

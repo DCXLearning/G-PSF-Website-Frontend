@@ -4,10 +4,10 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 
 export type Lang = "en" | "kh";
 
@@ -17,65 +17,54 @@ interface LanguageContextType {
   setLanguage: (lang: Lang) => void;
   apiLang: "en" | "km";
   fontClass: string;
-  mounted: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LANGUAGE_STORAGE_KEY = "app-language";
+const LANGUAGE_COOKIE_KEY = "app-language";
 
-const isLang = (value: string | null): value is Lang => {
-  return value === "en" || value === "kh";
-};
+export const LanguageProvider = ({
+  children,
+  initialLanguage = "kh",
+}: {
+  children: ReactNode;
+  initialLanguage?: Lang;
+}) => {
+  const router = useRouter();
+  const [language, setLanguageState] = useState<Lang>(initialLanguage);
 
-export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  // Default = Khmer
-  const [language, setLanguageState] = useState<Lang>("kh");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem("app-language");
-
-    if (isLang(savedLanguage)) {
-      setLanguageState(savedLanguage);
-    } else {
-      // first open website -> Khmer by default
-      setLanguageState("kh");
-      localStorage.setItem("app-language", "kh");
-    }
-
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    localStorage.setItem("app-language", language);
-    document.documentElement.lang = language === "kh" ? "km" : "en";
+  const syncLanguageStorage = (lang: Lang) => {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+    document.documentElement.lang = lang === "kh" ? "km" : "en";
     document.documentElement.dir = "ltr";
+    document.cookie = `${LANGUAGE_COOKIE_KEY}=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+  };
 
-    document.title =
-      language === "kh"
-        ? "វេទិការាជរដ្ឋាភិបាល-វិស័យឯកជន"
-        : "G-PSF Website";
-  }, [language, mounted]);
+  useEffect(() => {
+    syncLanguageStorage(language);
+  }, [language]);
 
   const setLanguage = (lang: Lang) => {
+    if (lang === language) return;
+    syncLanguageStorage(lang);
     setLanguageState(lang);
+    router.refresh();
   };
 
   const toggleLanguage = () => {
-    setLanguageState((prev) => (prev === "en" ? "kh" : "en"));
+    const nextLanguage = language === "en" ? "kh" : "en";
+    syncLanguageStorage(nextLanguage);
+    setLanguageState(nextLanguage);
+    router.refresh();
   };
 
-  const value = useMemo<LanguageContextType>(() => {
-    return {
-      language,
-      toggleLanguage,
-      setLanguage,
-      apiLang: language === "kh" ? "km" : "en",
-      fontClass: language === "kh" ? "font-khmer" : "font-sans",
-      mounted,
-    };
-  }, [language, mounted]);
+  const value: LanguageContextType = {
+    language,
+    toggleLanguage,
+    setLanguage,
+    apiLang: language === "kh" ? "km" : "en",
+    fontClass: language === "kh" ? "font-khmer" : "font-sans",
+  };
 
   return (
     <LanguageContext.Provider value={value}>

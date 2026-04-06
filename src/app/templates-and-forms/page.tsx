@@ -1,6 +1,6 @@
-import { ToolsSectionContent } from "@/components/PublicationPage/ToolsSection";
+import PublicationCategoryViewMore from "@/components/PublicationPage/See-More/PublicationCategoryViewMore";
+import { TOOLS_VIEW_MORE_CONFIG } from "@/components/PublicationPage/See-More/publicationViewMoreConfig";
 
 export default function TemplatesAndFormsPage() {
-    // Reuse the same tools section UI and show all posts here.
-    return <ToolsSectionContent showAllPosts showSeeMoreButton={false} />;
+    return <PublicationCategoryViewMore {...TOOLS_VIEW_MORE_CONFIG} />;
 }

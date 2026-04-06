@@ -200,7 +200,6 @@ export function ToolsSectionContent({
                         uiLang === "kh" ? "khmer-font" : ""
                     }`}
                 >
-                    {/* Show the Khmer heading when the site language is Khmer. */}
                     {uiLang === "kh" ? "បែបបទ" : "Tools"}
                 </h1>
 
@@ -261,8 +260,9 @@ export function ToolsSectionContent({
                                         href={docUrl || "#"}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className={`hover:underline flex items-center gap-2 px-8 py-2 border border-orange-400 text-slate-800 text-sm font-bold rounded-lg hover:bg-orange-50 transition-colors ${!docUrl ? "pointer-events-none opacity-50" : ""
-                                            }`}
+                                        className={`hover:underline flex items-center gap-2 px-8 py-2 border border-orange-400 text-slate-800 text-sm font-bold rounded-lg hover:bg-orange-50 transition-colors ${
+                                            !docUrl ? "pointer-events-none opacity-50" : ""
+                                        }`}
                                     >
                                         {uiLang === "kh" ? "ទាញយក" : "Download"}{" "}
                                         <span className="text-xs">›</span>

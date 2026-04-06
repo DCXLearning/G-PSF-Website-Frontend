@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 import { Geist, Geist_Mono, Kantumruy_Pro } from "next/font/google";
@@ -28,15 +29,22 @@ export const metadata: Metadata = {
   description: "Government-Private Sector Forum",
 };
 
-export default function RootLayout({
+async function getInitialLanguage() {
+  const cookieStore = await cookies();
+  return cookieStore.get("app-language")?.value === "en" ? "en" : "kh";
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const initialLanguage = await getInitialLanguage();
+
   return (
-    <html lang="en">
+    <html lang={initialLanguage === "kh" ? "km" : "en"}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${kantumruyPro.variable} font-sans antialiased`}
       >
-        <LanguageProvider>
+        <LanguageProvider initialLanguage={initialLanguage}>
           <Header />
           <main>{children}</main>
           <Footer />
