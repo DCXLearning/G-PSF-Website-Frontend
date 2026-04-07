@@ -1,91 +1,300 @@
-// app/featured/page.tsx
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, LayoutGrid, List } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
+type UiLang = "en" | "kh";
 type ViewMode = "list" | "grid";
 
-type FeaturedItem = {
+type I18n = {
+    en?: string;
+    km?: string;
+    kh?: string;
+};
+
+type ContentBlock = {
+    type?: string;
+    attrs?: {
+        src?: string;
+    };
+};
+
+type MediaPost = {
     id: number;
-    type: "VIDEO" | "PUBLICATION";
+    slug?: string | null;
+    title?: I18n | string | null;
+    description?: I18n | string | null;
+    publishedAt?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    status?: string | null;
+    isPublished?: boolean;
+    coverImage?: string | null;
+    images?: Array<{ url?: string | null }> | null;
+    content?: {
+        en?: {
+            content?: ContentBlock[];
+        } | null;
+        km?: {
+            content?: ContentBlock[];
+        } | null;
+        kh?: {
+            content?: ContentBlock[];
+        } | null;
+    } | null;
+};
+
+type ApiBlock = {
+    type?: string;
+    orderIndex?: number;
+    enabled?: boolean;
+    title?: I18n | string | null;
+    description?: I18n | string | null;
+    settings?: {
+        categoryIds?: number[];
+    } | null;
+    posts?: MediaPost[];
+};
+
+type PageSectionResponse = {
+    data?: {
+        page?: {
+            title?: I18n | string | null;
+            description?: I18n | string | null;
+        } | I18n | null;
+        title?: I18n | string | null;
+        description?: I18n | string | null;
+        blocks?: ApiBlock[];
+    };
+};
+
+type CategoryPostsResponse = {
+    data?: MediaPost[];
+    items?: MediaPost[];
+};
+
+type PhotoItem = {
+    id: number;
     title: string;
     description: string;
-    image?: string | null;
     date: string;
+    image: string;
+    extraImageCount: number;
     href: string;
 };
 
-const featuredData: FeaturedItem[] = [
-    {
-        id: 1,
-        type: "VIDEO",
-        title:
-            "ខួបលើកទី១៨ នៃ ការពិភាក្សាវេទិកាវិស័យឯកជន ដើម្បីលើកកម្ពស់សេដ្ឋកិច្ចជាតិ និងជំរុញវិនិយោគ (Video inside)",
-        description:
-            "សេចក្តីសង្ខេបពីកិច្ចពិភាក្សាសំខាន់ៗ និងការចូលរួមរបស់ថ្នាក់ដឹកនាំ ក្នុងបរិបទលើកកម្ពស់សេដ្ឋកិច្ចជាតិ និងវិនិយោគ (Video inside)",
-        image: "/images/featured/featured-1.jpg",
-        date: "03 March 2026",
-        href: "/featured/1",
-    },
-    {
-        id: 2,
-        type: "PUBLICATION",
-        title:
-            "អភិបាលកិច្ច និង ធនធានមនុស្សក្នុងវិស័យឯកជន ដើម្បីជំរុញកំណើនសេដ្ឋកិច្ច និងសមត្ថភាពប្រកួតប្រជែង",
-        description:
-            "បោះពុម្ពផ្សាយថ្មី ស្តីពីការអភិវឌ្ឍវិស័យឯកជន ការពង្រឹងធនធានមនុស្ស និងការបង្កើនប្រសិទ្ធភាពស្ថាប័ន",
-        image: null,
-        date: "03 March 2026",
-        href: "/featured/2",
-    },
-    {
-        id: 3,
-        type: "PUBLICATION",
-        title: "G-PSF Brings Significant Progress to Drive Cambodia’s Economic Growth",
-        description:
-            "Members of the leadership team take a group photo at the G-PSF forum on November 27. CDC",
-        image: "/images/featured/featured-3.jpg",
-        date: "03 March 2026",
-        href: "/featured/3",
-    },
-    {
-        id: 4,
-        type: "PUBLICATION",
-        title: "Strengthening Public-Private Partnership for Sustainable Development",
-        description:
-            "A closer look at collaboration, reforms, and practical actions supporting inclusive economic growth.",
-        image: "",
-        date: "02 March 2026",
-        href: "/featured/4",
-    },
-];
+const PAGE_SLUG = "photos";
+
+function getText(value?: string | null): string {
+    const text = value?.trim() ?? "";
+    return text === "." ? "" : text;
+}
+
+function pickText(value: I18n | string | null | undefined, language: UiLang): string {
+    if (!value) {
+        return "";
+    }
+
+    if (typeof value === "string") {
+        return getText(value);
+    }
+
+    if (language === "kh") {
+        return getText(value.km) || getText(value.kh) || getText(value.en);
+    }
+
+    return getText(value.en) || getText(value.km) || getText(value.kh);
+}
+
+function formatDate(value?: string | null, language: UiLang = "en"): string {
+    const raw = getText(value);
+
+    if (!raw) {
+        return "";
+    }
+
+    const date = new Date(raw);
+
+    if (Number.isNaN(date.getTime())) {
+        return raw;
+    }
+
+    return new Intl.DateTimeFormat(language === "kh" ? "km-KH" : "en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+    }).format(date);
+}
+
+function normalizeImageUrl(value?: string | null): string {
+    const url = getText(value);
+
+    if (url.startsWith("/https://") || url.startsWith("/http://")) {
+        return url.slice(1);
+    }
+
+    return url;
+}
+
+function getLocalizedBlocks(post: MediaPost, language: UiLang): ContentBlock[] {
+    if (language === "kh") {
+        return (
+            post.content?.km?.content ||
+            post.content?.kh?.content ||
+            post.content?.en?.content ||
+            []
+        );
+    }
+
+    return (
+        post.content?.en?.content ||
+        post.content?.km?.content ||
+        post.content?.kh?.content ||
+        []
+    );
+}
+
+function getPhotoSources(post: MediaPost, language: UiLang): string[] {
+    const urls: string[] = [];
+
+    const coverImage = normalizeImageUrl(post.coverImage);
+    if (coverImage) {
+        urls.push(coverImage);
+    }
+
+    const fallbackImage = normalizeImageUrl(post.images?.[0]?.url);
+    if (fallbackImage) {
+        urls.push(fallbackImage);
+    }
+
+    const blocks = getLocalizedBlocks(post, language);
+    for (let index = 0; index < blocks.length; index += 1) {
+        const block = blocks[index];
+        const imageUrl =
+            block.type === "image" ? normalizeImageUrl(block.attrs?.src) : "";
+
+        if (imageUrl) {
+            urls.push(imageUrl);
+        }
+    }
+
+    return [...new Set(urls)];
+}
+
+function isPublishedPost(post: MediaPost): boolean {
+    if (post.isPublished === false) {
+        return false;
+    }
+
+    if (typeof post.status === "string") {
+        return post.status.toLowerCase() === "published";
+    }
+
+    return true;
+}
+
+function getPrimaryPostListBlock(blocks: ApiBlock[]): ApiBlock | null {
+    const sortedBlocks = [...blocks].sort(
+        (leftBlock, rightBlock) => (leftBlock.orderIndex ?? 0) - (rightBlock.orderIndex ?? 0)
+    );
+
+    return (
+        sortedBlocks.find(
+            (block) =>
+                block.enabled !== false &&
+                block.type === "post_list" &&
+                Array.isArray(block.posts) &&
+                block.posts.length > 0
+        ) ||
+        sortedBlocks.find(
+            (block) => block.enabled !== false && block.type === "post_list"
+        ) ||
+        null
+    );
+}
+
+function getPostsFromResponse(response: CategoryPostsResponse): MediaPost[] {
+    if (Array.isArray(response.data)) {
+        return response.data;
+    }
+
+    if (Array.isArray(response.items)) {
+        return response.items;
+    }
+
+    return [];
+}
+
+function buildDetailHref(post: MediaPost): string {
+    if (post.slug?.trim()) {
+        return `/new-update/view-detail?slug=${encodeURIComponent(post.slug.trim())}&id=${encodeURIComponent(String(post.id))}`;
+    }
+
+    return `/new-update/view-detail?id=${encodeURIComponent(String(post.id))}`;
+}
+
+function mapPhotoItems(posts: MediaPost[], language: UiLang): PhotoItem[] {
+    return [...posts]
+        .sort((leftPost, rightPost) => {
+            const leftDate = new Date(
+                leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || ""
+            ).getTime();
+            const rightDate = new Date(
+                rightPost.publishedAt || rightPost.createdAt || rightPost.updatedAt || ""
+            ).getTime();
+
+            return rightDate - leftDate;
+        })
+        .filter((post) => isPublishedPost(post))
+        .map((post) => {
+            const photoSources = getPhotoSources(post, language);
+
+            return {
+                id: post.id,
+                title:
+                    pickText(post.title, language) ||
+                    (language === "kh" ? "គ្មានចំណងជើង" : "Untitled"),
+                description: pickText(post.description, language),
+                date: formatDate(
+                    post.publishedAt || post.createdAt || post.updatedAt,
+                    language
+                ),
+                image: photoSources[0] || "",
+                extraImageCount: Math.max(photoSources.length - 1, 0),
+                href: buildDetailHref(post),
+            };
+        })
+        .filter((post) => post.image);
+}
 
 function NewsImage({
     src,
     alt,
+    language,
+    extraImageCount = 0,
     className = "",
 }: {
-    src?: string | null;
+    src?: string;
     alt: string;
+    language: UiLang;
+    extraImageCount?: number;
     className?: string;
 }) {
-    const [error, setError] = useState(false);
-    const isValid = !!src && !error;
+    const [failed, setFailed] = useState(false);
+    const imageSrc = failed ? "" : src || "";
 
     return (
-        <div
-            className={`relative overflow-hidden bg-[#ECECEC] ${className}`}
-        >
-            {isValid ? (
+        <div className={`relative overflow-hidden bg-[#ECECEC] ${className}`}>
+            {imageSrc ? (
                 <Image
-                    src={src}
+                    src={imageSrc}
                     alt={alt}
                     fill
                     className="object-cover"
-                    onError={() => setError(true)}
+                    onError={() => setFailed(true)}
                 />
             ) : (
                 <div className="flex h-full w-full items-center justify-center bg-[#ECECEC]">
@@ -108,31 +317,45 @@ function NewsImage({
                         </div>
 
                         <p className="mt-6 text-center text-[12px] leading-[18px] text-[#777777]">
-                            document image
-                            <br />
-                            or
-                            <br />
-                            news logo
+                            {language === "kh" ? (
+                                <>
+                                    រូបភាពឯកសារ
+                                    <br />
+                                    ឬ
+                                    <br />
+                                    ស្លាកសញ្ញាព័ត៌មាន
+                                </>
+                            ) : (
+                                <>
+                                    document image
+                                    <br />
+                                    or
+                                    <br />
+                                    news logo
+                                </>
+                            )}
                         </p>
                     </div>
                 </div>
             )}
+
+            {imageSrc && extraImageCount > 0 ? (
+                <div className="absolute right-3 top-3 rounded-md  px-2.5 py-1 text-[13px] font-bold">
+                    +{extraImageCount}
+                </div>
+            ) : null}
         </div>
     );
 }
 
-function Badge({ type }: { type: FeaturedItem["type"] }) {
-    return (
-        <span className="inline-flex rounded-[3px] bg-[#3F51D7] px-2 py-[3px] text-[9px] font-bold uppercase tracking-wide text-white">
-            {type}
-        </span>
-    );
-}
-
 function Header({
+    language,
+    title,
     view,
     setView,
 }: {
+    language: UiLang;
+    title: string;
     view: ViewMode;
     setView: (value: ViewMode) => void;
 }) {
@@ -140,7 +363,7 @@ function Header({
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
                 <h1 className="mt-1 text-[44px] font-extrabold leading-none text-[#0B2C5F]">
-                    Photos
+                    {title}
                 </h1>
                 <div className="mt-4 h-[4px] w-[150px] bg-[#F59E0B]" />
             </div>
@@ -149,45 +372,53 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-semibold transition ${view === "list"
+                    className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-semibold transition ${
+                        view === "list"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                        }`}
+                    }`}
                 >
                     <List className="h-4 w-4" />
-                    List
+                    {language === "kh" ? "បញ្ជី" : "List"}
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-semibold transition ${view === "grid"
+                    className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-semibold transition ${
+                        view === "grid"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                        }`}
+                    }`}
                 >
                     <LayoutGrid className="h-4 w-4" />
-                    Grid
+                    {language === "kh" ? "ក្រឡា" : "Grid"}
                 </button>
             </div>
         </div>
     );
 }
 
-function ListCard({ item }: { item: FeaturedItem }) {
+function ListCard({
+    item,
+    language,
+}: {
+    item: PhotoItem;
+    language: UiLang;
+}) {
     return (
         <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)]">
             <Link href={item.href} className="block">
                 <NewsImage
                     src={item.image}
                     alt={item.title}
+                    language={language}
+                    extraImageCount={item.extraImageCount}
                     className="h-[164px] w-full md:w-[136px]"
                 />
             </Link>
 
             <div className="min-w-0">
-                <Badge type={item.type} />
-
                 <h2 className="mt-3 text-[18px] font-extrabold leading-[1.5] text-[#0B2C5F] md:text-[20px]">
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
@@ -195,39 +426,48 @@ function ListCard({ item }: { item: FeaturedItem }) {
                 </h2>
 
                 <p className="mt-3 line-clamp-2 text-[14px] leading-7 text-[#64748B]">
-                    {item.description}
+                    {item.description ||
+                        (language === "kh"
+                            ? "មិនមានការពិពណ៌នា។"
+                            : "No description available.")}
                 </p>
 
                 <Link
                     href={item.href}
                     className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
                 >
-                    View details
+                    {language === "kh" ? "មើលលម្អិត" : "View details"}
                 </Link>
 
                 <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
                     <CalendarDays className="h-4 w-4" />
-                    <span>{item.date}</span>
+                    <span>{item.date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}</span>
                 </div>
             </div>
         </article>
     );
 }
 
-function GridCard({ item }: { item: FeaturedItem }) {
+function GridCard({
+    item,
+    language,
+}: {
+    item: PhotoItem;
+    language: UiLang;
+}) {
     return (
         <article className="overflow-hidden rounded-md border border-[#D9DEE7] bg-white transition hover:shadow-md">
             <Link href={item.href} className="block">
                 <NewsImage
                     src={item.image}
                     alt={item.title}
+                    language={language}
+                    extraImageCount={item.extraImageCount}
                     className="h-[240px] w-full"
                 />
             </Link>
 
             <div className="p-5">
-                <Badge type={item.type} />
-
                 <h2 className="mt-3 line-clamp-2 text-[20px] font-extrabold leading-snug text-[#0B2C5F]">
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
@@ -235,48 +475,195 @@ function GridCard({ item }: { item: FeaturedItem }) {
                 </h2>
 
                 <p className="mt-3 line-clamp-3 text-[15px] leading-7 text-[#64748B]">
-                    {item.description}
+                    {item.description ||
+                        (language === "kh"
+                            ? "មិនមានការពិពណ៌នា។"
+                            : "No description available.")}
                 </p>
 
                 <Link
                     href={item.href}
                     className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
                 >
-                    View details
+                    {language === "kh" ? "មើលលម្អិត" : "View details"}
                 </Link>
 
                 <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
                     <CalendarDays className="h-4 w-4" />
-                    <span>{item.date}</span>
+                    <span>{item.date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}</span>
                 </div>
             </div>
         </article>
     );
 }
 
-export default function Photos() {
+export default function PhotosPage() {
+    const { language } = useLanguage();
+    const uiLanguage = language as UiLang;
     const [view, setView] = useState<ViewMode>("list");
+    const [title, setTitle] = useState("");
+    const [items, setItems] = useState<PhotoItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const items = useMemo(() => featuredData, []);
+    useEffect(() => {
+        let active = true;
+
+        async function loadPhotosPage() {
+            try {
+                setLoading(true);
+                setError("");
+
+                const response = await fetch(
+                    `/api/pages/section?slug=${encodeURIComponent(PAGE_SLUG)}`,
+                    {
+                        cache: "no-store",
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`API error ${response.status}`);
+                }
+
+                const json = (await response.json()) as PageSectionResponse;
+                const blocks = Array.isArray(json.data?.blocks) ? json.data.blocks : [];
+                const primaryBlock = getPrimaryPostListBlock(blocks);
+                const pageData = json.data?.page;
+                const categoryIds = Array.isArray(primaryBlock?.settings?.categoryIds)
+                    ? primaryBlock.settings.categoryIds.filter(
+                          (categoryId): categoryId is number => typeof categoryId === "number"
+                      )
+                    : [];
+
+                let posts = Array.isArray(primaryBlock?.posts) ? primaryBlock.posts : [];
+
+                if (categoryIds.length > 0) {
+                    const categoryResponses = await Promise.all(
+                        categoryIds.map((categoryId) =>
+                            fetch(`/api/posts/category/${categoryId}`, {
+                                cache: "no-store",
+                            })
+                        )
+                    );
+
+                    const mergedPosts: MediaPost[] = [];
+                    const seenPostIds = new Set<number>();
+
+                    for (let index = 0; index < categoryResponses.length; index += 1) {
+                        const categoryResponse = categoryResponses[index];
+
+                        if (!categoryResponse.ok) {
+                            continue;
+                        }
+
+                        const categoryData =
+                            (await categoryResponse.json()) as CategoryPostsResponse;
+                        const categoryPosts = getPostsFromResponse(categoryData);
+
+                        for (let postIndex = 0; postIndex < categoryPosts.length; postIndex += 1) {
+                            const post = categoryPosts[postIndex];
+
+                            if (seenPostIds.has(post.id)) {
+                                continue;
+                            }
+
+                            seenPostIds.add(post.id);
+                            mergedPosts.push(post);
+                        }
+                    }
+
+                    posts = mergedPosts;
+                }
+
+                const nextTitle =
+                    pickText(
+                        (pageData as { title?: I18n | string | null } | undefined)?.title,
+                        uiLanguage
+                    ) ||
+                    pickText(pageData as I18n | string | null | undefined, uiLanguage) ||
+                    pickText(json.data?.title, uiLanguage) ||
+                    pickText(primaryBlock?.title, uiLanguage) ||
+                    (uiLanguage === "kh" ? "រូបថត" : "Photos");
+
+                const photoItems = mapPhotoItems(posts, uiLanguage);
+
+                if (!active) {
+                    return;
+                }
+
+                setTitle(nextTitle);
+                setItems(photoItems);
+            } catch (loadError) {
+                console.error(loadError);
+
+                if (!active) {
+                    return;
+                }
+
+                setError(
+                    uiLanguage === "kh"
+                        ? "មិនអាចទាញយកទំព័ររូបថតបានទេ។"
+                        : "Failed to load the photos page."
+                );
+            } finally {
+                if (active) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        loadPhotosPage();
+
+        return () => {
+            active = false;
+        };
+    }, [uiLanguage]);
 
     return (
         <main className="min-h-screen">
             <section className="mx-auto max-w-7xl px-4 py-10 sm:px-4 lg:px-4">
-                <Header view={view} setView={setView} />
+                <Header
+                    language={uiLanguage}
+                    title={title || (uiLanguage === "kh" ? "រូបថត" : "Photos")}
+                    view={view}
+                    setView={setView}
+                />
 
-                {view === "list" ? (
-                    <div>
-                        {items.map((item) => (
-                            <ListCard key={item.id} item={item} />
-                        ))}
+                {loading ? (
+                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B]">
+                        {uiLanguage === "kh" ? "កំពុងផ្ទុក..." : "Loading..."}
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                        {items.map((item) => (
-                            <GridCard key={item.id} item={item} />
-                        ))}
+                ) : null}
+
+                {!loading && error ? (
+                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600">
+                        {error}
                     </div>
-                )}
+                ) : null}
+
+                {!loading && !error && items.length === 0 ? (
+                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B]">
+                        {uiLanguage === "kh"
+                            ? "មិនមានអាល់ប៊ុមរូបថតទេ។"
+                            : "No photo albums found."}
+                    </div>
+                ) : null}
+
+                {!loading && !error && items.length > 0 ? (
+                    view === "list" ? (
+                        <div>
+                            {items.map((item) => (
+                                <ListCard key={item.id} item={item} language={uiLanguage} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                            {items.map((item) => (
+                                <GridCard key={item.id} item={item} language={uiLanguage} />
+                            ))}
+                        </div>
+                    )
+                ) : null}
             </section>
         </main>
     );
