@@ -129,7 +129,7 @@ export default function HeroBanner() {
                 <div className="absolute inset-0 bg-black/20" />
             </div>
 
-            {/* Content */}
+            {/* Hero Content */}
             <div
                 className={`relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-36 max-w-5xl w-full mx-auto ${
                     langKey === "km" ? "khmer-font" : ""
@@ -146,32 +146,34 @@ export default function HeroBanner() {
                         {description}
                     </p>
                 )}
+            </div>
 
-                {!!ctaLabel && !loading && (
-                    isExternal ? (
+            {/* CTA Button Above Stats */}
+            {!!ctaLabel && !loading && (
+                <div className="relative z-20 flex justify-center mt-24 mb-12">
+                    {isExternal ? (
                         <a
                             href={ctaHref}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-block mt-10 bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
+                            className="bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
                         >
                             {ctaLabel}
                         </a>
                     ) : (
                         <Link
                             href={ctaHref}
-                            className="inline-block absolute top-74 mt-4 bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
+                            className="bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
                         >
                             {ctaLabel}
                         </Link>
-                    )
-                )}
-            </div>
+                    )}
+                </div>
+            )}
 
-            {/* Stats (NO absolute → no overlap) */}
-            <div className="relative z-20 px-4 pb-6 mt-6">
+            {/* Stats Section */}
+            <div className="relative z-20 px-4 pb-6">
                 <div className="max-w-6xl mx-auto">
-
                     <div className="h-[2px] bg-white/80" />
 
                     <div className="py-5">
@@ -180,7 +182,6 @@ export default function HeroBanner() {
                                 ? Array.from({ length: 3 })
                                 : statsItems.slice(0, 3)
                             ).map((it: any, idx) => {
-
                                 if (loading && !data) {
                                     return (
                                         <div key={idx} className="px-2">
@@ -230,7 +231,6 @@ export default function HeroBanner() {
                             })}
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>

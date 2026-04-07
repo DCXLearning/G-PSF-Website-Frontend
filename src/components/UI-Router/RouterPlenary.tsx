@@ -12,7 +12,7 @@ export default function RouterPlenary() {
             <PlenaryPage />
             <PlenaryStructure />
             {/* <DualGovernanceModel /> */}
-             <OperatingMechanismsBanner />
+            <OperatingMechanismsBanner />
             {/* <PlenaryProcessFlow /> */}
         </div>
     )
