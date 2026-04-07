@@ -51,3 +51,11 @@ body {
 .airbnb-font {
   font-family: "Airbnb Cereal", system-ui, sans-serif;
 }
+
+.stroke-text {
+  -webkit-text-stroke: 1px blue;
+}
+
+.stroke-text-label {
+  -webkit-text-stroke: 0.5px blue;
+}
