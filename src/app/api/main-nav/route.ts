@@ -7,7 +7,8 @@ const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
 
 const ROUTE_OVERRIDES: Record<string, string> = {
     "/home": "/",
-    "/featured": "/feature",
+    "/feature": "/new-update/featured",
+    "/featured": "/new-update/featured",
     "/laws-regulations": "/publication/laws-regulations",
     "/decisions": "/publication/decisions",
     "/reports": "/publication/reports",

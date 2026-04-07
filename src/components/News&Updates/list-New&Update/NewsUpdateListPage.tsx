@@ -252,9 +252,6 @@ export default function NewsUpdateListPage() {
 
                 <div className="flex min-w-0 flex-col justify-between pt-1">
                   <div>
-                    <span className="inline-block rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
-                      {item.type}
-                    </span>
 
                     <Link href={item.detailHref} className="block">
                       <h2 className="mt-3 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline md:text-xl lg:text-[25px]">
@@ -312,9 +309,6 @@ export default function NewsUpdateListPage() {
 
                 <div className="flex h-full grow flex-col justify-between p-5">
                   <div>
-                    <span className="inline-block w-fit rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
-                      {item.type}
-                    </span>
 
                     <Link href={item.detailHref} className="block">
                       <h2 className="mt-3 line-clamp-2 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline">
