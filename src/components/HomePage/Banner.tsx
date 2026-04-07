@@ -126,7 +126,7 @@ export default function HeroBanner() {
                 className="absolute inset-0 bg-cover bg-bottom bg-no-repeat"
                 style={{ backgroundImage: `url(${bgImage})` }}
             >
-                <div className="absolute inset-0 bg-white/30" />
+                <div className="absolute inset-0 bg-black/20" />
             </div>
 
             {/* Content */}
@@ -136,13 +136,13 @@ export default function HeroBanner() {
                 }`}
             >
                 {subtitle && (
-                    <p className="text-lg md:text-5xl stroke-text font-medium text-white mb-4 mt-10 whitespace-pre-line">
+                    <p className="text-lg md:text-5xl font-medium text-white mb-4 mt-10 whitespace-pre-line">
                         {subtitle}
                     </p>
                 )}
 
                 {description && (
-                    <p className="text-base md:text-3xl max-w-4xl stroke-text text-white mb-10 whitespace-pre-line">
+                    <p className="text-base md:text-2xl max-w-4xl text-white mb-10 whitespace-pre-line">
                         {description}
                     </p>
                 )}
@@ -172,10 +172,10 @@ export default function HeroBanner() {
             <div className="relative z-20 px-4 pb-6 mt-6">
                 <div className="max-w-6xl mx-auto">
 
-                    <div className="h-[2px] bg-white/80"/>
+                    <div className="h-[2px] bg-white/80" />
 
                     <div className="py-5">
-                        <div className="grid grid-cols-3 text-center stroke-text text-white">
+                        <div className="grid grid-cols-3 text-center text-white">
                             {(loading && !data
                                 ? Array.from({ length: 3 })
                                 : statsItems.slice(0, 3)
@@ -222,7 +222,7 @@ export default function HeroBanner() {
                                         <div className="text-2xl md:text-4xl font-bold">
                                             {formatNumber(rawValue)}
                                         </div>
-                                        <div className="mt-2 text-xs md:text-lg uppercase text-white stroke-text-label tracking-wider">
+                                        <div className="mt-2 text-xs md:text-sm uppercase tracking-wider">
                                             {label}
                                         </div>
                                     </div>
