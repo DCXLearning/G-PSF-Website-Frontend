@@ -384,11 +384,16 @@ const Header: FC = () => {
                                         <div key={`${item.label}-${index}`} className="relative group shrink-0">
                                             <Link
                                                 href={item.href || "#"}
-                                                className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap pb-1 font-medium text-lg transition-colors ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"
-                                                    } ${language === "kh" ? "khmer-font" : ""}`}
+                                                className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap pb-1 transition-colors ${
+                                                    isActive
+                                                        ? "text-black"
+                                                        : "text-gray-700 hover:text-blue-600"
+                                                } ${language === "kh" ? "khmer-font" : ""}`}
                                             >
-                                                {item.label}
-                                                <ChevronDown className="w-4 h-4" />
+                                                <span className="block text-xl font-medium leading-none">
+                                                    {item.label}
+                                                </span>
+                                                <ChevronDown className="h-4 w-4 shrink-0" />
                                                 <span
                                                     className={`absolute left-0 -bottom-1 h-[3px] bg-orange-500 transition-all duration-300 ${isActive ? "w-full" : "w-0 group-hover:w-full"
                                                         }`}
@@ -462,10 +467,15 @@ const Header: FC = () => {
                                     <Link
                                         key={item.href}
                                         href={item.href || "#"}
-                                        className={`relative shrink-0 whitespace-nowrap pb-1 font-medium text-xl transition-colors ${isActive ? "text-black" : "text-gray-700 hover:text-blue-600"
-                                            } ${language === "kh" ? "khmer-font" : ""}`}
+                                        className={`relative shrink-0 whitespace-nowrap pb-1 transition-colors ${
+                                            isActive
+                                                ? "text-black"
+                                                : "text-gray-700 hover:text-blue-600"
+                                        } ${language === "kh" ? "khmer-font" : ""}`}
                                     >
-                                        {item.label}
+                                        <span className="block text-xl font-medium leading-none">
+                                            {item.label}
+                                        </span>
                                         <span
                                             className={`absolute left-0 -bottom-1 h-[3px] bg-orange-500 transition-all duration-300 ${isActive ? "w-full" : "w-0"
                                                 }`}
