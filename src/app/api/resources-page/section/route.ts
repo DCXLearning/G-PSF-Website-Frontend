@@ -4,8 +4,14 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
+
 export async function GET() {
-    const url = `https://api-gpsf.datacolabx.com/api/v1/pages/resources/section`;
+    const apiBase =
+        process.env.API_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        FALLBACK_API_BASE;
+    const url = `${apiBase}/pages/resources/section`;
 
     try {
         const res = await fetch(url, {

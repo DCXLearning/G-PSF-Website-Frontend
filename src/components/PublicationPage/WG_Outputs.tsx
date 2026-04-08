@@ -15,6 +15,9 @@ type ApiPost = {
     slug?: string | null;
     description?: I18n | null;
     status?: string;
+    publishedAt?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
     coverImage?: string | null;
     document?: string | null;
     documentThumbnail?: string | null;
@@ -102,6 +105,19 @@ function writeCache(block: ApiBlock | null) {
     }
 }
 
+function sortPostsByLatest(posts: ApiPost[]) {
+    return [...posts].sort((leftPost, rightPost) => {
+        const leftDate = new Date(
+            leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || ""
+        ).getTime();
+        const rightDate = new Date(
+            rightPost.publishedAt || rightPost.createdAt || rightPost.updatedAt || ""
+        ).getTime();
+
+        return rightDate - leftDate;
+    });
+}
+
 /** ---------- UI ---------- */
 type WGOutputsSectionProps = {
     showAllPosts?: boolean;
@@ -175,11 +191,14 @@ export function WGOutputsSection({
 
     const posts = useMemo(() => {
         const arr = block?.posts || [];
-        const publishedPosts = arr.filter((p) => (p.status ? p.status === "published" : true));
+        const publishedPosts = arr.filter((p) =>
+            p.status ? p.status === "published" : true
+        );
+        const sortedPosts = sortPostsByLatest(publishedPosts);
 
         // Homepage keeps the hero card + 2 side cards.
         // The dedicated page shows all published WG output posts.
-        return showAllPosts ? publishedPosts : publishedPosts.slice(0, 3);
+        return showAllPosts ? sortedPosts : sortedPosts.slice(0, 3);
     }, [block, showAllPosts]);
 
     const featured = posts[0];
@@ -355,24 +374,6 @@ export function WGOutputsSection({
                                         Download <ChevronRight size={16} />
                                     </button>
                                 )}
-
-                                {featured?.slug ? (
-                                    <Link
-                                        href={`/resources/${featured.slug}`}
-                                        className="text-[#1e2756] cursor-pointer font-bold flex items-center gap-1 hover:underline underline-offset-4"
-                                    >
-                                        WG Profile <ChevronRight size={16} />
-                                    </Link>
-                                ) : featured?.link ? (
-                                    <a
-                                        href={featured.link}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-[#1e2756] cursor-pointer font-bold flex items-center gap-1 hover:underline underline-offset-4"
-                                    >
-                                        WG Profile <ChevronRight size={16} />
-                                    </a>
-                                ) : null}
                             </div>
                         </div>
                     </div>
@@ -391,8 +392,6 @@ export function WGOutputsSection({
                                 headline={pickText(p.title, apiLang, "Article")}
                                 description={pickText(p.description || undefined, apiLang, "")}
                                 downloadUrl={pickDocUrl(p, apiLang)}
-                                slug={p.slug}
-                                link={p.link}
                                 isKh={isKh}
                             />
                         ))}
@@ -431,8 +430,6 @@ function ArticleCard({
     headline,
     description,
     downloadUrl,
-    slug,
-    link,
     isKh,
 }: {
     icon?: string;
@@ -440,8 +437,6 @@ function ArticleCard({
     headline: string;
     description?: string;
     downloadUrl?: string;
-    slug?: string | null;
-    link?: string | null;
     isKh: boolean;
 }) {
     const categoryClass = isKh || containsKhmer(category) ? "khmer-font normal-case" : "uppercase";
@@ -491,24 +486,6 @@ function ArticleCard({
                         Download <ChevronRight size={14} />
                     </span>
                 )}
-
-                {slug ? (
-                    <Link
-                        href={`/resources/${slug}`}
-                        className="text-[#1e2756] cursor-pointer font-bold text-xs flex items-center gap-1 hover:underline"
-                    >
-                        View <ChevronRight size={14} />
-                    </Link>
-                ) : link ? (
-                    <a
-                        href={link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[#1e2756] cursor-pointer font-bold text-xs flex items-center gap-1 hover:underline"
-                    >
-                        View <ChevronRight size={14} />
-                    </a>
-                ) : null}
             </div>
         </div>
     );

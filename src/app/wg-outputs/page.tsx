@@ -1,6 +1,5 @@
-import { WGOutputsSection } from "@/components/PublicationPage/WG_Outputs";
+import WGOutputsViewMore from "@/components/PublicationPage/See-More/WGOutputsViewMore";
 
 export default function WGOutputsPage() {
-    // Reuse the same WG Outputs UI and show all posts on this page.
-    return <WGOutputsSection showAllPosts showSeeMoreButton={false} />;
+    return <WGOutputsViewMore />;
 }

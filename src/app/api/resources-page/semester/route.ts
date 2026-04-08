@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 
+const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
+
 export async function GET() {
   try {
+    const apiBase =
+      process.env.API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      FALLBACK_API_BASE;
     const res = await fetch(
-      "https://api-gpsf.datacolabx.com/api/v1/posts/category/17",
+      `${apiBase}/posts/category/17`,
       {
         cache: "no-store",
       }
@@ -19,7 +25,7 @@ export async function GET() {
     const json = await res.json();
 
     return NextResponse.json(json);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }
