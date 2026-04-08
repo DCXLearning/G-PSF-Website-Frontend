@@ -7,6 +7,7 @@ import { LanguageProvider } from "./context/LanguageContext";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,8 @@ export const metadata: Metadata = {
   description: "Government-Private Sector Forum",
 };
 
+const googleAnalyticsId = process.env.NEXT_PUBLIC_GA_ID;
+
 async function getInitialLanguage() {
   const cookieStore = await cookies();
   return cookieStore.get("app-language")?.value === "en" ? "en" : "kh";
@@ -49,6 +52,7 @@ export default async function RootLayout({
           <main>{children}</main>
           <Footer />
         </LanguageProvider>
+        {googleAnalyticsId ? <GoogleAnalytics gaId={googleAnalyticsId} /> : null}
       </body>
     </html>
   );
