@@ -321,11 +321,27 @@ async function fetchPageSection(slug: string): Promise<PageSectionResponse | nul
     return (await response.json()) as PageSectionResponse;
 }
 
-function VideoBadge({ language }: { language: UiLang }) {
+function VideoMeta({
+    language,
+    date,
+}: {
+    language: UiLang;
+    date: string;
+}) {
     return (
-        <span className="inline-flex rounded-[3px] bg-[#3F51D7] px-2 py-[3px] text-[9px] font-bold uppercase tracking-wide text-white">
-            {language === "kh" ? "វីដេអូ" : "VIDEO"}
-        </span>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-[#64748B]">
+            {/*<span className="inline-flex items-center gap-2 font-semibold text-[#E11D48]">*/}
+            {/*    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E11D48] text-white">*/}
+            {/*        <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />*/}
+            {/*    </span>*/}
+            {/*    {language === "kh" ? "វីដេអូ" : "Video"}*/}
+            {/*</span>*/}
+
+            <span className="inline-flex items-center gap-2">
+                <CalendarDays className="h-4 w-4" />
+                {date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}
+            </span>
+        </div>
     );
 }
 
@@ -344,21 +360,21 @@ function NewsImage({
     const imageSrc = failed ? "" : src || "";
 
     return (
-        <div className={`relative overflow-hidden bg-[#ECECEC] ${className}`}>
+        <div className={`group relative overflow-hidden rounded-[20px] bg-[#ECECEC] ${className}`}>
             {imageSrc ? (
                 <>
                     <Image
                         src={imageSrc}
                         alt={alt}
                         fill
-                        className="object-cover"
+                        className="object-cover transition duration-300 group-hover:scale-[1.03]"
                         onError={() => setFailed(true)}
                     />
-                    <div className="absolute inset-0 bg-black/20" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-[#0B2C5F] shadow-md">
-                            <Play className="ml-1 h-6 w-6 fill-current" />
-                        </div>
+                        {/*<div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FF0033]/90 text-white shadow-lg transition duration-300 group-hover:scale-105">*/}
+                        {/*    <Play className="ml-1 h-7 w-7 fill-current" />*/}
+                        {/*</div>*/}
                     </div>
                 </>
             ) : (
@@ -391,7 +407,7 @@ function NewsImage({
                                     ស្លាកសញ្ញាព័ត៌មាន
                                 </>
                             ) : (
-                                <>
+                <>
                                     video image
                                     <br />
                                     or
@@ -466,26 +482,26 @@ function ListCard({
     language: UiLang;
 }) {
     return (
-        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)]">
+        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[320px_minmax(0,1fr)] md:gap-8">
             <Link href={item.href} className="block">
                 <NewsImage
                     src={item.image}
                     alt={item.title}
                     language={language}
-                    className="h-[164px] w-full md:w-[136px]"
+                    className="aspect-video w-full"
                 />
             </Link>
 
             <div className="min-w-0">
-                {/*<VideoBadge language={language} />*/}
-
-                <h2 className="mt-3 text-[18px] font-extrabold leading-[1.5] text-[#0B2C5F] md:text-[20px]">
+                <h2 className="text-[20px] font-extrabold leading-[1.45] text-[#0B2C5F] md:text-[24px]">
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
                 </h2>
 
-                <p className="mt-3 line-clamp-2 text-[14px] leading-7 text-[#64748B]">
+                <VideoMeta language={language} date={item.date} />
+
+                <p className="mt-4 line-clamp-3 text-[15px] leading-7 text-[#64748B]">
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
@@ -494,15 +510,11 @@ function ListCard({
 
                 <Link
                     href={item.href}
-                    className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
+                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-[#0B2C5F] hover:text-[#1D4ED8]"
                 >
-                    {language === "kh" ? "មើលលម្អិត" : "View details"}
+                    {language === "kh" ? "មើលវីដេអូ" : "Watch video"}
+                    <Play className="h-4 w-4 fill-current" />
                 </Link>
-
-                <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}</span>
-                </div>
             </div>
         </article>
     );
@@ -516,26 +528,26 @@ function GridCard({
     language: UiLang;
 }) {
     return (
-        <article className="overflow-hidden rounded-md border border-[#D9DEE7] bg-white transition hover:shadow-md">
+        <article className="group">
             <Link href={item.href} className="block">
                 <NewsImage
                     src={item.image}
                     alt={item.title}
                     language={language}
-                    className="h-[240px] w-full"
+                    className="aspect-video w-full"
                 />
             </Link>
 
-            <div className="p-5">
-                {/*<VideoBadge language={language} />*/}
-
-                <h2 className="mt-3 line-clamp-2 text-[20px] font-extrabold leading-snug text-[#0B2C5F]">
+            <div className="px-1 pb-2 pt-4">
+                <h2 className="line-clamp-2 text-[17px] font-bold leading-6 text-[#0F172A] transition group-hover:text-[#1D4ED8]">
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
                 </h2>
 
-                <p className="mt-3 line-clamp-3 text-[15px] leading-7 text-[#64748B]">
+                <VideoMeta language={language} date={item.date} />
+
+                <p className="mt-3 line-clamp-2 text-[14px] leading-6 text-[#64748B]">
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
@@ -544,15 +556,11 @@ function GridCard({
 
                 <Link
                     href={item.href}
-                    className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
+                    className="mt-4 inline-flex items-center gap-2 text-[14px] font-bold text-[#0B2C5F] hover:text-[#1D4ED8]"
                 >
-                    {language === "kh" ? "មើលលម្អិត" : "View details"}
+                    {language === "kh" ? "មើលវីដេអូ" : "Watch video"}
+                    <Play className="h-4 w-4 fill-current" />
                 </Link>
-
-                <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}</span>
-                </div>
             </div>
         </article>
     );
@@ -561,7 +569,7 @@ function GridCard({
 export default function VideoPage() {
     const { language } = useLanguage();
     const uiLanguage = language as UiLang;
-    const [view, setView] = useState<ViewMode>("list");
+    const [view, setView] = useState<ViewMode>("grid");
     const [title, setTitle] = useState("");
     const [items, setItems] = useState<VideoItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -686,7 +694,7 @@ export default function VideoPage() {
     }, [uiLanguage]);
 
     return (
-        <main className="min-h-screen">
+        <main className="min-h-screen bg-[#FAFAFA]">
             <section className="mx-auto max-w-7xl px-4 py-10 sm:px-4 lg:px-4">
                 <Header
                     language={uiLanguage}
@@ -723,7 +731,7 @@ export default function VideoPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
                             {items.map((item) => (
                                 <GridCard key={item.id} item={item} language={uiLanguage} />
                             ))}
