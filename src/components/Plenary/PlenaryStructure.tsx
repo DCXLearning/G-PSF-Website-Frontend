@@ -6,13 +6,11 @@ import { useLanguage } from "@/app/context/LanguageContext";
 const content = {
     en: {
         title: "G-PSF Plenary Structure",
-        footer: "The G-PSF serves as a formal public-private dialogue (PPD) mechanism for policy engagement.",
         image: "/image/G-PSF_Issue_Resolution_Framework_EN.png",
         imageAlt: "G-PSF Plenary Structure English",
     },
     kh: {
         title: "រចនាសម្ព័ន្ធកិច្ចប្រជុំពេញអង្គ G-PSF",
-        footer: "G-PSF ជាយន្តការសន្ទនាផ្លូវការរវាងរដ្ឋ និងវិស័យឯកជន (PPD) សម្រាប់ការចូលរួមក្នុងការរៀបចំគោលនយោបាយ។",
         image: "/image/G-PSF_Issue_Resolution_Framework_KH.png",
         imageAlt: "រចនាសម្ព័ន្ធកិច្ចប្រជុំពេញអង្គ G-PSF",
     },
@@ -55,18 +53,6 @@ export default function PlenaryStructure() {
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="mt-6 text-center">
-                    <p
-                        className={`text-sm md:text-base max-w-3xl mx-auto text-gray-600 ${
-                            lang === "kh"
-                                ? "khmer-font leading-relaxed"
-                                : "leading-relaxed"
-                        }`}
-                    >
-                        {t.footer}
-                    </p>
-                </div>
             </div>
         </section>
     );

@@ -192,7 +192,7 @@ function getItemType(post: ApiPost): SearchItemType {
     const categoryId = post.category?.id ?? 0;
     const blockType = cleanText(post.section?.blockType);
 
-    if (pageSlug === "resources" || pageId === 12) {
+    if (pageSlug === "publication" || pageSlug === "resources" || pageId === 12) {
         return "resource";
     }
 

@@ -57,9 +57,9 @@ const Navbar = () => {
                             isOpen={openMenu === "plenary"}
                             onClick={() => toggleMenu("plenary")}
                         >
-                            <DropdownItem href="/resources/detail" label="Laws & Regulations" />
-                            <DropdownItem href="/resources/detail" label="Decisions" />
-                            <DropdownItem href="/resources/detail" label="Reform Tracker" />
+                            <DropdownItem href="/publication/detail" label="Laws & Regulations" />
+                            <DropdownItem href="/publication/detail" label="Decisions" />
+                            <DropdownItem href="/publication/detail" label="Reform Tracker" />
                         </MenuItem>
 
                         <MenuItem
@@ -67,9 +67,9 @@ const Navbar = () => {
                             isOpen={openMenu === "working"}
                             onClick={() => toggleMenu("working")}
                         >
-                            <DropdownItem href="/resources/detail" label="Reports" />
-                            <DropdownItem href="/resources/detail" label="Co-Chairs" />
-                            <DropdownItem href="/resources/detail" label="WG Profiles" />
+                            <DropdownItem href="/publication/detail" label="Reports" />
+                            <DropdownItem href="/publication/detail" label="Co-Chairs" />
+                            <DropdownItem href="/publication/detail" label="WG Profiles" />
                         </MenuItem>
 
                         <MenuItem
@@ -77,9 +77,9 @@ const Navbar = () => {
                             isOpen={openMenu === "media"}
                             onClick={() => toggleMenu("media")}
                         >
-                            <DropdownItem href="/resources/detail" label="Press" />
-                            <DropdownItem href="/resources/detail" label="Photos" />
-                            <DropdownItem href="/resources/detail" label="Video" />
+                            <DropdownItem href="/publication/detail" label="Press" />
+                            <DropdownItem href="/publication/detail" label="Photos" />
+                            <DropdownItem href="/publication/detail" label="Video" />
                         </MenuItem>
                     </div>
 

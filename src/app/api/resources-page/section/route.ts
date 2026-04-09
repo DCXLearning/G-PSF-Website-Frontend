@@ -11,7 +11,7 @@ export async function GET() {
         process.env.API_URL ||
         process.env.NEXT_PUBLIC_API_URL ||
         FALLBACK_API_BASE;
-    const url = `${apiBase}/pages/resources/section`;
+    const url = `${apiBase}/pages/publication/section`;
 
     try {
         const res = await fetch(url, {
