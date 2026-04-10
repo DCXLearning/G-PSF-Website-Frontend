@@ -302,6 +302,20 @@ function buildMetadataDescription(detailData: DetailPageData): string {
   return cleanText(detailData.summary) || `${detailData.category} - ${detailData.title}`
 }
 
+function buildShareImageUrl(heroImage: string): string {
+  const rawImageUrl = cleanText(heroImage)
+
+  if (!rawImageUrl) {
+    return buildAbsoluteUrl('/image/gpsf_logo.png')
+  }
+
+  return buildAbsoluteUrl(
+    buildPathWithQuery('/api/share-image', {
+      url: buildAbsoluteUrl(rawImageUrl),
+    })
+  )
+}
+
 type PageProps = {
   searchParams?: SearchParams | Promise<SearchParams>
 }
@@ -320,7 +334,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   }
 
   const description = buildMetadataDescription(detailData)
-  const heroImage = cleanText(detailData.heroImage)
+  const shareImageUrl = buildShareImageUrl(detailData.heroImage)
 
   return {
     title: detailData.title,
@@ -334,20 +348,23 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       url: detailData.shareUrl,
       siteName: SITE_NAME,
       type: 'article',
-      images: heroImage
-        ? [
-            {
-              url: buildAbsoluteUrl(heroImage),
-              alt: detailData.title,
-            },
-          ]
-        : undefined,
+      images: [
+        {
+          url: shareImageUrl,
+          alt: detailData.title,
+        },
+      ],
     },
     twitter: {
-      card: heroImage ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title: detailData.title,
       description,
-      images: heroImage ? [buildAbsoluteUrl(heroImage)] : undefined,
+      images: [shareImageUrl],
+    },
+    other: {
+      'og:image': shareImageUrl,
+      'og:image:secure_url': shareImageUrl,
+      'twitter:image': shareImageUrl,
     },
   }
 }
