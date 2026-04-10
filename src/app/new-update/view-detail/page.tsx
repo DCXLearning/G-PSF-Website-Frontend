@@ -351,7 +351,10 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       images: [
         {
           url: shareImageUrl,
+          secureUrl: shareImageUrl,
           alt: detailData.title,
+          width: 1200,
+          height: 630,
         },
       ],
     },
@@ -364,6 +367,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     other: {
       'og:image': shareImageUrl,
       'og:image:secure_url': shareImageUrl,
+      'og:image:width': '1200',
+      'og:image:height': '630',
       'twitter:image': shareImageUrl,
     },
   }

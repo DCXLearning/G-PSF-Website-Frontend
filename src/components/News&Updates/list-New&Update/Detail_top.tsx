@@ -75,8 +75,8 @@ export default function DetailPage({ data }: DetailPageProps) {
           </Link>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-4">
-          <span className={`text-[20px] font-medium text-[#2f2f2f] ${khmerClass}`}>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <span className={`text-[16px] font-medium text-[#2f2f2f] ${khmerClass}`}>
             Share:
           </span>
 
@@ -85,9 +85,9 @@ export default function DetailPage({ data }: DetailPageProps) {
             target="_blank"
             rel="noreferrer"
             aria-label={`Share ${data.title} on Facebook`}
-            className="grid h-11 w-11 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
+            className="grid h-8 w-8 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
           >
-            <FaFacebookF className="h-5 w-5" />
+            <FaFacebookF className="h-3.5 w-3.5" />
           </a>
 
           <a
@@ -95,9 +95,9 @@ export default function DetailPage({ data }: DetailPageProps) {
             target="_blank"
             rel="noreferrer"
             aria-label={`Share ${data.title} on Telegram`}
-            className="grid h-11 w-11 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
+            className="grid h-8 w-8 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
           >
-            <FaTelegramPlane className="h-5 w-5" />
+            <FaTelegramPlane className="h-3.5 w-3.5" />
           </a>
         </div>
 
