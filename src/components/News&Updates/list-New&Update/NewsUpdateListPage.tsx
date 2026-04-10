@@ -4,6 +4,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Grid3X3, List, CalendarDays } from "lucide-react";
+import { FaFacebookF, FaTelegramPlane } from "react-icons/fa";
+import {
+  buildAbsoluteUrl,
+  buildFacebookShareUrl,
+  buildPathWithQuery,
+  buildTelegramShareUrl,
+} from "@/utils/socialShare";
 
 type LangText = string | { en?: string; km?: string };
 
@@ -147,15 +154,11 @@ export default function NewsUpdateListPage() {
       const type = getPostType(item);
       const date = formatDate(item.publishedAt || item.createdAt);
 
-      const detailHref = item.slug
-        ? {
-            pathname: "/new-update/view-detail",
-            query: { slug: item.slug, id: String(item.id) },
-          }
-        : {
-            pathname: "/new-update/view-detail",
-            query: { id: String(item.id) },
-          };
+      const detailPath = buildPathWithQuery("/new-update/view-detail", {
+        id: String(item.id),
+        ...(item.slug ? { slug: item.slug } : {}),
+      });
+      const shareUrl = buildAbsoluteUrl(detailPath);
 
       return {
         ...item,
@@ -164,7 +167,9 @@ export default function NewsUpdateListPage() {
         imageUrl,
         type,
         date,
-        detailHref,
+        detailPath,
+        facebookShareUrl: buildFacebookShareUrl(shareUrl),
+        telegramShareUrl: buildTelegramShareUrl(shareUrl, title),
       };
     });
   }, [items]);
@@ -233,7 +238,7 @@ export default function NewsUpdateListPage() {
                   index !== content.length - 1 ? "mb-10 border-b border-gray-300" : ""
                 }`}
               >
-                <Link href={item.detailHref} className="group block">
+                <Link href={item.detailPath} className="group block">
                   <div className="relative aspect-[3/4] w-full overflow-hidden bg-white shadow-md md:h-[260px] md:aspect-auto">
                     {item.imageUrl ? (
                       <Image
@@ -253,7 +258,7 @@ export default function NewsUpdateListPage() {
                 <div className="flex min-w-0 flex-col justify-between pt-1">
                   <div>
 
-                    <Link href={item.detailHref} className="block">
+                    <Link href={item.detailPath} className="block">
                       <h2 className="mt-3 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline md:text-xl lg:text-[25px]">
                         {item.title}
                       </h2>
@@ -266,7 +271,7 @@ export default function NewsUpdateListPage() {
 
                   <div className="mt-6 flex flex-col gap-3 pt-4">
                     <Link
-                      href={item.detailHref}
+                      href={item.detailPath}
                       className="inline-block w-fit text-base font-bold text-[#0f2347] underline md:text-lg lg:text-[18px]"
                     >
                       View details
@@ -275,6 +280,30 @@ export default function NewsUpdateListPage() {
                     <div className="flex items-center gap-2 text-sm font-medium text-[#6a7b96] md:text-base">
                       <CalendarDays className="h-4 w-4 shrink-0" />
                       <span className="khmer-font">{item.date || "No date"}</span>
+                    </div>
+
+                    <div className="flex items-center gap-4 pt-2">
+                      <span className="text-[18px] font-medium text-[#2f2f2f]">Share:</span>
+
+                      <a
+                        href={item.facebookShareUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Share ${item.title} on Facebook`}
+                        className="grid h-11 w-11 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
+                      >
+                        <FaFacebookF className="h-5 w-5" />
+                      </a>
+
+                      <a
+                        href={item.telegramShareUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Share ${item.title} on Telegram`}
+                        className="grid h-11 w-11 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
+                      >
+                        <FaTelegramPlane className="h-5 w-5" />
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -290,7 +319,7 @@ export default function NewsUpdateListPage() {
                 key={item.id}
                 className="group flex h-full flex-col overflow-hidden bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
-                <Link href={item.detailHref} className="block">
+                <Link href={item.detailPath} className="block">
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
                     {item.imageUrl ? (
                       <Image
@@ -310,7 +339,7 @@ export default function NewsUpdateListPage() {
                 <div className="flex h-full grow flex-col justify-between p-5">
                   <div>
 
-                    <Link href={item.detailHref} className="block">
+                    <Link href={item.detailPath} className="block">
                       <h2 className="mt-3 line-clamp-2 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline">
                         {item.title}
                       </h2>
@@ -323,7 +352,7 @@ export default function NewsUpdateListPage() {
 
                   <div className="mt-6 flex flex-col gap-3 pt-5">
                     <Link
-                      href={item.detailHref}
+                      href={item.detailPath}
                       className="inline-block w-fit text-base font-bold text-[#0f2347] underline"
                     >
                       View details
@@ -332,6 +361,30 @@ export default function NewsUpdateListPage() {
                     <div className="flex items-center gap-2 text-sm font-medium text-[#6a7b96]">
                       <CalendarDays className="h-4 w-4 shrink-0" />
                       <span className="khmer-font">{item.date || "No date"}</span>
+                    </div>
+
+                    <div className="flex items-center gap-4 pt-2">
+                      <span className="text-[18px] font-medium text-[#2f2f2f]">Share:</span>
+
+                      <a
+                        href={item.facebookShareUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Share ${item.title} on Facebook`}
+                        className="grid h-11 w-11 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
+                      >
+                        <FaFacebookF className="h-5 w-5" />
+                      </a>
+
+                      <a
+                        href={item.telegramShareUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Share ${item.title} on Telegram`}
+                        className="grid h-11 w-11 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
+                      >
+                        <FaTelegramPlane className="h-5 w-5" />
+                      </a>
                     </div>
                   </div>
                 </div>

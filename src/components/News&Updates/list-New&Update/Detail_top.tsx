@@ -3,6 +3,11 @@
 import React, { useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { CalendarDays, FileText } from "lucide-react";
+import { FaFacebookF, FaTelegramPlane } from "react-icons/fa";
+import {
+  buildFacebookShareUrl,
+  buildTelegramShareUrl,
+} from "@/utils/socialShare";
 
 export type TiptapMark = {
   type?: string;
@@ -26,6 +31,7 @@ export type DetailPageData = {
   tagHref: string;
   summary?: string;
   contentDoc?: TiptapNode | null;
+  shareUrl: string;
 };
 
 type DetailPageProps = {
@@ -37,6 +43,8 @@ export default function DetailPage({ data }: DetailPageProps) {
   const isKhmerContent = shouldUseKhmerFont(data);
   const khmerClass = isKhmerContent ? "khmer-font" : "";
   const heroImage = data.heroImage.trim();
+  const facebookShareUrl = buildFacebookShareUrl(data.shareUrl);
+  const telegramShareUrl = buildTelegramShareUrl(data.shareUrl, data.title);
 
   return (
     <section className={`bg-white ${khmerClass}`}>
@@ -65,6 +73,32 @@ export default function DetailPage({ data }: DetailPageProps) {
             </span>
             {data.tagLabel}
           </Link>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center gap-4">
+          <span className={`text-[20px] font-medium text-[#2f2f2f] ${khmerClass}`}>
+            Share:
+          </span>
+
+          <a
+            href={facebookShareUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Share ${data.title} on Facebook`}
+            className="grid h-11 w-11 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
+          >
+            <FaFacebookF className="h-5 w-5" />
+          </a>
+
+          <a
+            href={telegramShareUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Share ${data.title} on Telegram`}
+            className="grid h-11 w-11 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
+          >
+            <FaTelegramPlane className="h-5 w-5" />
+          </a>
         </div>
 
         {heroImage ? <HeroImage src={heroImage} alt={data.title} /> : null}
