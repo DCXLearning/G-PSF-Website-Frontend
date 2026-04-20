@@ -101,7 +101,7 @@ export default function DetailPage({ data }: DetailPageProps) {
           </a>
         </div>
 
-        {heroImage ? <HeroImage src={heroImage} alt={data.title} /> : null}
+        {/*{heroImage ? <HeroImage src={heroImage} alt={data.title} /> : null}*/}
 
         <article className={`mt-6 max-w-7xl text-slate-700 ${khmerClass}`}>
           {hasDocContent && data.contentDoc ? (
@@ -121,29 +121,29 @@ export default function DetailPage({ data }: DetailPageProps) {
   );
 }
 
-function HeroImage({ src, alt }: { src: string; alt: string }) {
-  const [failed, setFailed] = useState(false);
-
-  return (
-    <div className="mt-6 overflow-hidden rounded-md border border-slate-200 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
-      <div className="relative aspect-[16/9] w-full">
-        {!failed && src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={src}
-            alt={alt}
-            className="h-full w-full object-cover"
-            onError={() => setFailed(true)}
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm text-slate-500">
-            Image not available
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+// function HeroImage({ src, alt }: { src: string; alt: string }) {
+//   const [failed, setFailed] = useState(false);
+//
+//   return (
+//     <div className="mt-6 overflow-hidden rounded-md border border-slate-200 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
+//       {/*<div className="relative aspect-[16/9] w-full">*/}
+//       {/*  {!failed && src ? (*/}
+//       {/*    // eslint-disable-next-line @next/next/no-img-element*/}
+//       {/*    <img*/}
+//       {/*      src={src}*/}
+//       {/*      alt={alt}*/}
+//       {/*      className="h-full w-full object-cover"*/}
+//       {/*      onError={() => setFailed(true)}*/}
+//       {/*    />*/}
+//       {/*  ) : (*/}
+//       {/*    <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm text-slate-500">*/}
+//       {/*      Image not available*/}
+//       {/*    </div>*/}
+//       {/*  )}*/}
+//       {/*</div>*/}
+//     </div>
+//   );
+// }
 
 function TiptapRenderer({ doc }: { doc: TiptapNode }) {
   const nodes = doc.content ?? [];
