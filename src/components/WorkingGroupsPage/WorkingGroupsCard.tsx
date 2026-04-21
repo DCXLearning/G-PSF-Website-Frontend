@@ -46,6 +46,23 @@ type WorkGroupUI = {
 
 const CACHE_KEY = "working_groups_grid_cache";
 
+/* ✅ Khmer Number */
+function toKhmerNumber(n: number) {
+    const map: Record<string, string> = {
+        "0": "០",
+        "1": "១",
+        "2": "២",
+        "3": "៣",
+        "4": "៤",
+        "5": "៥",
+        "6": "៦",
+        "7": "៧",
+        "8": "៨",
+        "9": "៩",
+    };
+    return String(n).replace(/[0-9]/g, (d) => map[d]);
+}
+
 function readCache(): GridApiResponse | null {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
@@ -59,9 +76,7 @@ function readCache(): GridApiResponse | null {
 function writeCache(data: GridApiResponse) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    } catch {
-        //
-    }
+    } catch {}
 }
 
 function getText(value: MultiLang | null | undefined, lang: ApiLang): string {
@@ -76,7 +91,6 @@ function WorkGroupCardSkeleton() {
             <div className="bg-[#1E2257] p-3 md:p-4 rounded-full mb-3 md:mb-5">
                 <div className="w-10 h-10 md:w-20 md:h-20 rounded-full bg-white/20" />
             </div>
-
             <div className="h-4 w-20 md:w-28 bg-slate-200 rounded mb-2" />
             <div className="h-4 w-16 md:w-24 bg-slate-200 rounded" />
         </div>
@@ -90,7 +104,6 @@ export default function WorkGroupsGrid() {
     const apiLang: ApiLang = isKh ? "km" : "en";
 
     const [mounted, setMounted] = useState(false);
-
     const [loadingGrid, setLoadingGrid] = useState(true);
     const [loadingFlex, setLoadingFlex] = useState(true);
 
@@ -198,10 +211,16 @@ export default function WorkGroupsGrid() {
         }));
     }, [items, apiLang]);
 
-    const headerTitle = isKh
-        ? `ក្រុមការងារតាមវិស័យទាំង ${total || workGroups.length}`
-        : `${total || workGroups.length} Working Groups`;
+    /* ✅ FIX NUMBER ONLY */
+    const count = total || workGroups.length;
 
+    const numberText = isKh
+        ? toKhmerNumber(count)
+        : count.toLocaleString("en-US");
+
+    const headerTitle = isKh
+        ? `ក្រុមការងារតាមវិស័យទាំង ${numberText}`
+        : `${numberText} ${count === 1 ? "Working Group" : "Working Groups"}`;
 
     const showSkeleton = !mounted || (loadingGrid && items.length === 0);
     const showErrorOnly = !showSkeleton && items.length === 0 && !!error;
@@ -271,17 +290,11 @@ export default function WorkGroupsGrid() {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 md:px-4 py-8">
-                <p
-                    className={`text-lg md:text-2xl font-semibold text-gray-900 mb-3 ${isKh ? "khmer-font normal-case" : ""
-                        }`}
-                >
+                <p className={`text-lg md:text-2xl font-semibold text-gray-900 mb-3 ${isKh ? "khmer-font normal-case" : ""}`}>
                     {loadingFlex ? "..." : flexLabel}
                 </p>
 
-                <h2
-                    className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-[1.2] max-w-[850px] ${isKh ? "khmer-font" : ""
-                        }`}
-                >
+                <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-[1.2] max-w-[850px] ${isKh ? "khmer-font" : ""}`}>
                     {loadingFlex ? "..." : flexTitle}
                 </h2>
 

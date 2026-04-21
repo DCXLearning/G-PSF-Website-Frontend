@@ -1,14 +1,13 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import React, { useEffect, useMemo, useState } from "react";
 import { Facebook, Send, MessageCircle, Loader2 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 /** =========================
- *  TYPES
- *  ========================= */
+ * TYPES
+ * ========================= */
 type ContactPayload = {
   firstName: string;
   lastName: string;
@@ -30,30 +29,35 @@ type SiteSettingsUI = {
 };
 
 /** =========================
- *  NORMALIZER
- *  ========================= */
-function normalizeSiteSettings(apiJson: any): SiteSettingsUI {
+ * NORMALIZER (Language Aware)
+ * ========================= */
+function normalizeSiteSettings(apiJson: any, lang: "en" | "kh"): SiteSettingsUI {
   const d = apiJson?.data ?? {};
 
-  const addressText = d?.address?.en ?? "";
+  // Map internal "kh" context to API "km" key
+  const apiKey = lang === "kh" ? "km" : "en";
+
+  // Address: Fallback to 'en' if 'km' is missing
+  const addressText = d?.address?.[apiKey] || d?.address?.en || "";
   const addressLines = String(addressText)
     .split("\n")
     .map((s: string) => s.trim())
     .filter(Boolean);
 
-  const contactEn = d?.contact?.en ?? {};
-  const phones: string[] = Array.isArray(contactEn?.phones) ? contactEn.phones : [];
+  // Contact Info: API sample shows contact nested under 'en' even for km results
+  // We check current language first, then fallback to 'en'
+  const contactData = d?.contact?.[apiKey] || d?.contact?.en || {};
+  const phones: string[] = Array.isArray(contactData?.phones) ? contactData.phones : [];
 
-  const desks: Desk[] = Array.isArray(contactEn?.desks)
-    ? contactEn.desks
-        .map((x: any) => ({
-          label: String(x?.title ?? "").trim(),
-          emails: Array.isArray(x?.emails) ? x.emails : [],
-        }))
-        .filter((x: Desk) => x.label || x.emails.length)
+  const desks: Desk[] = Array.isArray(contactData?.desks)
+    ? contactData.desks.map((x: any) => ({
+      label: String(x?.title ?? "").trim(),
+      emails: Array.isArray(x?.emails) ? x.emails : [],
+    }))
     : [];
 
-  const openText = String(d?.openTime?.en ?? "").trim();
+  // Open Time
+  const openText = String(d?.openTime?.[apiKey] || d?.openTime?.en || "").trim();
   const openLines = openText
     .split("\n")
     .map((s: string) => s.trim())
@@ -62,27 +66,27 @@ function normalizeSiteSettings(apiJson: any): SiteSettingsUI {
   const openDaysText = openLines[0] ?? "";
   const openTimeText = openLines.slice(1).join(" ") ?? "";
 
-  const socialLinks: Array<{ url?: string; icon?: string }> = Array.isArray(d?.socialLinks)
-    ? d.socialLinks
-    : [];
-
+  // Social Links logic (Handles icon vs title mismatch in your JSON)
+  const socialLinks: Array<{ url?: string; icon?: string; title?: string }> = d?.socialLinks ?? [];
   const social: SiteSettingsUI["social"] = {};
+
   for (const s of socialLinks) {
     const icon = String(s?.icon ?? "").toLowerCase();
+    const title = String(s?.title ?? "").toLowerCase();
     const url = String(s?.url ?? "").trim();
     if (!url) continue;
 
-    if (icon === "facebook") social.facebook = url;
-    else if (icon === "telegram") social.telegram = url;
-    else if (icon === "messenger") social.messenger = url;
+    if (icon === "facebook" || title === "facebook") social.facebook = url;
+    else if (icon === "telegram" || title === "telegram") social.telegram = url;
+    else if (icon === "messenger" || title === "messenger") social.messenger = url;
   }
 
   return { addressLines, phones, desks, openDaysText, openTimeText, social };
 }
 
 /** =========================
- *  TRANSLATIONS
- *  ========================= */
+ * TRANSLATIONS
+ * ========================= */
 const translations = {
   en: {
     firstName: "First Name",
@@ -124,9 +128,6 @@ const translations = {
   },
 };
 
-/** =========================
- *  COMPONENT
- *  ========================= */
 export default function ContactSection() {
   const { language } = useLanguage();
   const t = translations[language];
@@ -148,44 +149,27 @@ export default function ContactSection() {
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsError, setSettingsError] = useState("");
 
+  // Re-run whenever language changes to update localized address/time
   useEffect(() => {
     let mounted = true;
-
     async function loadSettings() {
       setSettingsLoading(true);
-      setSettingsError("");
-
       try {
         const res = await fetch("/api/site-settings", { cache: "no-store" });
-        const text = await res.text();
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
 
-        let json: any = null;
-        try {
-          json = text ? JSON.parse(text) : null;
-        } catch {}
-
-        if (!res.ok) {
-          const msg = json?.message || text || `HTTP ${res.status}`;
-          throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
-        }
-
-        const ui = normalizeSiteSettings(json);
+        const ui = normalizeSiteSettings(json, language);
         if (mounted) setSettings(ui);
       } catch (e: any) {
-        if (mounted) {
-          setSettingsError(e?.message || "Failed to load contact info.");
-        }
+        if (mounted) setSettingsError(e?.message || "Error loading settings");
       } finally {
         if (mounted) setSettingsLoading(false);
       }
     }
-
     loadSettings();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    return () => { mounted = false; };
+  }, [language]);
 
   const canSubmit = useMemo(() => {
     return (
@@ -218,43 +202,16 @@ export default function ContactSection() {
     }
 
     setLoading(true);
-
     try {
       const res = await fetch("/api/contact/contact-form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim(),
-          organisationName: form.organisationName?.trim() || undefined,
-          subject: form.subject.trim(),
-          message: form.message.trim(),
-        }),
+        body: JSON.stringify(form),
       });
 
-      const text = await res.text();
-
-      let json: any = null;
-      try {
-        json = text ? JSON.parse(text) : null;
-      } catch {}
-
-      if (!res.ok) {
-        const msg =
-          json?.message || json?.error?.details || json?.error || text || `HTTP ${res.status}`;
-        throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
-      }
-
+      if (!res.ok) throw new Error(t.failed);
       setSuccessMsg(t.success);
-      setForm({
-        firstName: "",
-        lastName: "",
-        email: "",
-        organisationName: "",
-        subject: "",
-        message: "",
-      });
+      setForm({ firstName: "", lastName: "", email: "", organisationName: "", subject: "", message: "" });
     } catch (err: any) {
       setErrorMsg(err?.message || t.failed);
     } finally {
@@ -264,8 +221,8 @@ export default function ContactSection() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 pt-8 pb-10 md:pt-10 md:pb-14 bg-white">
-
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch mb-10">
+        {/* Map Section */}
         <div className="xl:col-span-8">
           <div className="w-full h-[380px] md:h-[520px] xl:h-[620px] overflow-hidden rounded-3xl shadow-lg border border-gray-200">
             <iframe
@@ -279,111 +236,56 @@ export default function ContactSection() {
           </div>
         </div>
 
+        {/* Sidebar Info Section */}
         <div className="xl:col-span-4">
           <div className="h-full bg-[#1e2653] text-white p-6 md:p-8 rounded-3xl space-y-8 shadow-lg">
             {settingsLoading ? (
-              <div className={`text-sm text-gray-300 ${language === "kh" ? "khmer-font" : ""}`}>
-                {t.loadingInfo}
-              </div>
+              <div className={language === "kh" ? "khmer-font" : ""}>{t.loadingInfo}</div>
             ) : settingsError ? (
-              <div className="text-sm rounded-lg border border-red-200 bg-red-50 text-red-700 p-3">
-                {settingsError}
-              </div>
+              <div className="text-red-400">{settingsError}</div>
             ) : (
               <>
                 <section>
-                  <h4
-                    className={`text-xl font-semibold mb-3 ${
-                      language === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
-                    {t.address}
-                  </h4>
-                  <p className="text-gray-300 text-sm leading-7">
-                    {settings?.addressLines?.map((line, idx) => (
-                      <span key={idx}>
-                        {line}
-                        <br />
-                      </span>
+                  <h4 className={`text-xl font-semibold mb-3 ${language === "kh" ? "khmer-font" : ""}`}>{t.address}</h4>
+                  <p className={`text-gray-300 text-sm leading-7 ${language === "kh" ? "khmer-font" : ""}`}>
+                    {settings?.addressLines.map((line, idx) => (
+                      <span key={idx}>{line}<br /></span>
                     ))}
                   </p>
                 </section>
 
                 <section className="space-y-4">
-                  <h4
-                    className={`text-xl font-semibold ${
-                      language === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
-                    {t.contact}
-                  </h4>
-
+                  <h4 className={`text-xl font-semibold ${language === "kh" ? "khmer-font" : ""}`}>{t.contact}</h4>
                   <div className="text-sm space-y-1 text-gray-200">
-                    {settings?.phones?.map((p, idx) => (
-                      <p key={idx}>{p}</p>
-                    ))}
+                    {settings?.phones.map((p, idx) => <p key={idx}>{p}</p>)}
                   </div>
-
-                  <div className="grid grid-cols-1 gap-4 pt-2">
-                    {settings?.desks?.map((desk) => (
-                      <div key={desk.label}>
-                        <p className="font-semibold text-white">{desk.label}</p>
-                        {desk.emails.map((em) => (
-                          <p key={em} className="text-gray-300 break-all">
-                            {em}
-                          </p>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
+                  {settings?.desks.map((desk) => (
+                    <div key={desk.label} className="pt-2">
+                      <p className={`font-semibold text-white ${language === "kh" ? "khmer-font" : ""}`}>{desk.label}</p>
+                      {desk.emails.map((em) => <p key={em} className="text-gray-300 break-all">{em}</p>)}
+                    </div>
+                  ))}
                 </section>
 
                 <section>
-                  <h4
-                    className={`text-xl font-semibold mb-3 ${
-                      language === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
-                    {t.openTime}
-                  </h4>
-                  <p className="text-sm text-gray-300">{settings?.openDaysText}</p>
-                  <p className="text-sm text-white">{settings?.openTimeText}</p>
+                  <h4 className={`text-xl font-semibold mb-3 ${language === "kh" ? "khmer-font" : ""}`}>{t.openTime}</h4>
+                  <p className={`text-sm text-gray-300 ${language === "kh" ? "khmer-font" : ""}`}>{settings?.openDaysText}</p>
+                  <p className="text-sm text-white font-medium">{settings?.openTimeText}</p>
                 </section>
 
                 <section>
-                  <h4
-                    className={`text-xl font-semibold mb-4 ${
-                      language === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
-                    {t.connected}
-                  </h4>
-
+                  <h4 className={`text-xl font-semibold mb-4 ${language === "kh" ? "khmer-font" : ""}`}>{t.connected}</h4>
                   <div className="flex items-center gap-4">
-                    <a
-                      href={settings?.social?.facebook || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
-                    >
-                      <Facebook size={20} />
-                    </a>
-                    <a
-                      href={settings?.social?.telegram || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
-                    >
-                      <Send size={20} />
-                    </a>
-                    <a
-                      href={settings?.social?.messenger || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
-                    >
-                      <MessageCircle size={20} />
-                    </a>
+                    {settings?.social.facebook && (
+                      <a href={settings.social.facebook} target="_blank" rel="noreferrer" className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition">
+                        <Facebook size={20} />
+                      </a>
+                    )}
+                    {settings?.social.telegram && (
+                      <a href={settings.social.telegram} target="_blank" rel="noreferrer" className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition">
+                        <Send size={20} />
+                      </a>
+                    )}
                   </div>
                 </section>
               </>
@@ -391,7 +293,6 @@ export default function ContactSection() {
           </div>
         </div>
       </div>
-
 
       {/* ===============from contact========== */}
 
