@@ -28,6 +28,11 @@ const kantumruyPro = Kantumruy_Pro({
 export const metadata: Metadata = {
   title: "G-PSF Website",
   description: "Government-Private Sector Forum",
+  icons: {
+    icon: "/api/site-logo",
+    shortcut: "/api/site-logo",
+    apple: "/api/site-logo",
+  },
 };
 
 const googleAnalyticsId = process.env.NEXT_PUBLIC_GA_ID;

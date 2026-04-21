@@ -37,8 +37,26 @@ type NavItem = {
     children?: ChildItem[];
 };
 
+type SiteText = {
+    en?: string;
+    km?: string;
+};
+
+type SiteSettingsData = {
+    logo?: string | null;
+    title?: SiteText;
+};
+
+type SiteSettingsResponse = {
+    success?: boolean;
+    data?: SiteSettingsData | null;
+};
+
 const HOME_ICON_SRC = "/image/home.png";
+const FALLBACK_LOGO_SRC = "/image/logo2.png";
+
 const MENU_API_ENDPOINT = "/api/main-nav";
+const SITE_SETTINGS_API_ENDPOINT = "/api/site-settings";
 
 const FALLBACK_NAV_ITEMS: Record<Lang, NavItem[]> = {
     en: [
@@ -196,6 +214,18 @@ function buildNavItems(items: ApiNavItem[] = [], language: Lang): NavItem[] {
     });
 }
 
+function pickSiteText(text: SiteText | undefined, language: Lang) {
+    if (!text) {
+        return "";
+    }
+
+    if (language === "kh") {
+        return text.km?.trim() || text.en?.trim() || "";
+    }
+
+    return text.en?.trim() || text.km?.trim() || "";
+}
+
 const Header: FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -204,6 +234,8 @@ const Header: FC = () => {
     const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
     const [openMobileSubDropdown, setOpenMobileSubDropdown] = useState<string | null>(null);
     const [navItems, setNavItems] = useState<Record<Lang, NavItem[]>>(FALLBACK_NAV_ITEMS);
+    const [siteSettings, setSiteSettings] = useState<SiteSettingsData | null>(null);
+    const [failedLogoSrc, setFailedLogoSrc] = useState("");
 
     const { language, toggleLanguage } = useLanguage();
     const pathname = usePathname();
@@ -212,6 +244,12 @@ const Header: FC = () => {
     const searchPlaceholder = language === "en" ? "Search..." : "ស្វែងរក...";
     const languageButtonText = language === "en" ? "" : "";
     const mobileLanguageText = language === "en" ? "Switch to Khmer" : "ប្ដូរទៅ English";
+    const backendLogo = siteSettings?.logo?.trim() || "";
+    const logoSrc =
+        backendLogo && failedLogoSrc !== backendLogo
+            ? backendLogo
+            : FALLBACK_LOGO_SRC;
+    const logoAlt = pickSiteText(siteSettings?.title, language) || "G-PSF Logo";
 
     const handleSearch = () => {
         const keyword = searchValue.trim();
@@ -252,6 +290,37 @@ const Header: FC = () => {
 
         // Load the CMS menu after mount so the header can stay interactive.
         void loadMenu();
+
+        return () => controller.abort();
+    }, []);
+
+    useEffect(() => {
+        const controller = new AbortController();
+
+        const loadSiteSettings = async () => {
+            try {
+                const response = await fetch(SITE_SETTINGS_API_ENDPOINT, {
+                    cache: "no-store",
+                    signal: controller.signal,
+                    headers: {
+                        Accept: "application/json",
+                    },
+                });
+
+                if (!response.ok) return;
+
+                const result: SiteSettingsResponse = await response.json();
+
+                if (result?.success && result.data) {
+                    setSiteSettings(result.data);
+                }
+            } catch (error) {
+                if (error instanceof DOMException && error.name === "AbortError") return;
+                console.error("Failed to load site settings:", error);
+            }
+        };
+
+        void loadSiteSettings();
 
         return () => controller.abort();
     }, []);
@@ -299,12 +368,17 @@ const Header: FC = () => {
                     <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-2 xl:px-2 py-2 flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center">
                         <Link href="/">
                             <Image
-                                src="/image/logo2.png"
-                                alt="G-PSF Logo"
+                                src={logoSrc}
+                                alt={logoAlt}
                                 width={160}
                                 height={60}
                                 className="object-cover"
                                 priority
+                                onError={() => {
+                                    if (backendLogo) {
+                                        setFailedLogoSrc(backendLogo);
+                                    }
+                                }}
                             />
                         </Link>
 
