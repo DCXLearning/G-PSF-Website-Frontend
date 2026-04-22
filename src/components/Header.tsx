@@ -226,6 +226,25 @@ function pickSiteText(text: SiteText | undefined, language: Lang) {
     return text.en?.trim() || text.km?.trim() || "";
 }
 
+const normalizePath = (value?: string | null) => {
+    if (!value) return "/";
+    const normalized = value.split("?")[0].split("#")[0].replace(/\/+$/, "");
+    return normalized || "/";
+};
+
+const isPathActive = (pathname: string, href?: string) => {
+    if (!href || href === "#") return false;
+
+    const currentPath = normalizePath(pathname);
+    const targetPath = normalizePath(href);
+
+    if (targetPath === "/") {
+        return currentPath === "/";
+    }
+
+    return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
+};
+
 const Header: FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -275,7 +294,6 @@ const Header: FC = () => {
 
                 const result = await response.json();
 
-                // Build the same bilingual menu shape that the old header UI already expects.
                 if (Array.isArray(result?.data?.items) && result.data.items.length > 0) {
                     setNavItems({
                         en: buildNavItems(result.data.items, "en"),
@@ -288,7 +306,6 @@ const Header: FC = () => {
             }
         };
 
-        // Load the CMS menu after mount so the header can stay interactive.
         void loadMenu();
 
         return () => controller.abort();
@@ -346,14 +363,16 @@ const Header: FC = () => {
     }, []);
 
     const isParentActive = (item: NavItem) => {
-        if (item.href && pathname === item.href) return true;
+        if (isPathActive(pathname, item.href)) return true;
 
         if (item.children && item.children.length > 0) {
             return item.children.some((child) => {
-                if (child.href && pathname === child.href) return true;
+                if (isPathActive(pathname, child.href)) return true;
+
                 if (child.children && child.children.length > 0) {
-                    return child.children.some((sub) => pathname === sub.href);
+                    return child.children.some((sub) => isPathActive(pathname, sub.href));
                 }
+
                 return false;
             });
         }
@@ -458,11 +477,10 @@ const Header: FC = () => {
                                         <div key={`${item.label}-${index}`} className="relative group shrink-0">
                                             <Link
                                                 href={item.href || "#"}
-                                                className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap pb-1 transition-colors ${
-                                                    isActive
+                                                className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap pb-1 transition-colors ${isActive
                                                         ? "text-black"
                                                         : "text-gray-700 hover:text-blue-600"
-                                                } ${language === "kh" ? "khmer-font" : ""}`}
+                                                    } ${language === "kh" ? "khmer-font" : ""}`}
                                             >
                                                 <span className="block text-xl font-medium leading-none">
                                                     {item.label}
@@ -475,11 +493,13 @@ const Header: FC = () => {
                                             </Link>
 
                                             <div className="absolute left-0 top-full pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                                <div className="min-w-[280px] bg-white border border-gray-200 rounded-xl shadow-lg py-2">
+                                                <div className="min-w-[260px] bg-white border border-gray-200 rounded-xl shadow-lg py-2">
                                                     {item.children.map((child) => {
                                                         const isChildActive =
-                                                            (child.href && pathname === child.href) ||
-                                                            child.children?.some((sub) => pathname === sub.href);
+                                                            isPathActive(pathname, child.href) ||
+                                                            child.children?.some((sub) =>
+                                                                isPathActive(pathname, sub.href)
+                                                            );
 
                                                         if (child.children && child.children.length > 0) {
                                                             return (
@@ -497,7 +517,10 @@ const Header: FC = () => {
                                                                     <div className="absolute left-full top-0 ml-1 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-200">
                                                                         <div className="min-w-[240px] bg-white border border-gray-200 rounded-xl shadow-lg py-2">
                                                                             {child.children.map((sub) => {
-                                                                                const isSubActive = pathname === sub.href;
+                                                                                const isSubActive = isPathActive(
+                                                                                    pathname,
+                                                                                    sub.href
+                                                                                );
 
                                                                                 return (
                                                                                     <Link
@@ -541,11 +564,10 @@ const Header: FC = () => {
                                     <Link
                                         key={item.href}
                                         href={item.href || "#"}
-                                        className={`relative shrink-0 whitespace-nowrap pb-1 transition-colors ${
-                                            isActive
+                                        className={`relative shrink-0 whitespace-nowrap pb-1 transition-colors ${isActive
                                                 ? "text-black"
                                                 : "text-gray-700 hover:text-blue-600"
-                                        } ${language === "kh" ? "khmer-font" : ""}`}
+                                            } ${language === "kh" ? "khmer-font" : ""}`}
                                     >
                                         <span className="block text-xl font-medium leading-none">
                                             {item.label}

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
+import { Autoplay, Mousewheel } from "swiper/modules";
 import { useLanguage } from "@/app/context/LanguageContext";
 import "swiper/css";
 
@@ -27,7 +27,6 @@ const TrustedByCarousel: React.FC = () => {
       try {
         setLoading(true);
 
-        // Optional: check localStorage first
         const cached = localStorage.getItem("trusted-logos");
         if (cached) {
           const parsed: Logo[] = JSON.parse(cached);
@@ -44,7 +43,6 @@ const TrustedByCarousel: React.FC = () => {
         const fetched: Logo[] = json?.data?.logos ?? [];
         setLogos(fetched);
 
-        // Save to localStorage to reduce flicker next time
         localStorage.setItem("trusted-logos", JSON.stringify(fetched));
       } catch (e) {
         console.error("Failed to fetch logos", e);
@@ -62,60 +60,70 @@ const TrustedByCarousel: React.FC = () => {
   }, []);
 
   if (loading) {
-    return (
-      <p className="text-center py-12 text-gray-500">Loading logos...</p>
-    );
+    return <p className="py-12 text-center text-gray-500">Loading logos...</p>;
   }
 
   if (!logos.length) {
-    return (
-      <p className="text-center py-12 text-gray-500">No logos found...</p>
-    );
+    return <p className="py-12 text-center text-gray-500">No logos found...</p>;
   }
 
   return (
-    <section className="py-6 pb-24 bg-white relative overflow-hidden">
-      <div className="container mx-auto max-w-7xl px-4 relative">
+    <section className="relative overflow-hidden bg-white pt-6 pb-25">
+      <div className="container relative mx-auto max-w-7xl px-4">
         <h2
-          className={`text-3xl md:text-4xl font-bold text-center tracking-wider text-blue-950 mb-12 ${
+          className={`mb-12 text-center text-3xl font-bold tracking-wider text-blue-950 md:text-4xl ${
             isKh ? "khmer-font normal-case" : "uppercase"
           }`}
         >
-          {/* Show the Khmer heading when the site language is Khmer. */}
           {isKh ? "ជឿទុកចិត្តដោយ" : "Trusted By"}
         </h2>
 
         <Swiper
-          modules={[Autoplay]}
+          modules={[Autoplay, Mousewheel]}
           slidesPerView={3}
           spaceBetween={40}
           loop={logos.length > 3}
           speed={3000}
           autoplay={{
-            delay: 0,
+            delay: 900,
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
           }}
-          allowTouchMove={false}
+          allowTouchMove={true}
+          simulateTouch={true}
+          grabCursor={true}
+          mousewheel={{
+            forceToAxis: true,
+            sensitivity: 1,
+            releaseOnEdges: false,
+          }}
           breakpoints={{
-            236: { slidesPerView: 2, spaceBetween: 5 },
+            236: { slidesPerView: 2, spaceBetween: 10 },
             400: { slidesPerView: 3, spaceBetween: 20 },
             640: { slidesPerView: 3, spaceBetween: 20 },
             768: { slidesPerView: 4, spaceBetween: 30 },
             1024: { slidesPerView: 5, spaceBetween: 40 },
             1280: { slidesPerView: 6, spaceBetween: 50 },
           }}
-          className="w-full"
+          className="trusted-by-swiper w-full"
         >
           {logos.map((logo) => (
-            <SwiperSlide key={logo.id} className="flex justify-center items-center">
-              <a href={logo.link} target="_blank" rel="noopener noreferrer">
+            <SwiperSlide
+              key={logo.id}
+              className="flex items-center justify-center"
+            >
+              <a
+                href={logo.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center"
+              >
                 <Image
                   src={logo.url}
                   alt={logo.title}
                   width={120}
                   height={120}
-                  className="h-24 w-auto object-contain rounded-full"
+                  className="h-24 w-auto rounded-full object-contain transition-transform duration-300 hover:scale-100"
                   unoptimized
                 />
               </a>
