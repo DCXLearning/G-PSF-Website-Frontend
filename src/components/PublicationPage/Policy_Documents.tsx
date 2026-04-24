@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { formatLocalizedMonthYear } from "@/utils/localizedDate";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -260,7 +260,7 @@ export default function PolicyDocuments() {
                                     const thumb = pickThumbnail(p);
                                     const title = pickText(p.title, uiLang, "Untitled");
                                     const desc = pickText(p.description, uiLang, "");
-                                    const dateText = formatLocalizedMonthYear(p.createdAt, uiLang);
+                                    const dateText = formatLocalizedDate(p.createdAt, uiLang);
                                     const docUrl = pickDocUrl(p);
 
                                     return (
@@ -297,7 +297,7 @@ export default function PolicyDocuments() {
                                 const thumb = pickThumbnail(p);
                                 const title = pickText(p.title, uiLang, "Untitled");
                                 const desc = pickText(p.description, uiLang, "");
-                                const dateText = formatLocalizedMonthYear(p.createdAt, uiLang);
+                                const dateText = formatLocalizedDate(p.createdAt, uiLang);
                                 const docUrl = pickDocUrl(p);
 
                                 return (
