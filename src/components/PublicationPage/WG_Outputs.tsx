@@ -413,9 +413,11 @@ export function WGOutputsSection({
                 <div className="mt-10 flex justify-center">
                     <Link
                         href="/wg-outputs"
-                        className="bg-[#1e2756] hover:bg-[#161d44] text-white py-2 px-6 rounded-md font-semibold transition-colors"
+                        className={`bg-[#1e2756] hover:bg-[#161d44] text-white py-2 px-6 rounded-md font-semibold transition-colors ${
+                            isKh ? "khmer-font" : ""
+                        }`}
                     >
-                        See More
+                        {isKh ? "មើលបន្ថែម" : "See More"}
                     </Link>
                 </div>
             ) : null}
