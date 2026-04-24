@@ -540,9 +540,9 @@ const ResourceItem = ({ item }: { item: Resource }) => {
                     {item.description}
                 </p>
 
-                <a href={item.href} className="mt-2 inline-block text-sm font-bold underline text-slate-900 hover:text-blue-800">
-                    More
-                </a>
+                {/*<a href={item.href} className="mt-2 inline-block text-sm font-bold underline text-slate-900 hover:text-blue-800">*/}
+                {/*    More*/}
+                {/*</a>*/}
 
                 <div className="mt-6 flex gap-4 text-xs font-bold items-baseline flex-wrap">
                     <span className="text-slate-400">Language:</span>
