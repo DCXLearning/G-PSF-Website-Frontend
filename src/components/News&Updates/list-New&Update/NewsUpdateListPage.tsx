@@ -4,13 +4,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Grid3X3, List, CalendarDays } from "lucide-react";
-import { FaFacebookF, FaTelegramPlane } from "react-icons/fa";
-import {
-  buildAbsoluteUrl,
-  buildFacebookShareUrl,
-  buildPathWithQuery,
-  buildTelegramShareUrl,
-} from "@/utils/socialShare";
+import { buildAbsoluteUrl } from "@/utils/socialShare";
+import { buildNewsDetailPath } from "@/utils/newsDetail";
+import { formatLocalizedDate } from "@/utils/localizedDate";
+import SocialShareButtons from "./SocialShareButtons";
 
 type LangText = string | { en?: string; km?: string };
 
@@ -64,19 +61,6 @@ function getText(value: LangText | undefined, lang: "en" | "km" = "en") {
   if (!value) return "";
   if (typeof value === "string") return value;
   return value[lang] || value.en || value.km || "";
-}
-
-function formatDate(dateValue?: string | null): string {
-  if (!dateValue) return "";
-
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return dateValue;
-
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(date);
 }
 
 function getPostType(post: PostItem) {
@@ -152,11 +136,11 @@ export default function NewsUpdateListPage() {
       const excerpt = getText(item.description, "en");
       const imageUrl = getThumbnail(item);
       const type = getPostType(item);
-      const date = formatDate(item.publishedAt || item.createdAt);
+      const date = formatLocalizedDate(item.publishedAt || item.createdAt);
 
-      const detailPath = buildPathWithQuery("/new-update/view-detail", {
-        id: String(item.id),
-        ...(item.slug ? { slug: item.slug } : {}),
+      const detailPath = buildNewsDetailPath({
+        id: item.id,
+        slug: item.slug,
       });
       const shareUrl = buildAbsoluteUrl(detailPath);
 
@@ -168,8 +152,7 @@ export default function NewsUpdateListPage() {
         type,
         date,
         detailPath,
-        facebookShareUrl: buildFacebookShareUrl(shareUrl),
-        telegramShareUrl: buildTelegramShareUrl(shareUrl, title),
+        shareUrl,
       };
     });
   }, [items]);
@@ -282,29 +265,12 @@ export default function NewsUpdateListPage() {
                       <span className="khmer-font">{item.date || "No date"}</span>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-2">
-                      <span className="text-[15px] font-medium text-[#2f2f2f]">Share:</span>
-
-                      <a
-                        href={item.facebookShareUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Share ${item.title} on Facebook`}
-                        className="grid h-8 w-8 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
-                      >
-                        <FaFacebookF className="h-3.5 w-3.5" />
-                      </a>
-
-                      <a
-                        href={item.telegramShareUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Share ${item.title} on Telegram`}
-                        className="grid h-8 w-8 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
-                      >
-                        <FaTelegramPlane className="h-3.5 w-3.5" />
-                      </a>
-                    </div>
+                    <SocialShareButtons
+                      shareUrl={item.shareUrl}
+                      title={item.title}
+                      labelClassName="text-[15px]"
+                      className="pt-2"
+                    />
                   </div>
                 </div>
               </article>
@@ -363,29 +329,12 @@ export default function NewsUpdateListPage() {
                       <span className="khmer-font">{item.date || "No date"}</span>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-2">
-                      <span className="text-[15px] font-medium text-[#2f2f2f]">Share:</span>
-
-                      <a
-                        href={item.facebookShareUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Share ${item.title} on Facebook`}
-                        className="grid h-8 w-8 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
-                      >
-                        <FaFacebookF className="h-3.5 w-3.5" />
-                      </a>
-
-                      <a
-                        href={item.telegramShareUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Share ${item.title} on Telegram`}
-                        className="grid h-8 w-8 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
-                      >
-                        <FaTelegramPlane className="h-3.5 w-3.5" />
-                      </a>
-                    </div>
+                    <SocialShareButtons
+                      shareUrl={item.shareUrl}
+                      title={item.title}
+                      labelClassName="text-[15px]"
+                      className="pt-2"
+                    />
                   </div>
                 </div>
               </article>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { API_URL } from "@/config/api";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type I18nText = {
     en?: string | null;
@@ -38,26 +39,6 @@ function cleanText(value?: string | null): string {
 
 function pickText(value?: I18nText | null): string {
     return cleanText(value?.en) || cleanText(value?.km);
-}
-
-function formatDate(dateValue?: string | null): string {
-    const rawDate = cleanText(dateValue);
-
-    if (!rawDate) {
-        return "";
-    }
-
-    const date = new Date(rawDate);
-
-    if (Number.isNaN(date.getTime())) {
-        return rawDate;
-    }
-
-    return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-    });
 }
 
 function buildDetailHref(post: SectionPost): string {
@@ -135,9 +116,9 @@ export default async function Page({ params }: PageProps) {
                             const title = pickText(post.title) || `Post ${index + 1}`;
                             const description = pickText(post.description);
                             const dateText =
-                                formatDate(post.publishedAt) ||
-                                formatDate(post.createdAt) ||
-                                formatDate(post.updatedAt);
+                                formatLocalizedDate(post.publishedAt) ||
+                                formatLocalizedDate(post.createdAt) ||
+                                formatLocalizedDate(post.updatedAt);
 
                             return (
                                 <div

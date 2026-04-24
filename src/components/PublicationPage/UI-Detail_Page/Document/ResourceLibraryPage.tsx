@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import Pagination from "@/components/Pagination";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type ApiLang = "en" | "km";
 type DateRangeId =
@@ -168,26 +169,6 @@ function mapCategoryItems(response: CategoryResponse, apiLang: ApiLang): Categor
     }
 
     return items;
-}
-
-function formatDate(value?: string | null): string {
-    const raw = getText(value);
-
-    if (!raw) {
-        return "";
-    }
-
-    const date = new Date(raw);
-
-    if (Number.isNaN(date.getTime())) {
-        return raw;
-    }
-
-    return new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
 }
 
 function getDateYear(value?: string | null): number | null {
@@ -379,7 +360,7 @@ function mapResourcePosts(response: ResourcePostResponse, apiLang: ApiLang): Res
             categoryId: post.category?.id,
             type: pickText(post.category?.name, apiLang) || "Document",
             title,
-            date: formatDate(publishedDate),
+            date: formatLocalizedDate(publishedDate, apiLang),
             publishedDate,
             org: pickText(post.category?.name, apiLang),
             author: getText(post.author?.displayName),

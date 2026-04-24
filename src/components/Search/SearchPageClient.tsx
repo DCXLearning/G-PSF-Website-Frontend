@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type Lang = "en" | "kh";
 type ApiLang = "en" | "km";
@@ -109,21 +110,7 @@ function getDateValue(post: ApiPost) {
 
 function formatPostDate(post: ApiPost, lang: ApiLang) {
     const value = getDateValue(post);
-
-    if (!value) {
-        return "";
-    }
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return "";
-    }
-
-    return new Intl.DateTimeFormat(lang === "km" ? "km-KH" : "en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
+    return formatLocalizedDate(value, lang);
 }
 
 function buildDetailHref(post: ApiPost) {

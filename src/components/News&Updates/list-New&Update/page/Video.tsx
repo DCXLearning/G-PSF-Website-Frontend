@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CalendarDays, LayoutGrid, List, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type UiLang = "en" | "kh";
 type ViewMode = "list" | "grid";
@@ -104,26 +105,6 @@ function pickText(value: I18n | string | null | undefined, language: UiLang): st
     }
 
     return getText(value.en) || getText(value.km) || getText(value.kh);
-}
-
-function formatDate(value?: string | null, language: UiLang = "en"): string {
-    const raw = getText(value);
-
-    if (!raw) {
-        return "";
-    }
-
-    const date = new Date(raw);
-
-    if (Number.isNaN(date.getTime())) {
-        return raw;
-    }
-
-    return new Intl.DateTimeFormat(language === "kh" ? "km-KH" : "en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
 }
 
 function normalizeUrl(value?: string | null): string {
@@ -300,7 +281,7 @@ function mapVideoItems(posts: MediaPost[], language: UiLang): VideoItem[] {
                 pickText(post.title, language) ||
                 (language === "kh" ? "គ្មានចំណងជើង" : "Untitled"),
             description: pickText(post.description, language),
-            date: formatDate(
+            date: formatLocalizedDate(
                 post.publishedAt || post.createdAt || post.updatedAt,
                 language
             ),

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
@@ -136,20 +137,6 @@ function pickThumbUrl(post: ApiPost, apiLanguage: ApiLang): string {
         post.documentThumbnail ||
         ""
     );
-}
-
-function formatPublishedDate(dateString: string | null | undefined, lang: UiLang): string {
-    if (!dateString) return "";
-
-    try {
-        return new Intl.DateTimeFormat(lang === "kh" ? "km-KH" : "en-GB", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-        }).format(new Date(dateString));
-    } catch {
-        return "";
-    }
 }
 
 export default function SemesterReportsAnnualUi() {
@@ -307,7 +294,7 @@ export function SemesterReportsSection({
                                 const description = pickText(post.description, uiLang);
                                 const docUrl = pickDocUrl(post, apiLanguage);
                                 const thumb = pickThumbUrl(post, apiLanguage);
-                                const publishedDate = formatPublishedDate(post.publishedAt, uiLang);
+                                const publishedDate = formatLocalizedDate(post.publishedAt, uiLang);
                                 return (
                                     <SwiperSlide key={post.id} className="!h-auto">
                                         <div className="h-full">

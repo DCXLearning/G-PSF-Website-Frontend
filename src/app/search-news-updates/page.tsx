@@ -2,6 +2,7 @@ import SearchNewsUpdates, {
     type SearchNewsItem,
 } from "@/components/Search/SearchNewsUpdates";
 import { API_URL } from "@/config/api";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type PageProps = {
     searchParams: Promise<{
@@ -64,26 +65,6 @@ function buildDetailHref(post: CmsPost): string {
     }
 
     return `/new-update/view-detail?id=${post.id}`;
-}
-
-function formatDate(value?: string | null): string {
-    const raw = cleanText(value);
-
-    if (!raw) {
-        return "";
-    }
-
-    const date = new Date(raw);
-
-    if (Number.isNaN(date.getTime())) {
-        return raw;
-    }
-
-    return new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
 }
 
 function pickImage(post: CmsPost): string {
@@ -231,9 +212,9 @@ function mapSearchItems(response: CmsTreeResponse): SearchNewsItem[] {
             title,
             description: buildI18nValue(post.description),
             date:
-                formatDate(post.publishedAt) ||
-                formatDate(post.createdAt) ||
-                formatDate(post.updatedAt),
+                formatLocalizedDate(post.publishedAt) ||
+                formatLocalizedDate(post.createdAt) ||
+                formatLocalizedDate(post.updatedAt),
             href: buildDetailHref(post),
             image: pickImage(post),
             languages: buildLanguages(post),

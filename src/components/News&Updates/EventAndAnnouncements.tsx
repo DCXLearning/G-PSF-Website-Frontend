@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { formatLocalizedDate, formatLocalizedMonthName } from "@/utils/localizedDate";
 
 type ApiLang = "en" | "km";
 type I18n = { en?: string; km?: string };
@@ -86,19 +87,6 @@ function pickText(i18n: I18n | null | undefined, lang: ApiLang) {
     return i18n[lang] || i18n.en || i18n.km || "";
 }
 
-function formatDate(dateStr?: string | null, lang: ApiLang = "en") {
-    if (!dateStr) return "";
-
-    const date = new Date(dateStr);
-    if (Number.isNaN(date.getTime())) return "";
-
-    return new Intl.DateTimeFormat(lang === "km" ? "km-KH" : "en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-    }).format(date);
-}
-
 function isPublishedPost(post: ApiPost) {
     return post.isPublished === true || post.status === "published";
 }
@@ -169,9 +157,7 @@ function buildCalendarMonths(posts: ApiPost[]): CalendarMonth[] {
 }
 
 function formatMonthLabel(month: CalendarMonth, lang: ApiLang) {
-    return new Intl.DateTimeFormat(lang === "km" ? "km-KH" : "en-US", {
-        month: "long",
-    }).format(new Date(month.year, month.month, 1));
+    return formatLocalizedMonthName(month.year, month.month, lang);
 }
 
 function buildHighlightedDates(posts: ApiPost[], lang: ApiLang): HighlightedDate[] {
@@ -629,7 +615,7 @@ export default function EventsAndAnnouncements() {
                                             >
                                                 {categoryName}
                                                 {post.publishedAt
-                                                    ? ` • ${formatDate(post.publishedAt, apiLang)}`
+                                                    ? ` • ${formatLocalizedDate(post.publishedAt, apiLang)}`
                                                     : ""}
                                             </span>
 

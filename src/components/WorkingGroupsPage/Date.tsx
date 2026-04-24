@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { formatLocalizedMonthName } from "@/utils/localizedDate";
 
 type Lang = "en" | "kh";
 type ApiLang = "en" | "km";
@@ -93,12 +94,7 @@ function getPostDate(post: SchedulePost): Date | null {
 }
 
 function formatMonthLabel(month: CalendarMonth, lang: Lang): string {
-    const locale = lang === "kh" ? "km-KH" : "en-US";
-    const label = new Intl.DateTimeFormat(locale, {
-        month: "long",
-    }).format(new Date(month.year, month.month, 1));
-
-    return lang === "kh" ? label : label.toUpperCase();
+    return formatLocalizedMonthName(month.year, month.month, lang, true);
 }
 
 function createMonthKey(year: number, month: number): string {

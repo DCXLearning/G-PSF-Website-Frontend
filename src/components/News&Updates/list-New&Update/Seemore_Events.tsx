@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Grid3X3, List, CalendarDays, Download } from "lucide-react";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type I18n = { en?: string; km?: string };
 
@@ -110,16 +111,7 @@ export default function EventsListPage() {
                 "/image/no-image.png";
 
             const dateValue = item.publishedAt || item.createdAt || "";
-            const parsedDate = new Date(dateValue);
-            const isValidDate = dateValue && !Number.isNaN(parsedDate.getTime());
-
-            const date = isValidDate
-                ? new Intl.DateTimeFormat(apiLang === "km" ? "km-KH" : "en-GB", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                }).format(parsedDate)
-                : "";
+            const date = formatLocalizedDate(dateValue, apiLang);
 
             return {
                 ...item,

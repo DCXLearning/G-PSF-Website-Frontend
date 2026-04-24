@@ -6,6 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -21,19 +22,6 @@ export type NewsUpdateCard = {
 
 export interface NewUpdateSectionProps {
     data: NewsUpdateCard[];
-}
-
-function formatDate(dateValue: string): string {
-    if (!dateValue) return "";
-
-    const date = new Date(dateValue);
-    if (Number.isNaN(date.getTime())) return dateValue;
-
-    return new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
 }
 
 const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
@@ -106,7 +94,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                             {/* Content */}
                                             <div className="flex grow flex-col px-6 pb-8 pt-2">
                                                 <span className="mb-2 text-xs font-semibold text-[#1a2b4b]">
-                                                    {formatDate(item.createdAt)}
+                                                    {formatLocalizedDate(item.createdAt, isKh ? "kh" : "en")}
                                                 </span>
 
                                                 <span className="mb-3 w-fit rounded-full bg-[#1a2b4b] px-3 py-1 text-[10px] font-bold uppercase text-white">

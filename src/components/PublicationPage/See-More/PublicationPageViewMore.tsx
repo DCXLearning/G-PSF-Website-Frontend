@@ -7,6 +7,7 @@ import PublicationDocumentsBrowser, {
     type PublicationDocumentItem,
     type PublicationDocumentLanguage,
 } from "@/components/PublicationPage/See-More/PublicationDocumentsBrowser";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type UiLang = "en" | "kh";
 type I18n = {
@@ -112,26 +113,6 @@ function buildDownloadHref(value?: string | null): string {
     }
 
     return `/api/download?url=${encodeURIComponent(fileUrl)}`;
-}
-
-function formatDate(value?: string | null, lang: UiLang = "en"): string {
-    const raw = typeof value === "string" ? value.trim() : "";
-
-    if (!raw) {
-        return "";
-    }
-
-    const date = new Date(raw);
-
-    if (Number.isNaN(date.getTime())) {
-        return raw;
-    }
-
-    return new Intl.DateTimeFormat(lang === "kh" ? "km-KH" : "en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
 }
 
 function formatSlugLabel(slug: string) {
@@ -403,7 +384,7 @@ export default function PublicationPageViewMore({
                     title: pickText(post.title, uiLang),
                     description: pickText(post.description, uiLang),
                     image: pickThumbnail(post, uiLang),
-                    date: formatDate(post.publishedAt || post.createdAt, uiLang),
+                    date: formatLocalizedDate(post.publishedAt || post.createdAt, uiLang),
                     languages: buildLanguages(post),
                 }));
 

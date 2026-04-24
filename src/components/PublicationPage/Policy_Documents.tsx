@@ -6,6 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { formatLocalizedMonthYear } from "@/utils/localizedDate";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -49,17 +50,6 @@ const CACHE_KEY = "policy-documents-block-cache";
 
 function containsKhmer(value?: string | null): boolean {
     return /[\u1780-\u17FF]/.test(value ?? "");
-}
-
-function formatMonthYear(iso?: string) {
-    if (!iso) return "";
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return "";
-
-    return new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-    }).format(d);
 }
 
 function pickText(i18n: I18n | null | undefined, lang: UiLang, fallback = "") {
@@ -270,7 +260,7 @@ export default function PolicyDocuments() {
                                     const thumb = pickThumbnail(p);
                                     const title = pickText(p.title, uiLang, "Untitled");
                                     const desc = pickText(p.description, uiLang, "");
-                                    const dateText = formatMonthYear(p.createdAt);
+                                    const dateText = formatLocalizedMonthYear(p.createdAt, uiLang);
                                     const docUrl = pickDocUrl(p);
 
                                     return (
@@ -307,7 +297,7 @@ export default function PolicyDocuments() {
                                 const thumb = pickThumbnail(p);
                                 const title = pickText(p.title, uiLang, "Untitled");
                                 const desc = pickText(p.description, uiLang, "");
-                                const dateText = formatMonthYear(p.createdAt);
+                                const dateText = formatLocalizedMonthYear(p.createdAt, uiLang);
                                 const docUrl = pickDocUrl(p);
 
                                 return (

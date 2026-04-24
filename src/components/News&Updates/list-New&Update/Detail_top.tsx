@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, type CSSProperties, type ReactNode } from "react";
+import React, { type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { CalendarDays, FileText } from "lucide-react";
 import { FaFacebookF, FaTelegramPlane } from "react-icons/fa";
@@ -8,6 +8,8 @@ import {
   buildFacebookShareUrl,
   buildTelegramShareUrl,
 } from "@/utils/socialShare";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 export type TiptapMark = {
   type?: string;
@@ -25,6 +27,7 @@ export type TiptapNode = {
 export type DetailPageData = {
   category: string;
   date: string;
+  dateValue?: string;
   title: string;
   heroImage: string;
   tagLabel: string;
@@ -39,12 +42,16 @@ type DetailPageProps = {
 };
 
 export default function DetailPage({ data }: DetailPageProps) {
+  const { language } = useLanguage();
   const hasDocContent = Array.isArray(data.contentDoc?.content) && data.contentDoc.content.length > 0;
   const isKhmerContent = shouldUseKhmerFont(data);
   const khmerClass = isKhmerContent ? "khmer-font" : "";
-  const heroImage = data.heroImage.trim();
   const facebookShareUrl = buildFacebookShareUrl(data.shareUrl);
   const telegramShareUrl = buildTelegramShareUrl(data.shareUrl, data.title);
+  const dateText = formatLocalizedDate(
+    data.dateValue || data.date,
+    language === "kh" ? "kh" : "en"
+  );
 
   return (
     <section className={`bg-white ${khmerClass}`}>
@@ -61,7 +68,7 @@ export default function DetailPage({ data }: DetailPageProps) {
         <div className={`mt-4 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-slate-600 ${khmerClass}`}>
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-slate-500" />
-            <span>{data.date}</span>
+            <span>{dateText}</span>
           </div>
 
           <Link

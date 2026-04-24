@@ -156,16 +156,16 @@ export default function HeroBanner() {
                             href={ctaHref}
                             target="_blank"
                             rel="noreferrer"
-                            className="bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
+                            // className="bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
                         >
-                            {ctaLabel}
+                            {/*{ctaLabel}*/}
                         </a>
                     ) : (
                         <Link
                             href={ctaHref}
-                            className="bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
+                            // className="bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
                         >
-                            {ctaLabel}
+                            {/*{ctaLabel}*/}
                         </Link>
                     )}
                 </div>

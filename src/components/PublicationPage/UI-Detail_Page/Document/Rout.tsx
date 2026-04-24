@@ -3,6 +3,7 @@ import HeroBanner from "./HeroBanner";
 import DocumentClientSection from "./DocumentClientSection";
 import { API_URL } from "@/config/api";
 import type { Publication } from "./FeaturedPublicationsClient";
+import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type I18nText = {
     en?: string;
@@ -48,22 +49,6 @@ function pickI18nText(value?: I18nText): string {
     return getText(value?.en) || getText(value?.km);
 }
 
-function formatDate(dateValue?: string | null): string {
-    const raw = getText(dateValue);
-    if (!raw) return "";
-
-    const date = new Date(raw);
-    if (Number.isNaN(date.getTime())) {
-        return raw;
-    }
-
-    return new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
-}
-
 function getPostTimestamp(post: ApiPost): number {
     const rawDate = getText(post.publishedAt) || getText(post.createdAt);
 
@@ -105,11 +90,13 @@ function mapFeaturedPosts(response: FeaturedPostsResponse): Publication[] {
             getText(post.documentThumbnails?.km) ||
             getText(post.documents?.en?.thumbnailUrl) ||
             getText(post.documents?.km?.thumbnailUrl);
+        const dateValue = getText(post.publishedAt) || getText(post.createdAt);
 
         items.push({
             id: post.id ?? index + 1,
             coverUrl,
-            dateText: formatDate(post.publishedAt) || formatDate(post.createdAt),
+            dateText: formatLocalizedDate(dateValue),
+            dateValue,
             title,
             excerpt: pickI18nText(post.description),
             enUrl,
