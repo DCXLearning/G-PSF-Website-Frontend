@@ -4,12 +4,17 @@ import React, { type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { CalendarDays, FileText } from "lucide-react";
 import { FaFacebookF, FaTelegramPlane } from "react-icons/fa";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
 import {
   buildFacebookShareUrl,
   buildTelegramShareUrl,
 } from "@/utils/socialShare";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 export type TiptapMark = {
   type?: string;
@@ -39,6 +44,12 @@ export type DetailPageData = {
 
 type DetailPageProps = {
   data: DetailPageData;
+};
+
+type ImageSlide = {
+  key: string;
+  src: string;
+  alt: string;
 };
 
 export default function DetailPage({ data }: DetailPageProps) {
@@ -168,7 +179,24 @@ function shouldUseKhmerFont(data: DetailPageData): boolean {
 }
 
 function renderNodes(nodes: TiptapNode[], path: string): ReactNode[] {
-  return nodes.map((node, index) => renderNode(node, `${path}-${index}`));
+  const imageSlides = getImageSlides(nodes, path);
+  const shouldUseCarousel = imageSlides.length > 1;
+  let hasRenderedCarousel = false;
+
+  return nodes.map((node, index) => {
+    const key = `${path}-${index}`;
+
+    if (shouldUseCarousel && getImageSlide(node, key)) {
+      if (hasRenderedCarousel) {
+        return null;
+      }
+
+      hasRenderedCarousel = true;
+      return <ImageCarousel key={`${path}-photo-carousel`} slides={imageSlides} />;
+    }
+
+    return renderNode(node, key);
+  });
 }
 
 function renderNode(node: TiptapNode, key: string): ReactNode {
@@ -294,19 +322,14 @@ function renderNode(node: TiptapNode, key: string): ReactNode {
   }
 
   if (type === "image") {
-    const src = typeof attrs.src === "string" ? attrs.src : "";
-    const alt = typeof attrs.alt === "string" ? attrs.alt : "Image";
+    const src = normalizeImageUrl(getStringAttr(attrs, "src"));
+    const alt = getStringAttr(attrs, "alt") || getStringAttr(attrs, "title") || "Image";
 
     if (!src) {
       return null;
     }
 
-    return (
-      <figure key={key} className="mt-6">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className="w-full rounded-md border border-slate-200" />
-      </figure>
-    );
+    return <ImageFigure key={key} src={src} alt={alt} />;
   }
 
   if (type === "youtube") {
@@ -391,6 +414,76 @@ function renderNode(node: TiptapNode, key: string): ReactNode {
   }
 
   return null;
+}
+
+function ImageFigure({ src, alt }: { src: string; alt: string }) {
+  return (
+    <figure className="mt-6">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} className="w-full rounded-md border border-slate-200" />
+    </figure>
+  );
+}
+
+function ImageCarousel({ slides }: { slides: ImageSlide[] }) {
+  return (
+    <figure className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm">
+      <Swiper
+        modules={[Navigation, Pagination]}
+        slidesPerView={1}
+        spaceBetween={0}
+        navigation
+        pagination={{ clickable: true }}
+        className="news-detail-photo-carousel"
+      >
+        {slides.map((slide) => (
+          <SwiperSlide key={slide.key}>
+            <div className="flex min-h-[260px] items-center justify-center bg-slate-100 sm:min-h-[420px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={slide.src}
+                alt={slide.alt}
+                className="max-h-[720px] w-full object-contain"
+              />
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </figure>
+  );
+}
+
+function getImageSlides(nodes: TiptapNode[], path: string): ImageSlide[] {
+  const slides: ImageSlide[] = [];
+
+  for (let index = 0; index < nodes.length; index += 1) {
+    const slide = getImageSlide(nodes[index], `${path}-${index}`);
+
+    if (slide) {
+      slides.push(slide);
+    }
+  }
+
+  return slides;
+}
+
+function getImageSlide(node: TiptapNode, key: string): ImageSlide | null {
+  if (node.type !== "image") {
+    return null;
+  }
+
+  const attrs = node.attrs ?? {};
+  const src = normalizeImageUrl(getStringAttr(attrs, "src"));
+
+  if (!src) {
+    return null;
+  }
+
+  return {
+    key,
+    src,
+    alt: getStringAttr(attrs, "alt") || getStringAttr(attrs, "title") || "Image",
+  };
 }
 
 function applyMarks(text: string, marks: TiptapMark[] | undefined, keyBase: string): ReactNode {
@@ -522,6 +615,14 @@ function getHeadingClass(level: number): string {
 function getStringAttr(attrs: Record<string, unknown>, key: string): string {
   const value = attrs[key];
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeImageUrl(url: string): string {
+  if (url.startsWith("/https://") || url.startsWith("/http://")) {
+    return url.slice(1);
+  }
+
+  return url;
 }
 
 function normalizeVideoUrl(url: string): string {
