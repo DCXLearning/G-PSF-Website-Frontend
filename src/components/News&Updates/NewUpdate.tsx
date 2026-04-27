@@ -37,7 +37,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                     {/* Switch the section heading text by the current site language. */}
                     {isKh ? "ថ្មីៗបំផុត" : "Latest"}
                 </p>
-                <h2 className={`mb-4 text-5xl font-extrabold text-[#1a2b4b] ${isKh ? "khmer-font" : ""}`}>
+                <h2 className={`mb-4 text-5xl font-bold text-[#1a2b4b] ${isKh ? "khmer-font" : ""}`}>
                     {isKh ? "ព័ត៌មាន និងបច្ចុប្បន្នភាព" : "News & Updates"}
                 </h2>
                 <div className="h-1.5 w-72 bg-orange-500" />

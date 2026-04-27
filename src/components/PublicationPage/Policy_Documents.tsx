@@ -193,7 +193,7 @@ export default function PolicyDocuments() {
                 </p>
 
                 <h2
-                    className={`text-[#1a2b4b] text-5xl md:text-6xl font-semibold mb-4 print:text-2xl print:mb-2 ${headerTitleClass}`}
+                    className={`text-[#1a2b4b] text-4xl md:text-5xl font-semibold mb-4 print:text-2xl print:mb-2 ${headerTitleClass}`}
                 >
                     {headerTitle}
                 </h2>

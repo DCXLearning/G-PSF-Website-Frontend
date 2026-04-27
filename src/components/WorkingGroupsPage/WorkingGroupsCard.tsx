@@ -46,7 +46,7 @@ type WorkGroupUI = {
 
 const CACHE_KEY = "working_groups_grid_cache";
 
-/* ✅ Khmer Number */
+/* Khmer Number */
 function toKhmerNumber(n: number) {
     const map: Record<string, string> = {
         "0": "០",
@@ -87,12 +87,13 @@ function getText(value: MultiLang | null | undefined, lang: ApiLang): string {
 
 function WorkGroupCardSkeleton() {
     return (
-        <div className="flex flex-col items-center justify-center aspect-square p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] shadow-xl bg-white animate-pulse">
-            <div className="bg-[#1E2257] p-3 md:p-4 rounded-full mb-3 md:mb-5">
-                <div className="w-10 h-10 md:w-20 md:h-20 rounded-full bg-white/20" />
+        <div className="flex flex-col items-center justify-center aspect-square p-3 rounded-2xl md:rounded-[1.8rem] shadow-xl bg-white animate-pulse">
+            <div className="bg-[#1E2257] p-2 md:p-3 rounded-full mb-2 md:mb-3">
+                <div className="w-8 h-8 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full bg-white/20" />
             </div>
-            <div className="h-4 w-20 md:w-28 bg-slate-200 rounded mb-2" />
-            <div className="h-4 w-16 md:w-24 bg-slate-200 rounded" />
+
+            <div className="h-3 w-16 md:w-20 bg-slate-200 rounded mb-2" />
+            <div className="h-3 w-12 md:w-16 bg-slate-200 rounded" />
         </div>
     );
 }
@@ -211,7 +212,7 @@ export default function WorkGroupsGrid() {
         }));
     }, [items, apiLang]);
 
-    /* ✅ FIX NUMBER ONLY */
+    /* FIX NUMBER ONLY */
     const count = total || workGroups.length;
 
     const numberText = isKh
@@ -229,10 +230,11 @@ export default function WorkGroupsGrid() {
         <div className="bg-white">
             <div className="bg-gradient-to-br from-[#2B3175] to-[#3B55A4] py-10 px-4 sm:px-6 lg:px-8 font-sans">
                 <div className="max-w-7xl px-4 mx-auto">
-                    <header className="text-center mb-10 md:mb-16">
+                    <header className="text-center mb-8 md:mb-12">
                         <h1
-                            className={`text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight ${isKh ? "khmer-font" : ""
-                                }`}
+                            className={`text-white text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight ${
+                                isKh ? "khmer-font" : ""
+                            }`}
                         >
                             {headerTitle}
                         </h1>
@@ -244,36 +246,39 @@ export default function WorkGroupsGrid() {
                         ) : null}
                     </header>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+                    {/* 6 Cards per row on desktop, smaller cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 lg:gap-5">
                         {showSkeleton ? (
-                            Array.from({ length: 8 }).map((_, i) => (
+                            Array.from({ length: 12 }).map((_, i) => (
                                 <WorkGroupCardSkeleton key={i} />
                             ))
                         ) : workGroups.length > 0 ? (
                             workGroups.map((group, index) => {
+                                /* FIX gray/white pattern for 6 columns */
                                 const isGray =
-                                    (Math.floor(index / 4) + (index % 4)) % 2 !== 0;
+                                    (Math.floor(index / 6) + (index % 6)) % 2 !== 0;
 
                                 return (
                                     <Link
                                         key={group.id}
                                         href={group.href}
-                                        className={`group flex flex-col items-center justify-center aspect-square p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] shadow-xl transition-all duration-300 hover:scale-[1.03]
-                    focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
-                    ${isGray ? "bg-[#d1d5db]" : "bg-white"}`}
+                                        className={`group flex flex-col items-center justify-center aspect-square p-3 rounded-2xl md:rounded-[1.8rem] shadow-xl transition-all duration-300 hover:scale-[1.03]
+                                        focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
+                                        ${isGray ? "bg-[#d1d5db]" : "bg-white"}`}
                                         aria-label={group.title}
                                     >
-                                        <div className="bg-[#1E2257] text-white p-3 md:p-4 rounded-full mb-3 md:mb-5 shadow-inner transition-transform duration-300 group-hover:scale-110">
+                                        <div className="bg-[#1E2257] text-white p-2 md:p-3 rounded-full mb-2 md:mb-3 shadow-inner transition-transform duration-300 group-hover:scale-110">
                                             <img
                                                 src={group.icon}
                                                 alt=""
-                                                className="w-10 h-10 md:w-20 md:h-20 object-contain"
+                                                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 object-contain"
                                             />
                                         </div>
 
                                         <p
-                                            className={`text-[#1a1a1a] text-center text-[10px] sm:text-sm md:text-base font-bold leading-tight max-w-[90%] ${isKh ? "khmer-font" : ""
-                                                }`}
+                                            className={`text-[#1a1a1a] text-center text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold leading-tight max-w-[92%] ${
+                                                isKh ? "khmer-font" : ""
+                                            }`}
                                         >
                                             {group.title}
                                         </p>
@@ -290,11 +295,19 @@ export default function WorkGroupsGrid() {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 md:px-4 py-8">
-                <p className={`text-lg md:text-2xl font-semibold text-gray-900 mb-3 ${isKh ? "khmer-font normal-case" : ""}`}>
+                <p
+                    className={`text-lg md:text-2xl font-semibold text-gray-900 mb-3 ${
+                        isKh ? "khmer-font normal-case" : ""
+                    }`}
+                >
                     {loadingFlex ? "..." : flexLabel}
                 </p>
 
-                <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-[1.2] max-w-[850px] ${isKh ? "khmer-font" : ""}`}>
+                <h2
+                    className={`text-4xl md:text-5xl font-bold text-gray-900 leading-[1.2] max-w-[850px] ${
+                        isKh ? "khmer-font" : ""
+                    }`}
+                >
                     {loadingFlex ? "..." : flexTitle}
                 </h2>
 

@@ -196,7 +196,7 @@ export function ToolsSectionContent({
                 </h2>
 
                 <h1
-                    className={`text-5xl md:text-6xl font-bold text-[#1e1e4b] mt-2 mb-6 ${
+                    className={`text-4xl md:text-5xl font-bold text-[#1e1e4b] mt-2 mb-6 ${
                         uiLang === "kh" ? "khmer-font" : ""
                     }`}
                 >

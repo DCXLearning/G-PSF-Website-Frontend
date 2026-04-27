@@ -424,7 +424,7 @@ export default function WorkingGroupsDate() {
                     </p>
 
                     <h2
-                        className={`text-3xl sm:text-4xl md:text-5xl font-semibold text-[#2d3436] mb-4 ${
+                        className={`text-4xl md:text-5xl font-bold text-[#2d3436] mb-4 ${
                             lang === "kh" ? "khmer-font" : ""
                         }`}
                     >

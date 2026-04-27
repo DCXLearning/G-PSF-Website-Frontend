@@ -246,7 +246,7 @@ const LatestReport: React.FC = () => {
                 </p>
 
                 <h1
-                    className={`text-6xl font-bold text-blue-950 mt-2 ${isKhmer ? "khmer-font" : ""
+                    className={`text-4xl md:text-5xl font-extrabold text-blue-950 mt-2 ${isKhmer ? "khmer-font" : ""
                         }`}
                 >
                     {mainHeading}

@@ -37,7 +37,7 @@ const Achievements: React.FC = () => {
                         </p>
 
                         <h1
-                            className={`text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight ${isKh ? "khmer-font" : ""
+                            className={`text-4xl md:text-5xl font-bold text-gray-900 leading-tight ${isKh ? "khmer-font" : ""
                                 }`}
                         >
                             {t.title}

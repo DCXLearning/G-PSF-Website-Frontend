@@ -96,7 +96,7 @@ const Participates: React.FC = () => {
     return (
         <section className="relative bg-white pt-16 pb-0 cursor-pointer">
             <div className="container mx-auto px-4 text-center mb-12">
-                <h2 className={`text-5xl md:text-6xl font-bold text-[#1e234a] mb-4 ${isKh ? "khmer-font" : ""}`}>
+                <h2 className={`text-4xl md:text-5xl font-bold text-[#1e234a] mb-4 ${isKh ? "khmer-font" : ""}`}>
                     {viewTitle}
                 </h2>
 

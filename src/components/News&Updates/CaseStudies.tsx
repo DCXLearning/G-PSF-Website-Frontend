@@ -251,7 +251,7 @@ export function CaseStudiesSection({
                         {t.header}
                     </p>
                     <h2
-                        className={`text-[#1a2b4b] text-5xl font-black mb-6 leading-tight ${uiLang === "kh" ? "khmer-font" : ""
+                        className={`text-[#1a2b4b] text-4xl md:text-5xl font-bold mb-6 leading-tight ${uiLang === "kh" ? "khmer-font" : ""
                             }`}
                     >
                         {t.title}

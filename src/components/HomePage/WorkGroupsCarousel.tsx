@@ -172,7 +172,7 @@ export default function WorkGroupsCarousel() {
               isKhmer ? "khmer-font" : ""
             }`}
           >
-            <span className="block text-4xl sm:text-5xl md:text-6xl">
+            <span className="block text-4xl md:text-5xl font-extrabold">
               {titleRow1}
             </span>
           </h2>

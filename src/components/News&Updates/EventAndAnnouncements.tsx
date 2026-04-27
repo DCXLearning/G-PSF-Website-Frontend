@@ -395,7 +395,7 @@ export default function EventsAndAnnouncements() {
         <div className="max-w-7xl mx-auto px-4 py-8 bg-white font-sans text-[#1a2b4b]">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 <div className="lg:col-span-6">
-                    <h2 className="text-3xl khmer-font font-bold mb-6">{eventsTitle}</h2>
+                    <h2 className="text-3xl md:text-4xl khmer-font font-bold mb-6">{eventsTitle}</h2>
 
                     <div className="bg-[#e9ecef] p-6 rounded-sm">
                         {showEventSkeleton ? (
@@ -553,7 +553,7 @@ export default function EventsAndAnnouncements() {
 
                 <div className="lg:col-span-6">
                     <h2
-                        className={`text-3xl font-bold mb-6 ${
+                        className={`text-3xl md:text-4xl font-bold mb-6 ${
                             apiLang === "km" || containsKhmer(announcementsTitle)
                                 ? "khmer-font"
                                 : ""

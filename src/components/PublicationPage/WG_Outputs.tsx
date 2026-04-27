@@ -227,7 +227,7 @@ export function WGOutputsSection({
                         : "Insights — Findings — Results"}
                 </h3>
 
-                <h2 className={`text-[#1e2756] text-5xl md:text-6xl font-semibold mt-2 mb-6 ${titleClass}`}>
+                <h2 className={`text-[#1e2756] text-4xl md:text-5xl font-bold mt-2 mb-6 ${titleClass}`}>
                     {title}
                 </h2>
 

@@ -67,8 +67,8 @@ function DocumentPreview({ src, alt, className = "" }: DocumentPreviewProps) {
                         onError={() => setFailedSrc(src || "")}
                     />
                 ) : (
-                    <div className="flex h-full w-full items-center justify-center px-6 text-center">
-                        <p className="text-xs leading-snug text-slate-500">
+                    <div className="flex h-full w-full items-center justify-center px-4 text-center">
+                        <p className="text-[10px] leading-snug text-slate-500">
                             Document cover is not available
                         </p>
                     </div>
@@ -80,7 +80,7 @@ function DocumentPreview({ src, alt, className = "" }: DocumentPreviewProps) {
 
 function TypeBadge({ text }: { text: string }) {
     return (
-        <span className="inline-block rounded bg-[#3f51b5] px-3 py-0.5 text-[10px] font-bold uppercase text-white">
+        <span className="inline-block rounded bg-[#3f51b5] px-2.5 py-0.5 text-[9px] font-bold uppercase text-white">
             {text}
         </span>
     );
@@ -89,13 +89,21 @@ function TypeBadge({ text }: { text: string }) {
 function LanguageLinks({
     languages,
     lang,
+    compact = false,
 }: {
     languages: PublicationDocumentLanguage[];
     lang: UiLang;
+    compact?: boolean;
 }) {
     return (
-        <div className="mt-6 flex flex-wrap items-baseline gap-4 text-xs font-bold">
-            <span className="text-slate-400">{lang === "kh" ? "ភាសា:" : "Language:"}</span>
+        <div
+            className={`flex flex-wrap items-baseline font-bold ${
+                compact ? "mt-3 gap-2 text-[10px]" : "mt-6 gap-4 text-xs"
+            }`}
+        >
+            <span className="text-slate-400">
+                {lang === "kh" ? "ភាសា:" : "Language:"}
+            </span>
 
             {languages.length > 0 ? (
                 languages.map((languageItem) => (
@@ -109,7 +117,9 @@ function LanguageLinks({
                     </a>
                 ))
             ) : (
-                <span className="text-slate-400">{lang === "kh" ? "គ្មានឯកសារ" : "No file"}</span>
+                <span className="text-slate-400">
+                    {lang === "kh" ? "គ្មានឯកសារ" : "No file"}
+                </span>
             )}
         </div>
     );
@@ -119,7 +129,9 @@ function Header({ view, setView, title, description }: HeaderProps) {
     return (
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-                <h1 className="text-3xl font-bold text-[#0B2C5F] md:text-4xl">{title}</h1>
+                <h1 className="text-3xl font-bold text-[#0B2C5F] md:text-4xl">
+                    {title}
+                </h1>
 
                 {description ? (
                     <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
@@ -133,16 +145,21 @@ function Header({ view, setView, title, description }: HeaderProps) {
                     type="button"
                     onClick={() => setView("list")}
                     className={`rounded-lg px-3 py-2 ${
-                        view === "list" ? "bg-[#23395D] text-white" : "text-gray-600"
+                        view === "list"
+                            ? "bg-[#23395D] text-white"
+                            : "text-gray-600"
                     }`}
                 >
                     <List size={18} />
                 </button>
+
                 <button
                     type="button"
                     onClick={() => setView("grid")}
                     className={`rounded-lg px-3 py-2 ${
-                        view === "grid" ? "bg-[#23395D] text-white" : "text-gray-600"
+                        view === "grid"
+                            ? "bg-[#23395D] text-white"
+                            : "text-gray-600"
                     }`}
                 >
                     <LayoutGrid size={18} />
@@ -156,7 +173,7 @@ function ListCard({ item, lang, badgeText }: CardProps) {
     const resolvedBadgeText = item.badgeText || badgeText;
 
     return (
-        <article className="flex flex-col gap-8 py-10 md:flex-row">
+        <article className="flex flex-col gap-8 py-10 md:flex-row md:items-center">
             <div className="w-full flex-shrink-0 md:w-44">
                 <DocumentPreview
                     src={item.image}
@@ -177,7 +194,8 @@ function ListCard({ item, lang, badgeText }: CardProps) {
                 </p>
 
                 <p className="mt-4 text-[15px] leading-relaxed text-slate-600 line-clamp-3">
-                    {item.description || (lang === "kh" ? "គ្មានការពិពណ៌នា" : "No description")}
+                    {item.description ||
+                        (lang === "kh" ? "គ្មានការពិពណ៌នា" : "No description")}
                 </p>
 
                 <LanguageLinks languages={item.languages} lang={lang} />
@@ -195,22 +213,28 @@ function GridCard({ item, lang, badgeText }: CardProps) {
                 <DocumentPreview src={item.image} alt={item.title} />
             </div>
 
-            <div className="flex flex-1 flex-col px-5 py-5">
-                <TypeBadge text={resolvedBadgeText} />
+            <div className="flex flex-1 flex-col justify-between px-3 py-4">
+                <div>
+                    <TypeBadge text={resolvedBadgeText} />
 
-                <div className="mt-3 text-[11px] font-semibold text-[#1a2b4b]">
-                    {item.date || (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
+                    <div className="mt-2 text-[10px] font-semibold text-[#1a2b4b]">
+                        {item.date ||
+                            (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
+                    </div>
+
+                    <h2 className="mt-1 text-[13px] font-extrabold leading-snug text-[#1a2b4b] line-clamp-2">
+                        {item.title}
+                    </h2>
+
+                    <p className="mt-2 text-[10px] leading-relaxed text-slate-700 line-clamp-3">
+                        {item.description ||
+                            (lang === "kh"
+                                ? "គ្មានការពិពណ៌នា"
+                                : "No description")}
+                    </p>
                 </div>
 
-                <h2 className="mt-1 text-base font-extrabold leading-snug text-[#1a2b4b] line-clamp-2">
-                    {item.title}
-                </h2>
-
-                <p className="mt-2 flex-1 text-[11px] leading-relaxed text-slate-700 line-clamp-3">
-                    {item.description || (lang === "kh" ? "គ្មានការពិពណ៌នា" : "No description")}
-                </p>
-
-                <LanguageLinks languages={item.languages} lang={lang} />
+                <LanguageLinks languages={item.languages} lang={lang} compact />
             </div>
         </article>
     );
@@ -240,7 +264,9 @@ export default function PublicationDocumentsBrowser({
 
                 {loading ? <p className="py-10 text-center">Loading...</p> : null}
 
-                {error ? <p className="py-10 text-center text-red-500">{error}</p> : null}
+                {error ? (
+                    <p className="py-10 text-center text-red-500">{error}</p>
+                ) : null}
 
                 {!loading && !error && items.length === 0 ? (
                     <p className="py-10 text-center text-slate-500">
@@ -251,22 +277,18 @@ export default function PublicationDocumentsBrowser({
                 {!loading && !error && items.length > 0 ? (
                     <>
                         {view === "list" ? (
-                            <div>
+                            <div className="divide-y divide-gray-300">
                                 {items.map((item) => (
-                                    <div
+                                    <ListCard
                                         key={item.id}
-                                        className={
-                                            item.id !== items[items.length - 1]?.id
-                                                ? "mb-10 border-b border-gray-300"
-                                                : ""
-                                        }
-                                    >
-                                        <ListCard item={item} lang={uiLang} badgeText={badgeText} />
-                                    </div>
+                                        item={item}
+                                        lang={uiLang}
+                                        badgeText={badgeText}
+                                    />
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                                 {items.map((item) => (
                                     <GridCard
                                         key={item.id}

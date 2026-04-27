@@ -213,7 +213,7 @@ export default function Flow() {
                     </p>
 
                     <h1
-                        className={`mt-3 text-3xl sm:text-5xl font-bold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
+                        className={`mt-3 text-4xl md:text-5xl font-extrabold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
                             }`}
                     >
                         {view.title}

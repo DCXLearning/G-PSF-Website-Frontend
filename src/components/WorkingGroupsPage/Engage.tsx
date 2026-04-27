@@ -205,7 +205,7 @@ export default function Engage() {
                 )}
 
                 <h2
-                    className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-8 md:mb-10 tracking-tight ${isKh ? "khmer-font" : ""
+                    className={`text-4xl md:text-5xl font-bold text-gray-900 mb-8 md:mb-10 tracking-tight ${isKh ? "khmer-font" : ""
                         }`}
                 >
                     {view.sectionTitle}

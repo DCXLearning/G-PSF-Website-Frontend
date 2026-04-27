@@ -124,7 +124,7 @@ export default function HeroBanner() {
 
     return (
         <main className="bg-white">
-            <section className="mx-auto max-w-[1500px] overflow-hidden bg-white shadow-2xl">
+            <section className="mx-auto max-w-full overflow-hidden bg-white shadow-2xl">
                 {/* Title */}
                 <div className="px-6 pt-10 pb-6 text-center sm:px-10 md:px-16">
                     <h1
