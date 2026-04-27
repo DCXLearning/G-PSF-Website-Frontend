@@ -102,7 +102,7 @@ const BannerAbout = ({
     <section className="bg-white py-8">
       {/* Title + subtitle */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1
             className={`
               font-extrabold tracking-tight text-[#1f1f1f] 
