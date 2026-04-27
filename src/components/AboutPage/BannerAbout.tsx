@@ -10,7 +10,7 @@ type ApiResponse = {
   success: boolean;
   data?: {
     blocks?: Array<{
-      type: string; // "hero_banner"
+      type: string;
       enabled: boolean;
       posts?: Array<{
         content?: {
@@ -31,7 +31,6 @@ type ApiResponse = {
 };
 
 export interface BannerAboutProps {
-  // optional overrides (if you pass these, they will be used)
   title?: string;
   subtitle?: string;
   imageUrl?: string;
@@ -52,7 +51,6 @@ const BannerAbout = ({
   const { language } = useLanguage();
   const lang: "en" | "kh" = language === "kh" ? "kh" : "en";
 
-  // defaults (fallback)
   const defaultTitle =
     lang === "kh"
       ? "វេទិការាជរដ្ឋាភិបាល–វិស័យឯកជន (G-PSF)"
@@ -65,15 +63,17 @@ const BannerAbout = ({
 
   const defaultImage = "/image/BannerAbout.bmp";
 
-  // API state
   const [api, setApi] = useState<ApiResponse | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        //  IMPORTANT: your route is /api-about/banner
-        const res = await fetch("api/about-us-page/banner", { cache: "no-store" });
+        const res = await fetch("/api/about-us-page/banner", {
+          cache: "no-store",
+        });
+
         if (!res.ok) throw new Error(await res.text());
+
         setApi((await res.json()) as ApiResponse);
       } catch {
         setApi(null);
@@ -91,30 +91,34 @@ const BannerAbout = ({
     return lang === "kh" ? post?.content?.km : post?.content?.en;
   }, [hero, lang]);
 
-  //  final values (priority: props -> API -> defaults)
   const finalTitle = title ?? pickText(content?.title, lang) ?? defaultTitle;
+
   const finalSubtitle =
     subtitle ?? pickText(content?.subtitle, lang) ?? defaultSubtitle;
-  const finalImage =
-    imageUrl ?? content?.backgroundImages?.[0] ?? defaultImage;
+
+  const finalImage = imageUrl ?? content?.backgroundImages?.[0] ?? defaultImage;
 
   return (
-    <section className="bg-white py-5 md:py-13">
+    <section className="bg-white py-8">
       {/* Title + subtitle */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <h1
-            className={`text-3xl text-shadow-lg sm:text-5xl font-bold text-gray-900 ${
-              lang === "kh" ? "khmer-font" : ""
-            }`}
+            className={`
+              font-extrabold tracking-tight text-[#1f1f1f] 
+                        text-2xl sm:text-3xl md:text-5xl
+              ${lang === "kh" ? "khmer-font font-semibold" : ""}
+            `}
           >
             {finalTitle}
           </h1>
 
           <p
-            className={`mt-3 max-w-2xl mx-auto text-lg sm:text-xl text-gray-900 ${
-              lang === "kh" ? "khmer-font" : ""
-            }`}
+            className={`
+              mt-4 text-gray-600 
+                        text-sm sm:text-base md:text-xl lg:text-2xl
+              ${lang === "kh" ? "khmer-font" : ""}
+            `}
           >
             {finalSubtitle}
           </p>

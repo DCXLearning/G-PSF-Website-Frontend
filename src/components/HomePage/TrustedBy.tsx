@@ -71,8 +71,8 @@ const TrustedByCarousel: React.FC = () => {
     <section className="relative overflow-hidden bg-white pt-6 pb-25">
       <div className="container relative mx-auto max-w-7xl px-4">
         <h2
-          className={`mb-12 text-center text-3xl font-bold tracking-wider text-blue-950 md:text-4xl ${
-            isKh ? "khmer-font normal-case" : "uppercase"
+          className={`mb-12 text-center text-4xl font-extrabold text-blue-950 md:text-5xl ${
+            isKh ? "khmer-font normal-case" : ""
           }`}
         >
           {isKh ? "ជឿទុកចិត្តដោយ" : "Trusted By"}
