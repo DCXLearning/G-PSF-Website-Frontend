@@ -25,12 +25,12 @@ const Achievements: React.FC = () => {
 
     return (
         <section className="bg-white py-8 md:py-12 overflow-hidden">
-            <div className="mx-auto max-w-5xl px-4">
+            <div className="mx-auto max-w-7xl px-4">
                 <div className="flex flex-col items-start">
                     {/* HEADER SECTION */}
                     <div className="w-full">
                         <p
-                            className={`text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider ${isKh ? "khmer-font normal-case" : ""
+                            className={`text-lg md:text-2xl font-semibold text-gray-900 mb-2 tracking-wider ${isKh ? "khmer-font normal-case" : ""
                                 }`}
                         >
                             {t.small}
@@ -45,10 +45,11 @@ const Achievements: React.FC = () => {
                     </div>
 
                     {/* LINE */}
-                    <div className="mt-5 mb-12 h-1.5 bg-orange-500 w-3/4 sm:w-full max-w-[440px] sm:ml-8 md:ml-20" />
+                    {/* sm:ml-8 md:ml-20 node style */}
+                    <div className="mt-5 mb-12 h-1.5 bg-orange-500 w-3/4 sm:w-full max-w-[300px]" />
 
                     {/* SQUARE CONTENT CARD */}
-                    <div className="w-full flex justify-center sm:justify-start">
+                    <div className="w-full flex justify-center">
                         <div className="bg-[#A3C1AD] sm:ml-8 md:ml-20 rounded-[40px] aspect-square w-full h-120 max-w-[850px] flex items-center justify-center p-6 md:p-30 shadow-sm">
                             <h3
                                 className={`text-2xl sm:text-4xl md:text-6xl font-bold text-gray-800 text-center leading-snug w-full ${isKh ? "khmer-font" : ""

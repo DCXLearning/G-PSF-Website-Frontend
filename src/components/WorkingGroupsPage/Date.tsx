@@ -196,9 +196,8 @@ function Calendar({
         <div className="bg-[#f4f6f7] rounded-xl overflow-visible shadow-sm border border-gray-100 h-full flex flex-col">
             <div className="py-3 sm:py-4 text-center">
                 <h3
-                    className={`text-lg sm:text-xl font-medium tracking-widest text-gray-800 ${
-                        lang === "kh" ? "khmer-font tracking-normal" : ""
-                    }`}
+                    className={`text-lg sm:text-xl font-medium tracking-widest text-gray-800 ${lang === "kh" ? "khmer-font tracking-normal" : ""
+                        }`}
                 >
                     {formatMonthLabel(month, lang)}
                 </h3>
@@ -208,9 +207,8 @@ function Calendar({
                 {daysOfWeek.map((day, index) => (
                     <div
                         key={`${month.key}-${day}-${index}`}
-                        className={`text-center text-[10px] sm:text-xs font-bold text-gray-400 ${
-                            lang === "kh" ? "khmer-font" : ""
-                        }`}
+                        className={`text-center text-[10px] sm:text-xs font-bold text-gray-400 ${lang === "kh" ? "khmer-font" : ""
+                            }`}
                     >
                         {day}
                     </div>
@@ -237,17 +235,15 @@ function Calendar({
                                 <div className="absolute w-7 h-7 sm:w-8 sm:h-8 bg-[#ffb347] rounded-full shadow-inner" />
 
                                 <span
-                                    className={`relative z-10 text-xs sm:text-sm font-semibold text-black ${
-                                        lang === "kh" ? "khmer-font" : ""
-                                    }`}
+                                    className={`relative z-10 text-xs sm:text-sm font-semibold text-black ${lang === "kh" ? "khmer-font" : ""
+                                        }`}
                                 >
                                     {toKhmerNumber(day, lang)}
                                 </span>
 
                                 <div
-                                    className={`pointer-events-none absolute left-1/2 top-full z-20 hidden w-60 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${
-                                        lang === "kh" ? "khmer-font" : ""
-                                    }`}
+                                    className={`pointer-events-none absolute left-1/2 top-full z-20 hidden w-60 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${lang === "kh" ? "khmer-font" : ""
+                                        }`}
                                 >
                                     {highlightedDate.title ? (
                                         <p className="text-xs sm:text-sm font-semibold whitespace-pre-line">
@@ -271,9 +267,8 @@ function Calendar({
                             className="relative flex items-center justify-center"
                         >
                             <span
-                                className={`relative z-10 text-xs sm:text-sm font-semibold text-gray-700 ${
-                                    lang === "kh" ? "khmer-font" : ""
-                                }`}
+                                className={`relative z-10 text-xs sm:text-sm font-semibold text-gray-700 ${lang === "kh" ? "khmer-font" : ""
+                                    }`}
                             >
                                 {toKhmerNumber(day, lang)}
                             </span>
@@ -382,80 +377,76 @@ export default function WorkingGroupsDate() {
             <div className="max-w-7xl px-4 mx-auto">
                 <div className="mb-10 sm:mb-14">
                     <p
-                        className={`text-base sm:text-xl font-bold text-gray-800 mb-1 ${
-                            lang === "kh" ? "khmer-font" : ""
-                        }`}
+                        className={`text-lg md:text-2xl font-semibold text-gray-900 mb-1 ${lang === "kh" ? "khmer-font" : ""
+                            }`}
                     >
                         {t.upNext}
                     </p>
 
                     <h2
-                        className={`text-4xl md:text-5xl font-bold text-[#2d3436] mb-4 ${
-                            lang === "kh" ? "khmer-font" : ""
-                        }`}
+                        className={`text-4xl md:text-5xl font-bold text-[#2d3436] mb-4 ${lang === "kh" ? "khmer-font" : ""
+                            }`}
                     >
                         {finalTitle}
                     </h2>
 
-                    <div className="w-40 sm:w-64 h-1.5 bg-[#f39c12] rounded-full" />
+                    <div className="mt-5 mb-12 h-1.5 bg-orange-500 w-3/4 sm:w-full max-w-[300px]" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-12">
                     {calendarMonths.length > 0
                         ? calendarMonths.map((month) => (
-                              <Calendar
-                                  key={month.key}
-                                  month={month}
-                                  lang={lang}
-                                  highlightedDates={highlightedDates}
-                              />
-                          ))
+                            <Calendar
+                                key={month.key}
+                                month={month}
+                                lang={lang}
+                                highlightedDates={highlightedDates}
+                            />
+                        ))
                         : Array.from({ length: 3 }).map((_, index) => (
-                              <div
-                                  key={`calendar-placeholder-${index}`}
-                                  className="bg-[#f4f6f7] rounded-xl overflow-visible shadow-sm border border-gray-100 h-full flex flex-col"
-                              >
-                                  <div className="py-3 sm:py-4 text-center">
-                                      <div className="mx-auto h-7 w-24 rounded bg-gray-200/80" />
-                                  </div>
+                            <div
+                                key={`calendar-placeholder-${index}`}
+                                className="bg-[#f4f6f7] rounded-xl overflow-visible shadow-sm border border-gray-100 h-full flex flex-col"
+                            >
+                                <div className="py-3 sm:py-4 text-center">
+                                    <div className="mx-auto h-7 w-24 rounded bg-gray-200/80" />
+                                </div>
 
-                                  <div className="bg-gray-200/50 grid grid-cols-7 py-2">
-                                      {Array.from({ length: 7 }).map((__, dayIndex) => (
-                                          <div
-                                              key={`placeholder-day-label-${index}-${dayIndex}`}
-                                              className="h-4"
-                                          />
-                                      ))}
-                                  </div>
+                                <div className="bg-gray-200/50 grid grid-cols-7 py-2">
+                                    {Array.from({ length: 7 }).map((__, dayIndex) => (
+                                        <div
+                                            key={`placeholder-day-label-${index}-${dayIndex}`}
+                                            className="h-4"
+                                        />
+                                    ))}
+                                </div>
 
-                                  <div className="p-3 sm:p-4 grid grid-cols-7 gap-y-2 flex-grow auto-rows-[32px]">
-                                      {Array.from({ length: 35 }).map((__, dayIndex) => (
-                                          <div
-                                              key={`placeholder-day-cell-${index}-${dayIndex}`}
-                                              className="mx-auto h-6 w-6 rounded-full bg-gray-200/70"
-                                          />
-                                      ))}
-                                  </div>
-                              </div>
-                          ))}
+                                <div className="p-3 sm:p-4 grid grid-cols-7 gap-y-2 flex-grow auto-rows-[32px]">
+                                    {Array.from({ length: 35 }).map((__, dayIndex) => (
+                                        <div
+                                            key={`placeholder-day-cell-${index}-${dayIndex}`}
+                                            className="mx-auto h-6 w-6 rounded-full bg-gray-200/70"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                 </div>
 
                 <div className="flex justify-center mt-8 sm:mt-12">
                     {showMoreHref ? (
                         <Link
                             href={showMoreHref}
-                            className={`bg-[#2c3e50] hover:bg-[#34495e] text-white px-8 sm:px-10 py-3 rounded-md font-bold uppercase tracking-wider text-xs sm:text-sm transition-colors shadow-lg ${
-                                lang === "kh" ? "khmer-font normal-case tracking-normal" : ""
-                            }`}
+                            className={`bg-[#2c3e50] hover:bg-[#34495e] text-white px-8 sm:px-10 py-3 rounded-md font-bold uppercase tracking-wider text-xs sm:text-sm transition-colors shadow-lg ${lang === "kh" ? "khmer-font normal-case tracking-normal" : ""
+                                }`}
                         >
                             {t.btn}
                         </Link>
                     ) : (
                         <button
                             disabled
-                            className={`bg-[#2c3e50] text-white/80 px-8 sm:px-10 py-3 rounded-md font-bold uppercase tracking-wider text-xs sm:text-sm shadow-lg cursor-not-allowed ${
-                                lang === "kh" ? "khmer-font normal-case tracking-normal" : ""
-                            }`}
+                            className={`bg-[#2c3e50] text-white/80 px-8 sm:px-10 py-3 rounded-md font-bold uppercase tracking-wider text-xs sm:text-sm shadow-lg cursor-not-allowed ${lang === "kh" ? "khmer-font normal-case tracking-normal" : ""
+                                }`}
                         >
                             {isLoading ? t.loading : t.btn}
                         </button>

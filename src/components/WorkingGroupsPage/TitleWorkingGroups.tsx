@@ -197,7 +197,7 @@ export default function WorkingGroups16() {
         <div className="items-start">
           <div className="lg:sticky lg:top-10">
             <p
-              className={`text-xl font-bold text-gray-900 mb-2 uppercase tracking-wider ${
+              className={`text-lg md:text-2xl font-semibold text-gray-900 mb-2 tracking-wider ${
                 isKh ? "khmer-font normal-case" : ""
               }`}
             >

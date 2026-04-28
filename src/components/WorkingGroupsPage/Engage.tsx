@@ -211,7 +211,7 @@ export default function Engage() {
                     {view.sectionTitle}
                 </h2>
 
-                <div className="mb-8 h-1.5 bg-orange-500 w-40 sm:w-52 rounded-full" />
+                <div className="mt-5 mb-12 h-1.5 bg-orange-500 w-3/4 sm:w-full max-w-[300px]" />
 
                 <ol className="grid grid-cols-1 lg:grid-cols-3 gap-5 list-none p-0 m-0">
                     {view.items.map((item, index) => (
