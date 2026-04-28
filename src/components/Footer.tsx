@@ -419,7 +419,7 @@ const LinkSection = ({
                     <li key={`${link.nameEn}-${link.href}`}>
                         <a
                             href={link.href}
-                            className={`text-lg underline text-gray-700 hover:text-[#0808e1] transition ${
+                            className={`text-lg text-gray-700 hover:text-[#0808e1] transition ${
                                 isKhmer ? "khmer-font" : ""
                             }`}
                         >
