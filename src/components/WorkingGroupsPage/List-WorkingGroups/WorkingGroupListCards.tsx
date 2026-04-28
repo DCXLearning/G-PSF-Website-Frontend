@@ -128,10 +128,21 @@ export default function WorkingGroupListCards({
   );
 
   const emptyLabel = isKh ? "មិនទាន់មានក្រុមការងារ" : "No working groups found";
+  const title = isKh ? "ក្រុមការងារតាមវិស័យផ្សេងទៀត" : "Related Working Groups";
 
   return (
-    <section className="bg-white px-4 pb-20 pt-2 sm:px-6 md:px-10 lg:px-14">
+    <section className="bg-white px-4 pb-20 pt-8 sm:px-6 md:px-10 lg:px-14">
       <div className="mx-auto max-w-7xl px-4">
+        <header className="mb-10 text-center md:mb-14">
+          <h2
+            className={`text-4xl font-extrabold leading-[1.05] text-blue-950 md:text-5xl ${
+              isKh ? "khmer-font" : ""
+            }`}
+          >
+            {title}
+          </h2>
+        </header>
+
         {loading ? (
           <div className="grid grid-cols-2 gap-[22px] sm:grid-cols-3 lg:grid-cols-6">
             {Array.from({ length: 6 }).map((_, index) => (
