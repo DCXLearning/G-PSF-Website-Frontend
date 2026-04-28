@@ -67,7 +67,7 @@ export default function DualGovernanceModel() {
                     {/* TOP */}
                     <div className="px-4 py-10 md:px-33">
                         <h2
-                            className={`text-3xl md:text-5xl max-w-3xl font-extrabold text-gray-800 leading-tight ${lang === "kh" ? "khmer-font leading-relaxed" : ""
+                            className={`text-4xl md:text-5xl max-w-3xl font-extrabold text-gray-800 leading-tight ${lang === "kh" ? "khmer-font leading-relaxed" : ""
                                 }`}
                         >
                             {text.title}

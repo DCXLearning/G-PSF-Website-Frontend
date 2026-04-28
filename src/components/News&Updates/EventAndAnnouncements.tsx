@@ -53,6 +53,10 @@ type CalendarMonth = {
     month: number;
 };
 
+type VisibleCalendarMonth = CalendarMonth & {
+    realIndex: number;
+};
+
 type HighlightedDate = {
     monthKey: string;
     day: number;
@@ -107,12 +111,19 @@ function getPostDate(post: ApiPost) {
 
 function buildDetailHref(post: ApiPost) {
     const slug = post.slug?.trim() || "";
-    if (slug) return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
+    if (slug) {
+        return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
+    }
     return `/new-update/view-detail?id=${post.id}`;
 }
 
 function createMonthKey(year: number, month: number) {
     return `${year}-${month}`;
+}
+
+function toLocalizedNumber(value: number, lang: ApiLang) {
+    if (lang !== "km") return String(value);
+    return String(value).replace(/\d/g, (digit) => "០១២៣៤៥៦៧៨៩"[Number(digit)]);
 }
 
 function buildCalendarMonths(posts: ApiPost[]): CalendarMonth[] {
@@ -121,17 +132,33 @@ function buildCalendarMonths(posts: ApiPost[]): CalendarMonth[] {
         .filter((date): date is Date => date !== null)
         .sort((a, b) => a.getTime() - b.getTime());
 
-    const startDate = eventDates[0] ?? new Date();
+    if (eventDates.length === 0) {
+        const now = new Date();
+
+        return [
+            {
+                key: createMonthKey(now.getFullYear(), now.getMonth()),
+                year: now.getFullYear(),
+                month: now.getMonth(),
+            },
+        ];
+    }
+
+    const firstDate = eventDates[0];
+    const lastDate = eventDates[eventDates.length - 1];
+
     const months: CalendarMonth[] = [];
+    const current = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+    const end = new Date(lastDate.getFullYear(), lastDate.getMonth(), 1);
 
-    for (let index = 0; index < 3; index++) {
-        const monthDate = new Date(startDate.getFullYear(), startDate.getMonth() + index, 1);
-
+    while (current <= end) {
         months.push({
-            key: createMonthKey(monthDate.getFullYear(), monthDate.getMonth()),
-            year: monthDate.getFullYear(),
-            month: monthDate.getMonth(),
+            key: createMonthKey(current.getFullYear(), current.getMonth()),
+            year: current.getFullYear(),
+            month: current.getMonth(),
         });
+
+        current.setMonth(current.getMonth() + 1);
     }
 
     return months;
@@ -238,7 +265,9 @@ export default function EventsAndAnnouncements() {
                 if (!alive) return;
 
                 const publishedPosts = (json.data || []).filter(isPublishedPost);
-                setEventPosts(sortPostsByDate(publishedPosts).slice(0, json.limit || 2));
+
+                // ✅ Do not slice here, keep all old events for calendar navigation.
+                setEventPosts(sortPostsByDate(publishedPosts));
             } catch (error) {
                 if (!alive) return;
                 setEventError(error instanceof Error ? error.message : "Failed to load events");
@@ -320,12 +349,27 @@ export default function EventsAndAnnouncements() {
 
     const calendarMonths = useMemo(() => buildCalendarMonths(eventPosts), [eventPosts]);
 
+    useEffect(() => {
+        setSelectedMonthIndex(Math.max(0, calendarMonths.length - 1));
+    }, [calendarMonths.length]);
+
+    const visibleCalendarMonths = useMemo<VisibleCalendarMonth[]>(() => {
+        const endIndex = selectedMonthIndex;
+        const startIndex = Math.max(0, endIndex - 2);
+
+        return calendarMonths.slice(startIndex, endIndex + 1).map((month, index) => ({
+            ...month,
+            realIndex: startIndex + index,
+        }));
+    }, [calendarMonths, selectedMonthIndex]);
+
     const highlightedDates = useMemo(
         () => buildHighlightedDates(eventPosts, apiLang),
         [eventPosts, apiLang]
     );
 
-    const selectedMonth = calendarMonths[selectedMonthIndex] || calendarMonths[0];
+    const selectedMonth =
+        calendarMonths[selectedMonthIndex] || calendarMonths[calendarMonths.length - 1];
 
     const calendarCells = useMemo(() => {
         if (!selectedMonth) return [];
@@ -335,13 +379,14 @@ export default function EventsAndAnnouncements() {
     const showEventSkeleton = eventLoading && eventPosts.length === 0;
     const showAnnouncementSkeleton = announcementLoading && announcementPosts.length === 0;
 
-    useEffect(() => {
-        setSelectedMonthIndex(0);
-    }, [eventPosts]);
+    function goToPreviousMonth() {
+        setSelectedMonthIndex((currentIndex) => Math.max(0, currentIndex - 1));
+    }
 
     function goToNextMonth() {
-        if (calendarMonths.length === 0) return;
-        setSelectedMonthIndex((currentIndex) => (currentIndex + 1) % calendarMonths.length);
+        setSelectedMonthIndex((currentIndex) =>
+            Math.min(calendarMonths.length - 1, currentIndex + 1)
+        );
     }
 
     return (
@@ -365,16 +410,29 @@ export default function EventsAndAnnouncements() {
                         ) : (
                             <>
                                 <div className="flex items-center gap-1 bg-white/50 p-1 rounded-full mb-6 border border-gray-200">
-                                    {calendarMonths.map((month, index) => {
-                                        const isActive = index === selectedMonthIndex;
+                                    <button
+                                        type="button"
+                                        onClick={goToPreviousMonth}
+                                        disabled={selectedMonthIndex === 0}
+                                        className="w-10 h-10 flex items-center cursor-pointer justify-center text-gray-600 font-bold shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+                                        aria-label="Previous month"
+                                    >
+                                        ‹
+                                    </button>
+
+                                    {visibleCalendarMonths.map((month) => {
+                                        const isActive = month.realIndex === selectedMonthIndex;
 
                                         return (
                                             <button
                                                 key={month.key}
                                                 type="button"
-                                                onClick={() => setSelectedMonthIndex(index)}
-                                                className={`flex-1 h-10 px-2 rounded-full cursor-pointer font-bold transition text-center whitespace-nowrap ${isActive ? "bg-white shadow-sm text-gray-700" : "text-gray-400"
-                                                    } ${apiLang === "km" ? "khmer-font text-sm" : "text-sm"}`}
+                                                onClick={() => setSelectedMonthIndex(month.realIndex)}
+                                                className={`flex-1 h-10 px-2 rounded-full cursor-pointer font-bold transition text-center whitespace-nowrap ${
+                                                    isActive
+                                                        ? "bg-white shadow-sm text-gray-700"
+                                                        : "text-gray-400"
+                                                } ${apiLang === "km" ? "khmer-font text-sm" : "text-sm"}`}
                                             >
                                                 {formatMonthLabel(month, apiLang)}
                                             </button>
@@ -384,7 +442,8 @@ export default function EventsAndAnnouncements() {
                                     <button
                                         type="button"
                                         onClick={goToNextMonth}
-                                        className="w-10 h-10 flex items-center cursor-pointer justify-center text-gray-600 font-bold shrink-0"
+                                        disabled={selectedMonthIndex === calendarMonths.length - 1}
+                                        className="w-10 h-10 flex items-center cursor-pointer justify-center text-gray-600 font-bold shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
                                         aria-label="Next month"
                                     >
                                         ›
@@ -396,8 +455,9 @@ export default function EventsAndAnnouncements() {
                                         {DAYS_OF_WEEK[apiLang].map((day, index) => (
                                             <div
                                                 key={`${selectedMonth?.key || "month"}-${day}-${index}`}
-                                                className={`h-8 flex items-center justify-center text-gray-400 font-bold ${apiLang === "km" ? "khmer-font text-sm" : "text-xl"
-                                                    }`}
+                                                className={`h-8 flex items-center justify-center text-gray-400 font-bold ${
+                                                    apiLang === "km" ? "khmer-font text-sm" : "text-xl"
+                                                }`}
                                             >
                                                 {day}
                                             </div>
@@ -412,7 +472,8 @@ export default function EventsAndAnnouncements() {
 
                                             const highlightedDate = highlightedDates.find(
                                                 (item) =>
-                                                    item.monthKey === selectedMonth.key && item.day === cell.day
+                                                    item.monthKey === selectedMonth.key &&
+                                                    item.day === cell.day
                                             );
 
                                             if (highlightedDate?.href) {
@@ -423,13 +484,15 @@ export default function EventsAndAnnouncements() {
                                                         className="group relative h-10 flex justify-center items-center"
                                                     >
                                                         <div className="w-10 h-10 bg-orange-400 rounded-full flex items-center justify-center text-gray-800 font-bold text-xl shadow-inner shrink-0">
-                                                            {cell.day}
+                                                            {toLocalizedNumber(cell.day, apiLang)}
                                                         </div>
 
-                                                        {(highlightedDate.title || highlightedDate.description) && (
+                                                        {(highlightedDate.title ||
+                                                            highlightedDate.description) && (
                                                             <div
-                                                                className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${apiLang === "km" ? "khmer-font" : ""
-                                                                    }`}
+                                                                className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${
+                                                                    apiLang === "km" ? "khmer-font" : ""
+                                                                }`}
                                                             >
                                                                 {highlightedDate.title && (
                                                                     <p className="text-xs sm:text-sm font-semibold whitespace-pre-line">
@@ -449,9 +512,12 @@ export default function EventsAndAnnouncements() {
                                             }
 
                                             return (
-                                                <div key={cell.key} className="h-10 flex justify-center items-center">
+                                                <div
+                                                    key={cell.key}
+                                                    className="h-10 flex justify-center items-center"
+                                                >
                                                     <span className="w-10 h-10 flex items-center justify-center text-xl font-medium text-gray-800">
-                                                        {cell.day}
+                                                        {toLocalizedNumber(cell.day, apiLang)}
                                                     </span>
                                                 </div>
                                             );
@@ -474,10 +540,11 @@ export default function EventsAndAnnouncements() {
 
                 <div className="flex flex-col h-full">
                     <h2
-                        className={`text-3xl md:text-4xl font-bold mb-6 min-h-[48px] ${apiLang === "km" || containsKhmer(labels.announcementsTitle)
+                        className={`text-3xl md:text-4xl font-bold mb-6 min-h-[48px] ${
+                            apiLang === "km" || containsKhmer(labels.announcementsTitle)
                                 ? "khmer-font"
                                 : ""
-                            }`}
+                        }`}
                     >
                         {labels.announcementsTitle}
                     </h2>
@@ -490,10 +557,11 @@ export default function EventsAndAnnouncements() {
                             </>
                         ) : announcementPosts.length === 0 ? (
                             <div
-                                className={`border border-gray-200 p-6 text-sm text-gray-500 min-h-[252px] ${apiLang === "km" || containsKhmer(labels.noAnnouncements)
+                                className={`border border-gray-200 p-6 text-sm text-gray-500 min-h-[252px] ${
+                                    apiLang === "km" || containsKhmer(labels.noAnnouncements)
                                         ? "khmer-font"
                                         : ""
-                                    }`}
+                                }`}
                             >
                                 {announcementError || labels.noAnnouncements}
                             </div>
@@ -525,10 +593,11 @@ export default function EventsAndAnnouncements() {
 
                                         <div className="flex flex-col min-w-0 flex-1">
                                             <span
-                                                className={`text-[10px] font-bold mb-1 text-[#1a2b4b] ${useKhmerFont
+                                                className={`text-[10px] font-bold mb-1 text-[#1a2b4b] ${
+                                                    useKhmerFont
                                                         ? "khmer-font normal-case"
                                                         : "uppercase tracking-wider"
-                                                    }`}
+                                                }`}
                                             >
                                                 {categoryName}
                                                 {post.publishedAt
@@ -537,15 +606,17 @@ export default function EventsAndAnnouncements() {
                                             </span>
 
                                             <h3
-                                                className={`text-2xl font-bold mb-3 leading-tight text-[#1a2b4b] ${useKhmerFont ? "khmer-font" : ""
-                                                    }`}
+                                                className={`text-2xl font-bold mb-3 leading-tight text-[#1a2b4b] ${
+                                                    useKhmerFont ? "khmer-font" : ""
+                                                }`}
                                             >
                                                 {title}
                                             </h3>
 
                                             <p
-                                                className={`text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3 ${useKhmerFont ? "khmer-font" : ""
-                                                    }`}
+                                                className={`text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3 ${
+                                                    useKhmerFont ? "khmer-font" : ""
+                                                }`}
                                             >
                                                 {description || "-"}
                                             </p>
@@ -555,10 +626,11 @@ export default function EventsAndAnnouncements() {
                                                     href={documentUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={`text-[10px] font-bold flex items-center mt-auto hover:text-orange-500 ${useKhmerFont
+                                                    className={`text-[10px] font-bold flex items-center mt-auto hover:text-orange-500 ${
+                                                        useKhmerFont
                                                             ? "khmer-font normal-case"
                                                             : "uppercase tracking-tighter"
-                                                        }`}
+                                                    }`}
                                                 >
                                                     {labels.download}
                                                     <span className="ml-1 text-lg">›</span>
@@ -574,8 +646,9 @@ export default function EventsAndAnnouncements() {
                     <div className="mt-6 flex justify-center">
                         <Link
                             href="/announcement"
-                            className={`text-white bg-blue-950 hover:bg-blue-900 py-2 px-5 rounded-lg font-semibold ${apiLang === "km" ? "khmer-font" : ""
-                                }`}
+                            className={`text-white bg-blue-950 hover:bg-blue-900 py-2 px-5 rounded-lg font-semibold ${
+                                apiLang === "km" ? "khmer-font" : ""
+                            }`}
                         >
                             {labels.seeMore}
                         </Link>
