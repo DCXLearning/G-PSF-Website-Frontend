@@ -65,92 +65,72 @@ function cleanText(value?: string | null): string {
 
 function getText(value: I18nText | undefined, lang: ApiLang): string {
     if (!value) return "";
-
-    if (lang === "km") {
-        return cleanText(value.km) || cleanText(value.en);
-    }
-
+    if (lang === "km") return cleanText(value.km) || cleanText(value.en);
     return cleanText(value.en) || cleanText(value.km);
 }
 
 function getPostDateValue(post: SchedulePost): string {
-    // Use the best available date from the API.
-    return (
-        cleanText(post.publishedAt) ||
-        cleanText(post.createdAt) ||
-        cleanText(post.updatedAt)
-    );
+    return cleanText(post.publishedAt) || cleanText(post.createdAt) || cleanText(post.updatedAt);
 }
 
 function getPostDate(post: SchedulePost): Date | null {
     const rawDate = getPostDateValue(post);
-
-    if (!rawDate) {
-        return null;
-    }
+    if (!rawDate) return null;
 
     const date = new Date(rawDate);
     return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function formatMonthLabel(month: CalendarMonth, lang: Lang): string {
-    return formatLocalizedMonthName(month.year, month.month, lang, true);
 }
 
 function createMonthKey(year: number, month: number): string {
     return `${year}-${month}`;
 }
 
-function buildCalendarMonths(posts: SchedulePost[]): CalendarMonth[] {
-    const months: CalendarMonth[] = [];
-    const seen = new Set<string>();
+function toKhmerNumber(value: number, lang: Lang): string {
+    if (lang !== "kh") return String(value);
+    return String(value).replace(/\d/g, (digit) => "០១២៣៤៥៦៧៨៩"[Number(digit)]);
+}
 
+function formatMonthLabel(month: CalendarMonth, lang: Lang): string {
+    return formatLocalizedMonthName(month.year, month.month, lang, true);
+}
+
+/* ✅ ចាប់ពីខែ Event ចុងក្រោយ ហើយបង្ហាញ 3 ខែចុងក្រោយ
+   Example: Last event = April => Feb, Mar, Apr */
+function buildCalendarMonths(posts: SchedulePost[]): CalendarMonth[] {
     const dates = posts
         .map((post) => getPostDate(post))
         .filter((date): date is Date => date !== null)
-        .sort((firstDate, secondDate) => firstDate.getTime() - secondDate.getTime());
+        .sort((a, b) => a.getTime() - b.getTime());
 
-    const startDate = dates[0] ?? new Date();
-    let cursor = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+    const lastDate = dates[dates.length - 1] ?? new Date();
+    const months: CalendarMonth[] = [];
 
-    // Build 3 months for the calendar UI, starting from the first event month.
-    while (months.length < 3) {
-        const key = createMonthKey(cursor.getFullYear(), cursor.getMonth());
+    for (let i = 2; i >= 0; i--) {
+        const date = new Date(lastDate.getFullYear(), lastDate.getMonth() - i, 1);
 
-        if (!seen.has(key)) {
-            seen.add(key);
-            months.push({
-                key,
-                year: cursor.getFullYear(),
-                month: cursor.getMonth(),
-            });
-        }
-
-        cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+        months.push({
+            key: createMonthKey(date.getFullYear(), date.getMonth()),
+            year: date.getFullYear(),
+            month: date.getMonth(),
+        });
     }
 
     return months;
 }
 
-function buildHighlightedDates(
-    posts: SchedulePost[],
-    lang: ApiLang
-): HighlightedDate[] {
+function buildHighlightedDates(posts: SchedulePost[], lang: ApiLang): HighlightedDate[] {
     const groupedDates = new Map<string, HighlightedDate>();
 
     for (const post of posts) {
         const date = getPostDate(post);
-
-        if (!date) {
-            continue;
-        }
+        if (!date) continue;
 
         const monthKey = createMonthKey(date.getFullYear(), date.getMonth());
         const day = date.getDate();
         const mapKey = `${monthKey}-${day}`;
         const postTitle = getText(post.title, lang);
         const postDescription = getText(post.description, lang);
-        // Save title + description so the custom tooltip can show both parts.
+
         if (!groupedDates.has(mapKey)) {
             groupedDates.set(mapKey, {
                 monthKey,
@@ -166,9 +146,7 @@ function buildHighlightedDates(
 
         if (existing) {
             if (postTitle) {
-                existing.title = existing.title
-                    ? `${existing.title}\n${postTitle}`
-                    : postTitle;
+                existing.title = existing.title ? `${existing.title}\n${postTitle}` : postTitle;
             }
 
             if (postDescription) {
@@ -183,17 +161,12 @@ function buildHighlightedDates(
 }
 
 function formatSectionTitle(title: string, lang: Lang): string {
-    if (title) {
-        return title;
-    }
-
+    if (title) return title;
     return lang === "kh" ? "កាលវិភាគប្រជុំ" : "Meeting Schedule";
 }
 
 function buildDetailHref(post?: SchedulePost): string {
-    if (!post?.id) {
-        return "";
-    }
+    if (!post?.id) return "";
 
     const slug = cleanText(post.slug);
 
@@ -254,7 +227,6 @@ function Calendar({
                         (item) => item.monthKey === month.key && item.day === day
                     );
 
-                    // Make highlighted days clickable so they open the post detail page.
                     if (highlightedDate?.href) {
                         return (
                             <Link
@@ -264,8 +236,12 @@ function Calendar({
                             >
                                 <div className="absolute w-7 h-7 sm:w-8 sm:h-8 bg-[#ffb347] rounded-full shadow-inner" />
 
-                                <span className="relative z-10 text-xs sm:text-sm font-semibold text-black">
-                                    {day}
+                                <span
+                                    className={`relative z-10 text-xs sm:text-sm font-semibold text-black ${
+                                        lang === "kh" ? "khmer-font" : ""
+                                    }`}
+                                >
+                                    {toKhmerNumber(day, lang)}
                                 </span>
 
                                 <div
@@ -294,8 +270,12 @@ function Calendar({
                             key={`${month.key}-${day}`}
                             className="relative flex items-center justify-center"
                         >
-                            <span className="relative z-10 text-xs sm:text-sm font-semibold text-gray-700">
-                                {day}
+                            <span
+                                className={`relative z-10 text-xs sm:text-sm font-semibold text-gray-700 ${
+                                    lang === "kh" ? "khmer-font" : ""
+                                }`}
+                            >
+                                {toKhmerNumber(day, lang)}
                             </span>
                         </div>
                     );
@@ -307,12 +287,10 @@ function Calendar({
 
 export default function WorkingGroupsDate() {
     const { language } = useLanguage();
-    const lang = (language as Lang) ?? "en";
+    const lang: Lang = language === "kh" ? "kh" : "en";
     const apiLang: ApiLang = lang === "kh" ? "km" : "en";
 
     const [isLoading, setIsLoading] = useState(true);
-    // Start with an empty list so the first server render matches the first client render.
-    // We fill the real months after the browser fetches the schedule data.
     const [calendarMonths, setCalendarMonths] = useState<CalendarMonth[]>([]);
     const [highlightedDates, setHighlightedDates] = useState<HighlightedDate[]>([]);
     const [sectionTitle, setSectionTitle] = useState("");
@@ -340,9 +318,7 @@ export default function WorkingGroupsDate() {
 
                 const response = await fetch(
                     "/api/working-groups-page/section?slug=working-groups&types=post_list",
-                    {
-                        cache: "no-store",
-                    }
+                    { cache: "no-store" }
                 );
 
                 const data = (await response.json()) as ScheduleResponse;
@@ -353,7 +329,6 @@ export default function WorkingGroupsDate() {
 
                 const blocks = data.data?.blocks ?? [];
 
-                // Pick the Event & Meetings Schedule block from the page response.
                 const scheduleBlock =
                     blocks.find(
                         (block) =>
@@ -363,39 +338,30 @@ export default function WorkingGroupsDate() {
                     ) ?? blocks.find((block) => block.enabled === true && block.type === "post_list");
 
                 const posts = (scheduleBlock?.posts ?? [])
-                    .filter(
-                        (post) => post.status === "published" && post.isPublished !== false
-                    )
+                    .filter((post) => post.status === "published" && post.isPublished !== false)
                     .sort((firstPost, secondPost) => {
                         const firstTime = getPostDate(firstPost)?.getTime() ?? 0;
                         const secondTime = getPostDate(secondPost)?.getTime() ?? 0;
                         return secondTime - firstTime;
                     });
 
-                if (!mounted) {
-                    return;
-                }
+                if (!mounted) return;
 
                 setSectionTitle(getText(scheduleBlock?.title, apiLang));
                 setCalendarMonths(buildCalendarMonths(posts));
                 setHighlightedDates(buildHighlightedDates(posts, apiLang));
-                // The See More button now opens the shared events list page.
                 setShowMoreHref("/events-meetings");
             } catch (error) {
                 console.error("Failed to load working groups dates:", error);
 
-                if (!mounted) {
-                    return;
-                }
+                if (!mounted) return;
 
                 setSectionTitle("");
                 setCalendarMonths(buildCalendarMonths([]));
                 setHighlightedDates([]);
                 setShowMoreHref("");
             } finally {
-                if (mounted) {
-                    setIsLoading(false);
-                }
+                if (mounted) setIsLoading(false);
             }
         }
 
@@ -445,7 +411,6 @@ export default function WorkingGroupsDate() {
                               />
                           ))
                         : Array.from({ length: 3 }).map((_, index) => (
-                              // Keep the old calendar card layout visible while data is loading.
                               <div
                                   key={`calendar-placeholder-${index}`}
                                   className="bg-[#f4f6f7] rounded-xl overflow-visible shadow-sm border border-gray-100 h-full flex flex-col"
@@ -480,9 +445,7 @@ export default function WorkingGroupsDate() {
                         <Link
                             href={showMoreHref}
                             className={`bg-[#2c3e50] hover:bg-[#34495e] text-white px-8 sm:px-10 py-3 rounded-md font-bold uppercase tracking-wider text-xs sm:text-sm transition-colors shadow-lg ${
-                                lang === "kh"
-                                    ? "khmer-font normal-case tracking-normal"
-                                    : ""
+                                lang === "kh" ? "khmer-font normal-case tracking-normal" : ""
                             }`}
                         >
                             {t.btn}
@@ -491,9 +454,7 @@ export default function WorkingGroupsDate() {
                         <button
                             disabled
                             className={`bg-[#2c3e50] text-white/80 px-8 sm:px-10 py-3 rounded-md font-bold uppercase tracking-wider text-xs sm:text-sm shadow-lg cursor-not-allowed ${
-                                lang === "kh"
-                                    ? "khmer-font normal-case tracking-normal"
-                                    : ""
+                                lang === "kh" ? "khmer-font normal-case tracking-normal" : ""
                             }`}
                         >
                             {isLoading ? t.loading : t.btn}
