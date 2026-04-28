@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import Pagination from "@/components/Pagination";
+import { getContentLanguageLabel } from "@/utils/languageLabels";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type ApiLang = "en" | "km";
@@ -299,22 +300,22 @@ function buildDownloadHref(fileUrl: string, fileName: string): string {
     return `/api/download?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(fileName)}`;
 }
 
-function buildLanguages(post: ApiResourcePost, title: string): ResourceLanguage[] {
+function buildLanguages(post: ApiResourcePost, title: string, apiLang: ApiLang): ResourceLanguage[] {
     const languages: ResourceLanguage[] = [];
     const englishUrl = normalizeFileUrl(post.documents?.en?.url);
     const khmerUrl = normalizeFileUrl(post.documents?.km?.url);
 
-    if (englishUrl) {
+    if (khmerUrl) {
         languages.push({
-            label: "English",
-            href: buildDownloadHref(englishUrl, buildFileName(title, "english", englishUrl)),
+            label: getContentLanguageLabel("km", apiLang),
+            href: buildDownloadHref(khmerUrl, buildFileName(title, "khmer", khmerUrl)),
         });
     }
 
-    if (khmerUrl) {
+    if (englishUrl) {
         languages.push({
-            label: "Khmer",
-            href: buildDownloadHref(khmerUrl, buildFileName(title, "khmer", khmerUrl)),
+            label: getContentLanguageLabel("en", apiLang),
+            href: buildDownloadHref(englishUrl, buildFileName(title, "english", englishUrl)),
         });
     }
 
@@ -365,7 +366,7 @@ function mapResourcePosts(response: ResourcePostResponse, apiLang: ApiLang): Res
             org: pickText(post.category?.name, apiLang),
             author: getText(post.author?.displayName),
             description: pickText(post.description ?? undefined, apiLang),
-            languages: buildLanguages(post, title),
+            languages: buildLanguages(post, title, apiLang),
             image: pickImage(post, apiLang),
             href: buildPostHref(post),
         });
@@ -501,7 +502,7 @@ function CategoryFilterSection({
     );
 }
 
-const ResourceItem = ({ item }: { item: Resource }) => {
+const ResourceItem = ({ item, lang }: { item: Resource; lang: ApiLang }) => {
     const badgeStyles: Record<string, string> = {
         Publication: "bg-[#3f51b5]",
         Report: "bg-[#3949ab]",
@@ -545,7 +546,9 @@ const ResourceItem = ({ item }: { item: Resource }) => {
                 {/*</a>*/}
 
                 <div className="mt-6 flex gap-4 text-xs font-bold items-baseline flex-wrap">
-                    <span className="text-slate-400">Language:</span>
+                    <span className={`text-slate-400 ${lang === "km" ? "khmer-font" : ""}`}>
+                        {lang === "km" ? "ភាសា:" : "Language:"}
+                    </span>
                     {item.languages.length > 0 ? (
                         item.languages.map((languageItem) => (
                             <a
@@ -560,7 +563,9 @@ const ResourceItem = ({ item }: { item: Resource }) => {
                             </a>
                         ))
                     ) : (
-                        <span className="text-slate-400">No file</span>
+                        <span className={`text-slate-400 ${lang === "km" ? "khmer-font" : ""}`}>
+                            {lang === "km" ? "គ្មានឯកសារ" : "No file"}
+                        </span>
                     )}
                 </div>
             </div>
@@ -876,7 +881,7 @@ export default function ResourceLibraryPage({
                             ) : visibleResources.length > 0 ? (
                                 <>
                                     {paginatedResources.map((resource) => (
-                                        <ResourceItem key={resource.id} item={resource} />
+                                        <ResourceItem key={resource.id} item={resource} lang={apiLang} />
                                     ))}
 
                                     {totalPages > 1 ? (

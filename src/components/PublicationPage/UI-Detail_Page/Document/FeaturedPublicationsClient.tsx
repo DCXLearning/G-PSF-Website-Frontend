@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { getContentLanguageLabel } from "@/utils/languageLabels";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
 export type Publication = {
@@ -90,8 +91,8 @@ function PublicationCard({ item, isKhmer }: { item: Publication; isKhmer: boolea
         noDate: isKhmer ? "គ្មានកាលបរិច្ឆេទ" : "No date",
         download: isKhmer ? "ទាញយក" : "Download",
         noFile: isKhmer ? "គ្មានឯកសារ" : "No file",
-        khmer: isKhmer ? "ខ្មែរ" : "Khmer",
-        english: isKhmer ? "អង់គ្លេស" : "English",
+        khmer: getContentLanguageLabel("km", isKhmer ? "kh" : "en"),
+        english: getContentLanguageLabel("en", isKhmer ? "kh" : "en"),
     };
 
     return (

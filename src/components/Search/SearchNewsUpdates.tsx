@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { getContentLanguageLabel } from "@/utils/languageLabels";
 
 type Lang = "en" | "kh";
 
@@ -144,7 +145,7 @@ function NewsListItem({
 
                         {item.languages.map((lang) => (
                             <span key={lang} className="font-bold text-[#0f172a] mr-2">
-                                {lang}
+                                {getContentLanguageLabel(lang, language)}
                             </span>
                         ))}
                     </div>

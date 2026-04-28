@@ -6,6 +6,7 @@ import PublicationDocumentsBrowser, {
     type PublicationDocumentItem,
     type PublicationDocumentLanguage,
 } from "@/components/PublicationPage/See-More/PublicationDocumentsBrowser";
+import { getContentLanguageLabel } from "@/utils/languageLabels";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type UiLang = "en" | "kh";
@@ -135,16 +136,16 @@ function buildLanguages(post: ApiPost, lang: UiLang): PublicationDocumentLanguag
 
     if (englishFile || khmerFile) {
         return [
-            englishFile
-                ? {
-                      label: "English",
-                      href: englishFile,
-                  }
-                : null,
             khmerFile
                 ? {
-                      label: "Khmer",
+                      label: getContentLanguageLabel("km", lang),
                       href: khmerFile,
+                  }
+                : null,
+            englishFile
+                ? {
+                      label: getContentLanguageLabel("en", lang),
+                      href: englishFile,
                   }
                 : null,
         ].filter(Boolean) as PublicationDocumentLanguage[];

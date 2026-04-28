@@ -7,6 +7,7 @@ import PublicationDocumentsBrowser, {
     type PublicationDocumentItem,
     type PublicationDocumentLanguage,
 } from "@/components/PublicationPage/See-More/PublicationDocumentsBrowser";
+import { getContentLanguageLabel } from "@/utils/languageLabels";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type UiLang = "en" | "kh";
@@ -123,18 +124,18 @@ function formatSlugLabel(slug: string) {
         .join(" ");
 }
 
-function buildLanguages(post: ApiPost): PublicationDocumentLanguage[] {
+function buildLanguages(post: ApiPost, lang: UiLang): PublicationDocumentLanguage[] {
     return [
-        buildDownloadHref(post.documents?.en?.url)
-            ? {
-                  label: "English",
-                  href: buildDownloadHref(post.documents?.en?.url),
-              }
-            : null,
         buildDownloadHref(post.documents?.km?.url)
             ? {
-                  label: "Khmer",
+                  label: getContentLanguageLabel("km", lang),
                   href: buildDownloadHref(post.documents?.km?.url),
+              }
+            : null,
+        buildDownloadHref(post.documents?.en?.url)
+            ? {
+                  label: getContentLanguageLabel("en", lang),
+                  href: buildDownloadHref(post.documents?.en?.url),
               }
             : null,
     ].filter(Boolean) as PublicationDocumentLanguage[];
@@ -385,7 +386,7 @@ export default function PublicationPageViewMore({
                     description: pickText(post.description, uiLang),
                     image: pickThumbnail(post, uiLang),
                     date: formatLocalizedDate(post.publishedAt || post.createdAt, uiLang),
-                    languages: buildLanguages(post),
+                    languages: buildLanguages(post, uiLang),
                 }));
 
                 if (!active) {

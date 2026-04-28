@@ -364,14 +364,14 @@ export function WGOutputsSection({
                                         rel="noreferrer"
                                         className="bg-[#f39c32] hover:bg-[#e68a1e] text-[#1e2756] cursor-pointer font-bold py-2 px-6 rounded flex items-center gap-2 transition-all"
                                     >
-                                        Download <ChevronRight size={16} />
+                                        {isKh ? "ទាញយក" : "Download"} <ChevronRight size={16} />
                                     </a>
                                 ) : (
                                     <button
                                         disabled
                                         className="bg-gray-200 text-gray-500 font-bold py-2 px-6 rounded flex items-center gap-2 cursor-not-allowed"
                                     >
-                                        Download <ChevronRight size={16} />
+                                        {isKh ? "ទាញយក" : "Download"} <ChevronRight size={16} />
                                     </button>
                                 )}
                             </div>
@@ -481,11 +481,11 @@ function ArticleCard({
                         rel="noreferrer"
                         className="text-[#1e2756] cursor-pointer font-bold text-xs flex items-center gap-1 hover:underline"
                     >
-                        Download <ChevronRight size={14} />
+                        {isKh ? "ទាញយក" : "Download"} <ChevronRight size={14} />
                     </a>
                 ) : (
                     <span className="text-gray-400 font-bold text-xs flex items-center gap-1">
-                        Download <ChevronRight size={14} />
+                        {isKh ? "ទាញយក" : "Download"} <ChevronRight size={14} />
                     </span>
                 )}
             </div>

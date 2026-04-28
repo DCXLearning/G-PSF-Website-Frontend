@@ -78,12 +78,12 @@ function buildLanguages(post: CmsPost): string[] {
     const descriptionEn = cleanText(post.description?.en);
     const descriptionKm = cleanText(post.description?.km);
 
-    if (titleEn || descriptionEn) {
-        languages.push("English");
-    }
-
     if (titleKm || descriptionKm) {
         languages.push("Khmer");
+    }
+
+    if (titleEn || descriptionEn) {
+        languages.push("English");
     }
 
     if (languages.length === 0) {

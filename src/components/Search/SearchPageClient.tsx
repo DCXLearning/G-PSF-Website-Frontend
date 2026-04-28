@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { getContentLanguageLabel } from "@/utils/languageLabels";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type Lang = "en" | "kh";
@@ -138,19 +139,19 @@ function getLanguages(post: ApiPost) {
 
     // Show which language versions exist for the current post.
     if (
-        cleanText(post.title?.en) ||
-        cleanText(post.description?.en) ||
-        cleanText(post.documents?.en?.url)
-    ) {
-        languages.push("English");
-    }
-
-    if (
         cleanText(post.title?.km) ||
         cleanText(post.description?.km) ||
         cleanText(post.documents?.km?.url)
     ) {
         languages.push("Khmer");
+    }
+
+    if (
+        cleanText(post.title?.en) ||
+        cleanText(post.description?.en) ||
+        cleanText(post.documents?.en?.url)
+    ) {
+        languages.push("English");
     }
 
     return languages;
@@ -409,7 +410,7 @@ function ResourceListItem({
                                 key={lang}
                                 className="font-bold text-[#0f172a] mr-2"
                             >
-                                {lang}
+                                {getContentLanguageLabel(lang, language)}
                             </span>
                         ))}
                     </div>

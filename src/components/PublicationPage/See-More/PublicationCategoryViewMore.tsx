@@ -11,6 +11,7 @@ import {
     getPublicationViewMoreConfig,
     type PublicationCategoryViewMoreConfig,
 } from "@/components/PublicationPage/See-More/publicationViewMoreConfig";
+import { getContentLanguageLabel } from "@/utils/languageLabels";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type UiLang = "en" | "kh";
@@ -74,13 +75,13 @@ function buildLanguages(post: ApiPost, lang: UiLang): PublicationDocumentLanguag
     return [
         buildDownloadHref(post.documents?.km?.url)
             ? {
-                  label: lang === "kh" ? "ខ្មែរ" : "Khmer",
+                  label: getContentLanguageLabel("km", lang),
                   href: buildDownloadHref(post.documents?.km?.url),
               }
             : null,
         buildDownloadHref(post.documents?.en?.url)
             ? {
-                  label: lang === "kh" ? "អង់គ្លេស" : "English",
+                  label: getContentLanguageLabel("en", lang),
                   href: buildDownloadHref(post.documents?.en?.url),
               }
             : null,

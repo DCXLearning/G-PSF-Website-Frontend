@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { getContentLanguageLabel } from "@/utils/languageLabels";
 
 type Lang = "en" | "kh";
 
@@ -42,7 +43,7 @@ const ANNOUNCEMENT_DATA: AnnouncementItem[] = [
         date: "December 2025",
         href: "/new-update/announcements/1",
         image: "https://placehold.co/400x530/ffffff/1d4ed8?text=Announcement",
-        languages: ["English", "Khmer"],
+        languages: ["Khmer", "English"],
     },
     {
         id: 2,
@@ -200,7 +201,7 @@ function AnnouncementListItem({
                                 key={lang}
                                 className="font-bold text-[#0f172a] mr-2"
                             >
-                                {lang}
+                                {getContentLanguageLabel(lang, language)}
                             </span>
                         ))}
                     </div>
