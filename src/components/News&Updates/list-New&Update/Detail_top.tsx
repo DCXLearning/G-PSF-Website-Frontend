@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CalendarDays, FileText } from "lucide-react";
 import { FaFacebookF, FaTelegramPlane } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import {
   buildFacebookShareUrl,
   buildTelegramShareUrl,
@@ -420,30 +420,36 @@ function ImageFigure({ src, alt }: { src: string; alt: string }) {
   return (
     <figure className="mt-6">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="w-full rounded-md border border-slate-200" />
+      <img src={src} alt={alt} className="h-auto w-full object-contain" />
     </figure>
   );
 }
 
 function ImageCarousel({ slides }: { slides: ImageSlide[] }) {
   return (
-    <figure className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm">
+    <figure className="mt-6 overflow-hidden bg-slate-50">
       <Swiper
-        modules={[Navigation, Pagination]}
+        modules={[Autoplay, Navigation, Pagination]}
         slidesPerView={1}
         spaceBetween={0}
+        loop={slides.length > 1}
+        autoplay={{
+          delay: 3000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        }}
         navigation
         pagination={{ clickable: true }}
         className="news-detail-photo-carousel"
       >
         {slides.map((slide) => (
           <SwiperSlide key={slide.key}>
-            <div className="flex min-h-[260px] items-center justify-center bg-slate-100 sm:min-h-[420px]">
+            <div className="flex h-[300px] items-center justify-center bg-white sm:h-[520px] lg:h-[720px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={slide.src}
                 alt={slide.alt}
-                className="max-h-[720px] w-full object-contain"
+                className="h-full w-full object-contain"
               />
             </div>
           </SwiperSlide>
