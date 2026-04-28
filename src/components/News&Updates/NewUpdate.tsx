@@ -74,9 +74,9 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                         href={detailHref}
                                         className="group block h-full focus:outline-none"
                                     >
-                                        <article className="flex min-h-[500px] h-full flex-col bg-[#e9ecef] shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                                        <article className="flex min-h-[500px] rounded-2xl h-full flex-col bg-[#e9ecef] shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
                                             {/* Image */}
-                                            <div className="relative m-4 aspect-square overflow-hidden bg-white">
+                                            <div className="relative m-4 rounded-2xl aspect-square overflow-hidden bg-white">
                                                 {item.imageUrl ? (
                                                     <Image
                                                         src={item.imageUrl}

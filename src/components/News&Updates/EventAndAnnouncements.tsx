@@ -3,15 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { formatLocalizedDate, formatLocalizedMonthName } from "@/utils/localizedDate";
+import {
+    formatLocalizedDate,
+    formatLocalizedMonthName,
+} from "@/utils/localizedDate";
 
 type ApiLang = "en" | "km";
 type I18n = { en?: string; km?: string };
-
-type DocFile = {
-    url?: string;
-    thumbnailUrl?: string;
-} | null;
+type DocFile = { url?: string; thumbnailUrl?: string } | null;
 
 type ApiPost = {
     id: number;
@@ -22,33 +21,22 @@ type ApiPost = {
     status?: string;
     isPublished?: boolean;
     document?: string | null;
-    documents?: {
-        en?: DocFile;
-        km?: DocFile;
-    } | null;
-    category?: {
-        id: number;
-        name?: I18n;
-    } | null;
+    documents?: { en?: DocFile; km?: DocFile } | null;
+    category?: { id: number; name?: I18n } | null;
 };
 
 type ApiBlock = {
     id: number;
     type: string;
     title?: I18n;
-    settings?: {
-        limit?: number;
-        categoryIds?: number[];
-    } | null;
+    settings?: { limit?: number; categoryIds?: number[] } | null;
     posts?: ApiPost[];
 };
 
 type AnnouncementResponse = {
     success?: boolean;
     message?: string;
-    data?: {
-        blocks?: ApiBlock[];
-    };
+    data?: { blocks?: ApiBlock[] };
 };
 
 type EventResponse = {
@@ -73,10 +61,18 @@ type HighlightedDate = {
     href: string;
 };
 
+type CalendarCell = {
+    key: string;
+    day: number | null;
+};
+
 const DAYS_OF_WEEK: Record<ApiLang, string[]> = {
     en: ["S", "M", "T", "W", "T", "F", "S"],
     km: ["អា", "ច", "អ", "ពុ", "ព្រ", "សុ", "ស"],
 };
+
+const TOTAL_CALENDAR_CELLS = 42;
+const SAME_CONTENT_HEIGHT = "min-h-[528px]";
 
 function containsKhmer(value?: string | null) {
     return /[\u1780-\u17FF]/.test(value ?? "");
@@ -92,7 +88,6 @@ function isPublishedPost(post: ApiPost) {
 }
 
 function sortPostsByDate(posts: ApiPost[]) {
-    // Keep the newest posts first so the homepage always shows recent content.
     return [...posts].sort((a, b) => {
         const aTime = new Date(a.publishedAt || 0).getTime();
         const bTime = new Date(b.publishedAt || 0).getTime();
@@ -104,28 +99,15 @@ function pickDocumentUrl(post: ApiPost, lang: ApiLang) {
     return post.documents?.[lang]?.url || post.documents?.en?.url || post.document || "";
 }
 
-function getPostDateValue(post: ApiPost) {
-    return post.publishedAt || "";
-}
-
 function getPostDate(post: ApiPost) {
-    const dateValue = getPostDateValue(post);
-
-    if (!dateValue) {
-        return null;
-    }
-
-    const date = new Date(dateValue);
+    if (!post.publishedAt) return null;
+    const date = new Date(post.publishedAt);
     return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function buildDetailHref(post: ApiPost) {
     const slug = post.slug?.trim() || "";
-
-    if (slug) {
-        return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
-    }
-
+    if (slug) return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
     return `/new-update/view-detail?id=${post.id}`;
 }
 
@@ -137,13 +119,12 @@ function buildCalendarMonths(posts: ApiPost[]): CalendarMonth[] {
     const eventDates = posts
         .map((post) => getPostDate(post))
         .filter((date): date is Date => date !== null)
-        .sort((firstDate, secondDate) => firstDate.getTime() - secondDate.getTime());
+        .sort((a, b) => a.getTime() - b.getTime());
 
     const startDate = eventDates[0] ?? new Date();
     const months: CalendarMonth[] = [];
 
-    // Build 3 tabs for the old calendar UI.
-    for (let index = 0; index < 3; index += 1) {
+    for (let index = 0; index < 3; index++) {
         const monthDate = new Date(startDate.getFullYear(), startDate.getMonth() + index, 1);
 
         months.push({
@@ -160,15 +141,26 @@ function formatMonthLabel(month: CalendarMonth, lang: ApiLang) {
     return formatLocalizedMonthName(month.year, month.month, lang);
 }
 
+function buildCalendarCells(month: CalendarMonth): CalendarCell[] {
+    const firstDayIndex = new Date(month.year, month.month, 1).getDay();
+    const totalDays = new Date(month.year, month.month + 1, 0).getDate();
+
+    return Array.from({ length: TOTAL_CALENDAR_CELLS }, (_, index) => {
+        const dayNumber = index - firstDayIndex + 1;
+
+        return {
+            key: `${month.key}-cell-${index}`,
+            day: dayNumber >= 1 && dayNumber <= totalDays ? dayNumber : null,
+        };
+    });
+}
+
 function buildHighlightedDates(posts: ApiPost[], lang: ApiLang): HighlightedDate[] {
     const groupedDates = new Map<string, HighlightedDate>();
 
     for (const post of posts) {
         const date = getPostDate(post);
-
-        if (!date) {
-            continue;
-        }
+        if (!date) continue;
 
         const monthKey = createMonthKey(date.getFullYear(), date.getMonth());
         const day = date.getDate();
@@ -176,7 +168,6 @@ function buildHighlightedDates(posts: ApiPost[], lang: ApiLang): HighlightedDate
         const title = pickText(post.title, lang);
         const description = pickText(post.description, lang);
 
-        // Group events by day so one date can represent multiple posts.
         if (!groupedDates.has(mapKey)) {
             groupedDates.set(mapKey, {
                 monthKey,
@@ -191,10 +182,7 @@ function buildHighlightedDates(posts: ApiPost[], lang: ApiLang): HighlightedDate
         const existing = groupedDates.get(mapKey);
 
         if (existing) {
-            if (title) {
-                existing.title = existing.title ? `${existing.title}\n${title}` : title;
-            }
-
+            if (title) existing.title = existing.title ? `${existing.title}\n${title}` : title;
             if (description) {
                 existing.description = existing.description
                     ? `${existing.description}\n\n${description}`
@@ -208,15 +196,12 @@ function buildHighlightedDates(posts: ApiPost[], lang: ApiLang): HighlightedDate
 
 function PostCardSkeleton() {
     return (
-        <div className="border border-gray-200 p-8 animate-pulse">
+        <div className="border border-gray-200 p-6 animate-pulse min-h-[252px]">
             <div className="h-3 w-36 bg-slate-200 rounded mb-3" />
             <div className="h-8 w-3/4 bg-slate-200 rounded mb-3" />
             <div className="h-4 w-full bg-slate-200 rounded mb-2" />
             <div className="h-4 w-5/6 bg-slate-200 rounded mb-4" />
-            <div className="flex gap-6">
-                <div className="h-4 w-20 bg-slate-200 rounded" />
-                <div className="h-4 w-24 bg-slate-200 rounded" />
-            </div>
+            <div className="h-4 w-24 bg-slate-200 rounded" />
         </div>
     );
 }
@@ -225,16 +210,13 @@ export default function EventsAndAnnouncements() {
     const { language } = useLanguage();
     const apiLang: ApiLang = language === "kh" ? "km" : "en";
 
-    // Left side: event calendar data.
     const [eventLoading, setEventLoading] = useState(true);
     const [eventError, setEventError] = useState("");
     const [eventPosts, setEventPosts] = useState<ApiPost[]>([]);
 
-    // Right side: announcement card data.
     const [announcementLoading, setAnnouncementLoading] = useState(true);
     const [announcementError, setAnnouncementError] = useState("");
     const [announcementPosts, setAnnouncementPosts] = useState<ApiPost[]>([]);
-    // This controls which month tab is active in the old calendar UI.
     const [selectedMonthIndex, setSelectedMonthIndex] = useState(0);
 
     useEffect(() => {
@@ -245,7 +227,6 @@ export default function EventsAndAnnouncements() {
                 setEventError("");
                 setEventLoading(true);
 
-                // Load only the News & Updates event section from the dedicated API route.
                 const res = await fetch("/api/newupdate-page/events", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
@@ -253,26 +234,16 @@ export default function EventsAndAnnouncements() {
 
                 const json: EventResponse = await res.json();
 
-                if (!res.ok) {
-                    throw new Error(json.message || "Failed to load events");
-                }
-
+                if (!res.ok) throw new Error(json.message || "Failed to load events");
                 if (!alive) return;
 
-                // Keep only published items, sort newest first, then respect the CMS limit.
                 const publishedPosts = (json.data || []).filter(isPublishedPost);
-                const sortedPosts = sortPostsByDate(publishedPosts);
-                const limitedPosts = sortedPosts.slice(0, json.limit || 2);
-
-                setEventPosts(limitedPosts);
+                setEventPosts(sortPostsByDate(publishedPosts).slice(0, json.limit || 2));
             } catch (error) {
                 if (!alive) return;
-                const message =
-                    error instanceof Error ? error.message : "Failed to load events";
-                setEventError(message);
+                setEventError(error instanceof Error ? error.message : "Failed to load events");
             } finally {
-                if (!alive) return;
-                setEventLoading(false);
+                if (alive) setEventLoading(false);
             }
         }
 
@@ -291,7 +262,6 @@ export default function EventsAndAnnouncements() {
                 setAnnouncementError("");
                 setAnnouncementLoading(true);
 
-                // Load the full page section response, then pick only the announcement block.
                 const res = await fetch("/api/newupdate-page/section", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
@@ -299,14 +269,9 @@ export default function EventsAndAnnouncements() {
 
                 const json: AnnouncementResponse = await res.json();
 
-                if (!res.ok) {
-                    throw new Error(json.message || "Failed to load announcements");
-                }
-
+                if (!res.ok) throw new Error(json.message || "Failed to load announcements");
                 if (!alive) return;
 
-                // The page section response contains many blocks.
-                // We only want the announcement block for the right side.
                 const blocks = json.data?.blocks || [];
                 const announcementBlock =
                     blocks.find((block) => block.type === "announcement" && block.id === 32) ||
@@ -318,18 +283,16 @@ export default function EventsAndAnnouncements() {
                 }
 
                 const publishedPosts = (announcementBlock.posts || []).filter(isPublishedPost);
-                const sortedPosts = sortPostsByDate(publishedPosts);
-                const limitedPosts = sortedPosts.slice(0, announcementBlock.settings?.limit || 2);
-
-                setAnnouncementPosts(limitedPosts);
+                setAnnouncementPosts(
+                    sortPostsByDate(publishedPosts).slice(0, announcementBlock.settings?.limit || 2)
+                );
             } catch (error) {
                 if (!alive) return;
-                const message =
-                    error instanceof Error ? error.message : "Failed to load announcements";
-                setAnnouncementError(message);
+                setAnnouncementError(
+                    error instanceof Error ? error.message : "Failed to load announcements"
+                );
             } finally {
-                if (!alive) return;
-                setAnnouncementLoading(false);
+                if (alive) setAnnouncementLoading(false);
             }
         }
 
@@ -340,64 +303,56 @@ export default function EventsAndAnnouncements() {
         };
     }, []);
 
-    const labels = useMemo(() => {
-        return {
-            // Keep the original UI heading text stable.
-            // Only the event dates are dynamic, not this label.
+    const labels = useMemo(
+        () => ({
             eventsTitle:
-                language === "kh"
-                    ? "កាលវិភាគប្រជុំ និងព្រឹត្តិការណ៍"
-                    : "Events & Meetings Schedule",
-            // Keep the original right-side heading text too.
-            announcementsTitle:
-                language === "kh" ? "សេចក្តីជូនដំណឹង" : "Announcement",
-            eventLabel: language === "kh" ? "ព្រឹត្តិការណ៍" : "Event",
+                language === "kh" ? "កាលវិភាគប្រជុំ និងព្រឹត្តិការណ៍" : "Events & Meetings Schedule",
+            announcementsTitle: language === "kh" ? "សេចក្តីជូនដំណឹង" : "Announcement",
             download: language === "kh" ? "ទាញយក" : "Download",
-            viewDetail: language === "kh" ? "មើលលម្អិត" : "View Detail",
             noEvents: language === "kh" ? "មិនមានព្រឹត្តិការណ៍" : "No events available",
             noAnnouncements:
                 language === "kh" ? "មិនមានសេចក្តីជូនដំណឹង" : "No announcements available",
             untitled: language === "kh" ? "គ្មានចំណងជើង" : "Untitled",
             seeMore: language === "kh" ? "មើលបន្ថែម" : "See More",
-        };
-    }, [language]);
+        }),
+        [language]
+    );
 
-    // Keep the original UI labels instead of replacing them with CMS block titles.
-    const eventsTitle = labels.eventsTitle;
-    const announcementsTitle = labels.announcementsTitle;
-    // These values are used only to paint the old calendar UI with real event data.
     const calendarMonths = useMemo(() => buildCalendarMonths(eventPosts), [eventPosts]);
+
     const highlightedDates = useMemo(
         () => buildHighlightedDates(eventPosts, apiLang),
         [eventPosts, apiLang]
     );
+
     const selectedMonth = calendarMonths[selectedMonthIndex] || calendarMonths[0];
 
+    const calendarCells = useMemo(() => {
+        if (!selectedMonth) return [];
+        return buildCalendarCells(selectedMonth);
+    }, [selectedMonth]);
+
     const showEventSkeleton = eventLoading && eventPosts.length === 0;
-    const showAnnouncementSkeleton =
-        announcementLoading && announcementPosts.length === 0;
+    const showAnnouncementSkeleton = announcementLoading && announcementPosts.length === 0;
 
     useEffect(() => {
-        // Reset the tab when the event data changes.
         setSelectedMonthIndex(0);
     }, [eventPosts]);
 
     function goToNextMonth() {
-        if (calendarMonths.length === 0) {
-            return;
-        }
-
-        // Move to the next month tab and loop back to the first one at the end.
+        if (calendarMonths.length === 0) return;
         setSelectedMonthIndex((currentIndex) => (currentIndex + 1) % calendarMonths.length);
     }
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8 bg-white font-sans text-[#1a2b4b]">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                <div className="lg:col-span-6">
-                    <h2 className="text-3xl md:text-4xl khmer-font font-bold mb-6">{eventsTitle}</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
+                <div className="flex flex-col h-full">
+                    <h2 className="text-3xl md:text-4xl khmer-font font-bold mb-6 min-h-[48px]">
+                        {labels.eventsTitle}
+                    </h2>
 
-                    <div className="bg-[#e9ecef] p-6 rounded-sm">
+                    <div className={`bg-[#e9ecef] p-6 rounded-sm ${SAME_CONTENT_HEIGHT}`}>
                         {showEventSkeleton ? (
                             <>
                                 <PostCardSkeleton />
@@ -418,11 +373,8 @@ export default function EventsAndAnnouncements() {
                                                 key={month.key}
                                                 type="button"
                                                 onClick={() => setSelectedMonthIndex(index)}
-                                                className={`flex-1 py-2 px-4 rounded-full font-bold transition ${
-                                                    isActive
-                                                        ? "bg-white shadow-sm text-gray-700"
-                                                        : "text-gray-400"
-                                                } ${apiLang === "km" ? "khmer-font" : ""}`}
+                                                className={`flex-1 h-10 px-2 rounded-full cursor-pointer font-bold transition text-center whitespace-nowrap ${isActive ? "bg-white shadow-sm text-gray-700" : "text-gray-400"
+                                                    } ${apiLang === "km" ? "khmer-font text-sm" : "text-sm"}`}
                                             >
                                                 {formatMonthLabel(month, apiLang)}
                                             </button>
@@ -432,137 +384,105 @@ export default function EventsAndAnnouncements() {
                                     <button
                                         type="button"
                                         onClick={goToNextMonth}
-                                        className="px-3 text-gray-600 font-bold"
+                                        className="w-10 h-10 flex items-center cursor-pointer justify-center text-gray-600 font-bold shrink-0"
                                         aria-label="Next month"
                                     >
                                         ›
                                     </button>
                                 </div>
 
-                                <div className="bg-white rounded-2xl p-6 shadow-sm">
+                                <div className="bg-white rounded-2xl p-6 shadow-sm min-h-[408px]">
                                     <div className="grid grid-cols-7 mb-4">
                                         {DAYS_OF_WEEK[apiLang].map((day, index) => (
                                             <div
                                                 key={`${selectedMonth?.key || "month"}-${day}-${index}`}
-                                                className={`text-center text-gray-400 font-bold text-xl ${
-                                                    apiLang === "km" ? "khmer-font text-sm" : ""
-                                                }`}
+                                                className={`h-8 flex items-center justify-center text-gray-400 font-bold ${apiLang === "km" ? "khmer-font text-sm" : "text-xl"
+                                                    }`}
                                             >
                                                 {day}
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="grid grid-cols-7 gap-y-4">
-                                        {selectedMonth ? (
-                                            <>
-                                                {Array.from(
-                                                    {
-                                                        length: new Date(
-                                                            selectedMonth.year,
-                                                            selectedMonth.month,
-                                                            1
-                                                        ).getDay(),
-                                                    },
-                                                    (_, index) => (
-                                                        <div key={`${selectedMonth.key}-blank-${index}`} />
-                                                    )
-                                                )}
+                                    <div className="grid grid-cols-7 grid-rows-6 gap-y-2 min-h-[300px]">
+                                        {calendarCells.map((cell) => {
+                                            if (!cell.day || !selectedMonth) {
+                                                return <div key={cell.key} className="h-10" />;
+                                            }
 
-                                                {Array.from(
-                                                    {
-                                                        length: new Date(
-                                                            selectedMonth.year,
-                                                            selectedMonth.month + 1,
-                                                            0
-                                                        ).getDate(),
-                                                    },
-                                                    (_, index) => index + 1
-                                                ).map((day) => {
-                                                    const highlightedDate = highlightedDates.find(
-                                                        (item) =>
-                                                            item.monthKey === selectedMonth.key &&
-                                                            item.day === day
-                                                    );
+                                            const highlightedDate = highlightedDates.find(
+                                                (item) =>
+                                                    item.monthKey === selectedMonth.key && item.day === cell.day
+                                            );
 
-                                                    if (highlightedDate?.href) {
-                                                        return (
-                                                            <Link
-                                                                key={`${selectedMonth.key}-${day}`}
-                                                                href={highlightedDate.href}
-                                                                className="group relative flex justify-center items-center"
-                                                            >
-                                                                <div className="w-10 h-10 bg-orange-400 rounded-full flex items-center justify-center text-gray-800 font-bold text-xl shadow-inner">
-                                                                    {day}
-                                                                </div>
-
-                                                                {(highlightedDate.title ||
-                                                                    highlightedDate.description) ? (
-                                                                    <div
-                                                                        className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${
-                                                                            apiLang === "km"
-                                                                                ? "khmer-font"
-                                                                                : ""
-                                                                        }`}
-                                                                    >
-                                                                        {highlightedDate.title ? (
-                                                                            <p className="text-xs sm:text-sm font-semibold whitespace-pre-line">
-                                                                                {highlightedDate.title}
-                                                                            </p>
-                                                                        ) : null}
-
-                                                                        {highlightedDate.description ? (
-                                                                            <p className="mt-2 text-[11px] sm:text-xs leading-5 text-white/85 whitespace-pre-line">
-                                                                                {highlightedDate.description}
-                                                                            </p>
-                                                                        ) : null}
-                                                                    </div>
-                                                                ) : null}
-                                                            </Link>
-                                                        );
-                                                    }
-
-                                                    return (
-                                                        <div
-                                                            key={`${selectedMonth.key}-${day}`}
-                                                            className="relative flex justify-center items-center"
-                                                        >
-                                                            <span className="text-xl font-medium text-gray-800">
-                                                                {day}
-                                                            </span>
+                                            if (highlightedDate?.href) {
+                                                return (
+                                                    <Link
+                                                        key={cell.key}
+                                                        href={highlightedDate.href}
+                                                        className="group relative h-10 flex justify-center items-center"
+                                                    >
+                                                        <div className="w-10 h-10 bg-orange-400 rounded-full flex items-center justify-center text-gray-800 font-bold text-xl shadow-inner shrink-0">
+                                                            {cell.day}
                                                         </div>
-                                                    );
-                                                })}
-                                            </>
-                                        ) : null}
+
+                                                        {(highlightedDate.title || highlightedDate.description) && (
+                                                            <div
+                                                                className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${apiLang === "km" ? "khmer-font" : ""
+                                                                    }`}
+                                                            >
+                                                                {highlightedDate.title && (
+                                                                    <p className="text-xs sm:text-sm font-semibold whitespace-pre-line">
+                                                                        {highlightedDate.title}
+                                                                    </p>
+                                                                )}
+
+                                                                {highlightedDate.description && (
+                                                                    <p className="mt-2 text-[11px] sm:text-xs leading-5 text-white/85 whitespace-pre-line">
+                                                                        {highlightedDate.description}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </Link>
+                                                );
+                                            }
+
+                                            return (
+                                                <div key={cell.key} className="h-10 flex justify-center items-center">
+                                                    <span className="w-10 h-10 flex items-center justify-center text-xl font-medium text-gray-800">
+                                                        {cell.day}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </>
                         )}
                     </div>
 
-                    <div className="mt-6 text-center">
+                    <div className="mt-6 flex justify-center">
                         <Link
                             href="/events-meetings"
-                            className="text-white khmer-font bg-blue-950 hover:bg-blue-900 py-2 px-4 rounded-lg font-semibold"
+                            className="text-white khmer-font bg-blue-950 hover:bg-blue-900 py-2 px-5 rounded-lg font-semibold"
                         >
                             {labels.seeMore}
                         </Link>
                     </div>
                 </div>
 
-                <div className="lg:col-span-6">
+                <div className="flex flex-col h-full">
                     <h2
-                        className={`text-3xl md:text-4xl font-bold mb-6 ${
-                            apiLang === "km" || containsKhmer(announcementsTitle)
+                        className={`text-3xl md:text-4xl font-bold mb-6 min-h-[48px] ${apiLang === "km" || containsKhmer(labels.announcementsTitle)
                                 ? "khmer-font"
                                 : ""
-                        }`}
+                            }`}
                     >
-                        {announcementsTitle}
+                        {labels.announcementsTitle}
                     </h2>
 
-                    <div className="space-y-6">
+                    <div className={`space-y-6 ${SAME_CONTENT_HEIGHT}`}>
                         {showAnnouncementSkeleton ? (
                             <>
                                 <PostCardSkeleton />
@@ -570,11 +490,10 @@ export default function EventsAndAnnouncements() {
                             </>
                         ) : announcementPosts.length === 0 ? (
                             <div
-                                className={`border border-gray-200 p-8 text-sm text-gray-500 ${
-                                    apiLang === "km" || containsKhmer(labels.noAnnouncements)
+                                className={`border border-gray-200 p-6 text-sm text-gray-500 min-h-[252px] ${apiLang === "km" || containsKhmer(labels.noAnnouncements)
                                         ? "khmer-font"
                                         : ""
-                                }`}
+                                    }`}
                             >
                                 {announcementError || labels.noAnnouncements}
                             </div>
@@ -583,8 +502,7 @@ export default function EventsAndAnnouncements() {
                                 const title = pickText(post.title, apiLang) || labels.untitled;
                                 const description = pickText(post.description, apiLang);
                                 const categoryName =
-                                    pickText(post.category?.name, apiLang) ||
-                                    labels.announcementsTitle;
+                                    pickText(post.category?.name, apiLang) || labels.announcementsTitle;
                                 const documentUrl = pickDocumentUrl(post, apiLang);
                                 const useKhmerFont =
                                     apiLang === "km" ||
@@ -595,7 +513,7 @@ export default function EventsAndAnnouncements() {
                                 return (
                                     <div
                                         key={post.id}
-                                        className="border border-gray-200 p-8 flex gap-6 hover:shadow-md transition-shadow items-start"
+                                        className="border border-gray-200 p-6 flex gap-6 hover:shadow-md transition-shadow items-start min-h-[252px]"
                                     >
                                         <div className="flex-shrink-0 mt-2">
                                             <img
@@ -607,11 +525,10 @@ export default function EventsAndAnnouncements() {
 
                                         <div className="flex flex-col min-w-0 flex-1">
                                             <span
-                                                className={`text-[10px] font-bold mb-1 text-[#1a2b4b] ${
-                                                    useKhmerFont
+                                                className={`text-[10px] font-bold mb-1 text-[#1a2b4b] ${useKhmerFont
                                                         ? "khmer-font normal-case"
                                                         : "uppercase tracking-wider"
-                                                }`}
+                                                    }`}
                                             >
                                                 {categoryName}
                                                 {post.publishedAt
@@ -620,36 +537,33 @@ export default function EventsAndAnnouncements() {
                                             </span>
 
                                             <h3
-                                                className={`text-2xl font-bold mb-3 leading-tight text-[#1a2b4b] ${
-                                                    useKhmerFont ? "khmer-font" : ""
-                                                }`}
+                                                className={`text-2xl font-bold mb-3 leading-tight text-[#1a2b4b] ${useKhmerFont ? "khmer-font" : ""
+                                                    }`}
                                             >
                                                 {title}
                                             </h3>
 
                                             <p
-                                                className={`text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3 ${
-                                                    useKhmerFont ? "khmer-font" : ""
-                                                }`}
+                                                className={`text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3 ${useKhmerFont ? "khmer-font" : ""
+                                                    }`}
                                             >
                                                 {description || "-"}
                                             </p>
 
-                                            {documentUrl ? (
+                                            {documentUrl && (
                                                 <Link
                                                     href={documentUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={`text-[10px] font-bold flex items-center mt-auto hover:text-orange-500 ${
-                                                        useKhmerFont
+                                                    className={`text-[10px] font-bold flex items-center mt-auto hover:text-orange-500 ${useKhmerFont
                                                             ? "khmer-font normal-case"
                                                             : "uppercase tracking-tighter"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {labels.download}
                                                     <span className="ml-1 text-lg">›</span>
                                                 </Link>
-                                            ) : null}
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -657,12 +571,11 @@ export default function EventsAndAnnouncements() {
                         )}
                     </div>
 
-                    <div className="mt-6 text-center">
+                    <div className="mt-6 flex justify-center">
                         <Link
                             href="/announcement"
-                            className={`text-white bg-blue-950 hover:bg-blue-900 py-2 px-4 rounded-lg font-semibold ${
-                                apiLang === "km" ? "khmer-font" : ""
-                            }`}
+                            className={`text-white bg-blue-950 hover:bg-blue-900 py-2 px-5 rounded-lg font-semibold ${apiLang === "km" ? "khmer-font" : ""
+                                }`}
                         >
                             {labels.seeMore}
                         </Link>
