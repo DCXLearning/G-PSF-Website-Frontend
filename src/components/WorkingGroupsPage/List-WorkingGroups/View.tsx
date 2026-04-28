@@ -268,7 +268,7 @@ export default function RecentIssuesPage({
         };
 
   return (
-    <main className="min-h-screen bg-white px-4 py-10 sm:px-6 md:px-10 lg:px-14">
+    <main className="bg-white px-4 py-10 sm:px-6 md:px-10 lg:px-14">
       <div className="mx-auto w-full max-w-7xl px-4">
         <header className="mb-8 md:mb-10">
           <h1
