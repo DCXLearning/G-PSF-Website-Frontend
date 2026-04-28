@@ -262,7 +262,11 @@ export default function PublicationDocumentsBrowser({
                     description={description}
                 />
 
-                {loading ? <p className="py-10 text-center">Loading...</p> : null}
+                {loading ? (
+                    <p className={`py-10 text-center ${uiLang === "kh" ? "khmer-font" : ""}`}>
+                        {uiLang === "kh" ? "កំពុងទាញទិន្នន័យ..." : "Loading..."}
+                    </p>
+                ) : null}
 
                 {error ? (
                     <p className="py-10 text-center text-red-500">{error}</p>

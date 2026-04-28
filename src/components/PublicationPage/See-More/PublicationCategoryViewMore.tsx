@@ -70,18 +70,18 @@ function buildDownloadHref(value?: string | null): string {
     return `/api/download?url=${encodeURIComponent(fileUrl)}`;
 }
 
-function buildLanguages(post: ApiPost): PublicationDocumentLanguage[] {
+function buildLanguages(post: ApiPost, lang: UiLang): PublicationDocumentLanguage[] {
     return [
-        buildDownloadHref(post.documents?.en?.url)
-            ? {
-                  label: "English",
-                  href: buildDownloadHref(post.documents?.en?.url),
-              }
-            : null,
         buildDownloadHref(post.documents?.km?.url)
             ? {
-                  label: "Khmer",
+                  label: lang === "kh" ? "ខ្មែរ" : "Khmer",
                   href: buildDownloadHref(post.documents?.km?.url),
+              }
+            : null,
+        buildDownloadHref(post.documents?.en?.url)
+            ? {
+                  label: lang === "kh" ? "អង់គ្លេស" : "English",
+                  href: buildDownloadHref(post.documents?.en?.url),
               }
             : null,
     ].filter(Boolean) as PublicationDocumentLanguage[];
@@ -155,7 +155,7 @@ export default function PublicationCategoryViewMore({
                         description: pickText(post.description, uiLang),
                         image: pickThumbnail(post, uiLang),
                         date: formatLocalizedDate(post.publishedAt || post.createdAt, uiLang),
-                        languages: buildLanguages(post),
+                        languages: buildLanguages(post, uiLang),
                     }));
 
                 if (!active) {
