@@ -83,7 +83,7 @@ export default function HeroBanner() {
             }
         };
 
-        loadData();
+        void loadData();
 
         return () => {
             ignore = true;
@@ -107,8 +107,7 @@ export default function HeroBanner() {
     const bgImage = hero?.backgroundImages?.[0] || PLACEHOLDER_IMAGE_URL;
 
     const cta = hero?.ctas?.[0];
-    const ctaLabel =
-        cta?.label?.[langKey] || cta?.label?.en || cta?.label?.km || "";
+    const ctaLabel = cta?.label?.[langKey] || cta?.label?.en || cta?.label?.km || "";
 
     const ctaHref = cta?.href?.trim() ? cta.href : "#";
     const isExternal = ctaHref.startsWith("http");
@@ -119,116 +118,103 @@ export default function HeroBanner() {
             : data?.bannerStats?.itemsEn ?? [];
 
     return (
-        <div className="relative flex flex-col overflow-hidden bg-gray-100">
-
-            {/* Background */}
+        <div className="relative flex min-h-[680px] flex-col overflow-hidden bg-gray-100 md:min-h-[500px] lg:min-h-[650px]">
+            {/* Background Image */}
             <div
-                className="absolute inset-0 bg-cover bg-bottom bg-no-repeat"
+                className="absolute inset-0 h-full w-full bg-cover bg-bottom bg-no-repeat"
                 style={{ backgroundImage: `url(${bgImage})` }}
             >
-                <div className="absolute inset-0 bg-black/20" />
+                <div className="absolute inset-0 bg-black/25" />
             </div>
-
+            
             {/* Hero Content */}
             <div
-                className={`relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-36 max-w-5xl w-full mx-auto ${
-                    langKey === "km" ? "khmer-font" : ""
-                }`}
+                className={`relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-6 pb-20 pt-24 text-center md:pt-32 ${langKey === "km" ? "khmer-font" : ""
+                    }`}
             >
                 {subtitle && (
-                    <p className="text-lg md:text-5xl font-medium text-white mb-4 mt-10 whitespace-pre-line">
+                    <p className="mb-5 whitespace-pre-line text-lg font-medium text-white md:text-5xl">
                         {subtitle}
                     </p>
                 )}
 
                 {description && (
-                    <p className="text-base md:text-2xl max-w-4xl text-white mb-10 whitespace-pre-line">
+                    <p className="mb-8 max-w-4xl whitespace-pre-line text-base text-white md:text-2xl">
                         {description}
                     </p>
                 )}
+
+                {!!ctaLabel && !loading && (
+                    <div className="mt-4 flex justify-center">
+                        {isExternal ? (
+                            <a
+                                href={ctaHref}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="hidden"
+                            >
+                                {ctaLabel}
+                            </a>
+                        ) : (
+                            <Link href={ctaHref} className="hidden">
+                                {ctaLabel}
+                            </Link>
+                        )}
+                    </div>
+                )}
             </div>
 
-            {/* CTA Button Above Stats */}
-            {!!ctaLabel && !loading && (
-                <div className="relative z-20 flex justify-center mt-24 mb-12">
-                    {isExternal ? (
-                        <a
-                            href={ctaHref}
-                            target="_blank"
-                            rel="noreferrer"
-                            // className="bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
-                        >
-                            {/*{ctaLabel}*/}
-                        </a>
-                    ) : (
-                        <Link
-                            href={ctaHref}
-                            // className="bg-blue-800 hover:bg-blue-900 font-semibold text-white px-8 py-4 rounded-3xl shadow-xl transition"
-                        >
-                            {/*{ctaLabel}*/}
-                        </Link>
-                    )}
-                </div>
-            )}
-
             {/* Stats Section */}
-            <div className="relative z-20 px-4 pb-6">
-                <div className="max-w-6xl mx-auto">
+            <div className="relative z-20 mt-auto px-4 pb-8">
+                <div className="mx-auto max-w-6xl">
                     <div className="h-[2px] bg-white/80" />
 
-                    <div className="py-5">
+                    <div className="py-6">
                         <div className="grid grid-cols-3 text-center text-white">
-                            {(loading && !data
-                                ? Array.from({ length: 3 })
-                                : statsItems.slice(0, 3)
-                            ).map((it: any, idx) => {
-                                if (loading && !data) {
+                            {(loading && !data ? Array.from({ length: 3 }) : statsItems.slice(0, 3)).map(
+                                (it: any, idx) => {
+                                    if (loading && !data) {
+                                        return (
+                                            <div key={idx} className="px-2">
+                                                <div className="mx-auto h-10 w-20 animate-pulse rounded bg-white/20" />
+                                                <div className="mx-auto mt-3 h-4 w-24 animate-pulse rounded bg-white/20" />
+                                            </div>
+                                        );
+                                    }
+
+                                    const rawValue =
+                                        it?.value?.[langKey] || it?.value?.en || it?.value?.km || "";
+
+                                    const label =
+                                        it?.label?.[langKey] || it?.label?.en || it?.label?.km || "";
+
+                                    const formatNumber = (val: any) => {
+                                        if (!val) return "";
+
+                                        const match = String(val).match(/\d+/);
+                                        if (!match) return val;
+
+                                        const number = Number(match[0]);
+                                        const formatted = number.toLocaleString(
+                                            langKey === "km" ? "km-KH" : "en-US"
+                                        );
+
+                                        const suffix = String(val).replace(match[0], "");
+                                        return formatted + suffix;
+                                    };
+
                                     return (
                                         <div key={idx} className="px-2">
-                                            <div className="h-10 w-20 mx-auto bg-white/20 animate-pulse rounded" />
-                                            <div className="mt-3 h-4 w-24 mx-auto bg-white/20 animate-pulse rounded" />
+                                            <div className="text-2xl font-bold md:text-4xl">
+                                                {formatNumber(rawValue)}
+                                            </div>
+                                            <div className="mt-2 text-xs uppercase tracking-wider md:text-sm">
+                                                {label}
+                                            </div>
                                         </div>
                                     );
                                 }
-
-                                const rawValue =
-                                    it?.value?.[langKey] ||
-                                    it?.value?.en ||
-                                    it?.value?.km ||
-                                    "";
-
-                                const label =
-                                    it?.label?.[langKey] ||
-                                    it?.label?.en ||
-                                    it?.label?.km ||
-                                    "";
-
-                                const formatNumber = (val: any) => {
-                                    if (!val) return "";
-
-                                    const match = String(val).match(/\d+/);
-                                    if (!match) return val;
-
-                                    const number = Number(match[0]);
-                                    const formatted = number.toLocaleString(
-                                        langKey === "km" ? "km-KH" : "en-US"
-                                    );
-
-                                    const suffix = String(val).replace(match[0], "");
-                                    return formatted + suffix;
-                                };
-
-                                return (
-                                    <div key={idx} className="px-2">
-                                        <div className="text-2xl md:text-4xl font-bold">
-                                            {formatNumber(rawValue)}
-                                        </div>
-                                        <div className="mt-2 text-xs md:text-sm uppercase tracking-wider">
-                                            {label}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                            )}
                         </div>
                     </div>
                 </div>
