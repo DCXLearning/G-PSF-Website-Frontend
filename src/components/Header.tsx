@@ -426,7 +426,7 @@ const Header: FC = () => {
                                 >
                                     <span className="block text-base font-medium leading-none">{item.label}</span>
                                     <span
-                                        className={`absolute left-0 -bottom-1 h-[2px] bg-black transition-all duration-300 ${isActive ? "w-full" : "w-0"
+                                        className={`absolute left-0 -bottom-1 h-[2px] bg-orange-400 transition-all duration-300 ${isActive ? "w-full" : "w-0"
                                             }`}
                                     />
                                 </Link>
