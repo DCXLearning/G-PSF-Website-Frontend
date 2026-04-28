@@ -451,14 +451,6 @@ const Header: FC = () => {
                                 className={`h-full min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400 ${language === "kh" ? "khmer-font" : ""
                                     }`}
                             />
-
-                            <button
-                                type="submit"
-                                className="flex h-5 min-w-5 items-center justify-center rounded-md border border-gray-200 bg-gray-50 px-1.5 text-[8px] font-semibold text-gray-400 hover:bg-gray-100"
-                                aria-label="Submit search"
-                            >
-                                ⌘K
-                            </button>
                         </form>
 
                         <button
@@ -475,18 +467,20 @@ const Header: FC = () => {
 
                         <button
                             onClick={toggleLanguage}
-                            className="flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-50 transition-all cursor-pointer"
+                            className="group flex items-center cursor-pointer justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2 px-2 shadow-sm transition-all duration-200 hover:border-blue-100 hover:bg-slate-50 active:scale-95"
                             type="button"
                             aria-label="Translate language"
                             title={language === "en" ? "ភាសាខ្មែរ" : "English"}
                         >
-                            <Image
-                                src={translateFlagSrc}
-                                alt={translateFlagAlt}
-                                width={30}
-                                height={30}
-                                className="h-7 w-7 rounded-full object-cover"
-                            />
+                            {/* Flag Container */}
+                            <div className="relative h-4 w-6 overflow-hidden rounded-[2px] border border-gray-100">
+                                <Image
+                                    src={translateFlagSrc}
+                                    alt={translateFlagAlt}
+                                    fill
+                                    className="object-cover rounded-[2px]"
+                                />
+                            </div>
                         </button>
 
                         <button

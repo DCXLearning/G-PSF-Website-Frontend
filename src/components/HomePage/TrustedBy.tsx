@@ -68,7 +68,7 @@ const TrustedByCarousel: React.FC = () => {
   }
 
   return (
-    <section className="relative overflow-hidden bg-white pt-6 pb-25">
+    <section className="relative overflow-hidden bg-white pt-6 pb-25 mb-6">
       <div className="container relative mx-auto max-w-7xl px-4">
         <h2
           className={`mb-12 text-center text-4xl font-extrabold text-blue-950 md:text-5xl ${
