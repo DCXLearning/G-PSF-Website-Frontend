@@ -266,7 +266,7 @@ export default function EventsAndAnnouncements() {
 
                 const publishedPosts = (json.data || []).filter(isPublishedPost);
 
-                // ✅ Do not slice here, keep all old events for calendar navigation.
+                //  Do not slice here, keep all old events for calendar navigation.
                 setEventPosts(sortPostsByDate(publishedPosts));
             } catch (error) {
                 if (!alive) return;
@@ -516,7 +516,7 @@ export default function EventsAndAnnouncements() {
                                                     key={cell.key}
                                                     className="h-10 flex justify-center items-center"
                                                 >
-                                                    <span className="w-10 h-10 flex items-center justify-center text-xl font-medium text-gray-800">
+                                                    <span className="w-10 h-10 flex items-center khmer-font justify-center text-xl font-medium text-gray-800">
                                                         {toLocalizedNumber(cell.day, apiLang)}
                                                     </span>
                                                 </div>
