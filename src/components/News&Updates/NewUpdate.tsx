@@ -109,8 +109,8 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                     {item.excerpt || "No description available."}
                                                 </p>
 
-                                                <div className="mt-auto flex items-center text-xs font-bold text-[#1a2b4b]">
-                                                    View details
+                                                <div className={`mt-auto flex items-center text-xs font-bold text-[#1a2b4b] ${isKh ? "khmer-font" : ""}`}>
+                                                    {isKh ? "មើលលម្អិត" : "View details"}
                                                     <span className="ml-2 text-lg transition-transform duration-300 group-hover:translate-x-1">
                                                         ›
                                                     </span>
@@ -136,9 +136,9 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                     <div className="mt-8 flex justify-center">
                         <Link
                             href="/new-update/see-more"
-                            className="rounded-md bg-blue-950 px-4 py-2 text-lg font-semibold text-white transition hover:bg-blue-900"
+                            className={`rounded-md bg-blue-950 px-5 py-2 font-semibold text-white transition hover:bg-blue-900 ${isKh ? "khmer-font" : ""}`}
                         >
-                            See More
+                            {isKh ? "មើលបន្ថែម" : "See More"}
                         </Link>
                     </div>
                 )}
