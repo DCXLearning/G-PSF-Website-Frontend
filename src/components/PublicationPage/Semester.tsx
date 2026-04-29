@@ -21,6 +21,8 @@ type ApiPost = {
     id: number;
     title?: I18n;
     description?: I18n | null;
+    //Add coverImage
+    coverImage?: string | null;
     document?: string | null;
     documentThumbnail?: string | null;
     documentThumbnails?: {
@@ -129,6 +131,8 @@ function pickThumbUrl(post: ApiPost, apiLanguage: ApiLang): string {
             : post.documents?.en?.thumbnailUrl || post.documentThumbnails?.en;
 
     return (
+        //add coverImage if document thumnail broken
+        post.coverImage ||
         primary ||
         post.documents?.en?.thumbnailUrl ||
         post.documents?.km?.thumbnailUrl ||
