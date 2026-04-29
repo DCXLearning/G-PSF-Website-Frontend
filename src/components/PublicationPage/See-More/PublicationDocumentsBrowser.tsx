@@ -133,43 +133,73 @@ function LanguageLinks({
 }
 
 function Header({ view, setView, title, description }: HeaderProps) {
+    const { language } = useLanguage();
+
+    const lang = language === "kh" ? "kh" : "en";
+    const isKhmer = lang === "kh";
+
+    const labels = {
+        en: {
+            list: "List",
+            grid: "Grid",
+        },
+        kh: {
+            list: "បញ្ជី",
+            grid: "ក្រឡា",
+        },
+    };
+
     return (
-        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-10 -mt-2 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-                <h1 className="text-3xl font-bold text-[#0B2C5F] md:text-4xl">
+                <h1
+                    className={`text-3xl font-bold text-[#0B2C5F] md:text-[44px] ${
+                        isKhmer ? "khmer-font" : ""
+                    }`}
+                >
                     {title}
                 </h1>
 
                 {description ? (
-                    <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                    <p
+                        className={`mt-3 max-w-3xl text-sm leading-7 text-slate-600 ${
+                            isKhmer ? "khmer-font" : ""
+                        }`}
+                    >
                         {description}
                     </p>
                 ) : null}
             </div>
 
-            <div className="flex gap-2 rounded-xl border border-gray-300 bg-white p-1 shadow-sm">
+            <div className="flex gap-2 rounded-sm border border-gray-300 bg-white p-1 shadow-sm">
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`rounded-lg px-3 py-2 ${
+                    className={`flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2 text-sm font-semibold transition ${
                         view === "list"
                             ? "bg-[#23395D] text-white"
-                            : "text-gray-600"
+                            : "text-gray-600 hover:bg-gray-100"
                     }`}
                 >
                     <List size={18} />
+                    <span className={isKhmer ? "khmer-font" : ""}>
+                        {labels[lang].list}
+                    </span>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`rounded-lg px-3 py-2 ${
+                    className={`flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2 text-sm font-semibold transition ${
                         view === "grid"
                             ? "bg-[#23395D] text-white"
-                            : "text-gray-600"
+                            : "text-gray-600 hover:bg-gray-100"
                     }`}
                 >
                     <LayoutGrid size={18} />
+                    <span className={isKhmer ? "khmer-font" : ""}>
+                        {labels[lang].grid}
+                    </span>
                 </button>
             </div>
         </div>
@@ -229,7 +259,7 @@ function GridCard({ item, lang, badgeText }: CardProps) {
                             (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
                     </div>
 
-                    <h2 className="mt-1 text-[13px] font-extrabold leading-snug text-[#1a2b4b] line-clamp-2">
+                    <h2 className="mt-1 text-[16px] font-extrabold leading-snug text-[#1a2b4b] line-clamp-2">
                         {item.title}
                     </h2>
 

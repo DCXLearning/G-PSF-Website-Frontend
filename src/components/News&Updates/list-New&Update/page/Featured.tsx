@@ -240,7 +240,7 @@ function Header({
     return (
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-                <h1 className="mt-1 text-[44px] font-extrabold leading-none text-[#0B2C5F]">
+                <h1 className="mt-1 text-3xl md:text-[44px] font-extrabold leading-none text-[#0B2C5F]">
                     {language === "kh" ? "ព័ត៌មានលេចធ្លោ" : "Featured News"}
                 </h1>
                 <div className="mt-4 h-[4px] w-[150px] bg-[#F59E0B]" />
