@@ -36,6 +36,33 @@ type ApiResponse = {
 const CACHE_KEY = "benefits_block_cache";
 const FALLBACK_ICON = "/icon_home_page/Benefits1.svg";
 
+const ICON_THEMES = [
+    {
+        bg: "from-[#EAF4FF] to-[#D8ECFF]",
+        shadow: "shadow-[#3B82C3]/20",
+        ring: "ring-[#3B82C3]/20",
+        badge: "bg-[#3B82C3]",
+    },
+    {
+        bg: "from-[#FFF4E6] to-[#FFE1B8]",
+        shadow: "shadow-[#F59E0B]/20",
+        ring: "ring-[#F59E0B]/20",
+        badge: "bg-[#F59E0B]",
+    },
+    {
+        bg: "from-[#EEFDF5] to-[#D3F8E4]",
+        shadow: "shadow-[#10B981]/20",
+        ring: "ring-[#10B981]/20",
+        badge: "bg-[#10B981]",
+    },
+    {
+        bg: "from-[#F3E8FF] to-[#E9D5FF]",
+        shadow: "shadow-[#8B5CF6]/20",
+        ring: "ring-[#8B5CF6]/20",
+        badge: "bg-[#8B5CF6]",
+    },
+];
+
 function pickText(i18n: I18n | null | undefined, lang: UiLang) {
     return (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || "";
 }
@@ -79,30 +106,43 @@ type BenefitCardProps = {
     isKhmer: boolean;
     href: string;
     disabled?: boolean;
+    index: number;
 };
 
 function SafeBenefitImage({
     src,
     alt,
+    index,
 }: {
     src?: string | null;
     alt: string;
+    index: number;
 }) {
     const [imgSrc, setImgSrc] = useState(getImageSrc(src));
+    const theme = ICON_THEMES[index % ICON_THEMES.length];
 
     useEffect(() => {
         setImgSrc(getImageSrc(src));
     }, [src]);
 
     return (
-        <img
-            src={imgSrc}
-            alt={alt || "benefit"}
-            width={64}
-            height={64}
-            className="w-16 h-16 object-contain"
-            onError={() => setImgSrc(FALLBACK_ICON)}
-        />
+        <div
+            className={`group relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br ${theme.bg} shadow-lg ${theme.shadow} ring-1 ${theme.ring} transition-all duration-300 hover:-translate-y-1 hover:scale-105`}
+        >
+            <div className="absolute -right-1 -top-1 h-6 w-6 rounded-full bg-white/80 shadow-sm" />
+            <div
+                className={`absolute -right-0.5 -top-0.5 h-4 w-4 rounded-full ${theme.badge} opacity-90`}
+            />
+
+            <img
+                src={imgSrc}
+                alt={alt || "benefit"}
+                width={52}
+                height={52}
+                className="relative z-10 h-13 w-13 object-contain drop-shadow-md transition-all duration-300 group-hover:scale-110"
+                onError={() => setImgSrc(FALLBACK_ICON)}
+            />
+        </div>
     );
 }
 
@@ -113,26 +153,30 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
     isKhmer,
     href,
     disabled,
+    index,
 }) => (
     <div
-        className={`flex flex-col md:flex-row items-start gap-4 md:gap-10 ${disabled ? "pointer-events-none" : ""
-            }`}
+        className={`flex flex-col md:flex-row items-start gap-4 md:gap-10 ${
+            disabled ? "pointer-events-none" : ""
+        }`}
     >
         <div className="p-4 md:p-3 mt-6 flex-shrink-0">
-            <SafeBenefitImage src={icon} alt={title || "benefit"} />
+            <SafeBenefitImage src={icon} alt={title || "benefit"} index={index} />
         </div>
 
         <div className="flex-1">
             <h3
-                className={`text-xl sm:text-2xl md:text-2xl font-semibold text-gray-900 mb-2 ${isKhmer ? "khmer-font" : ""
-                    }`}
+                className={`text-xl sm:text-2xl md:text-2xl font-semibold text-gray-900 mb-2 ${
+                    isKhmer ? "khmer-font" : ""
+                }`}
             >
                 {title}
             </h3>
 
             <p
-                className={`text-gray-600 mb-4 leading-relaxed text-sm sm:text-base md:text-lg whitespace-pre-line ${isKhmer ? "khmer-font" : ""
-                    }`}
+                className={`text-gray-600 mb-4 leading-relaxed text-sm sm:text-base md:text-lg whitespace-pre-line ${
+                    isKhmer ? "khmer-font" : ""
+                }`}
             >
                 {description}
             </p>
@@ -141,8 +185,9 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
                 href={href}
                 aria-disabled={disabled}
                 tabIndex={disabled ? -1 : 0}
-                className={`inline-flex px-4 sm:px-5 py-2 text-sm sm:text-base font-semibold text-white bg-[#1B1D4E] rounded-full hover:bg-[#03057f] transition ${isKhmer ? "khmer-font" : ""
-                    } ${disabled ? "opacity-60" : ""}`}
+                className={`inline-flex px-4 sm:px-5 py-2 text-sm sm:text-base font-semibold text-white bg-[#1B1D4E] rounded-full hover:bg-[#03057f] transition ${
+                    isKhmer ? "khmer-font" : ""
+                } ${disabled ? "opacity-60" : ""}`}
             >
                 {isKhmer ? "ស្វែងយល់បន្ថែម" : "Learn More"}
             </Link>
@@ -150,21 +195,23 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
     </div>
 );
 
-function BenefitCardSkeleton({
-    isKhmer,
-}: {
-    isKhmer: boolean;
-}) {
+function BenefitCardSkeleton({ isKhmer, index }: { isKhmer: boolean; index: number }) {
+    const theme = ICON_THEMES[index % ICON_THEMES.length];
+
     return (
         <div className="flex flex-col md:flex-row items-start gap-4 md:gap-10 animate-pulse">
             <div className="p-4 md:p-3 mt-6 flex-shrink-0">
-                <img
-                    src={FALLBACK_ICON}
-                    alt="benefit"
-                    width={64}
-                    height={64}
-                    className="w-16 h-16 object-contain opacity-50"
-                />
+                <div
+                    className={`flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br ${theme.bg} shadow-lg ${theme.shadow} ring-1 ${theme.ring}`}
+                >
+                    <img
+                        src={FALLBACK_ICON}
+                        alt="benefit"
+                        width={52}
+                        height={52}
+                        className="h-13 w-13 object-contain opacity-50"
+                    />
+                </div>
             </div>
 
             <div className="flex-1">
@@ -173,8 +220,9 @@ function BenefitCardSkeleton({
                 <div className="h-4 w-5/6 bg-slate-200 rounded mb-2" />
                 <div className="h-4 w-2/3 bg-slate-200 rounded mb-4" />
                 <div
-                    className={`inline-flex px-4 sm:px-5 py-2 text-sm sm:text-base font-semibold text-white bg-[#1B1D4E] rounded-full opacity-50 ${isKhmer ? "khmer-font" : ""
-                        }`}
+                    className={`inline-flex px-4 sm:px-5 py-2 text-sm sm:text-base font-semibold text-white bg-[#1B1D4E] rounded-full opacity-50 ${
+                        isKhmer ? "khmer-font" : ""
+                    }`}
                 >
                     {isKhmer ? "ស្វែងយល់បន្ថែម" : "Learn More"}
                 </div>
@@ -213,7 +261,7 @@ export default function Benefits() {
                     headers: { Accept: "application/json" },
                 });
 
-                const json = await res.json();
+                const json: ApiResponse = await res.json();
 
                 if (!res.ok || !json?.success) {
                     throw new Error(json?.message || `API error ${res.status}`);
@@ -275,8 +323,9 @@ export default function Benefits() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
                 <div className="mb-32 sm:mb-25 md:mb-56">
                     <h2
-                        className={`w-70 text-4xl md:text-5xl font-bold text-gray-900 leading-tight ${isKhmer ? "khmer-font" : ""
-                            }`}
+                        className={`w-70 text-4xl md:text-5xl font-bold text-gray-900 leading-tight ${
+                            isKhmer ? "khmer-font" : ""
+                        }`}
                     >
                         {heading.h || (isKhmer ? "អត្ថប្រយោជន៍ G-PSF" : "G-PSF Benefit")}
                     </h2>
@@ -284,8 +333,9 @@ export default function Benefits() {
                     <div className="mt-6 sm:mt-8 relative">
                         <div className="absolute top-0 left-0 sm:left-4 md:left-22 w-20 sm:w-24 md:w-72 h-1 bg-orange-500 rounded-full mb-4" />
                         <p
-                            className={`absolute top-0 left-0 sm:left-4 md:left-22 text-gray-700 text-sm sm:text-base md:text-xl leading-relaxed mt-6 ${isKhmer ? "khmer-font" : ""
-                                }`}
+                            className={`absolute top-0 left-0 sm:left-4 md:left-22 text-gray-700 text-sm sm:text-base md:text-xl leading-relaxed mt-6 ${
+                                isKhmer ? "khmer-font" : ""
+                            }`}
                         >
                             {heading.d}
                         </p>
@@ -295,12 +345,13 @@ export default function Benefits() {
                 <div className="flex flex-col gap-6 sm:gap-8 md:gap-10">
                     {showSkeleton ? (
                         Array.from({ length: limit }).map((_, idx) => (
-                            <BenefitCardSkeleton key={idx} isKhmer={isKhmer} />
+                            <BenefitCardSkeleton key={idx} isKhmer={isKhmer} index={idx} />
                         ))
                     ) : posts.length > 0 ? (
-                        posts.map((p) => (
+                        posts.map((p, idx) => (
                             <BenefitCard
                                 key={p.id}
+                                index={idx}
                                 icon={p.coverImage}
                                 title={pickText(p.title, uiLang) || "\u00A0"}
                                 description={pickText(p.description ?? undefined, uiLang) || "\u00A0"}
