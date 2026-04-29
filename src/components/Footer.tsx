@@ -102,11 +102,14 @@ const emptyQuickLinks: LinkGroup = {
 };
 
 /* ================= HELPERS ================= */
+const ASSET_BASE_URL =
+    process.env.NEXT_PUBLIC_ASSET_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "") ||
+    "https://api-gpsf.datacolabx.com";
+
 function pickText(text: LangText | undefined, language: "en" | "kh") {
     if (!text) return "";
-    return language === "kh"
-        ? text.km || text.en || ""
-        : text.en || text.km || "";
+    return language === "kh" ? text.km || text.en || "" : text.en || text.km || "";
 }
 
 function getContactData(
@@ -114,9 +117,28 @@ function getContactData(
     language: "en" | "kh"
 ): ContactInfo | undefined {
     if (!contact) return undefined;
-    return language === "kh"
-        ? contact.km || contact.en
-        : contact.en || contact.km;
+    return language === "kh" ? contact.km || contact.en : contact.en || contact.km;
+}
+
+function getAssetUrl(url?: string | null) {
+    if (!url || !url.trim()) return "/image/logo1.png";
+
+    const cleanUrl = url.trim();
+
+    if (
+        cleanUrl.startsWith("http://") ||
+        cleanUrl.startsWith("https://") ||
+        cleanUrl.startsWith("data:") ||
+        cleanUrl.startsWith("blob:")
+    ) {
+        return cleanUrl;
+    }
+
+    if (cleanUrl.startsWith("/")) {
+        return `${ASSET_BASE_URL.replace(/\/$/, "")}${cleanUrl}`;
+    }
+
+    return `${ASSET_BASE_URL.replace(/\/$/, "")}/${cleanUrl}`;
 }
 
 function renderSocialIcon(icon?: string, title?: string) {
@@ -124,6 +146,7 @@ function renderSocialIcon(icon?: string, title?: string) {
 
     if (value.includes("facebook")) return <FaFacebookF />;
     if (value.includes("telegram")) return <FaTelegramPlane />;
+
     return <Globe size={18} />;
 }
 
@@ -229,6 +252,8 @@ const Footer: React.FC = () => {
         [siteData, language]
     );
 
+    const logoSrc = useMemo(() => getAssetUrl(siteData?.logo), [siteData?.logo]);
+
     const contactInfo = useMemo(
         () => getContactData(siteData?.contact, language),
         [siteData, language]
@@ -260,27 +285,28 @@ const Footer: React.FC = () => {
         <footer className="bg-white mt-0 shadow-[0_-6px_12px_rgba(0,0,0,0.08)]">
             <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-14 lg:gap-20">
                 {/* ========== LOGO + DESCRIPTION ========== */}
-                <div className="flex flex-col items-center text-center">
-                    <div className="relative w-60 h-20 mb-4 mr-2 -mt-1 mx-auto">
+                {/* ========== LOGO + DESCRIPTION ========== */}
+                <div className="flex flex-col items-start text-left sm:items-center sm:text-center">
+                    <div className="relative w-60 h-20 mb-5 -mt-3">
                         <Image
                             src={siteData?.logo || "/image/logo1.png"}
                             alt={title || "G-PSF Logo"}
                             fill
-                            className="object-cover"
-                            sizes="300px"
+                            className="object-cover object-left sm:object-center"
+                            sizes="240px"
+                            unoptimized
                         />
                     </div>
 
                     {loading ? (
-                        <div className="space-y-3 flex flex-col items-center">
+                        <div className="space-y-3 flex flex-col items-start sm:items-center">
                             <div className="h-5 w-56 bg-gray-200 animate-pulse rounded" />
                             <div className="h-5 w-48 bg-gray-200 animate-pulse rounded" />
                         </div>
                     ) : (
                         <p
-                            className={`text-lg text-gray-800 max-w-sm leading-8 text-center ${
-                                isKhmer ? "khmer-font" : ""
-                            }`}
+                            className={`text-lg text-gray-800 max-w-sm leading-8 text-left sm:text-center ${isKhmer ? "khmer-font" : ""
+                                }`}
                         >
                             {description}
                         </p>
@@ -288,11 +314,7 @@ const Footer: React.FC = () => {
                 </div>
 
                 {/* ========== KEY UPDATES ========== */}
-                <LinkSection
-                    group={keyUpdates}
-                    isKhmer={isKhmer}
-                    loading={menuLoading}
-                />
+                <LinkSection group={keyUpdates} isKhmer={isKhmer} loading={menuLoading} />
 
                 {/* ========== QUICK LINKS ========== */}
                 <LinkSection
@@ -305,31 +327,21 @@ const Footer: React.FC = () => {
                 <div className="space-y-6">
                     <div>
                         <h3
-                            className={`text-2xl font-bold mb-3 ${
-                                isKhmer ? "khmer-font" : ""
-                            }`}
+                            className={`text-2xl font-bold mb-3 ${isKhmer ? "khmer-font" : ""
+                                }`}
                         >
                             {isKhmer ? "ទំនាក់ទំនង" : "CONTACT"}
                         </h3>
 
                         <div className="space-y-3 text-gray-700">
                             {firstPhone ? (
-                                <ContactItem
-                                    icon={<Phone size={18} />}
-                                    text={firstPhone}
-                                />
+                                <ContactItem icon={<Phone size={18} />} text={firstPhone} />
                             ) : (
-                                <ContactItem
-                                    icon={<Phone size={18} />}
-                                    text="+855 99 799 579"
-                                />
+                                <ContactItem icon={<Phone size={18} />} text="+855 99 799 579" />
                             )}
 
                             {firstEmail ? (
-                                <ContactItem
-                                    icon={<Mail size={18} />}
-                                    text={firstEmail}
-                                />
+                                <ContactItem icon={<Mail size={18} />} text={firstEmail} />
                             ) : (
                                 <ContactItem
                                     icon={<Mail size={18} />}
@@ -341,9 +353,8 @@ const Footer: React.FC = () => {
 
                     <div>
                         <h3
-                            className={`text-2xl font-bold mb-3 ${
-                                isKhmer ? "khmer-font" : ""
-                            }`}
+                            className={`text-2xl font-bold mb-3 ${isKhmer ? "khmer-font" : ""
+                                }`}
                         >
                             {isKhmer ? "តាមដានពួកយើង" : "FOLLOW US"}
                         </h3>
@@ -355,10 +366,7 @@ const Footer: React.FC = () => {
                                         key={`${social.url}-${social.title}`}
                                         href={social.url}
                                         label={social.title || "Social Media"}
-                                        icon={renderSocialIcon(
-                                            social.icon,
-                                            social.title
-                                        )}
+                                        icon={renderSocialIcon(social.icon, social.title)}
                                     />
                                 ))
                             ) : (
@@ -407,10 +415,7 @@ const LinkSection = ({
         {loading ? (
             <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
-                    <div
-                        key={i}
-                        className="h-5 w-40 bg-gray-200 animate-pulse rounded"
-                    />
+                    <div key={i} className="h-5 w-40 bg-gray-200 animate-pulse rounded" />
                 ))}
             </div>
         ) : (
@@ -419,9 +424,8 @@ const LinkSection = ({
                     <li key={`${link.nameEn}-${link.href}`}>
                         <a
                             href={link.href}
-                            className={`text-lg text-gray-700 hover:text-[#0808e1] transition ${
-                                isKhmer ? "khmer-font" : ""
-                            }`}
+                            className={`text-lg text-gray-700 hover:text-[#0808e1] transition ${isKhmer ? "khmer-font" : ""
+                                }`}
                         >
                             {isKhmer ? link.nameKh : link.nameEn}
                         </a>

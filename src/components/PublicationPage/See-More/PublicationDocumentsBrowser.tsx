@@ -57,13 +57,16 @@ function DocumentPreview({ src, alt, className = "" }: DocumentPreviewProps) {
 
     return (
         <div className={`w-full ${className}`}>
-            <div className="relative w-full aspect-[3/4] overflow-hidden bg-white">
+            {/* A4 ratio = 210 / 297 */}
+            <div className="relative w-full aspect-[210/297] overflow-hidden bg-white">
                 {imageSrc ? (
                     <Image
                         src={imageSrc}
                         alt={alt}
                         fill
+                        unoptimized
                         className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 220px"
                         onError={() => setFailedSrc(src || "")}
                     />
                 ) : (
@@ -90,16 +93,20 @@ function LanguageLinks({
     languages,
     lang,
     compact = false,
+    fontSizeClass,
 }: {
     languages: PublicationDocumentLanguage[];
     lang: UiLang;
     compact?: boolean;
+    fontSizeClass?: string;
 }) {
+    const sizeClass = fontSizeClass || (compact ? "text-[13px]" : "text-lg");
+
     return (
         <div
             className={`flex flex-wrap items-baseline font-bold ${
-                compact ? "mt-3 gap-2 text-[10px]" : "mt-6 gap-4 text-xs"
-            }`}
+                compact ? "mt-3 gap-2" : "mt-6 gap-4"
+            } ${sizeClass}`}
         >
             <span className="text-slate-400">
                 {lang === "kh" ? "ភាសា:" : "Language:"}
