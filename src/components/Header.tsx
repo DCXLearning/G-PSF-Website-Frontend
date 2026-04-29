@@ -180,8 +180,24 @@ const normalizePath = (value?: string | null) => {
     return normalized || "/";
 };
 
+function isExternalHref(href?: string) {
+    return /^https?:\/\//i.test(href?.trim() ?? "");
+}
+
+function getExternalLinkProps(href?: string) {
+    if (!isExternalHref(href)) {
+        return {};
+    }
+
+    return {
+        target: "_blank",
+        rel: "noopener noreferrer",
+        prefetch: false,
+    };
+}
+
 const isPathActive = (pathname: string, href?: string) => {
-    if (!href || href === "#") return false;
+    if (!href || href === "#" || isExternalHref(href)) return false;
 
     const currentPath = normalizePath(pathname);
     const targetPath = normalizePath(href);
@@ -341,6 +357,7 @@ const Header: FC = () => {
                                     <div key={`${item.label}-${index}`} className="relative group shrink-0">
                                         <Link
                                             href={item.href || "#"}
+                                            {...getExternalLinkProps(item.href)}
                                             className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap pb-1 transition-colors ${isActive ? "text-black" : "text-gray-600 hover:text-black"
                                                 } ${language === "kh" ? "khmer-font" : ""}`}
                                         >
@@ -383,6 +400,7 @@ const Header: FC = () => {
                                                                                 <Link
                                                                                     key={sub.href}
                                                                                     href={sub.href}
+                                                                                    {...getExternalLinkProps(sub.href)}
                                                                                     className={`block px-4 py-3 text-sm transition-colors ${isSubActive
                                                                                         ? "bg-gray-50 text-black font-semibold"
                                                                                         : "text-gray-700 hover:bg-gray-50 hover:text-black"
@@ -402,6 +420,7 @@ const Header: FC = () => {
                                                         <Link
                                                             key={child.href}
                                                             href={child.href || "#"}
+                                                            {...getExternalLinkProps(child.href)}
                                                             className={`block px-4 py-3 text-base font-medium transition-colors ${isChildActive
                                                                 ? "bg-gray-50 text-black font-semibold"
                                                                 : "text-gray-700 hover:bg-gray-50 hover:text-black"
@@ -421,6 +440,7 @@ const Header: FC = () => {
                                 <Link
                                     key={`${item.href}-${index}`}
                                     href={item.href || "#"}
+                                    {...getExternalLinkProps(item.href)}
                                     className={`relative shrink-0 whitespace-nowrap pb-1 transition-colors ${isActive ? "text-black" : "text-gray-600 hover:text-black"
                                         } ${language === "kh" ? "khmer-font" : ""}`}
                                 >
@@ -586,6 +606,7 @@ const Header: FC = () => {
                                                         {item.href && (
                                                             <Link
                                                                 href={item.href}
+                                                                {...getExternalLinkProps(item.href)}
                                                                 onClick={() => {
                                                                     setIsMenuOpen(false);
                                                                     setOpenMobileDropdown(null);
@@ -626,6 +647,7 @@ const Header: FC = () => {
                                                                                     <Link
                                                                                         key={sub.href}
                                                                                         href={sub.href}
+                                                                                        {...getExternalLinkProps(sub.href)}
                                                                                         onClick={() => {
                                                                                             setIsMenuOpen(false);
                                                                                             setOpenMobileDropdown(null);
@@ -647,6 +669,7 @@ const Header: FC = () => {
                                                                 <Link
                                                                     key={child.href}
                                                                     href={child.href || "#"}
+                                                                    {...getExternalLinkProps(child.href)}
                                                                     onClick={() => {
                                                                         setIsMenuOpen(false);
                                                                         setOpenMobileDropdown(null);
@@ -669,6 +692,7 @@ const Header: FC = () => {
                                         <Link
                                             key={`${item.href}-${index}`}
                                             href={item.href || "#"}
+                                            {...getExternalLinkProps(item.href)}
                                             onClick={() => setIsMenuOpen(false)}
                                             className={`flex items-center justify-between rounded-xl px-4 py-3 text-gray-800 hover:bg-gray-100 ${language === "kh" ? "khmer-font" : ""
                                                 }`}
