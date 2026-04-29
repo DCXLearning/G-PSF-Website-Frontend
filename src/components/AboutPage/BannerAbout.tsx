@@ -107,7 +107,7 @@ const BannerAbout = ({
             className={`
               font-extrabold tracking-tight text-[#1f1f1f] 
                         text-2xl sm:text-3xl md:text-5xl
-              ${lang === "kh" ? "khmer-font font-semibold" : ""}
+              ${lang === "kh" ? "khmer-font font-bold" : ""}
             `}
           >
             {finalTitle}

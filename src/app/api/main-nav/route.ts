@@ -7,16 +7,24 @@ const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
 
 const ROUTE_OVERRIDES: Record<string, string> = {
     "/home": "/",
+
     "/feature": "/new-update/featured",
     "/featured": "/new-update/featured",
-    "/laws-regulations": "/publication/laws-regulations",
+
+    "/laws-regulations": "/publication/laws-and-regulations",
+    "/laws-and-regulations": "/publication/laws-and-regulations",
+
     "/decisions": "/publication/decisions",
     "/reports": "/publication/reports",
     "/reform-tracker": "/publication/reform-tracker",
+
     "/press": "/new-update/media/press",
-    "/photos": "/new-update/media/photos",
-    "/videos": "/new-update/media/video",
-    "/video": "/new-update/media/video",
+    "/photos": "/new-update/photos",
+    "/videos": "/new-update/video",
+    "/video": "/new-update/video",
+
+    "/new-update/media/photos": "/new-update/photos",
+    "/new-update/media/video": "/new-update/video",
 };
 
 type ApiMenuItem = {
@@ -33,11 +41,14 @@ type ApiMenuItem = {
 
 function normalizeHref(url?: string) {
     if (!url) return "#";
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
 
-    const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+    }
 
-    return ROUTE_OVERRIDES[normalizedUrl] ?? normalizedUrl;
+    const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+
+    return ROUTE_OVERRIDES[cleanUrl] ?? cleanUrl;
 }
 
 function normalizeMenuItems(items: ApiMenuItem[] = []): ApiMenuItem[] {
@@ -46,14 +57,13 @@ function normalizeMenuItems(items: ApiMenuItem[] = []): ApiMenuItem[] {
         .map((item) => ({
             id: item.id,
             label: {
-                // Keep both languages so the header can switch instantly without refetching.
                 en: item.label?.en || item.label?.km || "Untitled",
                 km: item.label?.km || item.label?.en || "Untitled",
             },
             url: normalizeHref(item.url),
             orderIndex: item.orderIndex ?? 0,
             parentId: item.parentId ?? null,
-            children: normalizeMenuItems(item.children),
+            children: normalizeMenuItems(item.children ?? []),
         }));
 }
 
@@ -64,6 +74,7 @@ export async function GET() {
             process.env.NEXT_PUBLIC_API_URL ||
             FALLBACK_API_BASE
         ).replace(/\/$/, "");
+
         const response = await fetch(`${apiBase}/menus/slug/main-nav/tree`, {
             method: "GET",
             cache: "no-store",
@@ -73,7 +84,6 @@ export async function GET() {
         });
 
         const result = await response.json();
-        const items = normalizeMenuItems(result?.data?.items);
 
         return NextResponse.json(
             {
@@ -81,7 +91,7 @@ export async function GET() {
                 message: "OK",
                 data: {
                     menu: result?.data?.menu ?? null,
-                    items,
+                    items: normalizeMenuItems(result?.data?.items ?? []),
                 },
             },
             { status: response.status }
