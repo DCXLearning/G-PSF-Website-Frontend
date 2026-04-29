@@ -4,7 +4,7 @@ export type BackendPageResult = {
     found: boolean;
     slug: string;
     endpoint?: string;
-    data?: any;
+    data?: unknown;
 };
 
 type MenuItem = {
@@ -16,6 +16,8 @@ type MenuItem = {
     url?: string;
     children?: MenuItem[];
 };
+
+type JsonRecord = Record<string, unknown>;
 
 const SLUG_ALIASES: Record<string, string[]> = {
     "": ["home"],
@@ -70,6 +72,18 @@ function unique(values: string[]) {
     return Array.from(new Set(values.filter(Boolean)));
 }
 
+function isRecord(value: unknown): value is JsonRecord {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function getResponseData(result: unknown) {
+    if (!isRecord(result)) {
+        return result;
+    }
+
+    return result.data ?? result;
+}
+
 function getSlugVariants(slug: string) {
     const cleanSlug = cleanPath(slug);
     const alias = SLUG_ALIASES[cleanSlug] ?? [];
@@ -84,19 +98,22 @@ function getSlugVariants(slug: string) {
     return unique(variants);
 }
 
-function hasUsefulData(result: any) {
-    const data = result?.data ?? result;
+function hasUsefulData(result: unknown) {
+    const data = getResponseData(result);
+
+    if (!isRecord(data)) {
+        return false;
+    }
 
     return Boolean(
-        data &&
-            (data.page ||
-                data.title ||
-                data.name ||
-                data.content ||
-                data.blocks ||
-                data.sections ||
-                data.items ||
-                data.posts)
+        data.page ||
+            data.title ||
+            data.name ||
+            data.content ||
+            data.blocks ||
+            data.sections ||
+            data.items ||
+            data.posts
     );
 }
 
@@ -112,7 +129,7 @@ async function tryFetchJson(url: string) {
 
         if (!response.ok) return null;
 
-        const result = await response.json();
+        const result: unknown = await response.json();
 
         if (!hasUsefulData(result)) return null;
 
@@ -144,8 +161,11 @@ async function findMenuItemBySlug(slug: string) {
 
         if (!response.ok) return null;
 
-        const result = await response.json();
-        const items = flattenMenuItems(result?.data?.items ?? []);
+        const result: unknown = await response.json();
+        const data = getResponseData(result);
+        const items = isRecord(data) && Array.isArray(data.items)
+            ? flattenMenuItems(data.items as MenuItem[])
+            : [];
 
         return (
             items.find((item) => cleanPath(item.url) === cleanSlug) ??
@@ -186,7 +206,6 @@ export async function fetchBackendPage(slug: string): Promise<BackendPageResult>
             `${apiBase}/pages/${encodedSlug}/section`,
             `${apiBase}/pages/${encodedSlug}`,
             `${apiBase}/pages/slug/${encodedSlug}`,
-            `${apiBase}/sections/page/${encodedSlug}`,
         ];
 
         for (const endpoint of endpoints) {
@@ -197,7 +216,7 @@ export async function fetchBackendPage(slug: string): Promise<BackendPageResult>
                     found: true,
                     slug: cleanSlug,
                     endpoint,
-                    data: result?.data ?? result,
+                    data: getResponseData(result),
                 };
             }
         }

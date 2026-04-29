@@ -14,8 +14,12 @@ export async function GET(request: Request) {
             .map((item) => item.trim())
             .filter((item) => item.length > 0);
         const apiBase = process.env.NEXT_PUBLIC_API_URL || FALLBACK_API_BASE;
-        const upstream = `${apiBase}/pages/${encodeURIComponent(slug)}/section`;
-
+        const encodedSlug = slug
+            .split("/")
+            .filter(Boolean)
+            .map(encodeURIComponent)
+            .join("/");
+        const upstream = `${apiBase}/pages/${encodedSlug}/section`;
         const response = await fetch(upstream, {
             cache: "no-store",
             headers: {
