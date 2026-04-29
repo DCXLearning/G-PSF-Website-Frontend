@@ -285,7 +285,7 @@ function ListCard({
     language: UiLang;
 }) {
     return (
-        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)]">
+        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)] md:items-center">
             <Link href={item.href} className="block">
                 <NewsImage
                     src={item.image}
@@ -295,8 +295,8 @@ function ListCard({
                 />
             </Link>
 
-            <div className="min-w-0">
-                <h2 className="mt-3 text-[18px] font-extrabold leading-[1.5] text-[#0B2C5F] md:text-[20px]">
+            <div className="flex min-w-0 flex-col justify-center">
+                <h2 className="mt-0 text-[18px] line-clamp-1 font-extrabold leading-[1.5] text-[#0B2C5F] md:text-[20px]">
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
