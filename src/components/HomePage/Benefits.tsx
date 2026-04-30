@@ -14,7 +14,6 @@ type ApiPost = {
     title?: I18n;
     description?: I18n | null;
     coverImage?: string | null;
-    content?: unknown;
 };
 
 type ApiBlock = {
@@ -37,30 +36,16 @@ const CACHE_KEY = "benefits_block_cache";
 const FALLBACK_ICON = "/icon_home_page/Benefits1.svg";
 
 const ICON_THEMES = [
-    {
-        bg: "from-[#EAF4FF] to-[#D8ECFF]",
-        shadow: "shadow-[#3B82C3]/20",
-        ring: "ring-[#3B82C3]/20",
-        badge: "bg-[#3B82C3]",
-    },
-    {
-        bg: "from-[#FFF4E6] to-[#FFE1B8]",
-        shadow: "shadow-[#F59E0B]/20",
-        ring: "ring-[#F59E0B]/20",
-        badge: "bg-[#F59E0B]",
-    },
-    {
-        bg: "from-[#EEFDF5] to-[#D3F8E4]",
-        shadow: "shadow-[#10B981]/20",
-        ring: "ring-[#10B981]/20",
-        badge: "bg-[#10B981]",
-    },
-    {
-        bg: "from-[#F3E8FF] to-[#E9D5FF]",
-        shadow: "shadow-[#8B5CF6]/20",
-        ring: "ring-[#8B5CF6]/20",
-        badge: "bg-[#8B5CF6]",
-    },
+    { bg: "from-[#FAFDFF] via-[#F3F9FF] to-[#E8F4FF]", shadow: "shadow-[#3B82C3]/15", ring: "ring-[#3B82C3]/10" },
+    { bg: "from-[#FFFCF7] via-[#FFF7EC] to-[#FFEBD0]", shadow: "shadow-[#F59E0B]/15", ring: "ring-[#F59E0B]/10" },
+    { bg: "from-[#FAFFFC] via-[#F3FFF8] to-[#E5FAEF]", shadow: "shadow-[#10B981]/15", ring: "ring-[#10B981]/10" },
+    { bg: "from-[#FDFCFF] via-[#F8F1FF] to-[#F0E5FF]", shadow: "shadow-[#8B5CF6]/15", ring: "ring-[#8B5CF6]/10" },
+    { bg: "from-[#FFFBFB] via-[#FFF3F3] to-[#FFE8E8]", shadow: "shadow-[#EF4444]/15", ring: "ring-[#EF4444]/10" },
+    { bg: "from-[#FAFEFF] via-[#F1FDFF] to-[#E0FAFE]", shadow: "shadow-[#06B6D4]/15", ring: "ring-[#06B6D4]/10" },
+    { bg: "from-[#FFFCF9] via-[#FFF5ED] to-[#FFE8D6]", shadow: "shadow-[#F97316]/15", ring: "ring-[#F97316]/10" },
+    { bg: "from-[#FBFCFF] via-[#F4F6FF] to-[#E7EAFF]", shadow: "shadow-[#6366F1]/15", ring: "ring-[#6366F1]/10" },
+    { bg: "from-[#FFFBFD] via-[#FFF3FA] to-[#FDE8F3]", shadow: "shadow-[#EC4899]/15", ring: "ring-[#EC4899]/10" },
+    { bg: "from-[#FCFFF9] via-[#F6FFF2] to-[#EAFBE2]", shadow: "shadow-[#22C55E]/15", ring: "ring-[#22C55E]/10" },
 ];
 
 function pickText(i18n: I18n | null | undefined, lang: UiLang) {
@@ -99,25 +84,13 @@ function getImageSrc(src?: string | null) {
     return src;
 }
 
-type BenefitCardProps = {
-    icon?: string | null;
-    title: string;
-    description: string;
-    isKhmer: boolean;
-    href: string;
-    disabled?: boolean;
-    index: number;
-};
-
-function SafeBenefitImage({
-    src,
-    alt,
-    index,
-}: {
+type SafeBenefitImageProps = {
     src?: string | null;
     alt: string;
     index: number;
-}) {
+};
+
+function SafeBenefitImage({ src, alt, index }: SafeBenefitImageProps) {
     const [imgSrc, setImgSrc] = useState(getImageSrc(src));
     const theme = ICON_THEMES[index % ICON_THEMES.length];
 
@@ -127,24 +100,29 @@ function SafeBenefitImage({
 
     return (
         <div
-            className={`group relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br ${theme.bg} shadow-lg ${theme.shadow} ring-1 ${theme.ring} transition-all duration-300 hover:-translate-y-1 hover:scale-105`}
+            className={`group relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-b ${theme.bg} shadow-lg ${theme.shadow} ring-1 ${theme.ring} transition-all duration-300 hover:-translate-y-1 hover:scale-105`}
         >
-            <div className="absolute -right-1 -top-1 h-6 w-6 rounded-full bg-white/80 shadow-sm" />
-            <div
-                className={`absolute -right-0.5 -top-0.5 h-4 w-4 rounded-full ${theme.badge} opacity-90`}
-            />
-
             <img
                 src={imgSrc}
                 alt={alt || "benefit"}
                 width={52}
                 height={52}
-                className="relative z-10 h-13 w-13 object-contain drop-shadow-md transition-all duration-300 group-hover:scale-110"
+                className="relative z-10 h-[52px] w-[52px] object-contain drop-shadow-md transition-all duration-300 group-hover:scale-110"
                 onError={() => setImgSrc(FALLBACK_ICON)}
             />
         </div>
     );
 }
+
+type BenefitCardProps = {
+    icon?: string | null;
+    title: string;
+    description: string;
+    isKhmer: boolean;
+    href: string;
+    disabled?: boolean;
+    index: number;
+};
 
 const BenefitCard: React.FC<BenefitCardProps> = ({
     icon,
@@ -156,17 +134,17 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
     index,
 }) => (
     <div
-        className={`flex flex-col md:flex-row items-start gap-4 md:gap-10 ${
+        className={`flex flex-col items-start gap-4 md:flex-row md:gap-10 ${
             disabled ? "pointer-events-none" : ""
         }`}
     >
-        <div className="p-4 md:p-3 mt-6 flex-shrink-0">
+        <div className="mt-6 flex-shrink-0 p-4 md:p-3">
             <SafeBenefitImage src={icon} alt={title || "benefit"} index={index} />
         </div>
 
         <div className="flex-1">
             <h3
-                className={`text-xl sm:text-2xl md:text-2xl font-semibold text-gray-900 mb-2 ${
+                className={`mb-2 text-xl font-semibold text-gray-900 sm:text-2xl md:text-2xl ${
                     isKhmer ? "khmer-font" : ""
                 }`}
             >
@@ -174,7 +152,7 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
             </h3>
 
             <p
-                className={`text-gray-600 mb-4 leading-relaxed text-sm sm:text-base md:text-lg whitespace-pre-line ${
+                className={`mb-4 whitespace-pre-line text-sm leading-relaxed text-gray-600 sm:text-base md:text-lg ${
                     isKhmer ? "khmer-font" : ""
                 }`}
             >
@@ -185,7 +163,7 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
                 href={href}
                 aria-disabled={disabled}
                 tabIndex={disabled ? -1 : 0}
-                className={`inline-flex px-4 sm:px-5 py-2 text-sm sm:text-base font-semibold text-white bg-[#1B1D4E] rounded-full hover:bg-[#03057f] transition ${
+                className={`inline-flex rounded-full bg-[#1B1D4E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#03057f] sm:px-5 sm:text-base ${
                     isKhmer ? "khmer-font" : ""
                 } ${disabled ? "opacity-60" : ""}`}
             >
@@ -199,28 +177,29 @@ function BenefitCardSkeleton({ isKhmer, index }: { isKhmer: boolean; index: numb
     const theme = ICON_THEMES[index % ICON_THEMES.length];
 
     return (
-        <div className="flex flex-col md:flex-row items-start gap-4 md:gap-10 animate-pulse">
-            <div className="p-4 md:p-3 mt-6 flex-shrink-0">
+        <div className="flex animate-pulse flex-col items-start gap-4 md:flex-row md:gap-10">
+            <div className="mt-6 flex-shrink-0 p-4 md:p-3">
                 <div
-                    className={`flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br ${theme.bg} shadow-lg ${theme.shadow} ring-1 ${theme.ring}`}
+                    className={`relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-b ${theme.bg} shadow-lg ${theme.shadow} ring-1 ${theme.ring}`}
                 >
                     <img
                         src={FALLBACK_ICON}
                         alt="benefit"
                         width={52}
                         height={52}
-                        className="h-13 w-13 object-contain opacity-50"
+                        className="h-[52px] w-[52px] object-contain opacity-50"
                     />
                 </div>
             </div>
 
             <div className="flex-1">
-                <div className="h-7 w-2/3 bg-slate-200 rounded mb-3" />
-                <div className="h-4 w-full bg-slate-200 rounded mb-2" />
-                <div className="h-4 w-5/6 bg-slate-200 rounded mb-2" />
-                <div className="h-4 w-2/3 bg-slate-200 rounded mb-4" />
+                <div className="mb-3 h-7 w-2/3 rounded bg-slate-200" />
+                <div className="mb-2 h-4 w-full rounded bg-slate-200" />
+                <div className="mb-2 h-4 w-5/6 rounded bg-slate-200" />
+                <div className="mb-4 h-4 w-2/3 rounded bg-slate-200" />
+
                 <div
-                    className={`inline-flex px-4 sm:px-5 py-2 text-sm sm:text-base font-semibold text-white bg-[#1B1D4E] rounded-full opacity-50 ${
+                    className={`inline-flex rounded-full bg-[#1B1D4E] px-4 py-2 text-sm font-semibold text-white opacity-50 sm:px-5 sm:text-base ${
                         isKhmer ? "khmer-font" : ""
                     }`}
                 >
@@ -271,7 +250,7 @@ export default function Benefits() {
 
                 const picked =
                     blocks.find(
-                        (b: ApiBlock) =>
+                        (b) =>
                             b?.enabled !== false &&
                             b?.type === "post_list" &&
                             (b?.id === 2 || b?.title?.en === "G-PSF Benefit")
@@ -317,23 +296,21 @@ export default function Benefits() {
     const showErrorOnly = !showSkeleton && !block && !!error;
 
     return (
-        <section
-            className={`bg-white px-4 sm:px-8 md:px-16 lg:px-34 py-12 md:py-16 ${fontClass}`}
-        >
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
+        <section className={`bg-white px-4 py-12 sm:px-8 md:px-16 md:py-16 lg:px-34 ${fontClass}`}>
+            <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
                 <div className="mb-32 sm:mb-25 md:mb-56">
                     <h2
-                        className={`w-70 text-4xl md:text-5xl font-bold text-gray-900 leading-tight ${
+                        className={`w-70 text-4xl font-bold leading-tight text-gray-900 md:text-5xl ${
                             isKhmer ? "khmer-font" : ""
                         }`}
                     >
                         {heading.h || (isKhmer ? "អត្ថប្រយោជន៍ G-PSF" : "G-PSF Benefit")}
                     </h2>
 
-                    <div className="mt-6 sm:mt-8 relative">
-                        <div className="absolute top-0 left-0 sm:left-4 md:left-22 w-20 sm:w-24 md:w-72 h-1 bg-orange-500 rounded-full mb-4" />
+                    <div className="relative mt-6 sm:mt-8">
+                        <div className="absolute left-0 top-0 mb-4 h-1 w-20 rounded-full bg-orange-500 sm:left-4 sm:w-24 md:left-22 md:w-72" />
                         <p
-                            className={`absolute top-0 left-0 sm:left-4 md:left-22 text-gray-700 text-sm sm:text-base md:text-xl leading-relaxed mt-6 ${
+                            className={`absolute left-0 top-0 mt-6 text-sm leading-relaxed text-gray-700 sm:left-4 sm:text-base md:left-22 md:text-xl ${
                                 isKhmer ? "khmer-font" : ""
                             }`}
                         >
@@ -360,12 +337,12 @@ export default function Benefits() {
                             />
                         ))
                     ) : (
-                        <p className="text-slate-600 text-sm">
+                        <p className="text-sm text-slate-600">
                             {isKhmer ? "មិនមានទិន្នន័យ" : "No benefits found."}
                         </p>
                     )}
 
-                    {showErrorOnly && <p className="text-red-600 text-sm">Failed: {error}</p>}
+                    {showErrorOnly && <p className="text-sm text-red-600">Failed: {error}</p>}
                 </div>
             </div>
         </section>
