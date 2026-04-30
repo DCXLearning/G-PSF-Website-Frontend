@@ -1,11 +1,8 @@
-import type { CSSProperties } from "react";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import {
     findImage,
     getContent,
     getItemHref,
-    getItemDescription,
-    getItemTitle,
     getPosts,
     getText,
     isObject,
@@ -18,76 +15,66 @@ type HeroBannerTemplateProps = {
     lang: Lang;
 };
 
-function getCtaClassName(index: number, isKh: boolean) {
-    const baseClassName = `group inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-extrabold transition duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 sm:w-auto ${
-        isKh ? "khmer-font" : ""
-    }`;
+function getCtaClassName(index: number) {
+    const baseClassName =
+        "group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold transition duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f39c32]/70 sm:w-auto";
 
     if (index === 0) {
-        return `${baseClassName} bg-gradient-to-r from-[#f39c32] to-[#ffbf66] text-[#1a2b4b] shadow-[0_16px_35px_rgba(243,156,50,0.35)] hover:-translate-y-0.5 hover:from-[#ffad45] hover:to-[#ffd18a]`;
+        return `${baseClassName} bg-[#f39c32] text-white shadow-[0_12px_28px_rgba(243,156,50,0.28)] hover:-translate-y-0.5 hover:bg-[#e98f22]`;
     }
 
-    return `${baseClassName} border border-white/30 bg-white/12 text-white shadow-[0_16px_35px_rgba(15,23,42,0.18)] backdrop-blur hover:-translate-y-0.5 hover:bg-white/20`;
+    return `${baseClassName} border border-[#1a2b4b]/20 bg-white text-[#1a2b4b] shadow-sm hover:-translate-y-0.5 hover:bg-[#f6f8fb]`;
 }
 
 export default function HeroBannerTemplate({ block, lang }: HeroBannerTemplateProps) {
     const posts = getPosts(block);
     const heroPost = posts[0] ?? block;
     const content = getContent(heroPost, lang);
-    const title = getItemTitle(heroPost, lang) || getText(block.title, lang);
+    const title = getText(content.title, lang);
     const subtitle = getText(content.subtitle, lang);
-    const description = getItemDescription(heroPost, lang);
-    const backgroundImage = findImage(heroPost, lang);
+    const description = getText(content.description, lang);
+    const bannerImage = findImage(heroPost, lang) || "/image/Subpages_plenary_Banner.bmp";
     const ctas = Array.isArray(content.ctas) ? content.ctas.filter(isObject) : [];
     const isKh = lang === "kh";
 
-    const backgroundStyle: CSSProperties = backgroundImage
-        ? { backgroundImage: `url(${backgroundImage})` }
-        : {
-              backgroundImage:
-                  "linear-gradient(135deg, #102a4c 0%, #1f5d9b 55%, #f39c32 140%)",
-          };
-
     return (
-        <section
-            className="relative flex min-h-[360px] items-center overflow-hidden bg-cover bg-center text-white md:min-h-[460px]"
-            style={backgroundStyle}
-        >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a]/85 via-[#0f172a]/55 to-[#0f172a]/25" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/35 to-transparent" />
+        <main className="bg-white">
+            <section className="relative flex min-h-[680px] flex-col overflow-hidden bg-gray-100 md:min-h-[500px] lg:min-h-[650px]">
+                <div
+                    className="absolute inset-0 h-full w-full bg-cover bg-bottom bg-no-repeat"
+                    style={{ backgroundImage: `url(${bannerImage})` }}
+                >
+                    <div className="absolute inset-0 bg-black/25" />
+                    <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/45 to-transparent" />
+                </div>
 
-            <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-                <div className="max-w-3xl">
-                    <p
-                        className={`mb-4 inline-flex rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.22em] backdrop-blur ${
-                            isKh ? "khmer-font" : ""
-                        }`}
-                    >
-                        {getText(block.title, lang) || (isKh ? "ទំព័រ" : "Page")}
-                    </p>
-
-                    <h1
-                        className={`text-4xl font-extrabold leading-tight drop-shadow-sm md:text-6xl ${
-                            isKh ? "khmer-font" : ""
-                        }`}
-                    >
-                        {title}
-                    </h1>
+                <div
+                    className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-start justify-center px-6 pb-20 pt-24 text-left sm:px-8 lg:px-12 md:pt-32"
+                >
+                    {title ? (
+                        <h1
+                            className={`mb-5 max-w-4xl whitespace-pre-line text-3xl font-extrabold tracking-tight leading-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl ${
+                                isKh ? "leading-relaxed" : ""
+                            }`}
+                        >
+                            {title}
+                        </h1>
+                    ) : null}
 
                     {subtitle ? (
                         <p
-                            className={`mt-5 max-w-2xl text-lg font-medium leading-8 text-white/90 md:text-2xl ${
-                                isKh ? "khmer-font" : ""
+                            className={`mb-5 max-w-4xl whitespace-pre-line text-lg font-medium leading-8 text-white drop-shadow-sm md:text-3xl md:leading-10 ${
+                                isKh ? "leading-relaxed" : ""
                             }`}
                         >
                             {subtitle}
                         </p>
                     ) : null}
 
-                    {description && description !== subtitle ? (
+                    {description ? (
                         <p
-                            className={`mt-4 max-w-2xl text-base leading-8 text-white/80 ${
-                                isKh ? "khmer-font" : ""
+                            className={`mb-8 max-w-4xl whitespace-pre-line text-base leading-7 text-white drop-shadow-sm md:text-2xl md:leading-9 ${
+                                isKh ? "leading-relaxed" : ""
                             }`}
                         >
                             {description}
@@ -95,7 +82,7 @@ export default function HeroBannerTemplate({ block, lang }: HeroBannerTemplatePr
                     ) : null}
 
                     {ctas.length > 0 ? (
-                        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                        <div className="mt-4 flex flex-col items-start justify-start gap-3 sm:flex-row sm:flex-wrap">
                             {ctas.map((cta, index) => {
                                 const href = getItemHref(cta) || "#";
                                 const label =
@@ -111,10 +98,10 @@ export default function HeroBannerTemplate({ block, lang }: HeroBannerTemplatePr
                                         href={href}
                                         target={isExternal ? "_blank" : undefined}
                                         rel={isExternal ? "noopener noreferrer" : undefined}
-                                        className={getCtaClassName(index, isKh)}
+                                        className={getCtaClassName(index)}
                                     >
                                         <span>{label}</span>
-                                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/25 transition group-hover:translate-x-0.5 group-hover:bg-white/35">
+                                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 transition group-hover:translate-x-0.5">
                                             <Icon className="h-4 w-4" />
                                         </span>
                                     </a>
@@ -123,7 +110,7 @@ export default function HeroBannerTemplate({ block, lang }: HeroBannerTemplatePr
                         </div>
                     ) : null}
                 </div>
-            </div>
-        </section>
+            </section>
+        </main>
     );
 }

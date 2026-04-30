@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import DynamicBackendPage from "@/components/UI-Router/DynamicBackendPage";
+import BackendPageClient from "@/app/[...slug]/BackendPageClient";
 import { fetchBackendPage } from "@/lib/fetch-backend-page";
 
 export const dynamic = "force-dynamic";
@@ -22,10 +22,9 @@ export default async function BackendCatchAllPage({ params }: PageProps) {
     }
 
     return (
-        <DynamicBackendPage
+        <BackendPageClient
             pageData={page.data}
             slug={page.slug}
-            endpoint={page.endpoint}
         />
     );
 }

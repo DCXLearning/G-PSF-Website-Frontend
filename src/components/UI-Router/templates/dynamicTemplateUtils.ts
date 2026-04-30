@@ -12,6 +12,39 @@ export function uiToApiLang(lang: Lang): ApiLang {
     return lang === "kh" ? "km" : "en";
 }
 
+function isTiptapLike(value: JsonObject) {
+    return value.type === "doc" || value.type === "text" || Array.isArray(value.content);
+}
+
+function getTiptapText(value: unknown): string {
+    if (typeof value === "string") return value;
+    if (!isObject(value)) return "";
+
+    if (value.type === "text") {
+        return typeof value.text === "string" ? value.text : "";
+    }
+
+    if (value.type === "hardBreak") {
+        return "\n";
+    }
+
+    const children = Array.isArray(value.content) ? value.content : [];
+    const text = children.map((child) => getTiptapText(child)).join("");
+
+    if (
+        value.type === "paragraph" ||
+        value.type === "heading" ||
+        value.type === "blockquote" ||
+        value.type === "bulletList" ||
+        value.type === "orderedList" ||
+        value.type === "listItem"
+    ) {
+        return `${text}\n`;
+    }
+
+    return text;
+}
+
 export function getText(value: unknown, lang: Lang): string {
     const apiLang = uiToApiLang(lang);
 
@@ -20,6 +53,10 @@ export function getText(value: unknown, lang: Lang): string {
     if (typeof value === "number") return String(value);
 
     if (!isObject(value)) return "";
+
+    if (isTiptapLike(value)) {
+        return getTiptapText(value).replace(/\n{3,}/g, "\n\n").trim();
+    }
 
     const candidates = [
         value[apiLang],
@@ -134,7 +171,12 @@ export function getBlocks(data: unknown): JsonObject[] {
 
 export function getBlockType(block: JsonObject) {
     const section = isObject(block.section) ? block.section : {};
-    return getText(block.type, "en") || getText(block.blockType, "en") || getText(section.blockType, "en");
+    const blockType =
+        getText(block.type, "en") ||
+        getText(block.blockType, "en") ||
+        getText(section.blockType, "en");
+
+    return blockType.toLowerCase().trim().replace(/[\s-]+/g, "_");
 }
 
 export function isBlockEnabled(block: JsonObject) {
@@ -153,6 +195,40 @@ export function getPosts(block: JsonObject): JsonObject[] {
     return [];
 }
 
+export function getPrimaryPost(block: JsonObject): JsonObject | null {
+    const posts = getPosts(block);
+
+    return (
+        posts.find(
+            (post) =>
+                post.status === "published" ||
+                post.isPublished === true ||
+                post.published === true
+        ) ??
+        posts[0] ??
+        null
+    );
+}
+
+export function getContentItems(item: JsonObject, lang: Lang): JsonObject[] {
+    const content = getContent(item, lang);
+    const textBlock = isObject(content.textBlock) ? content.textBlock : {};
+
+    const candidates = [
+        content.items,
+        textBlock.items,
+        item.items,
+    ];
+
+    for (const candidate of candidates) {
+        if (Array.isArray(candidate)) {
+            return candidate.filter(isObject);
+        }
+    }
+
+    return [];
+}
+
 export function getImageUrl(value: unknown) {
     if (typeof value !== "string" || !value.trim()) return "";
 
@@ -162,11 +238,62 @@ export function getImageUrl(value: unknown) {
         return imageUrl;
     }
 
+    if (
+        imageUrl.startsWith("/image/") ||
+        imageUrl.startsWith("/icon/") ||
+        imageUrl.startsWith("/icon_")
+    ) {
+        return imageUrl;
+    }
+
     const apiOrigin = (
         process.env.NEXT_PUBLIC_API_URL || FALLBACK_API_BASE
     ).replace(/\/api\/v1\/?$/, "");
 
     return `${apiOrigin}${imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`}`;
+}
+
+function findNestedImage(value: unknown): unknown {
+    if (typeof value === "string") {
+        return "";
+    }
+
+    if (Array.isArray(value)) {
+        for (const item of value) {
+            const image = findNestedImage(item);
+
+            if (image) {
+                return image;
+            }
+        }
+
+        return "";
+    }
+
+    if (!isObject(value)) {
+        return "";
+    }
+
+    const attrs = isObject(value.attrs) ? value.attrs : {};
+    const media = isObject(attrs.media) ? attrs.media : {};
+
+    if (value.type === "image") {
+        return attrs.src || media.url || media.thumbnail || attrs.url;
+    }
+
+    const directImage =
+        value.src ||
+        value.url ||
+        value.thumbnail ||
+        value.image ||
+        value.coverImage ||
+        value.featuredImage;
+
+    if (directImage) {
+        return directImage;
+    }
+
+    return findNestedImage(value.content);
 }
 
 export function findImage(item: JsonObject, lang: Lang) {
@@ -192,9 +319,64 @@ export function findImage(item: JsonObject, lang: Lang) {
         content.featuredImage ||
         content.backgroundImage ||
         backgroundImages[0] ||
-        itemBackgroundImages[0];
+        itemBackgroundImages[0] ||
+        findNestedImage(content) ||
+        findNestedImage(item.content);
 
     return getImageUrl(image);
+}
+
+function getLocalizedObjectValue(value: unknown, lang: Lang): JsonObject {
+    if (!isObject(value)) return {};
+
+    const apiLang = uiToApiLang(lang);
+    const localizedValue = value[apiLang] ?? value.en ?? value.km;
+
+    return isObject(localizedValue) ? localizedValue : {};
+}
+
+function getLocalizedStringValue(value: unknown, lang: Lang): string {
+    if (!isObject(value)) return "";
+
+    const apiLang = uiToApiLang(lang);
+    return (
+        getText(value[apiLang], lang) ||
+        getText(value.en, lang) ||
+        getText(value.km, lang)
+    );
+}
+
+export function getDocumentUrl(item: JsonObject, lang: Lang) {
+    const documentByLanguage = getLocalizedObjectValue(item.documents, lang);
+    const documentUrl =
+        documentByLanguage.url ||
+        getLocalizedObjectValue(item.documents, "en").url ||
+        getLocalizedObjectValue(item.documents, "kh").url ||
+        item.document;
+
+    return getImageUrl(documentUrl);
+}
+
+export function getThumbnailUrl(item: JsonObject, lang: Lang) {
+    const documentByLanguage = getLocalizedObjectValue(item.documents, lang);
+    const thumbnail =
+        item.coverImage ||
+        documentByLanguage.thumbnailUrl ||
+        getLocalizedStringValue(item.documentThumbnails, lang) ||
+        getLocalizedObjectValue(item.documents, "en").thumbnailUrl ||
+        getLocalizedObjectValue(item.documents, "kh").thumbnailUrl ||
+        item.documentThumbnail ||
+        findImage(item, lang);
+
+    return getImageUrl(thumbnail);
+}
+
+export function getItemDate(item: JsonObject) {
+    return (
+        getText(item.publishedAt, "en") ||
+        getText(item.createdAt, "en") ||
+        getText(item.updatedAt, "en")
+    );
 }
 
 export function getItemTitle(item: JsonObject, lang: Lang) {
