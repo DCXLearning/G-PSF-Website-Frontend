@@ -104,9 +104,8 @@ function LanguageLinks({
 
     return (
         <div
-            className={`flex flex-wrap items-baseline font-bold ${
-                compact ? "mt-3 gap-2" : "mt-6 gap-4"
-            } ${sizeClass}`}
+            className={`flex flex-wrap items-baseline font-bold ${compact ? "mt-3 gap-2" : "mt-6 gap-4"
+                } ${sizeClass}`}
         >
             <span className="text-slate-400">
                 {lang === "kh" ? "ភាសា:" : "Language:"}
@@ -153,35 +152,32 @@ function Header({ view, setView, title, description }: HeaderProps) {
         <div className="mb-10 -mt-2 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
                 <h1
-                    className={`text-3xl font-bold text-[#0B2C5F] md:text-[44px] ${
-                        isKhmer ? "khmer-font" : ""
-                    }`}
+                    className={`text-3xl font-bold text-[#0B2C5F] md:text-[44px] ${isKhmer ? "khmer-font" : ""
+                        }`}
                 >
                     {title}
                 </h1>
 
                 {description ? (
                     <p
-                        className={`mt-3 max-w-3xl text-sm leading-7 text-slate-600 ${
-                            isKhmer ? "khmer-font" : ""
-                        }`}
+                        className={`mt-3 max-w-3xl text-sm leading-7 text-slate-600 ${isKhmer ? "khmer-font" : ""
+                            }`}
                     >
                         {description}
                     </p>
                 ) : null}
             </div>
 
-            <div className="flex gap-2 rounded-sm border border-gray-300 bg-white p-1 shadow-sm">
+            <div className="flex w-full max-w-sm gap-1 rounded-sm border border-gray-300 bg-white p-1 shadow-sm sm:w-auto">
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2 text-sm font-semibold transition ${
-                        view === "list"
-                            ? "bg-[#23395D] text-white"
-                            : "text-gray-600 hover:bg-gray-100"
-                    }`}
+                    className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2.5 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "list"
+                        ? "bg-[#23395D] text-white"
+                        : "text-gray-600 hover:bg-gray-100"
+                        }`}
                 >
-                    <List size={18} />
+                    <List size={15} />
                     <span className={isKhmer ? "khmer-font" : ""}>
                         {labels[lang].list}
                     </span>
@@ -190,13 +186,12 @@ function Header({ view, setView, title, description }: HeaderProps) {
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2 text-sm font-semibold transition ${
-                        view === "grid"
-                            ? "bg-[#23395D] text-white"
-                            : "text-gray-600 hover:bg-gray-100"
-                    }`}
+                    className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2.5 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "grid"
+                        ? "bg-[#23395D] text-white"
+                        : "text-gray-600 hover:bg-gray-100"
+                        }`}
                 >
-                    <LayoutGrid size={18} />
+                    <LayoutGrid size={15} />
                     <span className={isKhmer ? "khmer-font" : ""}>
                         {labels[lang].grid}
                     </span>

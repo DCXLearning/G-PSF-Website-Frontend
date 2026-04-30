@@ -246,31 +246,33 @@ function Header({
                 <div className="mt-4 h-[4px] w-[150px] bg-[#F59E0B]" />
             </div>
 
-            <div className="flex items-center gap-2 self-start rounded-md border border-[#D1D5DB] bg-white p-1 shadow-sm">
+            <div className="flex w-full max-w-sm items-center gap-1 self-start rounded-md border border-[#D1D5DB] bg-white p-1 shadow-sm sm:w-auto sm:max-w-none">
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-semibold transition ${
-                        view === "list"
+                    className={`inline-flex flex-1 items-center cursor-pointer justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "list"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                    }`}
+                        }`}
                 >
-                    <List className="h-4 w-4" />
-                    {language === "kh" ? "បញ្ជី" : "List"}
+                    <List className="h-3.5 w-3.5" />
+                    <span className={language === "kh" ? "khmer-font" : ""}>
+                        {language === "kh" ? "បញ្ជី" : "List"}
+                    </span>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-semibold transition ${
-                        view === "grid"
+                    className={`inline-flex flex-1 items-center cursor-pointer justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "grid"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                    }`}
+                        }`}
                 >
-                    <LayoutGrid className="h-4 w-4" />
-                    {language === "kh" ? "ក្រឡា" : "Grid"}
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                    <span className={language === "kh" ? "khmer-font" : ""}>
+                        {language === "kh" ? "ក្រឡា" : "Grid"}
+                    </span>
                 </button>
             </div>
         </div>
@@ -402,8 +404,8 @@ export default function FeaturedPage() {
                 const posts = Array.isArray(json.data)
                     ? json.data
                     : Array.isArray(json.items)
-                      ? json.items
-                      : [];
+                        ? json.items
+                        : [];
 
                 if (mounted) {
                     setItems(posts);
