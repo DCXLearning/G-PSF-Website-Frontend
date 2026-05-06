@@ -6,6 +6,7 @@ import { CalendarDays, LayoutGrid, List } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
+import { FaArrowRight } from "react-icons/fa";
 
 type UiLang = "en" | "kh";
 type ViewMode = "list" | "grid";
@@ -354,8 +355,8 @@ function Header({
                     type="button"
                     onClick={() => setView("list")}
                     className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "list"
-                            ? "bg-[#23395D] text-white"
-                            : "text-[#475569] hover:bg-slate-100"
+                        ? "bg-[#23395D] text-white"
+                        : "text-[#475569] hover:bg-slate-100"
                         }`}
                 >
                     <List className="h-3.5 w-3.5" />
@@ -368,8 +369,8 @@ function Header({
                     type="button"
                     onClick={() => setView("grid")}
                     className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "grid"
-                            ? "bg-[#23395D] text-white"
-                            : "text-[#475569] hover:bg-slate-100"
+                        ? "bg-[#23395D] text-white"
+                        : "text-[#475569] hover:bg-slate-100"
                         }`}
                 >
                     <LayoutGrid className="h-3.5 w-3.5" />
@@ -417,9 +418,10 @@ function ListCard({
 
                 <Link
                     href={item.href}
-                    className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
+                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-500 underline underline-offset-2 hover:text-[#1D4ED8]"
                 >
-                    {language === "kh" ? "មើលលម្អិត" : "View details"}
+                    {language === "kh" ? "អានបន្ថែម" : "View details"}
+                    <FaArrowRight className="text-[13px]" />
                 </Link>
 
                 <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
@@ -466,9 +468,10 @@ function GridCard({
 
                 <Link
                     href={item.href}
-                    className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
+                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-500 underline underline-offset-2 hover:text-[#1D4ED8]"
                 >
-                    {language === "kh" ? "មើលលម្អិត" : "View details"}
+                    {language === "kh" ? "អានបន្ថែម" : "View details"}
+                    <FaArrowRight className="text-[13px]" />
                 </Link>
 
                 <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">

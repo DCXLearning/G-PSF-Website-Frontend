@@ -6,7 +6,7 @@ import { CalendarDays, LayoutGrid, List } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
-
+import { FaArrowRight } from "react-icons/fa";
 type UiLang = "en" | "kh";
 type ViewMode = "list" | "grid";
 
@@ -111,7 +111,7 @@ function getThumbnail(post: PostItem, language: UiLang): string {
 
     const blocks = getContentBlocks(post, language);
     const firstImage = blocks.find(
-        (block) => block.type === "image" && block.attrs?.src
+        (block) => block.type === "image" && block.attrs?.src,
     );
 
     return firstImage?.attrs?.src || "";
@@ -130,14 +130,17 @@ function mapFeaturedPosts(posts: PostItem[], language: UiLang): FeaturedItem[] {
         .filter(
             (post) =>
                 post.isFeatured === true &&
-                (post.isPublished === true || post.status === "published")
+                (post.isPublished === true || post.status === "published"),
         )
         .sort((leftPost, rightPost) => {
             const leftDate = new Date(
-                leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || ""
+                leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || "",
             ).getTime();
             const rightDate = new Date(
-                rightPost.publishedAt || rightPost.createdAt || rightPost.updatedAt || ""
+                rightPost.publishedAt ||
+                rightPost.createdAt ||
+                rightPost.updatedAt ||
+                "",
             ).getTime();
 
             return rightDate - leftDate;
@@ -152,7 +155,7 @@ function mapFeaturedPosts(posts: PostItem[], language: UiLang): FeaturedItem[] {
         image: getThumbnail(post, language),
         date: formatLocalizedDate(
             post.publishedAt || post.createdAt || post.updatedAt,
-            language
+            language,
         ),
         href: buildDetailHref(post),
     }));
@@ -195,7 +198,13 @@ function NewsImage({
                                     strokeWidth="1.7"
                                     className="h-7 w-7"
                                 >
-                                    <circle cx="8.5" cy="8.5" r="1.8" fill="white" stroke="none" />
+                                    <circle
+                                        cx="8.5"
+                                        cy="8.5"
+                                        r="1.8"
+                                        fill="white"
+                                        stroke="none"
+                                    />
                                     <path d="M4 17l4.5-4.5a1 1 0 011.5.08L13 16l2.2-2.8a1 1 0 011.62.04L20 17" />
                                     <rect x="3.5" y="5" width="17" height="14" rx="1.5" />
                                 </svg>
@@ -313,11 +322,11 @@ function ListCard({
 
                 <Link
                     href={item.href}
-                    className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
+                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-500 underline underline-offset-2 hover:text-[#1D4ED8]"
                 >
-                    {language === "kh" ? "មើលលម្អិត" : "View details"}
+                    {language === "kh" ? "អានបន្ថែម" : "View details"}
+                    <FaArrowRight className="text-[13px]" />
                 </Link>
-
                 <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
                     <CalendarDays className="h-4 w-4" />
                     <span>{item.date}</span>
@@ -361,9 +370,10 @@ function GridCard({
 
                 <Link
                     href={item.href}
-                    className="mt-5 inline-block text-[15px] font-bold text-[#0B2C5F] underline underline-offset-2 hover:text-[#1D4ED8]"
+                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-500 underline underline-offset-2 hover:text-[#1D4ED8]"
                 >
-                    {language === "kh" ? "មើលលម្អិត" : "View details"}
+                    {language === "kh" ? "អានបន្ថែម" : "View details"}
+                    <FaArrowRight className="text-[13px]" />
                 </Link>
 
                 <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
@@ -417,7 +427,7 @@ export default function FeaturedPage() {
                     setError(
                         uiLanguage === "kh"
                             ? "មិនអាចទាញយកព័ត៌មានលេចធ្លោបានទេ។"
-                            : "Failed to load featured posts."
+                            : "Failed to load featured posts.",
                     );
                 }
             } finally {
