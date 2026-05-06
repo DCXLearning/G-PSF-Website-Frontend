@@ -9,6 +9,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 import "swiper/css";
 import "swiper/css/pagination";
+import { FaArrowRight } from "react-icons/fa";
 
 export type NewsUpdateCard = {
     id: number;
@@ -109,11 +110,11 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                     {item.excerpt || "No description available."}
                                                 </p>
 
-                                                <div className={`mt-auto flex items-center text-xs font-bold text-[#1a2b4b] ${isKh ? "khmer-font" : ""}`}>
-                                                    {isKh ? "មើលលម្អិត" : "View details"}
-                                                    <span className="ml-2 text-lg transition-transform duration-300 group-hover:translate-x-1">
-                                                        ›
-                                                    </span>
+                                                <div
+                                                    className={`mt-auto underline underline-offset-2 flex items-center gap-2 text-sm font-bold text-orange-500 hover:text-[#1D4ED8] ${isKh ? "khmer-font" : ""}`}
+                                                >
+                                                    {isKh ? "អានបន្ថែម" : "View details"}
+                                                    <FaArrowRight className="h-3 w-3" />
                                                 </div>
                                             </div>
                                         </article>
