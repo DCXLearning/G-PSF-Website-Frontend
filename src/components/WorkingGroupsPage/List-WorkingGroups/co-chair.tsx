@@ -156,15 +156,15 @@ export default function TeamSection({
         <section className="bg-gray-50 py-12">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="mb-8">
-                    <p className={`text-xl font-bold text-slate-700 ${isKh ? "khmer-font" : ""}`}>
-                        {isKh ? "សូមជួបជាមួយ" : "Meet the"}
-                    </p>
+                    {/*<p className={`text-xl font-bold text-slate-700 ${isKh ? "khmer-font" : ""}`}>*/}
+                    {/*    {isKh ? "សូមជួបជាមួយ" : "Meet the"}*/}
+                    {/*</p>*/}
                     <h2
                         className={`text-3xl font-extrabold text-[#101a3f] md:text-5xl ${
                             isKh ? "khmer-font" : ""
                         }`}
                     >
-                        {isKh ? "សហអធិបតីក្រុមការងារ" : "Working Group Co-Chairs"}
+                        {isKh ? "សហប្រធាននៃ ក្រុមការងារតាមវិស័យ" : "Working Group Co-Chairs"}
                     </h2>
                     <div className="mt-4 h-1.5 w-64 bg-orange-500" />
                 </div>
