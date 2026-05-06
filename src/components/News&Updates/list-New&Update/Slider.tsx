@@ -354,7 +354,7 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
 
                                         <Link
                                             href={item.href}
-                                            className={`mt-auto inline-flex items-center gap-2 text-sm font-bold text-orange-500 hover:text-[#1D4ED8] ${isKhmer ? "khmer-font" : ""
+                                            className={`mt-auto inline-flex items-center gap-2 text-sm font-bold text-orange-600 hover:text-[#1D4ED8] ${isKhmer ? "khmer-font" : ""
                                                 }`}
                                         >
                                             {isKhmer ? "អានបន្ថែម" : "Read more"}

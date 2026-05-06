@@ -322,7 +322,7 @@ function ListCard({
 
                 <Link
                     href={item.href}
-                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-500 underline underline-offset-2 hover:text-[#1D4ED8]"
+                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-600 underline underline-offset-2 hover:text-[#1D4ED8]"
                 >
                     {language === "kh" ? "អានបន្ថែម" : "View details"}
                     <FaArrowRight className="text-[13px]" />
@@ -370,7 +370,7 @@ function GridCard({
 
                 <Link
                     href={item.href}
-                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-500 underline underline-offset-2 hover:text-[#1D4ED8]"
+                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-600 underline underline-offset-2 hover:text-[#1D4ED8]"
                 >
                     {language === "kh" ? "អានបន្ថែម" : "View details"}
                     <FaArrowRight className="text-[13px]" />
