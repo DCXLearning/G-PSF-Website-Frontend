@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, ArrowRight } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
+import { FaArrowRight } from "react-icons/fa";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -277,7 +278,7 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
 
     return (
         <section className="py-4 sm:py-10">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl px-4 sm:px-4 lg:px-4">
                 <div className="mb-14 text-center">
                     <p
                         className={`mb-2 text-lg font-semibold tracking-[0.025em] text-[#3f3cff] ${isKhmer ? "khmer-font" : ""
@@ -353,11 +354,11 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
 
                                         <Link
                                             href={item.href}
-                                            className={`mt-auto inline-flex items-center gap-2 text-sm font-bold text-[#3f51b5] hover:text-[#0B2C5F] ${isKhmer ? "khmer-font" : ""
+                                            className={`mt-auto inline-flex items-center gap-2 text-sm font-bold text-orange-500 hover:text-[#1D4ED8] ${isKhmer ? "khmer-font" : ""
                                                 }`}
                                         >
                                             {isKhmer ? "អានបន្ថែម" : "Read more"}
-                                            <ArrowRight size={16} />
+                                            <FaArrowRight className="h-3 w-3" />
                                         </Link>
                                     </div>
                                 </article>
