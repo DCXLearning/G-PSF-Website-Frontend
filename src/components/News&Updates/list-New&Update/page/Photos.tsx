@@ -346,7 +346,7 @@ function Header({
                 <h1 className="mt-1 text-[44px] font-extrabold leading-none text-[#0B2C5F]">
                     {title}
                 </h1>
-                <div className="mt-4 h-[4px] w-[150px] bg-[#F59E0B]" />
+                <div className="mt-4 h-[4px] w-[150px] bg-orange-500" />
             </div>
 
             <div className="flex w-full max-w-sm items-center gap-1 self-start rounded-md border border-[#D1D5DB] bg-white p-1 shadow-sm sm:w-auto sm:max-w-none">

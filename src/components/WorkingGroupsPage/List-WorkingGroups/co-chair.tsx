@@ -1,74 +1,159 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 import React from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
+
+type Lang = "en" | "kh";
+type RoleType = "government" | "private";
 
 type Person = {
-    name: string;
-    role: string;
+    name: {
+        en: string;
+        kh: string;
+    };
+    role: RoleType;
     image: string;
 };
 
 const TeamSection = () => {
-    const governmentReps: Person[] = [
-        { name: "Sela", role: "តំណាងរាជរដ្ឋាភិបាល", image: "/image/sela.png" },
-        { name: "Sela", role: "តំណាងរាជរដ្ឋាភិបាល", image: "/image/sela.png" },
-        { name: "Sela", role: "តំណាងវិស័យឯកជន", image: "/image/sela.png" },
-        { name: "Sela", role: "តំណាងវិស័យឯកជន", image: "/image/sela.png" },
+    const { language } = useLanguage();
+    const lang = (language as Lang) ?? "en";
+    const isKh = lang === "kh";
+
+    const t = {
+        en: {
+            governmentTitle: "Government Representatives",
+            privateTitle: "Private Sector Representatives",
+            governmentRole: "Government Representative",
+            privateRole: "Private Sector Representative",
+        },
+        kh: {
+            governmentTitle: "តំណាងរាជរដ្ឋាភិបាល",
+            privateTitle: "តំណាងវិស័យឯកជន",
+            governmentRole: "តំណាងរាជរដ្ឋាភិបាល",
+            privateRole: "តំណាងវិស័យឯកជន",
+        },
+    }[lang];
+
+    const teamMembers: Person[] = [
+        {
+            name: {
+                en: "Name",
+                kh: "ឈ្មោះ",
+            },
+            role: "government",
+            image: "/image/image (1).JPG",
+        },
+        {
+            name: {
+                en: "Name",
+                kh: "ឈ្មោះ",
+            },
+            role: "government",
+            image: "/image/image (2).JPG",
+        },
+        {
+            name: {
+                en: "Name",
+                kh: "ឈ្មោះ",
+            },
+            role: "private",
+            image: "/image/sela1.png",
+        },
+        {
+            name: {
+                en: "Name",
+                kh: "ឈ្មោះ",
+            },
+            role: "private",
+            image: "/image/sela2.png",
+        },
     ];
 
-    const governmentNames = governmentReps.filter(
-        (person) => person.role === "តំណាងរាជរដ្ឋាភិបាល"
+    const governmentNames = teamMembers.filter(
+        (person) => person.role === "government"
     );
 
-    const privateNames = governmentReps.filter(
-        (person) => person.role === "តំណាងវិស័យឯកជន"
-    );
+    const privateNames = teamMembers.filter((person) => person.role === "private");
 
     return (
-        <section className="py-12 bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4">
-
-                {/* Government Section */}
+        <section className="bg-gray-50 py-12">
+            <div className="mx-auto max-w-7xl px-4">
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-5 border-l-4 border-orange-500 pl-4">
-                        តំណាងរាជរដ្ឋាភិបាល
+                    {/* Government Section */}
+                    <h2
+                        className={`mb-5 border-l-4 border-orange-500 pl-4 text-2xl font-bold text-gray-800 ${isKh ? "khmer-font" : ""
+                            }`}
+                    >
+                        {t.governmentTitle}
                     </h2>
 
-                    <ul className="mb-8 text-gray-700">
+                    <ul
+                        className={`mb-8 space-y-2 text-gray-700 ${isKh ? "khmer-font" : ""
+                            }`}
+                    >
                         {governmentNames.map((person, index) => (
-                            <li key={index}>- {person.name}</li>
+                            <li key={index}>- {person.name[lang]}</li>
                         ))}
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-800 mb-5 border-l-4 border-orange-500 pl-4">
-                        តំណាងវិស័យឯកជន
+                    {/* Private Section */}
+                    <h2
+                        className={`mb-5 border-l-4 border-orange-500 pl-4 text-2xl font-bold text-gray-800 ${isKh ? "khmer-font" : ""
+                            }`}
+                    >
+                        {t.privateTitle}
                     </h2>
 
-                    <ul className="mb-8 text-gray-700">
+                    <ul
+                        className={`mb-8 space-y-2 text-gray-700 ${isKh ? "khmer-font" : ""
+                            }`}
+                    >
                         {privateNames.map((person, index) => (
-                            <li key={index}>- {person.name}</li>
+                            <li key={index}>- {person.name[lang]}</li>
                         ))}
                     </ul>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {governmentReps.map((person, index) => (
-                            <TeamCard key={index} person={person} />
+                    {/* Team Cards */}
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        {teamMembers.map((person, index) => (
+                            <TeamCard
+                                key={index}
+                                person={person}
+                                lang={lang}
+                                isKh={isKh}
+                                roleLabel={
+                                    person.role === "government"
+                                        ? t.governmentRole
+                                        : t.privateRole
+                                }
+                            />
                         ))}
                     </div>
                 </div>
-
             </div>
         </section>
     );
 };
 
-const TeamCard = ({ person }: { person: Person }) => (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+const TeamCard = ({
+    person,
+    lang,
+    isKh,
+    roleLabel,
+}: {
+    person: Person;
+    lang: Lang;
+    isKh: boolean;
+    roleLabel: string;
+}) => (
+    <div className="overflow-hidden rounded-xl bg-white shadow-sm transition-shadow duration-300 hover:shadow-md">
         <div className="aspect-square bg-gray-200">
-            {/* Replace with <Image /> component from next/image for production */}
             <img
                 src={person.image}
-                alt={person.name}
-                className="w-full h-full object-cover"
+                alt={person.name[lang]}
+                className="h-full w-full object-cover"
             />
         </div>
     </div>
