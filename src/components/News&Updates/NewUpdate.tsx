@@ -11,11 +11,17 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { FaArrowRight } from "react-icons/fa";
 
+type LocalizedText = {
+    en?: string;
+    km?: string;
+};
+
 export type NewsUpdateCard = {
     id: number;
     slug: string;
     createdAt: string;
-    group: string;
+    category?: LocalizedText;
+    group?: string;
     title: string;
     excerpt: string;
     imageUrl: string;
@@ -23,6 +29,28 @@ export type NewsUpdateCard = {
 
 export interface NewUpdateSectionProps {
     data: NewsUpdateCard[];
+}
+
+function pickLocalizedText(value: LocalizedText | undefined, isKh: boolean, fallback: string) {
+    if (!value) {
+        return fallback;
+    }
+
+    const primaryText = isKh ? value.km : value.en;
+
+    return primaryText || value.en || value.km || fallback;
+}
+
+function getCategoryFallback(group: string | undefined, isKh: boolean) {
+    const cleanGroup = group?.trim() ?? "";
+
+    if (isKh) {
+        return cleanGroup.toLowerCase() === "press" || !cleanGroup
+            ? "សារព័ត៌មាន"
+            : cleanGroup;
+    }
+
+    return cleanGroup || "PRESS";
 }
 
 const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
@@ -62,6 +90,11 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                         className="pb-20"
                     >
                         {data.map((item) => {
+                            const categoryLabel = pickLocalizedText(
+                                item.category,
+                                isKh,
+                                getCategoryFallback(item.group, isKh)
+                            );
                             const detailHref = {
                                 pathname: "/new-update/view-detail",
                                 query: item.slug
@@ -98,8 +131,8 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                     {formatLocalizedDate(item.createdAt, isKh ? "kh" : "en")}
                                                 </span>
 
-                                                <span className="mb-3 w-fit rounded-full bg-[#1a2b4b] px-3 py-1 text-[10px] font-bold uppercase text-white">
-                                                    {item.group || "PRESS"}
+                                                <span className={`mb-3 w-fit rounded-full bg-[#1a2b4b] px-3 py-1 text-[10px] font-bold uppercase text-white ${isKh ? "khmer-font" : ""}`}>
+                                                    {categoryLabel}
                                                 </span>
 
                                                 <h3 className="khmer-font mb-3 min-h-[28px] line-clamp-1 text-xl font-bold uppercase text-[#1a2b4b] group-hover:underline">

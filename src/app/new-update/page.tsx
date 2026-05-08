@@ -27,6 +27,7 @@ type CmsResponse = {
 };
 
 type NewUpdateData = NewUpdateSectionProps["data"];
+type LocalizedText = NonNullable<NewUpdateData[number]["category"]>;
 
 function mapNewsPosts(response: CmsResponse): NewUpdateData {
   const blocks = response.data?.blocks ?? [];
@@ -42,6 +43,13 @@ function mapNewsPosts(response: CmsResponse): NewUpdateData {
     return text === "." ? "" : text;
   };
 
+  const getLocalizedText = (value?: { en?: string; km?: string }): LocalizedText => {
+    return {
+      en: getText(value?.en),
+      km: getText(value?.km),
+    };
+  };
+
   for (let index = 0; index < posts.length; index += 1) {
     const post = posts[index];
     if (post.status !== "published") continue;
@@ -53,7 +61,7 @@ function mapNewsPosts(response: CmsResponse): NewUpdateData {
       id: post.id ?? index + 1,
       slug: getText(post.slug),
       createdAt: getText(post.createdAt) || getText(post.updatedAt),
-      group: getText(post.category?.name?.en) || getText(post.category?.name?.km),
+      category: getLocalizedText(post.category?.name),
       title,
       excerpt: getText(post.description?.en) || getText(post.description?.km),
       // ✅ prefer coverImage, fallback to images[0].url
