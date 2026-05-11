@@ -84,13 +84,13 @@ function SafeBenefitImage({ src, alt }: SafeBenefitImageProps) {
     }, [src]);
 
     return (
-        <div className="group relative flex h-20 w-20 items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:scale-105">
+        <div className="group relative flex h-22 w-22 items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:scale-105">
             <img
                 src={imgSrc}
                 alt={alt || "benefit"}
                 width={52}
                 height={52}
-                className="relative z-10 h-[64px] w-[64px] object-contain transition-all duration-300 group-hover:scale-110"
+                className="relative z-10 h-[98px] w-[98px] object-contain transition-all duration-300 group-hover:scale-110"
                 onError={() => setImgSrc(FALLBACK_ICON)}
             />
         </div>
