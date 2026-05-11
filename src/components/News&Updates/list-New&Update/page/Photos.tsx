@@ -271,13 +271,35 @@ function NewsImage({
     return (
         <div className={`relative overflow-hidden bg-[#ECECEC] ${className}`}>
             {imageSrc ? (
-                <Image
-                    src={imageSrc}
-                    alt={alt}
-                    fill
-                    className="object-cover"
-                    onError={() => setFailed(true)}
-                />
+                <>
+                    <Image
+                        src={imageSrc}
+                        alt={alt}
+                        fill
+                        className="object-cover"
+                        onError={() => setFailed(true)}
+                    />
+
+                    {extraImageCount > 0 ? (
+                        <div
+                            className="
+                                absolute bottom-2 right-2
+                                flex items-center justify-center
+                                min-w-[30px] h-[30px]
+                                rounded-full
+                                bg-blue-600
+                                px-2
+                                text-[12px]
+                                font-bold
+                                text-white
+                                shadow-md
+                                z-10
+                            "
+                        >
+                            +{extraImageCount}
+                        </div>
+                    ) : null}
+                </>
             ) : (
                 <div className="flex h-full w-full items-center justify-center bg-[#ECECEC]">
                     <div className="flex h-[218px] w-[156px] flex-col items-center justify-center bg-[#F6F6F6]">
@@ -291,9 +313,21 @@ function NewsImage({
                                     strokeWidth="1.7"
                                     className="h-7 w-7"
                                 >
-                                    <circle cx="8.5" cy="8.5" r="1.8" fill="white" stroke="none" />
+                                    <circle
+                                        cx="8.5"
+                                        cy="8.5"
+                                        r="1.8"
+                                        fill="white"
+                                        stroke="none"
+                                    />
                                     <path d="M4 17l4.5-4.5a1 1 0 011.5.08L13 16l2.2-2.8a1 1 0 011.62.04L20 17" />
-                                    <rect x="3.5" y="5" width="17" height="14" rx="1.5" />
+                                    <rect
+                                        x="3.5"
+                                        y="5"
+                                        width="17"
+                                        height="14"
+                                        rx="1.5"
+                                    />
                                 </svg>
                             </div>
                         </div>
@@ -320,12 +354,6 @@ function NewsImage({
                     </div>
                 </div>
             )}
-
-            {imageSrc && extraImageCount > 0 ? (
-                <div className="absolute right-3 top-3 rounded-md  px-2.5 py-1 text-[13px] font-bold">
-                    +{extraImageCount}
-                </div>
-            ) : null}
         </div>
     );
 }
