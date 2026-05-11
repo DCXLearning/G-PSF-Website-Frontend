@@ -35,19 +35,6 @@ type ApiResponse = {
 const CACHE_KEY = "benefits_block_cache";
 const FALLBACK_ICON = "/icon_home_page/Benefits1.svg";
 
-const ICON_THEMES = [
-    { bg: "from-[#FAFDFF] via-[#F3F9FF] to-[#E8F4FF]", shadow: "shadow-[#3B82C3]/15", ring: "ring-[#3B82C3]/10" },
-    { bg: "from-[#FFFCF7] via-[#FFF7EC] to-[#FFEBD0]", shadow: "shadow-[#F59E0B]/15", ring: "ring-[#F59E0B]/10" },
-    { bg: "from-[#FAFFFC] via-[#F3FFF8] to-[#E5FAEF]", shadow: "shadow-[#10B981]/15", ring: "ring-[#10B981]/10" },
-    { bg: "from-[#FDFCFF] via-[#F8F1FF] to-[#F0E5FF]", shadow: "shadow-[#8B5CF6]/15", ring: "ring-[#8B5CF6]/10" },
-    { bg: "from-[#FFFBFB] via-[#FFF3F3] to-[#FFE8E8]", shadow: "shadow-[#EF4444]/15", ring: "ring-[#EF4444]/10" },
-    { bg: "from-[#FAFEFF] via-[#F1FDFF] to-[#E0FAFE]", shadow: "shadow-[#06B6D4]/15", ring: "ring-[#06B6D4]/10" },
-    { bg: "from-[#FFFCF9] via-[#FFF5ED] to-[#FFE8D6]", shadow: "shadow-[#F97316]/15", ring: "ring-[#F97316]/10" },
-    { bg: "from-[#FBFCFF] via-[#F4F6FF] to-[#E7EAFF]", shadow: "shadow-[#6366F1]/15", ring: "ring-[#6366F1]/10" },
-    { bg: "from-[#FFFBFD] via-[#FFF3FA] to-[#FDE8F3]", shadow: "shadow-[#EC4899]/15", ring: "ring-[#EC4899]/10" },
-    { bg: "from-[#FCFFF9] via-[#F6FFF2] to-[#EAFBE2]", shadow: "shadow-[#22C55E]/15", ring: "ring-[#22C55E]/10" },
-];
-
 function pickText(i18n: I18n | null | undefined, lang: UiLang) {
     return (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || "";
 }
@@ -87,27 +74,23 @@ function getImageSrc(src?: string | null) {
 type SafeBenefitImageProps = {
     src?: string | null;
     alt: string;
-    index: number;
 };
 
-function SafeBenefitImage({ src, alt, index }: SafeBenefitImageProps) {
+function SafeBenefitImage({ src, alt }: SafeBenefitImageProps) {
     const [imgSrc, setImgSrc] = useState(getImageSrc(src));
-    const theme = ICON_THEMES[index % ICON_THEMES.length];
 
     useEffect(() => {
         setImgSrc(getImageSrc(src));
     }, [src]);
 
     return (
-        <div
-            className={`group relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-b ${theme.bg} shadow-lg ${theme.shadow} ring-1 ${theme.ring} transition-all duration-300 hover:-translate-y-1 hover:scale-105`}
-        >
+        <div className="group relative flex h-20 w-20 items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:scale-105">
             <img
                 src={imgSrc}
                 alt={alt || "benefit"}
                 width={52}
                 height={52}
-                className="relative z-10 h-[52px] w-[52px] object-contain drop-shadow-md transition-all duration-300 group-hover:scale-110"
+                className="relative z-10 h-[64px] w-[64px] object-contain transition-all duration-300 group-hover:scale-110"
                 onError={() => setImgSrc(FALLBACK_ICON)}
             />
         </div>
@@ -121,7 +104,6 @@ type BenefitCardProps = {
     isKhmer: boolean;
     href: string;
     disabled?: boolean;
-    index: number;
 };
 
 const BenefitCard: React.FC<BenefitCardProps> = ({
@@ -131,7 +113,6 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
     isKhmer,
     href,
     disabled,
-    index,
 }) => (
     <div
         className={`flex flex-col items-start gap-4 md:flex-row md:gap-10 ${
@@ -139,7 +120,7 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
         }`}
     >
         <div className="mt-6 flex-shrink-0 p-4 md:p-3">
-            <SafeBenefitImage src={icon} alt={title || "benefit"} index={index} />
+            <SafeBenefitImage src={icon} alt={title || "benefit"} />
         </div>
 
         <div className="flex-1">
@@ -173,15 +154,11 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
     </div>
 );
 
-function BenefitCardSkeleton({ isKhmer, index }: { isKhmer: boolean; index: number }) {
-    const theme = ICON_THEMES[index % ICON_THEMES.length];
-
+function BenefitCardSkeleton({ isKhmer }: { isKhmer: boolean }) {
     return (
         <div className="flex animate-pulse flex-col items-start gap-4 md:flex-row md:gap-10">
             <div className="mt-6 flex-shrink-0 p-4 md:p-3">
-                <div
-                    className={`relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-b ${theme.bg} shadow-lg ${theme.shadow} ring-1 ${theme.ring}`}
-                >
+                <div className="relative flex h-20 w-20 items-center justify-center">
                     <img
                         src={FALLBACK_ICON}
                         alt="benefit"
@@ -322,13 +299,12 @@ export default function Benefits() {
                 <div className="flex flex-col gap-6 sm:gap-8 md:gap-10">
                     {showSkeleton ? (
                         Array.from({ length: limit }).map((_, idx) => (
-                            <BenefitCardSkeleton key={idx} isKhmer={isKhmer} index={idx} />
+                            <BenefitCardSkeleton key={idx} isKhmer={isKhmer} />
                         ))
                     ) : posts.length > 0 ? (
-                        posts.map((p, idx) => (
+                        posts.map((p) => (
                             <BenefitCard
                                 key={p.id}
-                                index={idx}
                                 icon={p.coverImage}
                                 title={pickText(p.title, uiLang) || "\u00A0"}
                                 description={pickText(p.description ?? undefined, uiLang) || "\u00A0"}
