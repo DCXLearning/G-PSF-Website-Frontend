@@ -5,6 +5,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Facebook, Send, Loader2 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
+type UiLang = "en" | "kh";
+
 type ContactPayload = {
   firstName: string;
   lastName: string;
@@ -14,7 +16,10 @@ type ContactPayload = {
   message: string;
 };
 
-type Desk = { label: string; emails: string[] };
+type Desk = {
+  label: string;
+  emails: string[];
+};
 
 type SiteSettingsUI = {
   addressLines: string[];
@@ -22,49 +27,102 @@ type SiteSettingsUI = {
   desks: Desk[];
   openDaysText: string;
   openTimeText: string;
-  social: { facebook?: string; telegram?: string; messenger?: string };
+  social: {
+    facebook?: string;
+    telegram?: string;
+    messenger?: string;
+  };
 };
 
-function translateDeskLabel(label: string, lang: "en" | "kh") {
+function translateDeskLabel(label: string, lang: UiLang) {
   const text = label.trim().toLowerCase();
 
   if (lang === "kh") {
-    if (text === "email" || text === "e-mail") return "អ៊ីម៉ែល";
-    if (text === "contact" || text === "phone") return "លេខទូរស័ព្ទ";
-    if (text === "information") return "ព័ត៌មាន";
+    if (
+      text === "email" ||
+      text === "e-mail" ||
+      text === "អ៊ីម៉ែល" ||
+      text === "អ៊ីមែល"
+    ) {
+      return "អ៊ីមែល";
+    }
+
+    if (text === "contact" || text === "phone") {
+      return "លេខទូរស័ព្ទ";
+    }
+
+    if (text === "information" || text === "info") {
+      return "ព័ត៌មាន";
+    }
   }
 
-  return label;
+  return label || (lang === "kh" ? "អ៊ីមែល" : "Email");
 }
 
-function normalizeSiteSettings(apiJson: any, lang: "en" | "kh"): SiteSettingsUI {
-  const d = apiJson?.data ?? {};
-  const apiKey = lang === "kh" ? "km" : "en";
+function normalizeDesks(desks: any[], lang: UiLang, apiKey: "en" | "km"): Desk[] {
+  if (!Array.isArray(desks)) return [];
 
-  const addressText = d?.address?.[apiKey] || d?.address?.en || "";
+  return desks
+    .map((x: any) => {
+      const rawTitle =
+        typeof x?.title === "object"
+          ? x.title?.[apiKey] ||
+            x.title?.km ||
+            x.title?.kh ||
+            x.title?.en ||
+            ""
+          : x?.title || "";
+
+      const emails = Array.isArray(x?.emails)
+        ? x.emails.filter(Boolean)
+        : [];
+
+      return {
+        label: translateDeskLabel(String(rawTitle).trim(), lang),
+        emails,
+      };
+    })
+    .filter((desk) => desk.emails.length > 0);
+}
+
+function normalizeSiteSettings(apiJson: any, lang: UiLang): SiteSettingsUI {
+  const d = apiJson?.data ?? {};
+  const apiKey: "en" | "km" = lang === "kh" ? "km" : "en";
+
+  const addressText =
+    d?.address?.[apiKey] ||
+    d?.address?.kh ||
+    d?.address?.km ||
+    d?.address?.en ||
+    "";
+
   const addressLines = String(addressText)
     .split("\n")
     .map((s: string) => s.trim())
     .filter(Boolean);
 
-  const contactData = d?.contact?.[apiKey] || d?.contact?.en || {};
-  const phones: string[] = Array.isArray(contactData?.phones) ? contactData.phones : [];
+  const currentContact = d?.contact?.[apiKey] || {};
+  const enContact = d?.contact?.en || {};
 
-  const desks: Desk[] = Array.isArray(contactData?.desks)
-    ? contactData.desks.map((x: any) => {
-        const rawTitle =
-          typeof x?.title === "object"
-            ? x.title?.[apiKey] || x.title?.km || x.title?.kh || x.title?.en || ""
-            : x?.title || "";
+  const phones: string[] = Array.isArray(currentContact?.phones)
+    ? currentContact.phones
+    : Array.isArray(enContact?.phones)
+      ? enContact.phones
+      : [];
 
-        return {
-          label: translateDeskLabel(String(rawTitle).trim(), lang),
-          emails: Array.isArray(x?.emails) ? x.emails : [],
-        };
-      })
-    : [];
+  const currentDesks = normalizeDesks(currentContact?.desks, lang, apiKey);
+  const enDesks = normalizeDesks(enContact?.desks, lang, "en");
 
-  const openText = String(d?.openTime?.[apiKey] || d?.openTime?.en || "").trim();
+  const desks: Desk[] = currentDesks.length > 0 ? currentDesks : enDesks;
+
+  const openText = String(
+    d?.openTime?.[apiKey] ||
+      d?.openTime?.kh ||
+      d?.openTime?.km ||
+      d?.openTime?.en ||
+      ""
+  ).trim();
+
   const openLines = openText
     .split("\n")
     .map((s: string) => s.trim())
@@ -75,20 +133,33 @@ function normalizeSiteSettings(apiJson: any, lang: "en" | "kh"): SiteSettingsUI 
 
   const socialLinks: Array<{ url?: string; icon?: string; title?: string }> =
     d?.socialLinks ?? [];
+
   const social: SiteSettingsUI["social"] = {};
 
   for (const s of socialLinks) {
     const icon = String(s?.icon ?? "").toLowerCase();
     const title = String(s?.title ?? "").toLowerCase();
     const url = String(s?.url ?? "").trim();
+
     if (!url) continue;
 
-    if (icon === "facebook" || title === "facebook") social.facebook = url;
-    else if (icon === "telegram" || title === "telegram") social.telegram = url;
-    else if (icon === "messenger" || title === "messenger") social.messenger = url;
+    if (icon === "facebook" || title === "facebook") {
+      social.facebook = url;
+    } else if (icon === "telegram" || title === "telegram") {
+      social.telegram = url;
+    } else if (icon === "messenger" || title === "messenger") {
+      social.messenger = url;
+    }
   }
 
-  return { addressLines, phones, desks, openDaysText, openTimeText, social };
+  return {
+    addressLines,
+    phones,
+    desks,
+    openDaysText,
+    openTimeText,
+    social,
+  };
 }
 
 const translations = {
@@ -114,7 +185,7 @@ const translations = {
   kh: {
     firstName: "នាមខ្លួន",
     lastName: "នាមត្រកូល",
-    email: "អ៊ីម៉ែល",
+    email: "អ៊ីមែល",
     organisation: "ឈ្មោះអង្គការ",
     subject: "ប្រធានបទ",
     message: "សាររបស់អ្នក",
@@ -134,7 +205,8 @@ const translations = {
 
 export default function ContactSection() {
   const { language } = useLanguage();
-  const t = translations[language];
+  const lang = language === "kh" ? "kh" : "en";
+  const t = translations[lang];
 
   const [form, setForm] = useState<ContactPayload>({
     firstName: "",
@@ -158,19 +230,29 @@ export default function ContactSection() {
 
     async function loadSettings() {
       setSettingsLoading(true);
+      setSettingsError("");
 
       try {
         const res = await fetch("/api/site-settings", { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
 
         const json = await res.json();
-        const ui = normalizeSiteSettings(json, language);
+        const ui = normalizeSiteSettings(json, lang);
 
-        if (mounted) setSettings(ui);
+        if (mounted) {
+          setSettings(ui);
+        }
       } catch (e: any) {
-        if (mounted) setSettingsError(e?.message || "Error loading settings");
+        if (mounted) {
+          setSettingsError(e?.message || "Error loading settings");
+        }
       } finally {
-        if (mounted) setSettingsLoading(false);
+        if (mounted) {
+          setSettingsLoading(false);
+        }
       }
     }
 
@@ -179,7 +261,7 @@ export default function ContactSection() {
     return () => {
       mounted = false;
     };
-  }, [language]);
+  }, [lang]);
 
   const canSubmit = useMemo(() => {
     return (
@@ -191,12 +273,16 @@ export default function ContactSection() {
     );
   }, [form]);
 
-  function setField<K extends keyof ContactPayload>(key: K, value: ContactPayload[K]) {
+  function setField<K extends keyof ContactPayload>(
+    key: K,
+    value: ContactPayload[K]
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+
     setSuccessMsg("");
     setErrorMsg("");
 
@@ -206,6 +292,7 @@ export default function ContactSection() {
     }
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+
     if (!emailOk) {
       setErrorMsg(t.invalidEmail);
       return;
@@ -216,13 +303,18 @@ export default function ContactSection() {
     try {
       const res = await fetch("/api/contact/contact-form", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error(t.failed);
+      if (!res.ok) {
+        throw new Error(t.failed);
+      }
 
       setSuccessMsg(t.success);
+
       setForm({
         firstName: "",
         lastName: "",
@@ -257,7 +349,7 @@ export default function ContactSection() {
         <div className="xl:col-span-4">
           <div className="h-full bg-[#1e2653] text-white p-6 md:p-8 rounded-3xl space-y-8 shadow-lg">
             {settingsLoading ? (
-              <div className={language === "kh" ? "khmer-font" : ""}>
+              <div className={lang === "kh" ? "khmer-font" : ""}>
                 {t.loadingInfo}
               </div>
             ) : settingsError ? (
@@ -265,21 +357,31 @@ export default function ContactSection() {
             ) : (
               <>
                 <section>
-                  <h4 className={`text-xl font-semibold mb-3 ${language === "kh" ? "khmer-font" : ""}`}>
+                  <h4
+                    className={`text-xl font-semibold mb-3 ${
+                      lang === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
                     {t.address}
                   </h4>
-                  <p className={`text-gray-300 text-sm leading-7 ${language === "kh" ? "khmer-font" : ""}`}>
+
+                  <div
+                    className={`text-gray-300 text-sm leading-7 ${
+                      lang === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
                     {settings?.addressLines.map((line, idx) => (
-                      <span key={idx}>
-                        {line}
-                        <br />
-                      </span>
+                      <p key={idx}>{line}</p>
                     ))}
-                  </p>
+                  </div>
                 </section>
 
                 <section className="space-y-4">
-                  <h4 className={`text-xl font-semibold ${language === "kh" ? "khmer-font" : ""}`}>
+                  <h4
+                    className={`text-xl font-semibold ${
+                      lang === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
                     {t.contact}
                   </h4>
 
@@ -289,40 +391,68 @@ export default function ContactSection() {
                     ))}
                   </div>
 
-                  {settings?.desks.map((desk) => (
-                    <div key={desk.label} className="pt-2">
-                      <p className={`font-semibold text-white ${language === "kh" ? "khmer-font" : ""}`}>
+                  {settings?.desks.map((desk, index) => (
+                    <div key={`${desk.label}-${index}`} className="pt-2">
+                      <p
+                        className={`font-semibold text-white mb-1 ${
+                          lang === "kh" ? "khmer-font" : ""
+                        }`}
+                      >
                         {desk.label}
                       </p>
-                      {desk.emails.map((em) => (
-                        <p key={em} className="text-gray-300 break-all">
-                          {em}
-                        </p>
-                      ))}
+
+                      <div className="space-y-1">
+                        {desk.emails.map((em) => (
+                          <p
+                            key={em}
+                            className="text-gray-300 break-all font-sans text-sm"
+                          >
+                            {em}
+                          </p>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </section>
 
                 <section>
-                  <h4 className={`text-xl font-semibold mb-3 ${language === "kh" ? "khmer-font" : ""}`}>
+                  <h4
+                    className={`text-xl font-semibold mb-3 ${
+                      lang === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
                     {t.openTime}
                   </h4>
-                  <p className={`text-sm text-gray-300 ${language === "kh" ? "khmer-font" : ""}`}>
+
+                  <p
+                    className={`text-sm text-gray-300 ${
+                      lang === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
                     {settings?.openDaysText}
                   </p>
-                  <p className="text-sm text-white font-medium">{settings?.openTimeText}</p>
+
+                  <p className="text-sm text-white font-medium font-sans">
+                    {settings?.openTimeText}
+                  </p>
                 </section>
 
                 <section>
-                  <h4 className={`text-xl font-semibold mb-4 ${language === "kh" ? "khmer-font" : ""}`}>
+                  <h4
+                    className={`text-xl font-semibold mb-4 ${
+                      lang === "kh" ? "khmer-font" : ""
+                    }`}
+                  >
                     {t.connected}
                   </h4>
+
                   <div className="flex items-center gap-4">
                     {settings?.social.facebook && (
                       <a
                         href={settings.social.facebook}
                         target="_blank"
                         rel="noreferrer"
+                        aria-label="Facebook"
                         className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
                       >
                         <Facebook size={20} />
@@ -334,6 +464,7 @@ export default function ContactSection() {
                         href={settings.social.telegram}
                         target="_blank"
                         rel="noreferrer"
+                        aria-label="Telegram"
                         className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
                       >
                         <Send size={20} />
@@ -347,7 +478,7 @@ export default function ContactSection() {
         </div>
       </div>
 
-      {/* ===============from contact========== */}
+            {/* ===============from contact========== */}
 
       {/* <div className="max-w-7xl mx-auto">
         <form onSubmit={onSubmit} className="space-y-6 bg-white rounded-3xl">
@@ -484,6 +615,7 @@ export default function ContactSection() {
           </button>
         </form>
       </div> */}
+      
     </section>
   );
 }
