@@ -181,8 +181,8 @@ export default function TeamSection({
         }
         : {
             title: "Working Group Co-Chairs",
-            governmentLabel: "Government Representative",
-            sectorLabel: "Private Sector Representative",
+            governmentLabel: "Government Co-Chair",
+            sectorLabel: "Private Sector Co-Chair",
             badge: "Co-Chair",
             imageAlt: "Working group co-chair",
         };
