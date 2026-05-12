@@ -4,6 +4,7 @@ import Mandate from '../List-WorkingGroups/Mandate'
 import View from '../List-WorkingGroups/View'
 import WorkingGroupListCards from '../List-WorkingGroups/WorkingGroupListCards'
 import TeamSection from '../List-WorkingGroups/co-chair'
+import RelateNewsWorkingGroup from "@/components/WorkingGroupsPage/List-WorkingGroups/relate-news-working-group";
 
 type RoutProps = {
     pageSlug?: string
@@ -16,6 +17,7 @@ export default function Rout({ pageSlug }: RoutProps) {
             <Mandate pageSlug={pageSlug} />
             <TeamSection pageSlug={pageSlug} />
             <View pageSlug={pageSlug} />
+            {/*<RelateNewsWorkingGroup pageSlug={pageSlug} />*/}
             <WorkingGroupListCards currentSlug={pageSlug} />
         </>
     )

@@ -15,7 +15,9 @@ type I18nText = {
 type Representative = {
     photos?: string[];
     governmentRepresentative?: I18nText;
+    governmentRepresentativeDescription?: I18nText;
     sectorRepresentative?: I18nText;
+    sectorRepresentativeDescription?: I18nText;
 };
 
 type CmsContent = {
@@ -44,13 +46,22 @@ type CmsResponse = {
 };
 
 type CoChairData = {
+    governmentDescription: string;
     governmentName: string;
     photos: string[];
+    sectorDescription: string;
     sectorName: string;
 };
 
 type TeamSectionProps = {
     pageSlug?: string;
+};
+
+type FeaturedRepresentative = {
+    description: string;
+    imageUrl: string;
+    label: string;
+    name: string;
 };
 
 const DEFAULT_PAGE_SLUG = "agriculture-and-agro-industry";
@@ -94,7 +105,15 @@ function mapRepresentative(
     apiLang: ApiLang
 ): CoChairData {
     return {
+        governmentDescription: pickText(
+            representative.governmentRepresentativeDescription,
+            apiLang
+        ),
         governmentName: pickText(representative.governmentRepresentative, apiLang),
+        sectorDescription: pickText(
+            representative.sectorRepresentativeDescription,
+            apiLang
+        ),
         sectorName: pickText(representative.sectorRepresentative, apiLang),
         photos: (representative.photos ?? []).filter(Boolean),
     };
@@ -152,56 +171,70 @@ export default function TeamSection({
         return null;
     }
 
+    const text = isKh
+        ? {
+            title: "សហប្រធាននៃ ក្រុមការងារតាមវិស័យ",
+            governmentLabel: "តំណាងរាជរដ្ឋាភិបាល",
+            sectorLabel: "តំណាងវិស័យឯកជន",
+            badge: "សហប្រធាន",
+            imageAlt: "រូបភាពសហប្រធានក្រុមការងារ",
+        }
+        : {
+            title: "Working Group Co-Chairs",
+            governmentLabel: "Government Representative",
+            sectorLabel: "Private Sector Representative",
+            badge: "Co-Chair",
+            imageAlt: "Working group co-chair",
+        };
+
+    const featuredRepresentative: FeaturedRepresentative =
+        data.governmentName || data.governmentDescription
+            ? {
+                description: data.governmentDescription,
+                imageUrl: data.photos[0] ?? "",
+                label: text.governmentLabel,
+                name: data.governmentName,
+            }
+            : {
+                description: data.sectorDescription,
+                imageUrl: data.photos[0] ?? "",
+                label: text.sectorLabel,
+                name: data.sectorName,
+            };
+
     return (
-        <section className="bg-gray-50 py-12">
+        <section className="bg-[#f5f6fa] py-12 md:py-16">
             <div className="mx-auto max-w-7xl px-4">
-                <div className="mb-8">
-                    {/*<p className={`text-xl font-bold text-slate-700 ${isKh ? "khmer-font" : ""}`}>*/}
-                    {/*    {isKh ? "សូមជួបជាមួយ" : "Meet the"}*/}
-                    {/*</p>*/}
+                <div className="mb-8 md:mb-10">
                     <h2
-                        className={`text-3xl font-extrabold text-[#101a3f] md:text-5xl ${
+                        className={`max-w-4xl text-4xl font-black leading-tight text-[#101a3f] md:text-6xl ${
                             isKh ? "khmer-font" : ""
                         }`}
                     >
-                        {isKh ? "សហប្រធាននៃ ក្រុមការងារតាមវិស័យ" : "Working Group Co-Chairs"}
+                        {text.title}
                     </h2>
-                    <div className="mt-4 h-1.5 w-64 bg-orange-500" />
+                    <div className="mt-4 h-1.5 w-56 rounded-full bg-orange-500" />
                 </div>
 
-                <div className="mb-8 grid gap-4 md:grid-cols-2">
+                <div className="mb-9 grid gap-5 md:grid-cols-2">
                     <RepresentativeName
-                        label={isKh ? "តំណាងរាជរដ្ឋាភិបាល" : "Government Representative"}
+                        label={text.governmentLabel}
                         name={data.governmentName}
                         isKh={isKh}
                     />
                     <RepresentativeName
-                        label={isKh ? "តំណាងវិស័យឯកជន" : "Private Sector Representative"}
+                        label={text.sectorLabel}
                         name={data.sectorName}
                         isKh={isKh}
                     />
                 </div>
 
-                {data.photos.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                        {data.photos.map((photo, index) => (
-                            <div
-                                key={`${photo}-${index}`}
-                                className="aspect-square overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200"
-                            >
-                                <img
-                                    src={photo}
-                                    alt={
-                                        isKh
-                                            ? "រូបភាពសហអធិបតីក្រុមការងារ"
-                                            : "Working group co-chair"
-                                    }
-                                    className="h-full w-full object-cover"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                ) : null}
+                <FeaturedProfileCard
+                    badge={text.badge}
+                    imageAlt={text.imageAlt}
+                    isKh={isKh}
+                    representative={featuredRepresentative}
+                />
             </div>
         </section>
     );
@@ -221,13 +254,67 @@ function RepresentativeName({
     }
 
     return (
-        <article className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <p className={`text-sm font-bold text-orange-600 ${isKh ? "khmer-font" : ""}`}>
+        <article className="rounded-[1.6rem] bg-white px-7 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] ring-1 ring-slate-100">
+            <p className={`text-sm font-extrabold text-orange-500 ${isKh ? "khmer-font" : ""}`}>
                 {label}
             </p>
-            <h3 className={`mt-2 text-2xl font-extrabold text-[#101a3f] ${isKh ? "khmer-font" : ""}`}>
-                {name}
-            </h3>
+            {name ? (
+                <h3 className={`mt-4 text-3xl font-black leading-tight text-[#101a3f] ${isKh ? "khmer-font" : ""}`}>
+                    {name}
+                </h3>
+            ) : null}
+        </article>
+    );
+}
+
+function FeaturedProfileCard({
+    badge,
+    imageAlt,
+    isKh,
+    representative,
+}: {
+    badge: string;
+    imageAlt: string;
+    isKh: boolean;
+    representative: FeaturedRepresentative;
+}) {
+    return (
+        <article className="overflow-hidden rounded-[2rem] bg-white shadow-[0_22px_55px_rgba(15,23,42,0.09)] ring-1 ring-slate-100 md:grid md:grid-cols-[0.78fr_1.42fr]">
+            <div className="min-h-[360px] bg-slate-100 md:min-h-[560px]">
+                {representative.imageUrl ? (
+                    <img
+                        src={representative.imageUrl}
+                        alt={imageAlt}
+                        className="h-full w-full object-cover"
+                    />
+                ) : (
+                    <div className={`flex h-full min-h-[360px] items-center justify-center px-6 text-center text-slate-400 ${isKh ? "khmer-font" : ""}`}>
+                        {isKh ? "មិនមានរូបភាព" : "No image available"}
+                    </div>
+                )}
+            </div>
+
+            <div className="flex min-h-[360px] flex-col justify-center px-7 py-10 md:px-14 lg:px-16">
+                <span className={`mb-8 w-fit rounded-full bg-orange-50 px-5 py-2 text-sm font-extrabold text-orange-500 ${isKh ? "khmer-font" : ""}`}>
+                    {badge}
+                </span>
+
+                {representative.name ? (
+                    <h3 className={`text-4xl font-black leading-tight text-[#101a3f] md:text-6xl ${isKh ? "khmer-font" : ""}`}>
+                        {representative.name}
+                    </h3>
+                ) : null}
+
+                {/*<p className={`mt-6 text-base font-extrabold text-orange-500 ${isKh ? "khmer-font" : ""}`}>*/}
+                {/*    {representative.label}*/}
+                {/*</p>*/}
+
+                {representative.description ? (
+                    <p className={`mt-5 max-w-2xl text-base leading-8 text-slate-500 md:text-lg ${isKh ? "khmer-font" : ""}`}>
+                        {representative.description}
+                    </p>
+                ) : null}
+            </div>
         </article>
     );
 }
