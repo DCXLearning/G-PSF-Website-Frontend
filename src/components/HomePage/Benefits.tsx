@@ -277,7 +277,7 @@ export default function Benefits() {
             <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
                 <div className="mb-32 sm:mb-25 md:mb-56">
                     <h2
-                        className={`w-70 text-4xl font-bold leading-tight text-gray-900 md:text-5xl ${
+                        className={`text-4xl font-bold leading-tight text-gray-900 md:text-5xl ${
                             isKhmer ? "khmer-font" : ""
                         }`}
                     >
