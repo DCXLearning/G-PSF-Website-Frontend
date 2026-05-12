@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 import { FaArrowRight } from "react-icons/fa";
+
 type UiLang = "en" | "kh";
 type ViewMode = "list" | "grid";
 
@@ -119,7 +120,9 @@ function getThumbnail(post: PostItem, language: UiLang): string {
 
 function buildDetailHref(post: PostItem) {
     if (post.slug?.trim()) {
-        return `/new-update/view-detail?slug=${encodeURIComponent(post.slug.trim())}&id=${encodeURIComponent(String(post.id))}`;
+        return `/new-update/view-detail?slug=${encodeURIComponent(
+            post.slug.trim(),
+        )}&id=${encodeURIComponent(String(post.id))}`;
     }
 
     return `/new-update/view-detail?id=${encodeURIComponent(String(post.id))}`;
@@ -136,11 +139,12 @@ function mapFeaturedPosts(posts: PostItem[], language: UiLang): FeaturedItem[] {
             const leftDate = new Date(
                 leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || "",
             ).getTime();
+
             const rightDate = new Date(
                 rightPost.publishedAt ||
-                rightPost.createdAt ||
-                rightPost.updatedAt ||
-                "",
+                    rightPost.createdAt ||
+                    rightPost.updatedAt ||
+                    "",
             ).getTime();
 
             return rightDate - leftDate;
@@ -249,7 +253,7 @@ function Header({
     return (
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-                <h1 className="mt-1 text-3xl md:text-[44px] font-extrabold leading-none text-[#0B2C5F]">
+                <h1 className="mt-1 text-3xl font-extrabold leading-none text-[#0B2C5F] md:text-[44px]">
                     {language === "kh" ? "ព័ត៌មានលេចធ្លោ" : "Featured News"}
                 </h1>
                 <div className="mt-4 h-[4px] w-[150px] bg-orange-500" />
@@ -259,10 +263,11 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex flex-1 items-center cursor-pointer justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "list"
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${
+                        view === "list"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                        }`}
+                    }`}
                 >
                     <List className="h-3.5 w-3.5" />
                     <span className={language === "kh" ? "khmer-font" : ""}>
@@ -273,10 +278,11 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex flex-1 items-center cursor-pointer justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "grid"
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${
+                        view === "grid"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                        }`}
+                    }`}
                 >
                     <LayoutGrid className="h-3.5 w-3.5" />
                     <span className={language === "kh" ? "khmer-font" : ""}>
@@ -285,6 +291,33 @@ function Header({
                 </button>
             </div>
         </div>
+    );
+}
+
+function DateRow({ date }: { date: string }) {
+    return (
+        <div className="mt-2 flex items-center gap-2 text-[13px] text-[#64748B]">
+            <CalendarDays className="h-4 w-4" />
+            <span>{date}</span>
+        </div>
+    );
+}
+
+function ViewDetailButton({
+    href,
+    language,
+}: {
+    href: string;
+    language: UiLang;
+}) {
+    return (
+        <Link
+            href={href}
+            className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-orange-500 px-3 py-1 text-[15px] font-bold text-orange-600 transition hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]"
+        >
+            {language === "kh" ? "អានបន្ថែម" : "View details"}
+            <FaArrowRight className="text-[13px]" />
+        </Link>
     );
 }
 
@@ -307,30 +340,22 @@ function ListCard({
             </Link>
 
             <div className="flex min-w-0 flex-col justify-center">
-                <h2 className="mt-0 text-[18px] line-clamp-1 font-extrabold leading-[1.5] text-[#0B2C5F] md:text-[20px]">
+                <h2 className="mt-0 line-clamp-1 text-[18px] font-extrabold leading-[1.5] text-[#0B2C5F] md:text-[20px]">
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
                 </h2>
 
-                <p className="mt-3 line-clamp-2 text-[14px] leading-7 text-[#64748B]">
+                <DateRow date={item.date} />
+
+                <p className="mt-3 line-clamp-2 text-[16px] leading-7 text-[#64748B]">
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
                             : "No description available.")}
                 </p>
 
-                <Link
-                    href={item.href}
-                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-600 underline underline-offset-2 hover:text-[#1D4ED8]"
-                >
-                    {language === "kh" ? "អានបន្ថែម" : "View details"}
-                    <FaArrowRight className="text-[13px]" />
-                </Link>
-                <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date}</span>
-                </div>
+                <ViewDetailButton href={item.href} language={language} />
             </div>
         </article>
     );
@@ -361,25 +386,16 @@ function GridCard({
                     </Link>
                 </h2>
 
-                <p className="mt-3 line-clamp-3 text-[15px] leading-7 text-[#64748B]">
+                <DateRow date={item.date} />
+
+                <p className="mt-3 line-clamp-3 text-[16px] leading-7 text-[#64748B]">
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
                             : "No description available.")}
                 </p>
 
-                <Link
-                    href={item.href}
-                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-600 underline underline-offset-2 hover:text-[#1D4ED8]"
-                >
-                    {language === "kh" ? "អានបន្ថែម" : "View details"}
-                    <FaArrowRight className="text-[13px]" />
-                </Link>
-
-                <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date}</span>
-                </div>
+                <ViewDetailButton href={item.href} language={language} />
             </div>
         </article>
     );
@@ -388,6 +404,7 @@ function GridCard({
 export default function FeaturedPage() {
     const { language } = useLanguage();
     const uiLanguage = language as UiLang;
+
     const [view, setView] = useState<ViewMode>("list");
     const [items, setItems] = useState<PostItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -414,8 +431,8 @@ export default function FeaturedPage() {
                 const posts = Array.isArray(json.data)
                     ? json.data
                     : Array.isArray(json.items)
-                        ? json.items
-                        : [];
+                      ? json.items
+                      : [];
 
                 if (mounted) {
                     setItems(posts);
@@ -475,13 +492,21 @@ export default function FeaturedPage() {
                     view === "list" ? (
                         <div>
                             {featuredItems.map((item) => (
-                                <ListCard key={item.id} item={item} language={uiLanguage} />
+                                <ListCard
+                                    key={item.id}
+                                    item={item}
+                                    language={uiLanguage}
+                                />
                             ))}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                             {featuredItems.map((item) => (
-                                <GridCard key={item.id} item={item} language={uiLanguage} />
+                                <GridCard
+                                    key={item.id}
+                                    item={item}
+                                    language={uiLanguage}
+                                />
                             ))}
                         </div>
                     )
