@@ -17,7 +17,7 @@ export default function Rout({ pageSlug }: RoutProps) {
             <Mandate pageSlug={pageSlug} />
             <TeamSection pageSlug={pageSlug} />
             <View pageSlug={pageSlug} />
-            {/*<RelateNewsWorkingGroup pageSlug={pageSlug} />*/}
+            <RelateNewsWorkingGroup pageSlug={pageSlug} />
             <WorkingGroupListCards currentSlug={pageSlug} />
         </>
     )

@@ -83,6 +83,7 @@ type RelateNewsWorkingGroupProps = {
 };
 
 const DEFAULT_PAGE_SLUG = "agriculture-and-agro-industry";
+const RELATED_NEWS_ENDPOINT = "/api/posts?pageId=6";
 
 function getText(value: LangText | undefined, language: UiLang): string {
     if (!value) return "";
@@ -167,15 +168,6 @@ function mapRelatedNews(posts: PostItem[], language: UiLang): RelatedNewsItem[] 
         }));
 }
 
-function buildRelatedNewsEndpoint(pageSlug: string) {
-    const params = new URLSearchParams({
-        pageSlug,
-        types: "post_list,announcement",
-    });
-
-    return `/api/posts?${params.toString()}`;
-}
-
 function NewsImage({
     src,
     alt,
@@ -238,7 +230,7 @@ export default function RelateNewsWorkingGroup({
             try {
                 setLoading(true);
 
-                const response = await fetch(buildRelatedNewsEndpoint(pageSlug), {
+                const response = await fetch(RELATED_NEWS_ENDPOINT, {
                     cache: "no-store",
                     signal: controller.signal,
                     headers: {
@@ -275,7 +267,7 @@ export default function RelateNewsWorkingGroup({
         return () => {
             controller.abort();
         };
-    }, [pageSlug]);
+    }, []);
 
     useEffect(() => {
         const controller = new AbortController();
