@@ -287,13 +287,13 @@ const Footer: React.FC = () => {
                 {/* ========== LOGO + DESCRIPTION ========== */}
                 {/* ========== LOGO + DESCRIPTION ========== */}
                 <div className="flex flex-col items-start text-left sm:items-center sm:text-center">
-                    <div className="relative w-60 h-20 mb-5 -mt-3">
+                    <div className="relative w-55 h-28 mb-5 -mt-4">
                         <Image
                             src={siteData?.logo || "/image/logo1.png"}
                             alt={title || "G-PSF Logo"}
                             fill
                             className="object-cover object-left sm:object-center"
-                            sizes="240px"
+                            sizes="210px"
                             unoptimized
                         />
                     </div>
