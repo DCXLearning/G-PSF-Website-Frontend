@@ -4,9 +4,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-type UiLang = "en" | "kh";
 type ApiLang = "en" | "km";
-type MultiLang = string | { en?: string; km?: string };
+type MultiLang = string | { en?: string; km?: string; kh?: string };
 
 type Block = {
   id: number;
@@ -28,13 +27,17 @@ const CACHE_KEY = "working-groups-block-43-cache";
 function getText(value: MultiLang | null | undefined, lang: ApiLang): string {
   if (!value) return "";
   if (typeof value === "string") return value;
-  return value[lang] || value.en || value.km || "";
+
+  return value[lang] || value.km || value.kh || value.en || "";
 }
 
 function readCache(): Block[] {
   try {
+    if (typeof window === "undefined") return [];
+
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return [];
+
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -44,6 +47,7 @@ function readCache(): Block[] {
 
 function writeCache(blocks: Block[]) {
   try {
+    if (typeof window === "undefined") return;
     localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
   } catch {
     // ignore cache error
@@ -52,17 +56,15 @@ function writeCache(blocks: Block[]) {
 
 function SectionSkeleton() {
   return (
-    <section className="bg-white py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-4 animate-pulse">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
-          <div>
-            <div className="h-6 w-32 rounded bg-slate-200 mb-3" />
-            <div className="h-12 w-full max-w-[520px] rounded bg-slate-200 mb-3" />
-            <div className="h-12 w-4/5 max-w-[420px] rounded bg-slate-200" />
-            <div className="mt-5 h-1.5 bg-orange-200 w-56 sm:w-72 md:w-96 lg:w-[440px]" />
-            <div className="mt-8 h-6 w-full max-w-md rounded bg-slate-200 mb-2" />
-            <div className="h-6 w-5/6 max-w-sm rounded bg-slate-200" />
-          </div>
+    <section className="w-full overflow-hidden bg-white py-10 sm:py-14 md:py-20">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 animate-pulse">
+        <div className="w-full max-w-5xl">
+          <div className="h-6 w-32 rounded bg-slate-200 mb-3" />
+          <div className="h-10 w-full max-w-[520px] rounded bg-slate-200 mb-3" />
+          <div className="h-10 w-4/5 max-w-[420px] rounded bg-slate-200" />
+          <div className="mt-5 h-1.5 w-full max-w-[520px] rounded bg-orange-200" />
+          <div className="mt-8 h-6 w-full max-w-md rounded bg-slate-200 mb-2" />
+          <div className="h-6 w-5/6 max-w-sm rounded bg-slate-200" />
         </div>
       </div>
     </section>
@@ -87,6 +89,7 @@ export default function WorkingGroups16() {
     setMounted(true);
 
     const cached = readCache();
+
     if (cached.length > 0) {
       setBlocks(cached);
       setLoading(false);
@@ -115,6 +118,7 @@ export default function WorkingGroups16() {
         }
 
         const nextBlocks = json.data?.blocks || [];
+
         setBlocks(nextBlocks);
         writeCache(nextBlocks);
       } catch (err: any) {
@@ -139,12 +143,14 @@ export default function WorkingGroups16() {
     );
 
     const fallbackTitle = isKh ? "ក្រុមការងារ (WGs)?" : "Working Groups?";
+
     const fallbackDescription = isKh
       ? "ក្រុមការងារ (WGs) គឺជាម៉ាស៊ីនដំណើរការស្នូលរបស់ G-PSF។"
       : "The Working Groups (WGs) are the core operational engine of the G-PSF.";
 
     const title = getText(block?.title, apiLang) || fallbackTitle;
-    const description = getText(block?.description, apiLang) || fallbackDescription;
+    const description =
+      getText(block?.description, apiLang) || fallbackDescription;
 
     return { title, description };
   }, [blocks, apiLang, isKh]);
@@ -186,38 +192,47 @@ export default function WorkingGroups16() {
   }
 
   return (
-    <section className="bg-white py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-4">
+    <section className="w-full overflow-hidden bg-white py-10 sm:py-14 md:py-20 lg:py-24">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {error && blocks.length === 0 && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {error}
           </div>
         )}
 
-        <div className="items-start">
-          <div className="lg:sticky lg:top-10">
+        <div className="w-full min-w-0">
+          <div className="w-full min-w-0 max-w-6xl">
             <p
-              className={`text-lg md:text-2xl font-semibold text-gray-900 mb-2 tracking-wider ${
-                isKh ? "khmer-font normal-case" : ""
-              }`}
+              className={[
+                "mb-2 font-semibold text-gray-900",
+                isKh
+                  ? "khmer-font text-base sm:text-xl md:text-2xl leading-relaxed tracking-normal"
+                  : "text-lg sm:text-xl md:text-2xl tracking-wider",
+              ].join(" ")}
             >
               {titleParts.small}
             </p>
 
             <h1
-              className={`text-4xl w-5xl md:text-5xl font-bold text-gray-900 leading-tight ${
-                isKh ? "khmer-font" : ""
-              }`}
+              className={[
+                "w-full max-w-full break-words font-bold text-gray-900",
+                isKh
+                  ? "khmer-font text-[24px] leading-[1.55] sm:text-[32px] sm:leading-[1.45] md:text-[42px] md:leading-[1.35] lg:text-[48px]"
+                  : "text-3xl leading-tight sm:text-4xl md:text-5xl",
+              ].join(" ")}
             >
               {titleParts.main}
             </h1>
 
-            <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-94 lg:w-[756px] translate-x-0 sm:translate-x-8 md:translate-x-52" />
+            <div className="mt-4 h-1.5 w-full max-w-[220px] rounded-full bg-orange-500 sm:max-w-[320px] md:mt-5 md:max-w-[520px] lg:max-w-[756px] sm:translate-x-8 md:translate-x-52" />
 
             <p
-              className={`mt-8 max-w-4xl text-lg sm:text-2xl leading-relaxed font-bold text-[#1e3a8a] whitespace-pre-line translate-x-0 sm:translate-x-8 md:translate-x-52 ${
-                isKh ? "khmer-font" : ""
-              }`}
+              className={[
+                "mt-6 w-full max-w-4xl whitespace-pre-line break-words font-bold text-[#1e3a8a] sm:translate-x-8 md:translate-x-52",
+                isKh
+                  ? "khmer-font text-[15px] leading-[1.9] sm:text-lg md:text-xl md:leading-[1.85]"
+                  : "text-base leading-relaxed sm:text-lg md:text-2xl",
+              ].join(" ")}
             >
               {view.description}
             </p>
