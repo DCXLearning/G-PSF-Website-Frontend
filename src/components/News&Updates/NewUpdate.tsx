@@ -144,7 +144,15 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                 </p>
 
                                                 <div
-                                                    className={`mt-auto underline underline-offset-2 flex items-center gap-2 text-sm font-bold text-orange-600 hover:text-[#1D4ED8] ${isKh ? "khmer-font" : ""}`}
+                                                    className={`
+                                                        mt-auto inline-flex w-fit items-center gap-2
+                                                        rounded-full border border-orange-500
+                                                        px-3 py-1
+                                                        text-sm font-bold text-orange-600
+                                                        no-underline transition
+                                                        hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
+                                                        ${isKh ? "khmer-font" : ""}
+                                                    `}
                                                 >
                                                     {isKh ? "អានបន្ថែម" : "View details"}
                                                     <FaArrowRight className="h-3 w-3" />

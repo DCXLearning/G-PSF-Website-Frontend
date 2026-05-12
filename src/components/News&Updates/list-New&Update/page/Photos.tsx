@@ -180,7 +180,8 @@ function isPublishedPost(post: MediaPost): boolean {
 
 function getPrimaryPostListBlock(blocks: ApiBlock[]): ApiBlock | null {
     const sortedBlocks = [...blocks].sort(
-        (leftBlock, rightBlock) => (leftBlock.orderIndex ?? 0) - (rightBlock.orderIndex ?? 0)
+        (leftBlock, rightBlock) =>
+            (leftBlock.orderIndex ?? 0) - (rightBlock.orderIndex ?? 0)
     );
 
     return (
@@ -212,7 +213,9 @@ function getPostsFromResponse(response: CategoryPostsResponse): MediaPost[] {
 
 function buildDetailHref(post: MediaPost): string {
     if (post.slug?.trim()) {
-        return `/new-update/view-detail?slug=${encodeURIComponent(post.slug.trim())}&id=${encodeURIComponent(String(post.id))}`;
+        return `/new-update/view-detail?slug=${encodeURIComponent(
+            post.slug.trim()
+        )}&id=${encodeURIComponent(String(post.id))}`;
     }
 
     return `/new-update/view-detail?id=${encodeURIComponent(String(post.id))}`;
@@ -224,8 +227,12 @@ function mapPhotoItems(posts: MediaPost[], language: UiLang): PhotoItem[] {
             const leftDate = new Date(
                 leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || ""
             ).getTime();
+
             const rightDate = new Date(
-                rightPost.publishedAt || rightPost.createdAt || rightPost.updatedAt || ""
+                rightPost.publishedAt ||
+                    rightPost.createdAt ||
+                    rightPost.updatedAt ||
+                    ""
             ).getTime();
 
             return rightDate - leftDate;
@@ -284,16 +291,10 @@ function NewsImage({
                         <div
                             className="
                                 absolute bottom-2 right-2
-                                flex items-center justify-center
-                                min-w-[30px] h-[30px]
-                                rounded-full
-                                bg-blue-600
-                                px-2
-                                text-[12px]
-                                font-bold
-                                text-white
-                                shadow-md
                                 z-10
+                                flex h-[30px] min-w-[30px] items-center justify-center
+                                rounded-full bg-blue-600 px-2
+                                text-[12px] font-bold text-white shadow-md
                             "
                         >
                             +{extraImageCount}
@@ -382,10 +383,11 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "list"
-                        ? "bg-[#23395D] text-white"
-                        : "text-[#475569] hover:bg-slate-100"
-                        }`}
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${
+                        view === "list"
+                            ? "bg-[#23395D] text-white"
+                            : "text-[#475569] hover:bg-slate-100"
+                    }`}
                 >
                     <List className="h-3.5 w-3.5" />
                     <span className={language === "kh" ? "khmer-font" : ""}>
@@ -396,10 +398,11 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "grid"
-                        ? "bg-[#23395D] text-white"
-                        : "text-[#475569] hover:bg-slate-100"
-                        }`}
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${
+                        view === "grid"
+                            ? "bg-[#23395D] text-white"
+                            : "text-[#475569] hover:bg-slate-100"
+                    }`}
                 >
                     <LayoutGrid className="h-3.5 w-3.5" />
                     <span className={language === "kh" ? "khmer-font" : ""}>
@@ -408,6 +411,48 @@ function Header({
                 </button>
             </div>
         </div>
+    );
+}
+
+function DateRow({
+    date,
+    language,
+}: {
+    date: string;
+    language: UiLang;
+}) {
+    return (
+        <div className="mt-2 flex items-center gap-2 text-[13px] text-[#64748B]">
+            <CalendarDays className="h-4 w-4" />
+            <span>
+                {date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}
+            </span>
+        </div>
+    );
+}
+
+function ViewDetailButton({
+    href,
+    language,
+}: {
+    href: string;
+    language: UiLang;
+}) {
+    return (
+        <Link
+            href={href}
+            className="
+                mt-5 inline-flex w-fit items-center gap-2
+                rounded-full border border-orange-500
+                px-3 py-1
+                text-[15px] font-bold text-orange-600
+                no-underline transition
+                hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
+            "
+        >
+            {language === "kh" ? "អានបន្ថែម" : "View details"}
+            <FaArrowRight className="text-[13px]" />
+        </Link>
     );
 }
 
@@ -437,25 +482,19 @@ function ListCard({
                     </Link>
                 </h2>
 
-                <p className="mt-3 line-clamp-2 text-[14px] leading-7 text-[#64748B]">
+                {/* Date moved under title */}
+                <DateRow date={item.date} language={language} />
+
+                {/* Description font size 16px */}
+                <p className="mt-3 line-clamp-2 text-[16px] leading-7 text-[#64748B]">
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
                             : "No description available.")}
                 </p>
 
-                <Link
-                    href={item.href}
-                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-600 underline underline-offset-2 hover:text-[#1D4ED8]"
-                >
-                    {language === "kh" ? "អានបន្ថែម" : "View details"}
-                    <FaArrowRight className="text-[13px]" />
-                </Link>
-
-                <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}</span>
-                </div>
+                {/* Outline rounded button, no underline */}
+                <ViewDetailButton href={item.href} language={language} />
             </div>
         </article>
     );
@@ -487,25 +526,19 @@ function GridCard({
                     </Link>
                 </h2>
 
-                <p className="mt-3 line-clamp-3 text-[15px] leading-7 text-[#64748B]">
+                {/* Date moved under title */}
+                <DateRow date={item.date} language={language} />
+
+                {/* Description font size 16px */}
+                <p className="mt-3 line-clamp-3 text-[16px] leading-7 text-[#64748B]">
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
                             : "No description available.")}
                 </p>
 
-                <Link
-                    href={item.href}
-                    className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-orange-600 underline underline-offset-2 hover:text-[#1D4ED8]"
-                >
-                    {language === "kh" ? "អានបន្ថែម" : "View details"}
-                    <FaArrowRight className="text-[13px]" />
-                </Link>
-
-                <div className="mt-4 flex items-center gap-2 text-[13px] text-[#64748B]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}</span>
-                </div>
+                {/* Outline rounded button, no underline */}
+                <ViewDetailButton href={item.href} language={language} />
             </div>
         </article>
     );
@@ -514,6 +547,7 @@ function GridCard({
 export default function PhotosPage() {
     const { language } = useLanguage();
     const uiLanguage = language as UiLang;
+
     const [view, setView] = useState<ViewMode>("list");
     const [title, setTitle] = useState("");
     const [items, setItems] = useState<PhotoItem[]>([]);
@@ -540,16 +574,23 @@ export default function PhotosPage() {
                 }
 
                 const json = (await response.json()) as PageSectionResponse;
-                const blocks = Array.isArray(json.data?.blocks) ? json.data.blocks : [];
-                const primaryBlock = getPrimaryPostListBlock(blocks);
-                const pageData = json.data?.page;
-                const categoryIds = Array.isArray(primaryBlock?.settings?.categoryIds)
-                    ? primaryBlock.settings.categoryIds.filter(
-                        (categoryId): categoryId is number => typeof categoryId === "number"
-                    )
+                const blocks = Array.isArray(json.data?.blocks)
+                    ? json.data.blocks
                     : [];
 
-                let posts = Array.isArray(primaryBlock?.posts) ? primaryBlock.posts : [];
+                const primaryBlock = getPrimaryPostListBlock(blocks);
+                const pageData = json.data?.page;
+
+                const categoryIds = Array.isArray(primaryBlock?.settings?.categoryIds)
+                    ? primaryBlock.settings.categoryIds.filter(
+                          (categoryId): categoryId is number =>
+                              typeof categoryId === "number"
+                      )
+                    : [];
+
+                let posts = Array.isArray(primaryBlock?.posts)
+                    ? primaryBlock.posts
+                    : [];
 
                 if (categoryIds.length > 0) {
                     const categoryResponses = await Promise.all(
@@ -563,7 +604,11 @@ export default function PhotosPage() {
                     const mergedPosts: MediaPost[] = [];
                     const seenPostIds = new Set<number>();
 
-                    for (let index = 0; index < categoryResponses.length; index += 1) {
+                    for (
+                        let index = 0;
+                        index < categoryResponses.length;
+                        index += 1
+                    ) {
                         const categoryResponse = categoryResponses[index];
 
                         if (!categoryResponse.ok) {
@@ -572,9 +617,14 @@ export default function PhotosPage() {
 
                         const categoryData =
                             (await categoryResponse.json()) as CategoryPostsResponse;
+
                         const categoryPosts = getPostsFromResponse(categoryData);
 
-                        for (let postIndex = 0; postIndex < categoryPosts.length; postIndex += 1) {
+                        for (
+                            let postIndex = 0;
+                            postIndex < categoryPosts.length;
+                            postIndex += 1
+                        ) {
                             const post = categoryPosts[postIndex];
 
                             if (seenPostIds.has(post.id)) {
@@ -591,10 +641,14 @@ export default function PhotosPage() {
 
                 const nextTitle =
                     pickText(
-                        (pageData as { title?: I18n | string | null } | undefined)?.title,
+                        (pageData as { title?: I18n | string | null } | undefined)
+                            ?.title,
                         uiLanguage
                     ) ||
-                    pickText(pageData as I18n | string | null | undefined, uiLanguage) ||
+                    pickText(
+                        pageData as I18n | string | null | undefined,
+                        uiLanguage
+                    ) ||
                     pickText(json.data?.title, uiLanguage) ||
                     pickText(primaryBlock?.title, uiLanguage) ||
                     (uiLanguage === "kh" ? "រូបថត" : "Photos");
@@ -667,13 +721,21 @@ export default function PhotosPage() {
                     view === "list" ? (
                         <div>
                             {items.map((item) => (
-                                <ListCard key={item.id} item={item} language={uiLanguage} />
+                                <ListCard
+                                    key={item.id}
+                                    item={item}
+                                    language={uiLanguage}
+                                />
                             ))}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                             {items.map((item) => (
-                                <GridCard key={item.id} item={item} language={uiLanguage} />
+                                <GridCard
+                                    key={item.id}
+                                    item={item}
+                                    language={uiLanguage}
+                                />
                             ))}
                         </div>
                     )
