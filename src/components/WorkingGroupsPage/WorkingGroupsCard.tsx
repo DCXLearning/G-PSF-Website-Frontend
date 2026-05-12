@@ -60,6 +60,7 @@ function toKhmerNumber(n: number) {
         "8": "៨",
         "9": "៩",
     };
+
     return String(n).replace(/[0-9]/g, (d) => map[d]);
 }
 
@@ -67,6 +68,7 @@ function readCache(): GridApiResponse | null {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
+
         return JSON.parse(raw) as GridApiResponse;
     } catch {
         return null;
@@ -82,24 +84,32 @@ function writeCache(data: GridApiResponse) {
 function getText(value: MultiLang | null | undefined, lang: ApiLang): string {
     if (!value) return "";
     if (typeof value === "string") return value;
+
     return value[lang] || value.en || "";
 }
 
 function WorkGroupCardSkeleton() {
     return (
-        <div className="flex flex-col items-center justify-center aspect-square p-3 rounded-2xl md:rounded-[1.8rem] shadow-xl bg-white animate-pulse">
-            <div className="bg-[#1E2257] p-2 md:p-3 rounded-full mb-2 md:mb-3">
-                <div className="w-8 h-8 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full bg-white/20" />
+        <div className="flex flex-col items-center aspect-square p-3 rounded-2xl md:rounded-[1.8rem] shadow-xl bg-white animate-pulse">
+            {/* Icon area fixed height */}
+            <div className="flex h-[62%] w-full items-end justify-center pb-2">
+                <div className="bg-[#1E2257] p-2 md:p-3 rounded-full">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full bg-white/20" />
+                </div>
             </div>
 
-            <div className="h-3 w-16 md:w-20 bg-slate-200 rounded mb-2" />
-            <div className="h-3 w-12 md:w-16 bg-slate-200 rounded" />
+            {/* Text area fixed height */}
+            <div className="flex h-[38%] w-full flex-col items-center justify-start pt-1">
+                <div className="h-3 w-16 md:w-20 bg-slate-200 rounded mb-2" />
+                <div className="h-3 w-12 md:w-16 bg-slate-200 rounded" />
+            </div>
         </div>
     );
 }
 
 export default function WorkGroupsGrid() {
     const { language } = useLanguage();
+
     const lang = (language as Lang) ?? "en";
     const isKh = lang === "kh";
     const apiLang: ApiLang = isKh ? "km" : "en";
@@ -121,6 +131,7 @@ export default function WorkGroupsGrid() {
         setMounted(true);
 
         const cached = readCache();
+
         if (cached) {
             setTotal(Number(cached?.total ?? 0));
             setItems(Array.isArray(cached?.items) ? cached.items : []);
@@ -139,7 +150,10 @@ export default function WorkGroupsGrid() {
                 });
 
                 const json = (await res.json()) as GridApiResponse;
-                if (!res.ok) throw new Error((json as any)?.error || "Fetch error");
+
+                if (!res.ok) {
+                    throw new Error((json as any)?.error || "Fetch error");
+                }
 
                 if (!alive) return;
 
@@ -153,9 +167,11 @@ export default function WorkGroupsGrid() {
                 writeCache(nextData);
             } catch (e: any) {
                 if (!alive) return;
+
                 setError(e?.message || "Failed to load");
             } finally {
                 if (!alive) return;
+
                 setLoadingGrid(false);
             }
         }
@@ -191,6 +207,7 @@ export default function WorkGroupsGrid() {
                 console.error("Failed to load block 44:", e);
             } finally {
                 if (!alive) return;
+
                 setLoadingFlex(false);
             }
         }
@@ -262,26 +279,32 @@ export default function WorkGroupsGrid() {
                                     <Link
                                         key={group.id}
                                         href={group.href}
-                                        className={`group flex flex-col items-center justify-center aspect-square p-3 rounded-2xl md:rounded-[1.8rem] shadow-xl transition-all duration-300 hover:scale-[1.03]
+                                        className={`group flex flex-col items-center aspect-square p-3 rounded-2xl md:rounded-[1.8rem] shadow-xl transition-all duration-300 hover:scale-[1.03]
                                         focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
                                         ${isGray ? "bg-[#d1d5db]" : "bg-white"}`}
                                         aria-label={group.title}
                                     >
-                                        <div className="bg-[#1E2257] text-white p-2 md:p-3 rounded-full mb-2 md:mb-3 shadow-inner transition-transform duration-300 group-hover:scale-110">
-                                            <img
-                                                src={group.icon}
-                                                alt=""
-                                                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 object-contain"
-                                            />
+                                        {/* Icon area fixed height */}
+                                        <div className="flex h-[62%] w-full items-end justify-center pb-2">
+                                            <div className="bg-[#1E2257] text-white p-2 md:p-3 rounded-full shadow-inner transition-transform duration-300 group-hover:scale-110">
+                                                <img
+                                                    src={group.icon}
+                                                    alt=""
+                                                    className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 object-contain"
+                                                />
+                                            </div>
                                         </div>
 
-                                        <p
-                                            className={`text-[#1a1a1a] text-center text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold leading-tight max-w-[92%] ${
-                                                isKh ? "khmer-font" : ""
-                                            }`}
-                                        >
-                                            {group.title}
-                                        </p>
+                                        {/* Text area fixed height */}
+                                        <div className="flex h-[38%] w-full items-start justify-center pt-1">
+                                            <p
+                                                className={`text-[#1a1a1a] text-center text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold leading-tight max-w-[92%] line-clamp-3 ${
+                                                    isKh ? "khmer-font" : ""
+                                                }`}
+                                            >
+                                                {group.title}
+                                            </p>
+                                        </div>
                                     </Link>
                                 );
                             })
