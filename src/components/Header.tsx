@@ -218,12 +218,14 @@ const Header: FC = () => {
     const [navItems, setNavItems] = useState<Record<Lang, NavItem[]>>(FALLBACK_NAV_ITEMS);
     const [siteSettings, setSiteSettings] = useState<SiteSettingsData | null>(null);
     const [failedLogoSrc, setFailedLogoSrc] = useState("");
+    const [isScrolled, setIsScrolled] = useState(false);
 
     const { language, toggleLanguage } = useLanguage();
     const pathname = usePathname();
     const router = useRouter();
 
     const searchPlaceholder = language === "en" ? "Search..." : "ស្វែងរក...";
+    const searchTitle = language === "en" ? "Search" : "ស្វែងរក";
     const mobileLanguageText = language === "en" ? "Switch to Khmer" : "ប្ដូរទៅ English";
 
     const backendLogo = siteSettings?.logo?.trim() || "";
@@ -244,6 +246,18 @@ const Header: FC = () => {
         event.preventDefault();
         handleSearch();
     };
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+
+        handleScroll();
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -329,8 +343,12 @@ const Header: FC = () => {
     };
 
     return (
-        <section className="bg-white shadow-sm sticky top-0 z-50">
-            <nav className="max-w-7xl mx-auto px-4 md:px-2 py-3">
+        <section className="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+            <nav
+                className={`max-w-7xl mx-auto px-4 md:px-2 transition-all duration-300 ${
+                    isScrolled ? "py-1.5" : "py-3"
+                }`}
+            >
                 <div className="flex items-center justify-between gap-5">
                     <Link href="/" className="flex shrink-0 items-center">
                         <Image
@@ -338,7 +356,9 @@ const Header: FC = () => {
                             alt={logoAlt}
                             width={150}
                             height={56}
-                            className="object-contain max-h-[58px] w-auto"
+                            className={`object-contain w-auto transition-all duration-300 ${
+                                isScrolled ? "max-h-[44px]" : "max-h-[65px]"
+                            }`}
                             priority
                             onError={() => {
                                 if (backendLogo) {
@@ -358,16 +378,22 @@ const Header: FC = () => {
                                         <Link
                                             href={item.href || "#"}
                                             {...getExternalLinkProps(item.href)}
-                                            className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap pb-1 transition-colors ${isActive ? "text-black" : "text-gray-600 hover:text-black"
-                                                } ${language === "kh" ? "khmer-font" : ""}`}
+                                            className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap pb-1 transition-colors ${
+                                                isActive ? "text-black" : "text-gray-600 hover:text-black"
+                                            } ${language === "kh" ? "khmer-font" : ""}`}
                                         >
-                                            <span className="block text-base font-medium leading-none">
+                                            <span
+                                                className={`block font-medium leading-none transition-all duration-300 ${
+                                                    isScrolled ? "text-base" : "text-lg"
+                                                }`}
+                                            >
                                                 {item.label}
                                             </span>
                                             <ChevronDown className="h-3.5 w-3.5 shrink-0 text-gray-400" />
                                             <span
-                                                className={`absolute left-0 -bottom-1 h-[2px] bg-orange-500 transition-all duration-300 ${isActive ? "w-full" : "w-0 group-hover:w-full"
-                                                    }`}
+                                                className={`absolute left-0 -bottom-1 h-[2px] bg-orange-500 transition-all duration-300 ${
+                                                    isActive ? "w-full" : "w-0 group-hover:w-full"
+                                                }`}
                                             />
                                         </Link>
 
@@ -382,10 +408,11 @@ const Header: FC = () => {
                                                         return (
                                                             <div key={child.label} className="relative group/sub">
                                                                 <div
-                                                                    className={`flex items-center justify-between px-4 py-3 text-base font-medium cursor-pointer transition-colors ${isChildActive
-                                                                        ? "bg-gray-50 text-black font-semibold"
-                                                                        : "text-gray-700 hover:bg-gray-50 hover:text-black"
-                                                                        } ${language === "kh" ? "khmer-font" : ""}`}
+                                                                    className={`flex items-center justify-between px-4 py-3 text-base font-medium cursor-pointer transition-colors ${
+                                                                        isChildActive
+                                                                            ? "bg-gray-50 text-black font-semibold"
+                                                                            : "text-gray-700 hover:bg-gray-50 hover:text-black"
+                                                                    } ${language === "kh" ? "khmer-font" : ""}`}
                                                                 >
                                                                     <span>{child.label}</span>
                                                                     <ChevronRight className="w-4 h-4" />
@@ -401,10 +428,13 @@ const Header: FC = () => {
                                                                                     key={sub.href}
                                                                                     href={sub.href}
                                                                                     {...getExternalLinkProps(sub.href)}
-                                                                                    className={`block px-4 py-3 text-sm transition-colors ${isSubActive
-                                                                                        ? "bg-gray-50 text-black font-semibold"
-                                                                                        : "text-gray-700 hover:bg-gray-50 hover:text-black"
-                                                                                        } ${language === "kh" ? "khmer-font" : ""}`}
+                                                                                    className={`block px-4 py-3 text-sm transition-colors ${
+                                                                                        isSubActive
+                                                                                            ? "bg-gray-50 text-black font-semibold"
+                                                                                            : "text-gray-700 hover:bg-gray-50 hover:text-black"
+                                                                                    } ${
+                                                                                        language === "kh" ? "khmer-font" : ""
+                                                                                    }`}
                                                                                 >
                                                                                     {sub.label}
                                                                                 </Link>
@@ -421,10 +451,11 @@ const Header: FC = () => {
                                                             key={child.href}
                                                             href={child.href || "#"}
                                                             {...getExternalLinkProps(child.href)}
-                                                            className={`block px-4 py-3 text-base font-medium transition-colors ${isChildActive
-                                                                ? "bg-gray-50 text-black font-semibold"
-                                                                : "text-gray-700 hover:bg-gray-50 hover:text-black"
-                                                                } ${language === "kh" ? "khmer-font" : ""}`}
+                                                            className={`block px-4 py-3 text-base font-medium transition-colors ${
+                                                                isChildActive
+                                                                    ? "bg-gray-50 text-black font-semibold"
+                                                                    : "text-gray-700 hover:bg-gray-50 hover:text-black"
+                                                            } ${language === "kh" ? "khmer-font" : ""}`}
                                                         >
                                                             {child.label}
                                                         </Link>
@@ -441,13 +472,21 @@ const Header: FC = () => {
                                     key={`${item.href}-${index}`}
                                     href={item.href || "#"}
                                     {...getExternalLinkProps(item.href)}
-                                    className={`relative shrink-0 whitespace-nowrap pb-1 transition-colors ${isActive ? "text-black" : "text-gray-600 hover:text-black"
-                                        } ${language === "kh" ? "khmer-font" : ""}`}
+                                    className={`relative shrink-0 whitespace-nowrap pb-1 transition-colors ${
+                                        isActive ? "text-black" : "text-gray-600 hover:text-black"
+                                    } ${language === "kh" ? "khmer-font" : ""}`}
                                 >
-                                    <span className="block text-base font-medium leading-none">{item.label}</span>
                                     <span
-                                        className={`absolute left-0 -bottom-1 h-[2px] bg-orange-400 transition-all duration-300 ${isActive ? "w-full" : "w-0"
-                                            }`}
+                                        className={`block font-medium leading-none transition-all duration-300 ${
+                                            isScrolled ? "text-base" : "text-lg"
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </span>
+                                    <span
+                                        className={`absolute left-0 -bottom-1 h-[2px] bg-orange-400 transition-all duration-300 ${
+                                            isActive ? "w-full" : "w-0"
+                                        }`}
                                     />
                                 </Link>
                             );
@@ -455,32 +494,15 @@ const Header: FC = () => {
                     </div>
 
                     <div className="flex shrink-0 items-center gap-2">
-                        <div className="hidden lg:block" />
-
-                        <form
-                            onSubmit={handleSearchSubmit}
-                            className="hidden lg:flex h-9 w-[190px] xl:w-[220px] items-center gap-2 rounded-full border border-gray-200 bg-white px-3 shadow-[0_3px_12px_rgba(15,23,42,0.05)] transition-all focus-within:border-gray-300 focus-within:shadow-[0_5px_18px_rgba(15,23,42,0.08)]"
-                        >
-                            <Search className="h-5 w-5 shrink-0 text-gray-400" />
-
-                            <input
-                                type="text"
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                                placeholder={searchPlaceholder}
-                                className={`h-full min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400 ${language === "kh" ? "khmer-font" : ""
-                                    }`}
-                            />
-                        </form>
-
                         <button
                             onClick={() => {
-                                setIsSearchOpen((s) => !s);
+                                setIsSearchOpen(true);
                                 setIsMenuOpen(false);
                             }}
-                            className="lg:hidden flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:shadow-md transition-all cursor-pointer"
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-white ring-1 ring-gray-200 hover:bg-gray-100 hover:shadow-md transition-all cursor-pointer"
                             type="button"
                             aria-label="Search"
+                            title={searchTitle}
                         >
                             <Search className="w-5 h-5 text-gray-600" />
                         </button>
@@ -492,8 +514,7 @@ const Header: FC = () => {
                             aria-label="Translate language"
                             title={language === "en" ? "ភាសាខ្មែរ" : "English"}
                         >
-                            {/* Flag Container */}
-                            <div className="relative h-6 w-9 overflow-hidden rounded-[4px] border border-gray-100">
+                            <div className="relative h-5 w-8 overflow-hidden rounded-[4px] border border-gray-100">
                                 <Image
                                     src={translateFlagSrc}
                                     alt={translateFlagAlt}
@@ -523,30 +544,61 @@ const Header: FC = () => {
             </nav>
 
             {isSearchOpen && (
-                <div className="lg:hidden border-t border-gray-200 px-4 py-3 bg-gray-50">
-                    <form
-                        onSubmit={handleSearchSubmit}
-                        className="mx-auto flex h-11 max-w-7xl items-center gap-2 rounded-full border border-gray-200 bg-white px-4 shadow-sm"
-                    >
-                        <Search className="w-4 h-4 text-gray-400" />
+                <div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/40 px-4 pt-24">
+                    <button
+                        type="button"
+                        aria-label="Close search"
+                        onClick={() => setIsSearchOpen(false)}
+                        className="absolute inset-0 cursor-default"
+                    />
 
-                        <input
-                            type="text"
-                            value={searchValue}
-                            onChange={(e) => setSearchValue(e.target.value)}
-                            placeholder={searchPlaceholder}
-                            className={`h-full min-w-0 flex-1 outline-none bg-transparent text-sm ${language === "kh" ? "khmer-font" : ""
+                    <div className="relative w-full max-w-xl rounded-2xl bg-white p-4 shadow-2xl">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h3
+                                className={`text-lg font-semibold text-gray-900 ${
+                                    language === "kh" ? "khmer-font" : ""
                                 }`}
-                        />
+                            >
+                                {searchTitle}
+                            </h3>
 
-                        <button
-                            type="submit"
-                            className={`text-sm font-semibold cursor-pointer text-gray-700 ${language === "kh" ? "khmer-font" : ""
-                                }`}
+                            <button
+                                type="button"
+                                onClick={() => setIsSearchOpen(false)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-gray-100"
+                                aria-label="Close"
+                            >
+                                <X className="h-5 w-5 text-gray-700" />
+                            </button>
+                        </div>
+
+                        <form
+                            onSubmit={handleSearchSubmit}
+                            className="flex h-12 items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 shadow-sm focus-within:border-gray-300 focus-within:bg-white"
                         >
-                            {language === "en" ? "Go" : "ស្វែងរក"}
-                        </button>
-                    </form>
+                            <Search className="h-5 w-5 shrink-0 text-gray-400" />
+
+                            <input
+                                type="text"
+                                value={searchValue}
+                                onChange={(e) => setSearchValue(e.target.value)}
+                                placeholder={searchPlaceholder}
+                                autoFocus
+                                className={`h-full min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400 ${
+                                    language === "kh" ? "khmer-font" : ""
+                                }`}
+                            />
+
+                            <button
+                                type="submit"
+                                className={`rounded-full bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 ${
+                                    language === "kh" ? "khmer-font" : ""
+                                }`}
+                            >
+                                {language === "en" ? "Go" : "ស្វែងរក"}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             )}
 
@@ -591,13 +643,15 @@ const Header: FC = () => {
                                                     onClick={() =>
                                                         setOpenMobileDropdown(isOpen ? null : item.label || null)
                                                     }
-                                                    className={`w-full flex items-center justify-between px-4 py-3 text-gray-800 ${language === "kh" ? "khmer-font" : ""
-                                                        }`}
+                                                    className={`w-full flex items-center justify-between px-4 py-3 text-gray-800 ${
+                                                        language === "kh" ? "khmer-font" : ""
+                                                    }`}
                                                 >
                                                     <span className="font-medium">{item.label}</span>
                                                     <ChevronDown
-                                                        className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""
-                                                            }`}
+                                                        className={`w-4 h-4 transition-transform ${
+                                                            isOpen ? "rotate-180" : ""
+                                                        }`}
                                                     />
                                                 </button>
 
@@ -612,8 +666,9 @@ const Header: FC = () => {
                                                                     setOpenMobileDropdown(null);
                                                                     setOpenMobileSubDropdown(null);
                                                                 }}
-                                                                className={`block px-6 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
-                                                                    }`}
+                                                                className={`block px-6 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 ${
+                                                                    language === "kh" ? "khmer-font" : ""
+                                                                }`}
                                                             >
                                                                 {item.label}
                                                             </Link>
@@ -629,15 +684,19 @@ const Header: FC = () => {
                                                                         <button
                                                                             type="button"
                                                                             onClick={() =>
-                                                                                setOpenMobileSubDropdown(isSubOpen ? null : subKey)
+                                                                                setOpenMobileSubDropdown(
+                                                                                    isSubOpen ? null : subKey
+                                                                                )
                                                                             }
-                                                                            className={`w-full flex items-center justify-between rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
-                                                                                }`}
+                                                                            className={`w-full flex items-center justify-between rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 ${
+                                                                                language === "kh" ? "khmer-font" : ""
+                                                                            }`}
                                                                         >
                                                                             <span>{child.label}</span>
                                                                             <ChevronDown
-                                                                                className={`w-4 h-4 transition-transform ${isSubOpen ? "rotate-180" : ""
-                                                                                    }`}
+                                                                                className={`w-4 h-4 transition-transform ${
+                                                                                    isSubOpen ? "rotate-180" : ""
+                                                                                }`}
                                                                             />
                                                                         </button>
 
@@ -653,8 +712,11 @@ const Header: FC = () => {
                                                                                             setOpenMobileDropdown(null);
                                                                                             setOpenMobileSubDropdown(null);
                                                                                         }}
-                                                                                        className={`block px-4 py-2 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg ${language === "kh" ? "khmer-font" : ""
-                                                                                            }`}
+                                                                                        className={`block px-4 py-2 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg ${
+                                                                                            language === "kh"
+                                                                                                ? "khmer-font"
+                                                                                                : ""
+                                                                                        }`}
                                                                                     >
                                                                                         {sub.label}
                                                                                     </Link>
@@ -675,8 +737,9 @@ const Header: FC = () => {
                                                                         setOpenMobileDropdown(null);
                                                                         setOpenMobileSubDropdown(null);
                                                                     }}
-                                                                    className={`block px-6 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
-                                                                        }`}
+                                                                    className={`block px-6 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-50 ${
+                                                                        language === "kh" ? "khmer-font" : ""
+                                                                    }`}
                                                                 >
                                                                     {child.label}
                                                                 </Link>
@@ -694,8 +757,9 @@ const Header: FC = () => {
                                             href={item.href || "#"}
                                             {...getExternalLinkProps(item.href)}
                                             onClick={() => setIsMenuOpen(false)}
-                                            className={`flex items-center justify-between rounded-xl px-4 py-3 text-gray-800 hover:bg-gray-100 ${language === "kh" ? "khmer-font" : ""
-                                                }`}
+                                            className={`flex items-center justify-between rounded-xl px-4 py-3 text-gray-800 hover:bg-gray-100 ${
+                                                language === "kh" ? "khmer-font" : ""
+                                            }`}
                                         >
                                             <span className="font-medium">{item.label}</span>
                                             <span className="text-gray-400">›</span>
@@ -708,8 +772,9 @@ const Header: FC = () => {
                                 <button
                                     onClick={toggleLanguage}
                                     type="button"
-                                    className={`w-full flex items-center justify-center gap-2 rounded-xl border px-4 py-3 hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
-                                        }`}
+                                    className={`w-full flex items-center justify-center gap-2 rounded-xl border px-4 py-3 hover:bg-gray-50 ${
+                                        language === "kh" ? "khmer-font" : ""
+                                    }`}
                                 >
                                     <Image
                                         src={translateFlagSrc}
