@@ -549,14 +549,14 @@ function GridCard({
                     className="
                         mt-4 inline-flex w-fit items-center gap-2
                         rounded-full border border-orange-500
-                        px-4 py-2
-                        text-[14px] font-bold text-orange-500
+                        px-3 py-1
+                        text-[12px] font-bold text-orange-500
                         no-underline transition
                         hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
                     "
                 >
                     {language === "kh" ? "មើលវីដេអូ" : "Watch video"}
-                    <Play className="h-4 w-4 fill-current" />
+                    <Play className="h-3 w-3 fill-current" />
                 </Link>
             </div>
         </article>

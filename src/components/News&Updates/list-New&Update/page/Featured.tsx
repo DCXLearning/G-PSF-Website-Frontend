@@ -313,10 +313,10 @@ function ViewDetailButton({
     return (
         <Link
             href={href}
-            className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-orange-500 px-3 py-1 text-[15px] font-bold text-orange-600 transition hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]"
+            className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-orange-500 px-3 py-1 text-[12px] font-bold text-orange-600 transition hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]"
         >
             {language === "kh" ? "អានបន្ថែម" : "View details"}
-            <FaArrowRight className="text-[13px]" />
+            <FaArrowRight className="text-[12px]" />
         </Link>
     );
 }
