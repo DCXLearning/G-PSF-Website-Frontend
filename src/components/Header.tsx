@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FC, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FC, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -220,6 +220,8 @@ const Header: FC = () => {
     const [failedLogoSrc, setFailedLogoSrc] = useState("");
     const [isScrolled, setIsScrolled] = useState(false);
 
+    const isScrolledRef = useRef(false);
+
     const { language, toggleLanguage } = useLanguage();
     const pathname = usePathname();
     const router = useRouter();
@@ -248,11 +250,34 @@ const Header: FC = () => {
     };
 
     useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
+        let ticking = false;
+
+        const SHRINK_AFTER = 80;
+        const EXPAND_BEFORE = 20;
+
+        const updateHeaderSize = () => {
+            const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+            const nextIsScrolled = isScrolledRef.current
+                ? scrollY > EXPAND_BEFORE
+                : scrollY > SHRINK_AFTER;
+
+            if (nextIsScrolled !== isScrolledRef.current) {
+                isScrolledRef.current = nextIsScrolled;
+                setIsScrolled(nextIsScrolled);
+            }
+
+            ticking = false;
         };
 
-        handleScroll();
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(updateHeaderSize);
+                ticking = true;
+            }
+        };
+
+        updateHeaderSize();
 
         window.addEventListener("scroll", handleScroll, { passive: true });
 
@@ -343,22 +368,25 @@ const Header: FC = () => {
     };
 
     return (
-        <section className="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <section className="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300 ease-out">
             <nav
-                className={`max-w-7xl mx-auto px-4 md:px-2 transition-all duration-300 ${
+                className={`max-w-7xl mx-auto px-4 md:px-2 transition-all duration-300 ease-out ${
                     isScrolled ? "py-1.5" : "py-3"
                 }`}
             >
                 <div className="flex items-center justify-between gap-5">
-                    <Link href="/" className="flex shrink-0 items-center">
+                    <Link
+                        href="/"
+                        className={`flex shrink-0 items-center overflow-hidden transition-all duration-300 ease-out ${
+                            isScrolled ? "h-[48px]" : "h-[64px]"
+                        }`}
+                    >
                         <Image
                             src={logoSrc}
                             alt={logoAlt}
                             width={150}
                             height={56}
-                            className={`object-contain w-auto transition-all duration-300 ${
-                                isScrolled ? "max-h-[44px]" : "max-h-[65px]"
-                            }`}
+                            className="h-full w-auto object-contain transition-all duration-300 ease-out"
                             priority
                             onError={() => {
                                 if (backendLogo) {
@@ -382,11 +410,7 @@ const Header: FC = () => {
                                                 isActive ? "text-black" : "text-gray-600 hover:text-black"
                                             } ${language === "kh" ? "khmer-font" : ""}`}
                                         >
-                                            <span
-                                                className={`block font-medium leading-none transition-all duration-300 ${
-                                                    isScrolled ? "text-base" : "text-lg"
-                                                }`}
-                                            >
+                                            <span className="block text-lg font-medium leading-none">
                                                 {item.label}
                                             </span>
                                             <ChevronDown className="h-3.5 w-3.5 shrink-0 text-gray-400" />
@@ -476,13 +500,7 @@ const Header: FC = () => {
                                         isActive ? "text-black" : "text-gray-600 hover:text-black"
                                     } ${language === "kh" ? "khmer-font" : ""}`}
                                 >
-                                    <span
-                                        className={`block font-medium leading-none transition-all duration-300 ${
-                                            isScrolled ? "text-base" : "text-lg"
-                                        }`}
-                                    >
-                                        {item.label}
-                                    </span>
+                                    <span className="block text-lg font-medium leading-none">{item.label}</span>
                                     <span
                                         className={`absolute left-0 -bottom-1 h-[2px] bg-orange-400 transition-all duration-300 ${
                                             isActive ? "w-full" : "w-0"
@@ -565,7 +583,7 @@ const Header: FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setIsSearchOpen(false)}
-                                className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-gray-100"
+                                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full hover:bg-gray-100"
                                 aria-label="Close"
                             >
                                 <X className="h-5 w-5 text-gray-700" />
@@ -574,10 +592,8 @@ const Header: FC = () => {
 
                         <form
                             onSubmit={handleSearchSubmit}
-                            className="flex h-12 items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 shadow-sm focus-within:border-gray-300 focus-within:bg-white"
+                            className="flex h-12 items-center gap-2 rounded-full border border-gray-200 bg-gray-50 pl-5 pr-1.5 shadow-sm focus-within:border-gray-300 focus-within:bg-white"
                         >
-                            <Search className="h-5 w-5 shrink-0 text-gray-400" />
-
                             <input
                                 type="text"
                                 value={searchValue}
@@ -591,11 +607,11 @@ const Header: FC = () => {
 
                             <button
                                 type="submit"
-                                className={`rounded-full bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 ${
-                                    language === "kh" ? "khmer-font" : ""
-                                }`}
+                                className="flex h-10 w-10 cursor-pointer shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition"
+                                aria-label={searchTitle}
+                                title={searchTitle}
                             >
-                                {language === "en" ? "Go" : "ស្វែងរក"}
+                                <Search className="h-5 w-5" />
                             </button>
                         </form>
                     </div>
