@@ -230,7 +230,7 @@ const Header: FC = () => {
     const logoSrc = backendLogo && failedLogoSrc !== backendLogo ? backendLogo : FALLBACK_LOGO_SRC;
     const logoAlt = pickSiteText(siteSettings?.title, language) || "G-PSF Logo";
 
-    const translateFlagSrc = language === "en" ? "/image/flagkhmer.jpg" : "/image/english.png";
+    const translateFlagSrc = language === "en" ? "/image/km.png" : "/image/english.png";
     const translateFlagAlt = language === "en" ? "Khmer" : "English";
 
     const handleSearch = () => {
@@ -487,18 +487,18 @@ const Header: FC = () => {
 
                         <button
                             onClick={toggleLanguage}
-                            className="group flex items-center cursor-pointer justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2 px-2 shadow-sm transition-all duration-200 hover:border-blue-100 hover:bg-slate-50 active:scale-95"
+                            className="group flex items-center cursor-pointer justify-center gap-2 rounded-lg py-1 px-1 transition-all duration-200 hover:border-blue-200 hover:bg-slate-100 active:scale-95"
                             type="button"
                             aria-label="Translate language"
                             title={language === "en" ? "ភាសាខ្មែរ" : "English"}
                         >
                             {/* Flag Container */}
-                            <div className="relative h-4 w-6 overflow-hidden rounded-[2px] border border-gray-100">
+                            <div className="relative h-6 w-9 overflow-hidden rounded-[4px] border border-gray-100">
                                 <Image
                                     src={translateFlagSrc}
                                     alt={translateFlagAlt}
                                     fill
-                                    className="object-cover rounded-[2px]"
+                                    className="object-cover rounded-[4px]"
                                 />
                             </div>
                         </button>
