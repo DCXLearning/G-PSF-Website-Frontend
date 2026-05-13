@@ -242,7 +242,7 @@ export default function TeamSection({
 
     const text = isKh
         ? {
-            title: "សហប្រធាននៃ ក្រុមការងារតាមវិស័យ",
+            title: "សហប្រធាននៃ ក្រុមការងារ",
             governmentLabel: "សហប្រធានផ្នែករាជរដ្ឋាភិបាល",
             sectorLabel: "សហប្រធានផ្នែកឯកជន",
             imageAlt: "រូបភាពសហប្រធានក្រុមការងារ",
