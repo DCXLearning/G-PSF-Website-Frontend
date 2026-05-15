@@ -729,7 +729,7 @@ const Header: FC = () => {
                                         key={result.id}
                                         type="button"
                                         onClick={goToSearchPage}
-                                        className={`flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100 transition ${
+                                        className={`flex w-full items-center cursor-pointer gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100 transition ${
                                             language === "kh" ? "khmer-font" : ""
                                         }`}
                                     >
