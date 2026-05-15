@@ -196,8 +196,6 @@ export function WGOutputsSection({
         );
         const sortedPosts = sortPostsByLatest(publishedPosts);
 
-        // Homepage keeps the hero card + 2 side cards.
-        // The dedicated page shows all published WG output posts.
         return showAllPosts ? sortedPosts : sortedPosts.slice(0, 3);
     }, [block, showAllPosts]);
 
@@ -221,7 +219,6 @@ export function WGOutputsSection({
                         isKh ? "khmer-font normal-case" : ""
                     }`}
                 >
-                    {/* This subtitle is static text, but it still changes with the current language. */}
                     {isKh
                         ? "ការយល់ដឹង — របកគំហើញ — លទ្ធផល"
                         : "Insights — Findings — Results"}

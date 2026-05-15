@@ -51,6 +51,25 @@ type SiteSettingsResponse = {
     data?: SiteSettingsData | null;
 };
 
+type PopupPost = {
+    id: number;
+    title?: {
+        en?: string | null;
+        km?: string | null;
+    } | null;
+};
+
+type PopupPostsResponse = {
+    data?: PopupPost[];
+    items?: PopupPost[];
+    message?: string;
+};
+
+type PopupSearchResult = {
+    id: number;
+    title: string;
+};
+
 const FALLBACK_LOGO_SRC = "/image/logo2.png";
 
 const MENU_API_ENDPOINT = "/api/main-nav";
@@ -72,7 +91,7 @@ const FALLBACK_NAV_ITEMS: Record<Lang, NavItem[]> = {
             ],
         },
         {
-            label: "News & Update",
+            label: "News & Updates",
             href: "/new-update",
             children: [
                 { label: "Featured", href: "/new-update/featured" },
@@ -90,7 +109,7 @@ const FALLBACK_NAV_ITEMS: Record<Lang, NavItem[]> = {
         { label: "Contact Us", href: "/contact-us" },
     ],
     kh: [
-        { label: "អំពីពួកយើង", href: "/about-us" },
+        { label: "អំពីយើង", href: "/about-us" },
         { label: "កិច្ចប្រជុំពេញអង្គ", href: "/plenary" },
         { label: "ក្រុមការងារ", href: "/working-groups" },
         {
@@ -118,10 +137,14 @@ const FALLBACK_NAV_ITEMS: Record<Lang, NavItem[]> = {
                 },
             ],
         },
-        { label: "ផ្ទាំង MIS", href: "/mis-dashboard" },
-        { label: "ទាក់ទងមកពួកយើង", href: "/contact-us" },
+        { label: "MIS", href: "/mis-dashboard" },
+        { label: "ទំនាក់ទំនង", href: "/contact-us" },
     ],
 };
+
+function cleanText(value?: string | null) {
+    return value?.replace(/<[^>]*>/g, "").trim() || "";
+}
 
 function getApiLabel(item: ApiNavItem, language: Lang) {
     return language === "kh"
@@ -169,14 +192,31 @@ function buildNavItems(items: ApiNavItem[] = [], language: Lang): NavItem[] {
 
 function pickSiteText(text: SiteText | undefined, language: Lang) {
     if (!text) return "";
+
     return language === "kh"
         ? text.km?.trim() || text.en?.trim() || ""
         : text.en?.trim() || text.km?.trim() || "";
 }
 
+function mapPostToPopupResult(post: PopupPost, language: Lang): PopupSearchResult | null {
+    const title =
+        language === "kh"
+            ? cleanText(post.title?.km) || cleanText(post.title?.en)
+            : cleanText(post.title?.en) || cleanText(post.title?.km);
+
+    if (!title) return null;
+
+    return {
+        id: post.id,
+        title,
+    };
+}
+
 const normalizePath = (value?: string | null) => {
     if (!value) return "/";
+
     const normalized = value.split("?")[0].split("#")[0].replace(/\/+$/, "");
+
     return normalized || "/";
 };
 
@@ -185,9 +225,7 @@ function isExternalHref(href?: string) {
 }
 
 function getExternalLinkProps(href?: string) {
-    if (!isExternalHref(href)) {
-        return {};
-    }
+    if (!isExternalHref(href)) return {};
 
     return {
         target: "_blank",
@@ -202,9 +240,7 @@ const isPathActive = (pathname: string, href?: string) => {
     const currentPath = normalizePath(pathname);
     const targetPath = normalizePath(href);
 
-    if (targetPath === "/") {
-        return currentPath === "/";
-    }
+    if (targetPath === "/") return currentPath === "/";
 
     return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
 };
@@ -213,6 +249,8 @@ const Header: FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchValue, setSearchValue] = useState("");
+    const [popupResults, setPopupResults] = useState<PopupSearchResult[]>([]);
+    const [popupLoading, setPopupLoading] = useState(false);
     const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
     const [openMobileSubDropdown, setOpenMobileSubDropdown] = useState<string | null>(null);
     const [navItems, setNavItems] = useState<Record<Lang, NavItem[]>>(FALLBACK_NAV_ITEMS);
@@ -237,17 +275,73 @@ const Header: FC = () => {
     const translateFlagSrc = language === "en" ? "/image/km.png" : "/image/english.png";
     const translateFlagAlt = language === "en" ? "Khmer" : "English";
 
-    const handleSearch = () => {
+    const goToSearchPage = () => {
         const keyword = searchValue.trim();
+
         router.push(`/search${keyword ? `?q=${encodeURIComponent(keyword)}` : ""}`);
+
         setIsSearchOpen(false);
         setIsMenuOpen(false);
     };
 
     const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        handleSearch();
+        goToSearchPage();
     };
+
+    useEffect(() => {
+        let alive = true;
+        const keyword = searchValue.trim();
+
+        async function loadPopupSearchResults() {
+            if (!keyword) {
+                setPopupResults([]);
+                setPopupLoading(false);
+                return;
+            }
+
+            try {
+                setPopupLoading(true);
+
+                const response = await fetch(
+                    `/api/posts?search=${encodeURIComponent(keyword)}&types=post_list,announcement`,
+                    { cache: "no-store" }
+                );
+
+                const json = (await response.json()) as PopupPostsResponse;
+
+                const posts = Array.isArray(json.data)
+                    ? json.data
+                    : Array.isArray(json.items)
+                      ? json.items
+                      : [];
+
+                const mappedResults = posts
+                    .slice(0, 5)
+                    .map((post) => mapPostToPopupResult(post, language))
+                    .filter((item): item is PopupSearchResult => Boolean(item));
+
+                if (alive) {
+                    setPopupResults(mappedResults);
+                }
+            } catch {
+                if (alive) {
+                    setPopupResults([]);
+                }
+            } finally {
+                if (alive) {
+                    setPopupLoading(false);
+                }
+            }
+        }
+
+        const timeout = window.setTimeout(loadPopupSearchResults, 300);
+
+        return () => {
+            alive = false;
+            window.clearTimeout(timeout);
+        };
+    }, [searchValue, language]);
 
     useEffect(() => {
         let ticking = false;
@@ -374,11 +468,11 @@ const Header: FC = () => {
                     isScrolled ? "py-1.5" : "py-3"
                 }`}
             >
-                <div className="flex items-center justify-between gap-5">
+                <div className="grid grid-cols-[150px_1fr_auto] items-center gap-5">
                     <Link
                         href="/"
-                        className={`flex shrink-0 items-center overflow-hidden transition-all duration-300 ease-out ${
-                            isScrolled ? "h-[48px]" : "h-[64px]"
+                        className={`flex w-[150px] shrink-0 items-center overflow-hidden transition-all duration-300 ease-out ${
+                            isScrolled ? "h-[52px]" : "h-[64px]"
                         }`}
                     >
                         <Image
@@ -396,7 +490,7 @@ const Header: FC = () => {
                         />
                     </Link>
 
-                    <div className="hidden lg:flex flex-1 justify-center items-center gap-x-6 xl:gap-x-7">
+                    <div className="hidden lg:flex min-w-0 justify-center items-center gap-x-6 xl:gap-x-7">
                         {navItems[language].map((item, index) => {
                             const isActive = isParentActive(item);
 
@@ -413,7 +507,9 @@ const Header: FC = () => {
                                             <span className="block text-lg font-medium leading-none">
                                                 {item.label}
                                             </span>
+
                                             <ChevronDown className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+
                                             <span
                                                 className={`absolute left-0 -bottom-1 h-[2px] bg-orange-500 transition-all duration-300 ${
                                                     isActive ? "w-full" : "w-0 group-hover:w-full"
@@ -501,6 +597,7 @@ const Header: FC = () => {
                                     } ${language === "kh" ? "khmer-font" : ""}`}
                                 >
                                     <span className="block text-lg font-medium leading-none">{item.label}</span>
+
                                     <span
                                         className={`absolute left-0 -bottom-1 h-[2px] bg-orange-400 transition-all duration-300 ${
                                             isActive ? "w-full" : "w-0"
@@ -511,18 +608,18 @@ const Header: FC = () => {
                         })}
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex shrink-0 items-center justify-end gap-2">
                         <button
                             onClick={() => {
                                 setIsSearchOpen(true);
                                 setIsMenuOpen(false);
                             }}
-                            className="flex h-7 w-7 items-center justify-center rounded-full bg-white ring-1 ring-gray-200 hover:bg-gray-100 hover:shadow-md transition-all cursor-pointer"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-all cursor-pointer"
                             type="button"
-                            aria-label="Search"
+                            aria-label={searchTitle}
                             title={searchTitle}
                         >
-                            <Search className="w-5 h-5 text-gray-600" />
+                            <Search className="w-6 h-6 text-gray-600" />
                         </button>
 
                         <button
@@ -607,13 +704,51 @@ const Header: FC = () => {
 
                             <button
                                 type="submit"
-                                className="flex h-10 w-10 cursor-pointer shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition"
+                                className="flex h-10 w-10 cursor-pointer shrink-0 items-center justify-center rounded-full bg-[#252f9b] text-white shadow-md hover:bg-[#0b1260] transition"
                                 aria-label={searchTitle}
                                 title={searchTitle}
                             >
                                 <Search className="h-5 w-5" />
                             </button>
                         </form>
+
+                        {popupLoading && searchValue.trim() && (
+                            <div
+                                className={`mt-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500 ${
+                                    language === "kh" ? "khmer-font" : ""
+                                }`}
+                            >
+                                {language === "kh" ? "កំពុងស្វែងរក..." : "Searching..."}
+                            </div>
+                        )}
+
+                        {!popupLoading && popupResults.length > 0 && (
+                            <div className="mt-3 space-y-2">
+                                {popupResults.map((result) => (
+                                    <button
+                                        key={result.id}
+                                        type="button"
+                                        onClick={goToSearchPage}
+                                        className={`flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100 transition ${
+                                            language === "kh" ? "khmer-font" : ""
+                                        }`}
+                                    >
+                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#060b3f]">
+                                            <Search className="h-4 w-4" />
+                                        </span>
+
+                                        <span className="min-w-0">
+                                            <span className="block truncate font-medium text-gray-900">
+                                                {result.title}
+                                            </span>
+                                            <span className="block text-xs text-gray-500">
+                                                {language === "kh" ? "ចុចដើម្បីទៅទំព័រស្វែងរក" : "Click to search page"}
+                                            </span>
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
