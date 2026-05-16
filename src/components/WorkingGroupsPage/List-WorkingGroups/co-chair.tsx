@@ -53,6 +53,16 @@ type CmsResponse = {
     };
 };
 
+type WorkingGroupItem = {
+    slug?: string;
+    orderIndex?: number;
+    title?: I18nText;
+};
+
+type WorkingGroupsResponse = {
+    items?: WorkingGroupItem[];
+};
+
 type CoChairData = {
     governmentDescription: string;
     governmentName: string;
@@ -73,7 +83,35 @@ type CoChairCardData = {
     name: string;
 };
 
+type WorkingGroupTitleData = {
+    groupLetterEn: string;
+    groupLetterKh: string;
+    title: string;
+};
+
 const DEFAULT_PAGE_SLUG = "agriculture-and-agro-industry";
+const KHMER_GROUP_LETTERS = [
+    "ក",
+    "ខ",
+    "គ",
+    "ឃ",
+    "ង",
+    "ច",
+    "ឆ",
+    "ជ",
+    "ឈ",
+    "ញ",
+    "ដ",
+    "ឋ",
+    "ឌ",
+    "ឍ",
+    "ណ",
+    "ត",
+    "ថ",
+    "ទ",
+    "ធ",
+    "ន",
+];
 
 function cleanText(value?: string) {
     return (value ?? "").trim();
@@ -180,6 +218,53 @@ function mapRepresentative(
     };
 }
 
+function getGroupArrayIndex(orderIndex: number | null) {
+    if (orderIndex === null || Number.isNaN(orderIndex)) {
+        return null;
+    }
+
+    return orderIndex > 0 ? orderIndex - 1 : orderIndex;
+}
+
+function getEnglishGroupLetter(orderIndex: number | null) {
+    const groupIndex = getGroupArrayIndex(orderIndex);
+
+    if (groupIndex === null || groupIndex < 0) {
+        return "";
+    }
+
+    return String.fromCharCode(65 + groupIndex);
+}
+
+function getKhmerGroupLetter(orderIndex: number | null) {
+    const groupIndex = getGroupArrayIndex(orderIndex);
+
+    if (groupIndex === null || groupIndex < 0) {
+        return "";
+    }
+
+    return KHMER_GROUP_LETTERS[groupIndex] ?? "";
+}
+
+function buildSectionTitle(
+    isKh: boolean,
+    titleData: WorkingGroupTitleData | null
+) {
+    if (!titleData?.title) {
+        return isKh ? "សហប្រធាននៃក្រុមការងារ" : "Working Group Co-Chairs";
+    }
+
+    if (isKh) {
+        return titleData.groupLetterKh
+            ? `សហប្រធាននៃ ${titleData.title}`
+            : `សហប្រធាននៃ${titleData.title}`;
+    }
+
+    return titleData.groupLetterEn
+        ? `Co-chairs of Working Group ${titleData.groupLetterEn}: ${titleData.title}`
+        : `Co-chairs of Working Group: ${titleData.title}`;
+}
+
 export default function TeamSection({
     pageSlug = DEFAULT_PAGE_SLUG,
 }: TeamSectionProps) {
@@ -188,6 +273,8 @@ export default function TeamSection({
     const apiLang: ApiLang = lang === "kh" ? "km" : "en";
     const isKh = lang === "kh";
     const [data, setData] = useState<CoChairData | null>(null);
+    const [workingGroupTitleData, setWorkingGroupTitleData] =
+        useState<WorkingGroupTitleData | null>(null);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -228,6 +315,61 @@ export default function TeamSection({
         };
     }, [apiLang, pageSlug]);
 
+    useEffect(() => {
+        const controller = new AbortController();
+
+        async function loadWorkingGroupTitle() {
+            try {
+                const response = await fetch("/api/working-groups", {
+                    cache: "no-store",
+                    headers: { Accept: "application/json" },
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    setWorkingGroupTitleData(null);
+                    return;
+                }
+
+                const json = (await response.json()) as WorkingGroupsResponse;
+                const groups = Array.isArray(json.items) ? json.items : [];
+                const cleanSlug = cleanText(pageSlug);
+                const group = groups.find((item) => cleanText(item.slug) === cleanSlug);
+
+                if (!group) {
+                    setWorkingGroupTitleData(null);
+                    return;
+                }
+
+                const title = pickText(group.title, apiLang);
+                const fallbackOrderIndex = groups.findIndex(
+                    (item) => cleanText(item.slug) === cleanSlug
+                );
+                const rawOrderIndex =
+                    typeof group.orderIndex === "number"
+                        ? group.orderIndex
+                        : fallbackOrderIndex;
+                const orderIndex = rawOrderIndex >= 0 ? rawOrderIndex : null;
+
+                setWorkingGroupTitleData({
+                    groupLetterEn: getEnglishGroupLetter(orderIndex),
+                    groupLetterKh: getKhmerGroupLetter(orderIndex),
+                    title,
+                });
+            } catch (error) {
+                if ((error as { name?: string })?.name !== "AbortError") {
+                    setWorkingGroupTitleData(null);
+                }
+            }
+        }
+
+        loadWorkingGroupTitle();
+
+        return () => {
+            controller.abort();
+        };
+    }, [apiLang, pageSlug]);
+
     if (
         !data ||
         (!data.governmentPhoto &&
@@ -242,7 +384,7 @@ export default function TeamSection({
 
     const text = isKh
         ? {
-            title: "សហប្រធាននៃ ក្រុមការងារ",
+            title: buildSectionTitle(isKh, workingGroupTitleData),
             governmentLabel: "សហប្រធានផ្នែករាជរដ្ឋាភិបាល",
             sectorLabel: "សហប្រធានផ្នែកឯកជន",
             imageAlt: "រូបភាពសហប្រធានក្រុមការងារ",
@@ -250,7 +392,7 @@ export default function TeamSection({
             noName: "មិនទាន់មានឈ្មោះ",
         }
         : {
-            title: "Working Group Co-Chairs",
+            title: buildSectionTitle(isKh, workingGroupTitleData),
             governmentLabel: "Government Co-Chair",
             sectorLabel: "Private Sector Co-Chair",
             imageAlt: "Working group co-chair",
