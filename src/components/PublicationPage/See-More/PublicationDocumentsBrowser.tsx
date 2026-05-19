@@ -83,7 +83,7 @@ function DocumentPreview({ src, alt, className = "" }: DocumentPreviewProps) {
 
 function TypeBadge({ text }: { text: string }) {
     return (
-        <span className="inline-block rounded bg-[#3f51b5] px-2.5 py-0.5 text-[9px] font-bold uppercase text-white">
+        <span className="inline-block rounded bg-[#3f51b5] px-2.5 py-0.5 text-[12px] font-bold uppercase text-white">
             {text}
         </span>
     );
@@ -100,14 +100,15 @@ function LanguageLinks({
     compact?: boolean;
     fontSizeClass?: string;
 }) {
-    const sizeClass = fontSizeClass || (compact ? "text-[13px]" : "text-lg");
+    const sizeClass = fontSizeClass || (compact ? "text-[11px]" : "text-sm");
 
     return (
         <div
-            className={`flex flex-wrap items-baseline font-bold ${compact ? "mt-3 gap-2" : "mt-6 gap-4"
-                } ${sizeClass}`}
+            className={`flex flex-wrap items-center ${
+                compact ? "mt-3 gap-1.5" : "mt-6 gap-2.5"
+            } ${sizeClass}`}
         >
-            <span className="text-slate-400">
+            <span className="font-semibold text-slate-400">
                 {lang === "kh" ? "ភាសា:" : "Language:"}
             </span>
 
@@ -117,13 +118,18 @@ function LanguageLinks({
                         key={languageItem.label}
                         href={languageItem.href}
                         download
-                        className="text-slate-900 underline hover:text-blue-800"
+                        className={`
+                            inline-flex min-h-[24px] items-center justify-center rounded-md
+                            border border-slate-200 bg-white px-2.5 py-0.5
+                            text-[10px] font-semibold text-slate-500 shadow-sm
+                            transition hover:border-[#23395D] hover:bg-[#23395D] hover:text-white
+                        `}
                     >
                         {languageItem.label}
                     </a>
                 ))
             ) : (
-                <span className="text-slate-400">
+                <span className="inline-flex min-h-[24px] items-center justify-center rounded-md border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold text-slate-400 shadow-sm">
                     {lang === "kh" ? "គ្មានឯកសារ" : "No file"}
                 </span>
             )}
@@ -258,7 +264,7 @@ function GridCard({ item, lang, badgeText }: CardProps) {
                         {item.title}
                     </h2>
 
-                    <p className="mt-2 text-[10px] leading-relaxed text-slate-700 line-clamp-3">
+                    <p className="mt-2 text-[14px] leading-relaxed text-slate-700 line-clamp-3">
                         {item.description ||
                             (lang === "kh"
                                 ? "គ្មានការពិពណ៌នា"
@@ -324,7 +330,7 @@ export default function PublicationDocumentsBrowser({
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(188px,1fr))] gap-6">
                                 {items.map((item) => (
                                     <GridCard
                                         key={item.id}
