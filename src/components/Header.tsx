@@ -500,7 +500,7 @@ const Header: FC = () => {
                                         <Link
                                             href={item.href || "#"}
                                             {...getExternalLinkProps(item.href)}
-                                            className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap pb-1 transition-colors ${
+                                            className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap pt-[5px] pb-1 transition-colors ${
                                                 isActive ? "text-black" : "text-gray-600 hover:text-black"
                                             } ${language === "kh" ? "khmer-font" : ""}`}
                                         >
@@ -592,7 +592,7 @@ const Header: FC = () => {
                                     key={`${item.href}-${index}`}
                                     href={item.href || "#"}
                                     {...getExternalLinkProps(item.href)}
-                                    className={`relative shrink-0 whitespace-nowrap pb-1 transition-colors ${
+                                    className={`relative shrink-0 whitespace-nowrap pt-[5px] pb-1 transition-colors ${
                                         isActive ? "text-black" : "text-gray-600 hover:text-black"
                                     } ${language === "kh" ? "khmer-font" : ""}`}
                                 >
@@ -614,7 +614,7 @@ const Header: FC = () => {
                                 setIsSearchOpen(true);
                                 setIsMenuOpen(false);
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-all cursor-pointer"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-white pt-[3px] pb-1 transition-all cursor-pointer"
                             type="button"
                             aria-label={searchTitle}
                             title={searchTitle}
@@ -624,7 +624,7 @@ const Header: FC = () => {
 
                         <button
                             onClick={toggleLanguage}
-                            className="group flex items-center cursor-pointer justify-center gap-2 rounded-lg py-1 px-1 transition-all duration-200 hover:border-blue-200 hover:bg-slate-100 active:scale-95"
+                            className="group flex items-center cursor-pointer justify-center gap-2 rounded-lg pt-[3px] pb-1 px-1 transition-all duration-200 hover:border-blue-200 hover:bg-slate-100 active:scale-95"
                             type="button"
                             aria-label="Translate language"
                             title={language === "en" ? "ភាសាខ្មែរ" : "English"}
