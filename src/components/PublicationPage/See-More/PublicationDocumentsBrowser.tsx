@@ -330,7 +330,7 @@ export default function PublicationDocumentsBrowser({
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-[repeat(auto-fill,minmax(188px,1fr))] gap-6">
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-6">
                                 {items.map((item) => (
                                     <GridCard
                                         key={item.id}
