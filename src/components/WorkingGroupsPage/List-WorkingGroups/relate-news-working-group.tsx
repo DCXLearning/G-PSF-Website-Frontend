@@ -427,12 +427,18 @@ export default function RelateNewsWorkingGroup({
 
                                         <Link
                                             href={item.href}
-                                            className={`mt-auto inline-flex items-center gap-2 text-sm font-bold text-orange-600 hover:text-[#1D4ED8] ${
-                                                isKhmer ? "khmer-font" : ""
-                                            }`}
+                                            className={`
+                                            mt-auto inline-flex w-fit items-center gap-2
+                                            rounded-full border border-orange-500
+                                            px-3 py-1
+                                            text-[12px] font-bold text-orange-600
+                                            no-underline transition
+                                            hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
+                                            ${isKhmer ? "khmer-font" : ""}
+                                        `}
                                         >
-                                            {isKhmer ? "អានបន្ថែម" : "Read more"}
-                                            <FaArrowRight className="h-3 w-3" />
+                                            {isKhmer ? "អានបន្ថែម" : "View details"}
+                                            <FaArrowRight className="text-[12px]" />
                                         </Link>
                                     </div>
                                 </article>

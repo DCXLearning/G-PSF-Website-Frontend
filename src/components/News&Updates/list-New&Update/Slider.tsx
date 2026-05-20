@@ -364,7 +364,7 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
                                             ${isKhmer ? "khmer-font" : ""}
                                         `}
                                         >
-                                            {isKhmer ? "អានបន្ថែម" : "Read more"}
+                                            {isKhmer ? "អានបន្ថែម" : "View details"}
                                             <FaArrowRight className="text-[12px]" />
                                         </Link>
                                     </div>
