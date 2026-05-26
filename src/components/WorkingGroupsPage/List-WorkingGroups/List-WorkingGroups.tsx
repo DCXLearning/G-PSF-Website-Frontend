@@ -66,15 +66,23 @@ type ListWorkingGroupsProps = {
 const DEFAULT_PAGE_SLUG = "law-tax-and-governance";
 const DEFAULT_IMAGE_URL = "/image/bannerpdf.bmp";
 
+function normalizeLang(value: unknown): Lang {
+  const lang = String(value || "en").toLowerCase();
+
+  if (lang === "kh" || lang === "km") {
+    return "kh";
+  }
+
+  return "en";
+}
+
 function getText(value?: string | null): string {
   const text = value?.trim() ?? "";
   return text === "." ? "" : text;
 }
 
 function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
-  if (!value) {
-    return "";
-  }
+  if (!value) return "";
 
   const primary = apiLang === "km" ? getText(value.km) : getText(value.en);
   return primary || getText(value.en) || getText(value.km);
@@ -85,6 +93,7 @@ function pickTemplateContent(
   apiLang: ApiLang
 ): WgTemplateContent | null {
   const blocks = response.data?.blocks ?? [];
+
   const block =
     blocks.find((item) => item.enabled !== false && item.type === "wg_template") ??
     blocks.find((item) => item.enabled !== false);
@@ -93,22 +102,22 @@ function pickTemplateContent(
     block?.posts?.find((item) => item.status === "published") ??
     block?.posts?.[0];
 
-  if (!post) {
-    return null;
-  }
+  if (!post) return null;
 
   return post.content?.[apiLang] ?? post.content?.en ?? post.content?.km ?? null;
 }
 
-function mapHeroData(response: WgTemplateResponse, apiLang: ApiLang): HeroData | null {
+function mapHeroData(
+  response: WgTemplateResponse,
+  apiLang: ApiLang
+): HeroData | null {
   const content = pickTemplateContent(response, apiLang);
   const heroBanner = content?.heroBanner;
 
-  if (!heroBanner) {
-    return null;
-  }
+  if (!heroBanner) return null;
 
   const cta = heroBanner.ctas?.[0];
+
   const title = pickI18nText(heroBanner.title, apiLang);
   const subtitle = pickI18nText(heroBanner.subtitle, apiLang);
   const description = pickI18nText(heroBanner.description, apiLang);
@@ -117,9 +126,8 @@ function mapHeroData(response: WgTemplateResponse, apiLang: ApiLang): HeroData |
   const imageUrl = getText(heroBanner.backgroundImages?.[0]) || DEFAULT_IMAGE_URL;
 
   const hasContent = Boolean(title || subtitle || description || ctaLabel || ctaHref);
-  if (!hasContent) {
-    return null;
-  }
+
+  if (!hasContent) return null;
 
   return {
     title,
@@ -135,8 +143,13 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
   pageSlug = DEFAULT_PAGE_SLUG,
 }) => {
   const { language } = useLanguage();
-  const lang = (language as Lang) ?? "en";
+
+  const lang = normalizeLang(language);
   const apiLang: ApiLang = lang === "kh" ? "km" : "en";
+  const isKh = lang === "kh";
+
+  const titleFontClass = isKh ? "title-km" : "title-en";
+  const bodyFontClass = isKh ? "body-km" : "body-en";
 
   const [heroData, setHeroData] = useState<HeroData | null>(null);
   const [workingGroupTitle, setWorkingGroupTitle] = useState("");
@@ -199,9 +212,7 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
         const groups = Array.isArray(json.items) ? json.items : [];
         const cleanSlug = getText(pageSlug);
 
-        const group = groups.find(
-          (item) => getText(item.slug) === cleanSlug
-        );
+        const group = groups.find((item) => getText(item.slug) === cleanSlug);
 
         if (!group) {
           setWorkingGroupTitle("");
@@ -209,16 +220,19 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
         }
 
         const label = pickI18nText(group.title, apiLang);
+
         if (!label) {
           setWorkingGroupTitle("");
           return;
         }
 
-        const rawOrderIndex = typeof group.orderIndex === "number"
-          ? group.orderIndex
-          : groups.findIndex((item) => getText(item.slug) === cleanSlug);
+        const rawOrderIndex =
+          typeof group.orderIndex === "number"
+            ? group.orderIndex
+            : groups.findIndex((item) => getText(item.slug) === cleanSlug);
 
         const orderIndex = rawOrderIndex >= 0 ? rawOrderIndex : 0;
+
         setWorkingGroupTitle(`WG: ${orderIndex} ${label}`);
       } catch (error) {
         if ((error as { name?: string })?.name !== "AbortError") {
@@ -253,7 +267,7 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
   const imageUrl = heroData?.imageUrl || DEFAULT_IMAGE_URL;
 
   return (
-    <div className="relative mb-0 opacity-110 min-h-180 flex flex-col items-center justify-start overflow-hidden bg-gray-100">
+    <div className="relative mb-0 flex min-h-180 flex-col items-center justify-start overflow-hidden bg-gray-100 opacity-110">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${imageUrl})` }}
@@ -261,28 +275,26 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
         <div className="absolute inset-0 bg-gray-900/50" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-68 pb-3 sm:pb-2 max-w-5xl w-full">
-        <p
-          className={`text-base sm:text-lg md:text-2xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${
-            language === "kh" ? "khmer-font" : ""
-          }`}
-        >
+      <div className="relative z-10 flex w-full max-w-5xl flex-col items-center justify-center px-4 pt-68 pb-3 text-center sm:pb-2">
+        <p className={`mb-4 text-white sm:mb-6 ${bodyFontClass}`}>
           {titleLine}
         </p>
 
-        <p
-          className={`text-base sm:text-lg md:text-5xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${
-            language === "kh" ? "khmer-font" : ""
-          }`}
+        <h1
+          className={`
+            mb-4 max-w-5xl break-words text-white sm:mb-6
+            ${titleFontClass}
+          `}
         >
           {mainTitle}
-        </p>
+        </h1>
 
         {subtitle ? (
           <p
-            className={`text-base sm:text-lg md:text-2xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${
-              language === "kh" ? "khmer-font" : ""
-            }`}
+            className={`
+              mb-4 max-w-4xl break-words text-white sm:mb-6
+              ${bodyFontClass}
+            `}
           >
             {subtitle}
           </p>
@@ -293,25 +305,33 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
             href={buttonHref}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-8 md:px-12 rounded-2xl shadow-xl transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50 text-sm sm:text-base md:text-lg ${
-              language === "kh" ? "khmer-font" : ""
-            }`}
+            className={`
+              inline-flex rounded-2xl bg-blue-500 px-4 py-2 text-white shadow-xl
+              transition duration-300 hover:scale-105 hover:bg-blue-700
+              focus:outline-none focus:ring-4 focus:ring-blue-500/50
+              sm:px-8 sm:py-3 md:px-12 md:py-4
+              ${bodyFontClass}
+            `}
+            style={{ fontWeight: 600 }}
           >
             {buttonLabel}
           </a>
         ) : (
           <span
-            className={`inline-flex bg-slate-500 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-8 md:px-12 rounded-2xl text-sm sm:text-base md:text-lg ${
-              language === "kh" ? "khmer-font" : ""
-            }`}
+            className={`
+              inline-flex rounded-2xl bg-slate-500 px-4 py-2 text-white
+              sm:px-8 sm:py-3 md:px-12 md:py-4
+              ${bodyFontClass}
+            `}
+            style={{ fontWeight: 600 }}
           >
             {buttonLabel}
           </span>
         )}
 
         {loading ? (
-          <p className={`mt-4 text-sm text-white/90 ${language === "kh" ? "khmer-font" : ""}`}>
-            {language === "kh" ? "កំពុងទាញទិន្នន័យ..." : "Loading data..."}
+          <p className={`mt-4 text-white/90 ${bodyFontClass}`}>
+            {lang === "kh" ? "កំពុងទាញទិន្នន័យ..." : "Loading data..."}
           </p>
         ) : null}
       </div>

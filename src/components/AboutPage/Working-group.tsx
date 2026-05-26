@@ -58,6 +58,16 @@ type Slide = {
 const HERO_BLOCK_ID = 17;
 const HERO_POST_SLUG = "about-us-banner-2";
 
+function normalizeLang(language: unknown): Lang {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
 function pickText(value: I18nText | undefined, apiLang: ApiLang, fallback = ""): string {
     if (!value) {
         return fallback;
@@ -122,11 +132,18 @@ function findHeroBlock(blocks: HeroBlock[]): HeroBlock | undefined {
 
 function buildSlides(blocks: HeroBlock[], lang: Lang): Slide[] {
     const apiLang: ApiLang = lang === "kh" ? "km" : "en";
+
     const heroBlock = findHeroBlock(blocks);
+
     const heroPost =
-        heroBlock?.posts?.find((post) => post.status === "published" && post.isPublished !== false) ??
-        heroBlock?.posts?.[0];
-    const content = heroPost?.content?.[apiLang] ?? heroPost?.content?.en ?? heroPost?.content?.km;
+        heroBlock?.posts?.find(
+            (post) => post.status === "published" && post.isPublished !== false
+        ) ?? heroBlock?.posts?.[0];
+
+    const content =
+        heroPost?.content?.[apiLang] ??
+        heroPost?.content?.en ??
+        heroPost?.content?.km;
 
     if (!content) {
         return buildFallbackSlides(lang);
@@ -141,11 +158,13 @@ function buildSlides(blocks: HeroBlock[], lang: Lang): Slide[] {
     );
 
     const firstCta = content.ctas?.[0];
+
     const ctaText = pickText(
         firstCta?.label,
         apiLang,
         lang === "kh" ? "មើលក្រុមការងារ" : "View working group"
     );
+
     const href = firstCta?.href?.trim() || "/working-groups";
     const backgroundImages = (content.backgroundImages ?? []).filter(Boolean);
 
@@ -153,7 +172,6 @@ function buildSlides(blocks: HeroBlock[], lang: Lang): Slide[] {
         return buildFallbackSlides(lang);
     }
 
-    // Use each CMS background image as one slide so the old slider layout still works.
     return backgroundImages.map((backgroundImage, index) => ({
         id: index + 1,
         title,
@@ -165,13 +183,23 @@ function buildSlides(blocks: HeroBlock[], lang: Lang): Slide[] {
 
 export default function WorkingGroup() {
     const { language } = useLanguage();
-    const lang = (language as Lang) ?? "en";
+
+    const lang = normalizeLang(language);
+    const isKh = lang === "kh";
 
     const [blocks, setBlocks] = useState<HeroBlock[]>([]);
     const [currentSlide, setCurrentSlide] = useState(0);
 
     const sectionClass =
         "relative w-full overflow-hidden h-[55vh] min-h-[360px] sm:h-[60vh] sm:min-h-[420px] lg:h-[70vh] lg:min-h-[520px]";
+
+    const titleFontClass = isKh
+        ? "title-km khmer-font font-bold"
+        : "title-en airbnb-font font-extrabold";
+
+    const buttonFontClass = isKh
+        ? "body-km khmer-font font-semibold"
+        : "body-en airbnb-font font-semibold";
 
     useEffect(() => {
         let alive = true;
@@ -189,7 +217,6 @@ export default function WorkingGroup() {
                     return;
                 }
 
-                // Save the full block list, then pick the hero banner block in useMemo.
                 setBlocks(json.data?.blocks ?? []);
             } catch (error) {
                 console.error("Failed to load About Us working groups banner:", error);
@@ -204,6 +231,7 @@ export default function WorkingGroup() {
     }, []);
 
     const slides = useMemo(() => buildSlides(blocks, lang), [blocks, lang]);
+
     const activeSlideIndex =
         slides.length === 0 ? 0 : Math.min(currentSlide, slides.length - 1);
 
@@ -240,12 +268,13 @@ export default function WorkingGroup() {
                                 backgroundPosition: "center",
                             }}
                         >
-                            <div className="mx-auto min-h-screen flex items-center justify-center h-full text-center px-4 sm:px-6 lg:px-8 pb-[130px]">
+                            <div className="mx-auto flex h-full min-h-screen items-center justify-center px-4 pb-[130px] text-center sm:px-6 lg:px-8">
                                 <div className="max-w-5xl">
                                     <h1
-                                        className={`text-3xl font-bold tracking-tight text-white sm:text-5xl ${
-                                            lang === "kh" ? "khmer-font" : ""
-                                        }`}
+                                        className={`
+                                            mx-auto max-w-5xl text-white
+                                            ${titleFontClass}
+                                        `}
                                     >
                                         {slide.title}
                                     </h1>
@@ -253,9 +282,13 @@ export default function WorkingGroup() {
                                     <div className="mt-8">
                                         <Link
                                             href={slide.href}
-                                            className={`inline-flex items-center justify-center rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 ${
-                                                lang === "kh" ? "khmer-font" : ""
-                                            }`}
+                                            className={`
+                                                inline-flex items-center justify-center rounded-xl
+                                                bg-blue-500 px-6 py-3 text-white shadow-sm
+                                                transition hover:bg-blue-800
+                                                focus:outline-none focus:ring-2
+                                                ${buttonFontClass}
+                                            `}
                                         >
                                             {slide.ctaText}
                                         </Link>

@@ -60,7 +60,9 @@ function pickText(
     fallback = ""
 ) {
     if (!obj) return fallback;
+
     const primary = lang === "km" ? obj.km : obj.en;
+
     return primary || obj.en || obj.km || fallback;
 }
 
@@ -79,9 +81,10 @@ function pickThumbUrl(post: ApiPost, lang: "en" | "km") {
 
 function getWGBlock(json: ApiResponse): ApiBlock | null {
     const blocks = json?.data?.blocks || [];
+
     return (
-        blocks.find((b) => b.id === 28) ||
-        blocks.find((b) => b.type === "post_list") ||
+        blocks.find((block) => block.id === 28) ||
+        blocks.find((block) => block.type === "post_list") ||
         null
     );
 }
@@ -89,7 +92,9 @@ function getWGBlock(json: ApiResponse): ApiBlock | null {
 function readCache(): ApiBlock | null {
     try {
         const raw = sessionStorage.getItem(CACHE_KEY);
+
         if (!raw) return null;
+
         return JSON.parse(raw) as ApiBlock;
     } catch {
         return null;
@@ -98,6 +103,7 @@ function readCache(): ApiBlock | null {
 
 function writeCache(block: ApiBlock | null) {
     if (!block) return;
+
     try {
         sessionStorage.setItem(CACHE_KEY, JSON.stringify(block));
     } catch {
@@ -110,6 +116,7 @@ function sortPostsByLatest(posts: ApiPost[]) {
         const leftDate = new Date(
             leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || ""
         ).getTime();
+
         const rightDate = new Date(
             rightPost.publishedAt || rightPost.createdAt || rightPost.updatedAt || ""
         ).getTime();
@@ -118,7 +125,6 @@ function sortPostsByLatest(posts: ApiPost[]) {
     });
 }
 
-/** ---------- UI ---------- */
 type WGOutputsSectionProps = {
     showAllPosts?: boolean;
     showSeeMoreButton?: boolean;
@@ -133,7 +139,10 @@ export function WGOutputsSection({
     showSeeMoreButton = true,
 }: WGOutputsSectionProps = {}) {
     const { language, fontClass } = useLanguage();
-    const uiLang: "en" | "kh" = language === "kh" ? "kh" : "en";
+
+    const uiLang: "en" | "kh" =
+        String(language) === "kh" || String(language) === "km" ? "kh" : "en";
+
     const apiLang: "en" | "km" = uiLang === "kh" ? "km" : "en";
     const isKh = uiLang === "kh";
 
@@ -146,6 +155,7 @@ export function WGOutputsSection({
         setMounted(true);
 
         const cached = readCache();
+
         if (cached) {
             setBlock(cached);
             setLoading(false);
@@ -165,6 +175,7 @@ export function WGOutputsSection({
                 if (!res.ok) throw new Error(`API error: ${res.status}`);
 
                 const json: ApiResponse = await res.json();
+
                 if (!alive) return;
 
                 const wg = getWGBlock(json);
@@ -173,11 +184,13 @@ export function WGOutputsSection({
                     setBlock(wg);
                     writeCache(wg);
                 }
-            } catch (e: any) {
+            } catch (err: any) {
                 if (!alive) return;
-                setError(e?.message || "Fetch failed");
+
+                setError(err?.message || "Fetch failed");
             } finally {
                 if (!alive) return;
+
                 setLoading(false);
             }
         }
@@ -190,10 +203,12 @@ export function WGOutputsSection({
     }, []);
 
     const posts = useMemo(() => {
-        const arr = block?.posts || [];
-        const publishedPosts = arr.filter((p) =>
-            p.status ? p.status === "published" : true
+        const allPosts = block?.posts || [];
+
+        const publishedPosts = allPosts.filter((post) =>
+            post.status ? post.status === "published" : true
         );
+
         const sortedPosts = sortPostsByLatest(publishedPosts);
 
         return showAllPosts ? sortedPosts : sortedPosts.slice(0, 3);
@@ -204,84 +219,120 @@ export function WGOutputsSection({
 
     const title = pickText(block?.title, apiLang, "WG Outputs");
     const desc = pickText(block?.description, apiLang, "");
-    const titleClass = isKh || containsKhmer(title) ? "khmer-font" : "";
-    const descClass = isKh || containsKhmer(desc) ? "khmer-font" : "";
+
+    const sectionMainTitleClass = isKh ? "main-title-km" : "main-title-en";
+    const sectionTitleClass = isKh || containsKhmer(title) ? "title-km" : "title-en";
+    const sectionBodyClass = isKh || containsKhmer(desc) ? "body-km" : "body-en";
 
     const showSkeleton = !mounted || (loading && !block);
     const showErrorOnly = !showSkeleton && !block && !!error;
 
+    const featuredCategory = featured?.category
+        ? pickText(featured.category.name, apiLang, "Category")
+        : "Category";
+
+    const featuredTitle = featured
+        ? pickText(featured.title, apiLang, "Featured Report")
+        : "—";
+
+    const featuredDescription = featured
+        ? pickText(featured.description || undefined, apiLang, "")
+        : "";
+
+    const featuredCategoryClass =
+        isKh || containsKhmer(featuredCategory)
+            ? "body-km normal-case"
+            : "body-en uppercase";
+
+    const featuredTitleClass =
+        isKh || containsKhmer(featuredTitle) ? "title-km" : "title-en";
+
+    const featuredDescriptionClass =
+        isKh || containsKhmer(featuredDescription) ? "body-km" : "body-en";
+
+    const actionClass = isKh ? "body-km normal-case" : "body-en uppercase";
+
     return (
-        <section className={`bg-white py-16 px-4 max-w-7xl mx-auto ${fontClass}`}>
+        <section
+            className={`mx-auto max-w-7xl bg-white px-4 py-16 ${
+                fontClass || ""
+            }`}
+        >
             {/* Header */}
-            <div className="text-center mb-12">
-                <h3
-                    className={`text-[#1e2756] text-xl md:text-2xl font-semibold tracking-wide ${
-                        isKh ? "khmer-font normal-case" : ""
-                    }`}
-                >
+            <div className="mb-12 text-center">
+                {/* Main title */}
+                <h3 className={`text-[#1e2756] ${sectionMainTitleClass}`}>
                     {isKh
                         ? "ការយល់ដឹង — របកគំហើញ — លទ្ធផល"
                         : "Insights — Findings — Results"}
                 </h3>
 
-                <h2 className={`text-[#1e2756] text-4xl md:text-5xl font-bold mt-2 mb-6 ${titleClass}`}>
+                {/* Title */}
+                <h2 className={`mb-6 mt-2 text-[#1e2756] ${sectionTitleClass}`}>
                     {title}
                 </h2>
 
+                {/* Body */}
                 {!!desc && (
-                    <p className={`text-gray-700 max-w-3xl mx-auto text-lg leading-relaxed ${descClass}`}>
+                    <p className={`mx-auto max-w-3xl text-gray-700 ${sectionBodyClass}`}>
                         {desc}
                     </p>
                 )}
 
-                {showErrorOnly && <p className="text-red-600 mt-4">{error}</p>}
+                {showErrorOnly ? (
+                    <p className="mt-4 text-red-600">{error}</p>
+                ) : null}
             </div>
 
             {showSkeleton ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-pulse">
-                    <div className="relative overflow-hidden rounded-sm min-h-[500px] lg:min-h-[600px] border border-gray-100 bg-slate-100">
+                <div className="grid animate-pulse grid-cols-1 gap-8 lg:grid-cols-2">
+                    <div className="relative min-h-[500px] overflow-hidden rounded-sm border border-gray-100 bg-slate-100 lg:min-h-[600px]">
                         <div className="absolute inset-0 bg-slate-200" />
-                        <div className="relative z-10 max-w-md mx-auto h-full flex flex-col items-center justify-center p-8 text-center">
-                            <div className="w-16 h-16 rounded-full bg-slate-300 mb-4" />
-                            <div className="h-4 w-28 bg-slate-300 rounded mb-3" />
-                            <div className="h-10 w-3/4 bg-slate-300 rounded mb-4" />
-                            <div className="h-4 w-full bg-slate-300 rounded mb-2" />
-                            <div className="h-4 w-5/6 bg-slate-300 rounded mb-8" />
+
+                        <div className="relative z-10 mx-auto flex h-full max-w-md flex-col items-center justify-center p-8 text-center">
+                            <div className="mb-4 h-16 w-16 rounded-full bg-slate-300" />
+                            <div className="mb-3 h-4 w-28 rounded bg-slate-300" />
+                            <div className="mb-4 h-10 w-3/4 rounded bg-slate-300" />
+                            <div className="mb-2 h-4 w-full rounded bg-slate-300" />
+                            <div className="mb-8 h-4 w-5/6 rounded bg-slate-300" />
+
                             <div className="flex gap-4">
-                                <div className="h-10 w-32 bg-slate-300 rounded" />
-                                <div className="h-10 w-24 bg-slate-300 rounded" />
+                                <div className="h-10 w-32 rounded bg-slate-300" />
+                                <div className="h-10 w-24 rounded bg-slate-300" />
                             </div>
                         </div>
                     </div>
 
                     <div className="flex flex-col gap-8">
-                        {[1, 2].map((i) => (
+                        {[1, 2].map((item) => (
                             <div
-                                key={i}
-                                className="border border-gray-200 p-10 flex flex-col items-center justify-center text-center flex-1"
+                                key={item}
+                                className="flex flex-1 flex-col items-center justify-center border border-gray-200 p-10 text-center"
                             >
-                                <div className="w-14 h-14 rounded-full bg-slate-300 mb-4" />
-                                <div className="h-4 w-24 bg-slate-300 rounded mb-2" />
-                                <div className="h-8 w-2/3 bg-slate-300 rounded mb-3" />
-                                <div className="h-4 w-4/5 bg-slate-300 rounded mb-2" />
-                                <div className="h-4 w-3/5 bg-slate-300 rounded mb-6" />
+                                <div className="mb-4 h-14 w-14 rounded-full bg-slate-300" />
+                                <div className="mb-2 h-4 w-24 rounded bg-slate-300" />
+                                <div className="mb-3 h-8 w-2/3 rounded bg-slate-300" />
+                                <div className="mb-2 h-4 w-4/5 rounded bg-slate-300" />
+                                <div className="mb-6 h-4 w-3/5 rounded bg-slate-300" />
+
                                 <div className="flex gap-5">
-                                    <div className="h-4 w-20 bg-slate-300 rounded" />
-                                    <div className="h-4 w-16 bg-slate-300 rounded" />
+                                    <div className="h-4 w-20 rounded bg-slate-300" />
+                                    <div className="h-4 w-16 rounded bg-slate-300" />
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Left: Featured */}
-                    <div className="relative group overflow-hidden rounded-sm min-h-[500px] lg:min-h-[600px] flex items-center justify-center p-8 text-center border border-gray-100">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+                    {/* Left Featured */}
+                    <div className="group relative flex min-h-[500px] items-center justify-center overflow-hidden rounded-sm border border-gray-100 p-8 text-center lg:min-h-[600px]">
                         <div className="absolute inset-0 z-0">
                             <Image
                                 src={
                                     featured
-                                        ? pickThumbUrl(featured, apiLang) || "/image/resources_top.bmp"
+                                        ? pickThumbUrl(featured, apiLang) ||
+                                          "/image/resources_top.bmp"
                                         : "/image/resources_top.bmp"
                                 }
                                 alt="Featured"
@@ -289,11 +340,12 @@ export function WGOutputsSection({
                                 className="object-cover opacity-50"
                                 priority
                             />
+
                             <div className="absolute inset-0 bg-white/40" />
                         </div>
 
                         <div className="relative z-10 max-w-md">
-                            <div className="bg-[#1e2756] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[#1e2756]">
                                 <Image
                                     src={featured?.coverImage || "/icon_Resources_page/icon1.png"}
                                     alt="Icon"
@@ -304,96 +356,71 @@ export function WGOutputsSection({
                             </div>
 
                             <p
-                                className={`text-[#1e2756] font-bold tracking-wider mb-2 ${
-                                    isKh || containsKhmer(
-                                        featured?.category
-                                            ? pickText(featured.category.name, apiLang, "Category")
-                                            : "Category"
-                                    )
-                                        ? "khmer-font normal-case"
-                                        : "uppercase"
-                                }`}
+                                className={`mb-2 font-bold tracking-wider text-[#1e2756] ${featuredCategoryClass}`}
                             >
-                                {featured?.category
-                                    ? pickText(featured.category.name, apiLang, "Category")
-                                    : "Category"}
+                                {featuredCategory}
                             </p>
 
                             <h4
-                                className={`text-[#1e2756] text-3xl md:text-4xl font-extrabold mb-4 line-clamp-3 ${
-                                    isKh ||
-                                    containsKhmer(
-                                        featured
-                                            ? pickText(featured.title, apiLang, "Featured Report")
-                                            : "—"
-                                    )
-                                        ? "khmer-font"
-                                        : ""
-                                }`}
+                                className={`mb-4 line-clamp-3 text-[#1e2756] ${featuredTitleClass}`}
+                                title={featuredTitle}
                             >
-                                {featured
-                                    ? pickText(featured.title, apiLang, "Featured Report")
-                                    : "—"}
+                                {featuredTitle}
                             </h4>
 
                             <p
-                                className={`text-gray-800 mb-8 font-medium line-clamp-4 ${
-                                    isKh ||
-                                    containsKhmer(
-                                        featured
-                                            ? pickText(featured.description || undefined, apiLang, "")
-                                            : ""
-                                    )
-                                        ? "khmer-font"
-                                        : ""
-                                }`}
+                                className={`mb-8 line-clamp-4 font-medium text-gray-800 ${featuredDescriptionClass}`}
                             >
-                                {featured
-                                    ? pickText(featured.description || undefined, apiLang, "")
-                                    : ""}
+                                {featuredDescription}
                             </p>
 
-                            <div className="flex flex-wrap justify-center gap-6 items-center">
+                            <div className="flex flex-wrap items-center justify-center gap-6">
                                 {featured && pickDocUrl(featured, apiLang) ? (
                                     <a
                                         href={pickDocUrl(featured, apiLang)}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="bg-[#f39c32] hover:bg-[#e68a1e] text-[#1e2756] cursor-pointer font-bold py-2 px-6 rounded flex items-center gap-2 transition-all"
+                                        className={`flex cursor-pointer items-center gap-2 rounded bg-[#f39c32] px-6 py-2 font-bold text-[#1e2756] transition-all hover:bg-[#e68a1e] ${actionClass}`}
                                     >
-                                        {isKh ? "ទាញយក" : "Download"} <ChevronRight size={16} />
+                                        {isKh ? "ទាញយក" : "Download"}
+                                        <ChevronRight size={16} />
                                     </a>
                                 ) : (
                                     <button
                                         disabled
-                                        className="bg-gray-200 text-gray-500 font-bold py-2 px-6 rounded flex items-center gap-2 cursor-not-allowed"
+                                        className={`flex cursor-not-allowed items-center gap-2 rounded bg-gray-200 px-6 py-2 font-bold text-gray-500 ${actionClass}`}
                                     >
-                                        {isKh ? "ទាញយក" : "Download"} <ChevronRight size={16} />
+                                        {isKh ? "ទាញយក" : "Download"}
+                                        <ChevronRight size={16} />
                                     </button>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Right: Cards */}
+                    {/* Right Cards */}
                     <div className="flex flex-col gap-8">
-                        {sidePosts.map((p) => (
+                        {sidePosts.map((post) => (
                             <ArticleCard
-                                key={p.id}
-                                icon={p.coverImage || "/icon_Resources_page/icon2.png"}
+                                key={post.id}
+                                icon={post.coverImage || "/icon_Resources_page/icon2.png"}
                                 category={
-                                    p.category
-                                        ? pickText(p.category.name, apiLang, "Category")
+                                    post.category
+                                        ? pickText(post.category.name, apiLang, "Category")
                                         : "Category"
                                 }
-                                headline={pickText(p.title, apiLang, "Article")}
-                                description={pickText(p.description || undefined, apiLang, "")}
-                                downloadUrl={pickDocUrl(p, apiLang)}
+                                headline={pickText(post.title, apiLang, "Article")}
+                                description={pickText(
+                                    post.description || undefined,
+                                    apiLang,
+                                    ""
+                                )}
+                                downloadUrl={pickDocUrl(post, apiLang)}
                                 isKh={isKh}
                             />
                         ))}
 
-                        {sidePosts.length === 0 && (
+                        {sidePosts.length === 0 ? (
                             <ArticleCard
                                 icon="/icon_Resources_page/icon2.png"
                                 category="—"
@@ -401,7 +428,7 @@ export function WGOutputsSection({
                                 description="Add more published posts in the WG Outputs block."
                                 isKh={isKh}
                             />
-                        )}
+                        ) : null}
                     </div>
                 </div>
             )}
@@ -410,9 +437,7 @@ export function WGOutputsSection({
                 <div className="mt-10 flex justify-center">
                     <Link
                         href="/wg-outputs"
-                        className={`bg-[#1e2756] hover:bg-[#161d44] text-white py-2 px-6 rounded-md font-semibold transition-colors ${
-                            isKh ? "khmer-font" : ""
-                        }`}
+                        className={`rounded-md bg-[#1e2756] px-6 py-2 font-semibold text-white transition-colors hover:bg-[#161d44] ${actionClass}`}
                     >
                         {isKh ? "មើលបន្ថែម" : "See More"}
                     </Link>
@@ -422,7 +447,6 @@ export function WGOutputsSection({
     );
 }
 
-/** ---------- Card ---------- */
 function ArticleCard({
     icon,
     category,
@@ -438,13 +462,24 @@ function ArticleCard({
     downloadUrl?: string;
     isKh: boolean;
 }) {
-    const categoryClass = isKh || containsKhmer(category) ? "khmer-font normal-case" : "uppercase";
-    const headlineClass = isKh || containsKhmer(headline) ? "khmer-font" : "";
-    const descriptionClass = isKh || containsKhmer(description || "") ? "khmer-font" : "";
+    const categoryClass =
+        isKh || containsKhmer(category)
+            ? "body-km normal-case"
+            : "body-en uppercase";
+
+    // This is the circled title in your screenshot.
+    // Use title-km/title-en, not main-title-km/main-title-en.
+    const headlineClass =
+        isKh || containsKhmer(headline) ? "title-km" : "title-en";
+
+    const descriptionClass =
+        isKh || containsKhmer(description || "") ? "body-km" : "body-en";
+
+    const actionClass = isKh ? "body-km normal-case" : "body-en uppercase";
 
     return (
-        <div className="border border-gray-200 p-10 flex flex-col items-center justify-center text-center flex-1">
-            <div className="bg-[#1e2756] w-14 h-14 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+        <div className="flex flex-1 flex-col items-center justify-center border border-gray-200 p-10 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[#1e2756]">
                 <Image
                     src={icon || "/icon_Resources_page/icon2.png"}
                     alt={category}
@@ -454,19 +489,18 @@ function ArticleCard({
                 />
             </div>
 
-            <p
-                className={`text-[#1e2756] text-sm font-bold tracking-widest mb-1 ${categoryClass}`}
-            >
+            <p className={`mb-1 font-bold tracking-widest text-[#1e2756] ${categoryClass}`}>
                 {category}
             </p>
 
             <h4
-                className={`text-[#1e2756] text-2xl md:text-3xl font-bold mb-3 line-clamp-2 ${headlineClass}`}
+                className={`mb-3 line-clamp-2 text-[#1e2756] ${headlineClass}`}
+                title={headline}
             >
                 {headline}
             </h4>
 
-            <p className={`text-gray-700 text-sm max-w-sm mb-6 line-clamp-3 ${descriptionClass}`}>
+            <p className={`mb-6 line-clamp-3 max-w-sm text-gray-700 ${descriptionClass}`}>
                 {description || ""}
             </p>
 
@@ -476,13 +510,17 @@ function ArticleCard({
                         href={downloadUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[#1e2756] cursor-pointer font-bold text-xs flex items-center gap-1 hover:underline"
+                        className={`flex cursor-pointer items-center gap-1 font-bold text-[#1e2756] hover:underline ${actionClass}`}
                     >
-                        {isKh ? "ទាញយក" : "Download"} <ChevronRight size={14} />
+                        {isKh ? "ទាញយក" : "Download"}
+                        <ChevronRight size={14} />
                     </a>
                 ) : (
-                    <span className="text-gray-400 font-bold text-xs flex items-center gap-1">
-                        {isKh ? "ទាញយក" : "Download"} <ChevronRight size={14} />
+                    <span
+                        className={`flex items-center gap-1 font-bold text-gray-400 ${actionClass}`}
+                    >
+                        {isKh ? "ទាញយក" : "Download"}
+                        <ChevronRight size={14} />
                     </span>
                 )}
             </div>

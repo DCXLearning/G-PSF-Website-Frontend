@@ -43,6 +43,7 @@ function toKhmerNumber(n: number) {
     "8": "៨",
     "9": "៩",
   };
+
   return String(n).replace(/[0-9]/g, (d) => map[d]);
 }
 
@@ -52,6 +53,7 @@ function readCache(): { items: WorkGroupItem[]; total: number } | null {
     if (!raw) return null;
 
     const parsed = JSON.parse(raw);
+
     return {
       items: Array.isArray(parsed?.items) ? parsed.items : [],
       total: Number(parsed?.total ?? 0),
@@ -83,7 +85,8 @@ function WorkGroupCardSkeleton() {
       bg-gray-50 border border-gray-100 shadow-sm animate-pulse"
     >
       <div className="w-20 h-20 rounded-full mb-4 bg-slate-200 shrink-0" />
-      <div className="h-[52px] flex flex-col items-center justify-center">
+
+      <div className="h-[64px] flex flex-col items-center justify-center">
         <div className="h-4 w-24 bg-slate-200 rounded mb-2" />
         <div className="h-4 w-20 bg-slate-200 rounded" />
       </div>
@@ -140,7 +143,6 @@ export default function WorkGroupsCarousel() {
       } catch (e) {
         if (!alive) return;
         console.error("Failed to load work groups", e);
-        // keep cached content, do not clear state
       } finally {
         if (alive) setLoading(false);
       }
@@ -162,19 +164,18 @@ export default function WorkGroupsCarousel() {
 
   const showSkeleton = !mounted || (loading && groups.length === 0);
 
+  const sectionTitleFontClass = isKhmer ? "title-km" : "title-en";
+  const cardTitleFontClass = isKhmer
+    ? "workgroup-card-title workgroup-card-title-km"
+    : "workgroup-card-title workgroup-card-title-en";
+
   return (
     <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-7xl px-4">
         {/* Header */}
         <div className="text-center mb-10 md:mb-14">
-          <h2
-            className={`text-blue-950 font-bold leading-[1.05] ${
-              isKhmer ? "khmer-font" : ""
-            }`}
-          >
-            <span className="block text-4xl md:text-5xl font-extrabold">
-              {titleRow1}
-            </span>
+          <h2 className={`text-blue-950 ${sectionTitleFontClass}`}>
+            <span className="block">{titleRow1}</span>
           </h2>
         </div>
 
@@ -236,7 +237,9 @@ export default function WorkGroupsCarousel() {
                 {groups.map((g) => {
                   const title =
                     (
-                      isKhmer ? g.title.km || g.title.en : g.title.en || g.title.km
+                      isKhmer
+                        ? g.title.km || g.title.en
+                        : g.title.en || g.title.km
                     )?.trim() || "";
 
                   return (
@@ -260,11 +263,19 @@ export default function WorkGroupsCarousel() {
                           />
                         </div>
 
-                        <div className="h-[52px] flex items-center justify-center">
+                        <div className="h-[64px] w-full flex items-center justify-center overflow-hidden">
                           <p
-                            className={`text-center font-semibold text-gray-900 leading-snug m-0 ${
-                              isKhmer ? "khmer-font" : ""
-                            } line-clamp-2 max-w-[170px]`}
+                            className={`
+                              ${cardTitleFontClass}
+                              m-0 w-full max-w-[170px]
+                              text-center text-gray-900
+                              font-bold
+                              leading-[30px]
+                              line-clamp-2
+                              overflow-hidden
+                              whitespace-normal
+                              break-words
+                            `}
                             title={title}
                           >
                             {title}

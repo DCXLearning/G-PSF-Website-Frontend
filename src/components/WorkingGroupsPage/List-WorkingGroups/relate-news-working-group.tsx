@@ -85,6 +85,10 @@ type RelateNewsWorkingGroupProps = {
 const DEFAULT_PAGE_SLUG = "agriculture-and-agro-industry";
 const RELATED_NEWS_ENDPOINT = "/api/posts?pageId=6";
 
+function normalizeLanguage(value: unknown): UiLang {
+    return value === "kh" || value === "km" ? "kh" : "en";
+}
+
 function getText(value: LangText | undefined, language: UiLang): string {
     if (!value) return "";
 
@@ -123,7 +127,7 @@ function getThumbnail(post: PostItem, language: UiLang): string {
 
     const blocks = getContentBlocks(post, language);
     const firstImage = blocks.find(
-        (block) => block.type === "image" && block.attrs?.src
+        (block) => block.type === "image" && block.attrs?.src,
     );
 
     return firstImage?.attrs?.src || "";
@@ -132,7 +136,7 @@ function getThumbnail(post: PostItem, language: UiLang): string {
 function buildDetailHref(post: PostItem) {
     if (post.slug?.trim()) {
         return `/new-update/view-detail?slug=${encodeURIComponent(
-            post.slug.trim()
+            post.slug.trim(),
         )}&id=${encodeURIComponent(String(post.id))}`;
     }
 
@@ -144,10 +148,11 @@ function mapRelatedNews(posts: PostItem[], language: UiLang): RelatedNewsItem[] 
         .filter((post) => post.isPublished === true || post.status === "published")
         .sort((a, b) => {
             const dateA = new Date(
-                a.publishedAt || a.createdAt || a.updatedAt || ""
+                a.publishedAt || a.createdAt || a.updatedAt || "",
             ).getTime();
+
             const dateB = new Date(
-                b.publishedAt || b.createdAt || b.updatedAt || ""
+                b.publishedAt || b.createdAt || b.updatedAt || "",
             ).getTime();
 
             return dateB - dateA;
@@ -162,7 +167,7 @@ function mapRelatedNews(posts: PostItem[], language: UiLang): RelatedNewsItem[] 
             image: getThumbnail(post, language),
             date: formatLocalizedDate(
                 post.publishedAt || post.createdAt || post.updatedAt,
-                language
+                language,
             ),
             href: buildDetailHref(post),
         }));
@@ -172,10 +177,12 @@ function NewsImage({
     src,
     alt,
     language,
+    bodyFontClass,
 }: {
     src?: string | null;
     alt: string;
     language: UiLang;
+    bodyFontClass: string;
 }) {
     const [error, setError] = useState(false);
     const isValid = Boolean(src) && !error;
@@ -194,7 +201,7 @@ function NewsImage({
                 />
             ) : (
                 <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                    <p className="text-center text-sm text-slate-500">
+                    <p className={`text-center text-slate-500 ${bodyFontClass}`}>
                         {language === "kh" ? "មិនមានរូបភាព" : "No image"}
                     </p>
                 </div>
@@ -203,9 +210,17 @@ function NewsImage({
     );
 }
 
-function FeatureDate({ date }: { date: string }) {
+function FeatureDate({
+    date,
+    fontClass,
+}: {
+    date: string;
+    fontClass: string;
+}) {
     return (
-        <div className="mb-3 flex items-center gap-2 text-[13px] font-bold text-[#1a2b4b]">
+        <div
+            className={`mb-3 flex items-center gap-2 text-[13px] font-bold text-[#1a2b4b] ${fontClass}`}
+        >
             <CalendarDays size={16} className="shrink-0 text-[#3f51b5]" />
             <span className="leading-none">{date}</span>
         </div>
@@ -216,11 +231,20 @@ export default function RelateNewsWorkingGroup({
     pageSlug = DEFAULT_PAGE_SLUG,
 }: RelateNewsWorkingGroupProps) {
     const { language } = useLanguage();
-    const lang: UiLang = language === "kh" ? "kh" : "en";
+
+    const lang = normalizeLanguage(language);
     const isKhmer = lang === "kh";
+
+    const fontClass = isKhmer ? "khmer-font" : "airbnb-font";
+    const titleFontClass = isKhmer ? "title-km" : "title-en";
+    const mainTitleFontClass = isKhmer ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
+
     const [posts, setPosts] = useState<PostItem[]>([]);
     const [workingGroupTitle, setWorkingGroupTitle] = useState("");
-    const [workingGroupNumber, setWorkingGroupNumber] = useState<number | null>(null);
+    const [workingGroupNumber, setWorkingGroupNumber] = useState<number | null>(
+        null,
+    );
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -244,11 +268,12 @@ export default function RelateNewsWorkingGroup({
                 }
 
                 const json = (await response.json()) as ApiResponse;
+
                 const items = Array.isArray(json.data)
                     ? json.data
                     : Array.isArray(json.items)
-                        ? json.items
-                        : [];
+                      ? json.items
+                      : [];
 
                 setPosts(items);
             } catch (error) {
@@ -290,8 +315,9 @@ export default function RelateNewsWorkingGroup({
 
                 const json = (await response.json()) as WorkingGroupsResponse;
                 const groups = Array.isArray(json.items) ? json.items : [];
+
                 const currentGroup = groups.find(
-                    (group) => getText(group.slug, lang) === pageSlug
+                    (group) => getText(group.slug, lang) === pageSlug,
                 );
 
                 if (!currentGroup) {
@@ -301,14 +327,15 @@ export default function RelateNewsWorkingGroup({
                 }
 
                 const fallbackIndex = groups.findIndex(
-                    (group) => getText(group.slug, lang) === pageSlug
+                    (group) => getText(group.slug, lang) === pageSlug,
                 );
+
                 const groupNumber =
                     typeof currentGroup.orderIndex === "number"
                         ? currentGroup.orderIndex
                         : fallbackIndex >= 0
-                            ? fallbackIndex
-                            : null;
+                          ? fallbackIndex
+                          : null;
 
                 setWorkingGroupTitle(getText(currentGroup.title, lang));
                 setWorkingGroupNumber(groupNumber);
@@ -329,40 +356,37 @@ export default function RelateNewsWorkingGroup({
 
     const relatedNews = useMemo(
         () => mapRelatedNews(posts, lang),
-        [posts, lang]
+        [posts, lang],
     );
 
     const subHeading = isKhmer
         ? "ព័ត៌មានក្រុមការងារបន្ថែម"
         : "More Working Group Updates";
+
     const englishWorkingGroupLabel =
         workingGroupNumber !== null
             ? `WG: ${workingGroupNumber} ${workingGroupTitle}`
             : `WG: ${workingGroupTitle}`;
+
     const mainHeading = workingGroupTitle
         ? isKhmer
             ? `ព័ត៌មានពាក់ព័ន្ធ ${workingGroupTitle}`
             : `Related Content ${englishWorkingGroupLabel}`
         : isKhmer
-            ? "ព័ត៌មានពាក់ព័ន្ធតាម"
-            : "Related Content";
+          ? "ព័ត៌មានពាក់ព័ន្ធតាម"
+          : "Related Content";
 
     return (
         <section className="bg-white py-10 sm:py-14">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="mb-10 text-center">
                     <p
-                        className={`mb-2 text-lg font-semibold tracking-[0.025em] text-[#3f3cff] ${
-                            isKhmer ? "khmer-font" : ""
-                        }`}
+                        className={`mb-2 tracking-[0.025em] text-[#3f3cff] ${bodyFontClass} !font-semibold`}
                     >
                         {subHeading}
                     </p>
-                    <h2
-                        className={`text-4xl font-extrabold leading-tight text-[#312b85] md:text-5xl ${
-                            isKhmer ? "khmer-font" : ""
-                        }`}
-                    >
+
+                    <h2 className={`text-[#312b85] ${titleFontClass}`}>
                         {mainHeading}
                     </h2>
                 </div>
@@ -375,6 +399,7 @@ export default function RelateNewsWorkingGroup({
                                 className="overflow-hidden rounded-3xl bg-white shadow-md"
                             >
                                 <div className="h-[230px] animate-pulse bg-slate-200" />
+
                                 <div className="space-y-4 p-6">
                                     <div className="h-4 w-32 animate-pulse rounded bg-slate-200" />
                                     <div className="h-5 w-full animate-pulse rounded bg-slate-200" />
@@ -400,42 +425,48 @@ export default function RelateNewsWorkingGroup({
                             <SwiperSlide key={item.id} className="!flex h-auto">
                                 <article className="group flex h-full min-h-[500px] w-full flex-col overflow-hidden rounded-3xl bg-white shadow-md ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-xl">
                                     <Link href={item.href} aria-label={item.title}>
-                                        <NewsImage src={item.image} alt={item.title} language={lang} />
+                                        <NewsImage
+                                            src={item.image}
+                                            alt={item.title}
+                                            language={lang}
+                                            bodyFontClass={bodyFontClass}
+                                        />
                                     </Link>
 
                                     <div className="flex flex-1 flex-col p-6">
-                                        <FeatureDate date={item.date} />
+                                        <FeatureDate
+                                            date={item.date}
+                                            fontClass={fontClass}
+                                        />
 
                                         <Link href={item.href} className="mb-2 block">
                                             <h3
-                                                className={`line-clamp-2 min-h-[56px] text-xl font-bold leading-7 text-[#0B2C5F] transition group-hover:text-[#3f51b5] ${
-                                                    isKhmer ? "khmer-font" : ""
-                                                }`}
+                                                className={`line-clamp-2 min-h-[64px] text-[#0B2C5F] transition group-hover:text-[#3f51b5] ${mainTitleFontClass} related-news-card-title`}
                                             >
                                                 {item.title}
                                             </h3>
                                         </Link>
 
                                         <p
-                                            className={`mb-2 line-clamp-2 min-h-[56px] text-sm leading-7 text-slate-600 ${
-                                                isKhmer ? "khmer-font" : ""
-                                            }`}
+                                            className={`mb-2 line-clamp-2 min-h-[60px] text-slate-600 ${bodyFontClass} related-news-card-body`}
                                         >
                                             {item.description ||
-                                                (isKhmer ? "មិនមានការពិពណ៌នា" : "No description")}
+                                                (isKhmer
+                                                    ? "មិនមានការពិពណ៌នា"
+                                                    : "No description")}
                                         </p>
 
                                         <Link
                                             href={item.href}
                                             className={`
-                                            mt-auto inline-flex w-fit items-center gap-2
-                                            rounded-full border border-orange-500
-                                            px-3 py-1
-                                            text-[12px] font-bold text-orange-600
-                                            no-underline transition
-                                            hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
-                                            ${isKhmer ? "khmer-font" : ""}
-                                        `}
+                                                mt-auto inline-flex w-fit items-center gap-2
+                                                rounded-full border border-orange-500
+                                                px-3 py-1
+                                                text-[12px] font-bold text-orange-600
+                                                no-underline transition
+                                                hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
+                                                ${fontClass}
+                                            `}
                                         >
                                             {isKhmer ? "អានបន្ថែម" : "View details"}
                                             <FaArrowRight className="text-[12px]" />
@@ -446,11 +477,7 @@ export default function RelateNewsWorkingGroup({
                         ))}
                     </Swiper>
                 ) : (
-                    <p
-                        className={`text-center text-sm text-slate-500 ${
-                            isKhmer ? "khmer-font" : ""
-                        }`}
-                    >
+                    <p className={`text-center text-slate-500 ${bodyFontClass}`}>
                         {isKhmer
                             ? "មិនមានព័ត៌មានដែលពាក់ព័ន្ធ"
                             : "No related working group news"}

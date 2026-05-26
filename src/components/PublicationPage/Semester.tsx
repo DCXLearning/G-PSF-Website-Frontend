@@ -21,7 +21,6 @@ type ApiPost = {
     id: number;
     title?: I18n;
     description?: I18n | null;
-    //Add coverImage
     coverImage?: string | null;
     document?: string | null;
     documentThumbnail?: string | null;
@@ -99,7 +98,6 @@ function writeCache(apiLanguage: ApiLang, block: ApiBlock | null) {
 
 function pickSemesterReportsBlock(json: ApiResponse): ApiBlock | null {
     const blocks = json?.data?.blocks || [];
-
     return (
         blocks.find(
             (b) =>
@@ -111,17 +109,9 @@ function pickSemesterReportsBlock(json: ApiResponse): ApiBlock | null {
 }
 
 function pickDocUrl(post: ApiPost, apiLanguage: ApiLang): string {
-    const primary =
-        apiLanguage === "km" ? post.documents?.km?.url : post.documents?.en?.url;
+    const primary = apiLanguage === "km" ? post.documents?.km?.url : post.documents?.en?.url;
 
-    return (
-        primary ||
-        post.documents?.en?.url ||
-        post.documents?.km?.url ||
-        post.document ||
-        post.link ||
-        ""
-    );
+    return primary || post.documents?.en?.url || post.documents?.km?.url || post.document || post.link || "";
 }
 
 function pickThumbUrl(post: ApiPost, apiLanguage: ApiLang): string {
@@ -131,7 +121,6 @@ function pickThumbUrl(post: ApiPost, apiLanguage: ApiLang): string {
             : post.documents?.en?.thumbnailUrl || post.documentThumbnails?.en;
 
     return (
-        //add coverImage if document thumnail broken
         post.coverImage ||
         primary ||
         post.documents?.en?.thumbnailUrl ||
@@ -153,8 +142,8 @@ export function SemesterReportsSection({
 }: SemesterReportsSectionProps = {}) {
     const { language, apiLang, fontClass } = useLanguage();
 
-    const uiLang = (language as UiLang) ?? "en";
-    const apiLanguage = (apiLang as ApiLang) ?? "en";
+    const uiLang = (language === "kh" ? "kh" : "en") as UiLang;
+    const apiLanguage = (apiLang === "km" ? "km" : "en") as ApiLang;
 
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -181,9 +170,7 @@ export function SemesterReportsSection({
                     headers: { Accept: "application/json" },
                 });
 
-                if (!res.ok) {
-                    throw new Error(`API error ${res.status}`);
-                }
+                if (!res.ok) throw new Error(`API error ${res.status}`);
 
                 const json = (await res.json()) as ApiResponse;
                 if (!alive) return;
@@ -196,6 +183,7 @@ export function SemesterReportsSection({
                 }
             } catch (err: unknown) {
                 if (!alive) return;
+
                 const message = err instanceof Error ? err.message : "Fetch failed";
                 setError(message);
             } finally {
@@ -223,27 +211,40 @@ export function SemesterReportsSection({
     const showErrorOnly = !showSkeleton && !block && !!error;
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
+    // Header title: big title
+    const sectionTitleClass = uiLang === "kh" ? "title-km" : "title-en";
+
+    // Card title: fixed small title EN 21px / KM 22px
+    const cardTitleClass = uiLang === "kh" ? "main-title-km" : "main-title-en";
+
+    // Body font
+    const bodyClass = uiLang === "kh" ? "body-km" : "body-en";
+
     return (
         <section className={`relative overflow-hidden ${fontClass || ""}`}>
             <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-[#3f5fa8]" />
 
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 pt-10 pb-14">
+            <div className="relative max-w-7xl mx-auto px-4 pt-10 pb-14">
+                {/* Header Section */}
                 <div className="mb-8 text-center">
-                    <h2 className="text-3xl md:text-5xl font-bold text-[#1e2f5d]">
+                    <h2 className={`${sectionTitleClass} text-[#1e2f5d]`}>
                         {sectionTitle}
                     </h2>
 
                     {sectionDescription ? (
-                        <p className="max-w-4xl mx-auto mt-4 text-sm md:text-lg leading-7 text-[#51607f]">
+                        <p className={`${bodyClass} max-w-4xl mx-auto mt-4 text-[#51607f]`}>
                             {sectionDescription}
                         </p>
                     ) : null}
                 </div>
 
                 {showErrorOnly ? (
-                    <div className="text-center text-red-500 mb-6">{error}</div>
+                    <div className="text-center text-red-500 mb-6 font-medium">
+                        {error}
+                    </div>
                 ) : null}
 
+                {/* Loading Skeleton */}
                 {showSkeleton ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
                         {Array.from({ length: 5 }).map((_, index) => (
@@ -260,11 +261,12 @@ export function SemesterReportsSection({
                         ))}
                     </div>
                 ) : showEmpty ? (
-                    <div className="text-center text-slate-700 py-10">
+                    <div className={`${bodyClass} text-center text-slate-700 py-10`}>
                         {uiLang === "kh" ? "មិនមានរបាយការណ៍ឆមាសទេ។" : "No semester reports found."}
                     </div>
                 ) : (
                     <>
+                        {/* Swiper Slider */}
                         <Swiper
                             modules={[Pagination, Autoplay]}
                             spaceBetween={24}
@@ -278,18 +280,10 @@ export function SemesterReportsSection({
                                 clickable: true,
                             }}
                             breakpoints={{
-                                640: {
-                                    slidesPerView: 2,
-                                },
-                                768: {
-                                    slidesPerView: 2,
-                                },
-                                1024: {
-                                    slidesPerView: 2,
-                                },
-                                1280: {
-                                    slidesPerView: 3,
-                                },
+                                640: { slidesPerView: 2 },
+                                768: { slidesPerView: 2 },
+                                1024: { slidesPerView: 2 },
+                                1280: { slidesPerView: 3 },
                             }}
                             className="semesterReportsSwiper !pb-16"
                         >
@@ -299,10 +293,12 @@ export function SemesterReportsSection({
                                 const docUrl = pickDocUrl(post, apiLanguage);
                                 const thumb = pickThumbUrl(post, apiLanguage);
                                 const publishedDate = formatLocalizedDate(post.publishedAt, uiLang);
+
                                 return (
                                     <SwiperSlide key={post.id} className="!h-auto">
-                                        <div className="h-full">
+                                        <div className="h-full w-full">
                                             <article className="bg-[#dfe3ea] p-4 shadow-sm h-full flex flex-col">
+                                                {/* Card Image */}
                                                 <div className="block shrink-0">
                                                     <div className="bg-[#d0d3d9] p-4 flex items-center justify-center h-[280px] mb-5">
                                                         <div className="relative w-[192px] h-[257px]">
@@ -311,6 +307,7 @@ export function SemesterReportsSection({
                                                                     src={thumb}
                                                                     alt={title}
                                                                     fill
+                                                                    sizes="192px"
                                                                     className="object-contain p-1"
                                                                 />
                                                             ) : (
@@ -320,27 +317,36 @@ export function SemesterReportsSection({
                                                     </div>
                                                 </div>
 
+                                                {/* Card Content */}
                                                 <div className="flex flex-col flex-1">
-                                                    <p className="text-[#2f416b] text-sm md:text-base font-medium mb-3 min-h-[24px] shrink-0">
+                                                    {/* Date */}
+                                                    <p className={`${bodyClass} text-[#2f416b] font-medium mb-1 min-h-[24px] shrink-0`}>
                                                         {publishedDate}
                                                     </p>
 
-                                                    <div className="block shrink-0">
-                                                        <h3 className="text-[#16264d] text-xl md:text-2xl leading-tight font-bold line-clamp-1 min-h-[14px] mb-3 transition">
+                                                    {/* Post Title */}
+                                                    <div className="block shrink-0 mb-2">
+                                                        <h3
+                                                            className={`${cardTitleClass} text-[#16264d] min-h-[32px]`}
+                                                            title={title}
+                                                        >
                                                             {title}
                                                         </h3>
                                                     </div>
 
-                                                    <p className="text-[#5e687b] text-sm md:text-base leading-7 line-clamp-2 min-h-[44px] mb-6">
+                                                    {/* Post Description */}
+                                                    <p className={`${bodyClass} text-[#5e687b] line-clamp-2 min-h-[60px] mb-6`}>
                                                         {description}
                                                     </p>
 
+                                                    {/* Download Button */}
                                                     <a
                                                         href={docUrl || "#"}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className={`mt-auto w-full inline-flex items-center justify-center gap-2 px-10 bg-[#f5a20a] hover:bg-[#ea9805] text-white text-base md:text-lg font-medium rounded-md py-2 transition shrink-0 ${!docUrl ? "pointer-events-none opacity-50" : ""
-                                                            }`}
+                                                        className={`mt-auto w-full inline-flex items-center justify-center gap-2 px-10 bg-[#f5a20a] hover:bg-[#ea9805] text-white font-medium rounded-md py-2.5 transition shrink-0 ${
+                                                            uiLang === "kh" ? "khmer-font" : "airbnb-font"
+                                                        } ${!docUrl ? "pointer-events-none opacity-50" : ""}`}
                                                     >
                                                         <span>{uiLang === "kh" ? "ទាញយក" : "Download"}</span>
                                                         <ChevronRight className="w-4 h-4" />
@@ -353,12 +359,14 @@ export function SemesterReportsSection({
                             })}
                         </Swiper>
 
+                        {/* View More Button */}
                         {showSeeMoreButton && posts.length > 0 ? (
                             <div className="flex justify-center mt-2">
                                 <Link
                                     href="/publication/semester-reports/semester-view-more/17"
-                                    className={`inline-flex items-center gap-2 bg-[#f79a3b] hover:bg-[#ee8f2d] text-white font-semibold uppercase tracking-wide px-4 py-3 rounded-full shadow-md transition ${uiLang === "kh" ? "khmer-font" : ""
-                                        }`}
+                                    className={`inline-flex items-center gap-2 bg-[#f79a3b] hover:bg-[#ee8f2d] text-white font-semibold uppercase tracking-wide px-6 py-3 rounded-full shadow-md transition ${
+                                        uiLang === "kh" ? "khmer-font" : "airbnb-font"
+                                    }`}
                                 >
                                     <span>{uiLang === "kh" ? "មើលបន្ថែម" : "View More"}</span>
                                     <ChevronRight className="w-4 h-4" />
@@ -371,27 +379,27 @@ export function SemesterReportsSection({
 
             <style jsx global>{`
                 .semesterReportsSwiper .swiper-wrapper {
-                align-items: stretch;
+                    align-items: stretch;
                 }
 
                 .semesterReportsSwiper .swiper-slide {
-                height: 10px;
-                display: flex;
+                    height: auto;
+                    display: flex;
                 }
 
                 .semesterReportsSwiper .swiper-pagination {
-                bottom: 0 !important;
+                    bottom: 0 !important;
                 }
 
                 .semesterReportsSwiper .swiper-pagination-bullet {
-                width: 16px;
-                height: 16px;
-                background: #c98c64;
-                opacity: 1;
+                    width: 16px;
+                    height: 16px;
+                    background: #c98c64;
+                    opacity: 1;
                 }
 
                 .semesterReportsSwiper .swiper-pagination-bullet-active {
-                background: #f39c3d;
+                    background: #f39c3d;
                 }
             `}</style>
         </section>

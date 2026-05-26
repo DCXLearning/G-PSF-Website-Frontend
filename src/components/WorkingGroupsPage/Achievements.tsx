@@ -7,7 +7,13 @@ type Lang = "en" | "kh";
 
 const Achievements: React.FC = () => {
     const { language } = useLanguage();
-    const lang = (language as Lang) ?? "en";
+
+    const lang: Lang =
+        String(language || "en").toLowerCase() === "kh" ||
+        String(language || "en").toLowerCase() === "km"
+            ? "kh"
+            : "en";
+
     const isKh = lang === "kh";
 
     const t = {
@@ -23,37 +29,46 @@ const Achievements: React.FC = () => {
         },
     }[lang];
 
+    const titleFontClass = isKh
+        ? "title-km khmer-font font-bold"
+        : "title-en airbnb-font font-extrabold";
+
+    const bodyFontClass = isKh
+        ? "body-km khmer-font"
+        : "body-en airbnb-font";
+
+    const labelFontClass = isKh
+        ? "body-km khmer-font !font-bold normal-case"
+        : "body-en airbnb-font !font-bold tracking-[0.7px]";
+
     return (
-        <section className="bg-white py-8 md:py-12 overflow-hidden">
+        <section className="overflow-hidden bg-white py-8 md:py-12">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="flex flex-col items-start">
                     {/* HEADER SECTION */}
                     <div className="w-full">
                         <p
-                            className={`text-lg md:text-2xl font-semibold text-gray-900 mb-2 tracking-wider ${isKh ? "khmer-font normal-case" : ""
-                                }`}
+                            className={`mb-2 text-gray-900 ${labelFontClass}`}
+                            style={{ fontWeight: 700 }}
                         >
                             {t.small}
                         </p>
 
-                        <h1
-                            className={`text-4xl md:text-5xl font-bold text-gray-900 leading-tight ${isKh ? "khmer-font" : ""
-                                }`}
-                        >
+                        <h1 className={`text-gray-900 ${titleFontClass}`}>
                             {t.title}
                         </h1>
                     </div>
 
-                    {/* LINE */}
-                    {/* sm:ml-8 md:ml-20 node style */}
-                    <div className="mt-5 mb-12 h-1.5 bg-orange-500 w-3/4 sm:w-full max-w-[300px]" />
+                    <div className="mt-5 mb-12 h-1.5 w-3/4 max-w-[300px] bg-orange-500 sm:w-full" />
 
-                    {/* SQUARE CONTENT CARD */}
-                    <div className="w-full flex justify-center">
-                        <div className="bg-[#A3C1AD] sm:ml-8 md:ml-20 rounded-[40px] aspect-square w-full h-120 max-w-[850px] flex items-center justify-center p-6 md:p-30 shadow-sm">
+                    <div className="flex w-full justify-center">
+                        <div className="flex aspect-square h-120 w-full max-w-[850px] items-center justify-center rounded-[40px] bg-[#A3C1AD] p-6 shadow-sm sm:ml-8 md:ml-20 md:p-30">
                             <h3
-                                className={`text-2xl sm:text-4xl md:text-6xl font-bold text-gray-800 text-center leading-snug w-full ${isKh ? "khmer-font" : ""
-                                    }`}
+                                className={`
+                                    w-full text-center text-gray-800
+                                    ${isKh ? "title-km khmer-font" : "title-en airbnb-font"}
+                                `}
+                                style={{ fontWeight: 700 }}
                             >
                                 {t.card}
                             </h3>

@@ -47,7 +47,7 @@ type Objective = {
 };
 
 const HexNode = () => (
-    <div className="relative w-12 h-12 flex items-center justify-center bg-white">
+    <div className="relative flex h-12 w-12 items-center justify-center bg-white">
         <svg width="48" height="48" viewBox="0 0 100 100" className="block">
             <polygon
                 points="50,6 86,28 86,72 50,94 14,72 14,28"
@@ -56,7 +56,8 @@ const HexNode = () => (
                 strokeWidth="6"
             />
         </svg>
-        <span className="absolute w-3.5 h-3.5 rounded-full bg-[#1e3a8a]" />
+
+        <span className="absolute h-3.5 w-3.5 rounded-full bg-[#1e3a8a]" />
     </div>
 );
 
@@ -78,30 +79,118 @@ const FALLBACK_OBJECTIVES_TITLE: Record<Lang, string> = {
 
 const FALLBACK_OBJECTIVES: Record<Lang, Objective[]> = {
     en: [
-        { id: 1, title: "Adjusting the business and investment climate", description: "" },
-        { id: 2, title: "Easing the compliance burden", description: "" },
-        { id: 3, title: "Facilitating businesses under tax authorities", description: "" },
-        { id: 4, title: "Trade facilitation under customs authority jurisdiction", description: "" },
-        { id: 5, title: "Improving transportation and infrastructure", description: "" },
-        { id: 6, title: "Rehabilitation and development of tourism", description: "" },
-        { id: 7, title: "Developing agriculture and agro-industry", description: "" },
-        { id: 8, title: "Banking and the finance sector", description: "" },
-        { id: 9, title: "Mining and the energy sector", description: "" },
-        { id: 10, title: "Construction and the real estate sector", description: "" },
-        { id: 11, title: "Other issues", description: "" },
+        {
+            id: 1,
+            title: "Adjusting the business and investment climate",
+            description: "",
+        },
+        {
+            id: 2,
+            title: "Easing the compliance burden",
+            description: "",
+        },
+        {
+            id: 3,
+            title: "Facilitating businesses under tax authorities",
+            description: "",
+        },
+        {
+            id: 4,
+            title: "Trade facilitation under customs authority jurisdiction",
+            description: "",
+        },
+        {
+            id: 5,
+            title: "Improving transportation and infrastructure",
+            description: "",
+        },
+        {
+            id: 6,
+            title: "Rehabilitation and development of tourism",
+            description: "",
+        },
+        {
+            id: 7,
+            title: "Developing agriculture and agro-industry",
+            description: "",
+        },
+        {
+            id: 8,
+            title: "Banking and the finance sector",
+            description: "",
+        },
+        {
+            id: 9,
+            title: "Mining and the energy sector",
+            description: "",
+        },
+        {
+            id: 10,
+            title: "Construction and the real estate sector",
+            description: "",
+        },
+        {
+            id: 11,
+            title: "Other issues",
+            description: "",
+        },
     ],
     kh: [
-        { id: 1, title: "ការកែសម្រួលបរិយាកាសធុរកិច្ច និងការវិនិយោគ", description: "" },
-        { id: 2, title: "ការសម្រាលបន្ទុកលើអនុលោមភាព", description: "" },
-        { id: 3, title: "ការសម្រួលដល់ធុរកិច្ចក្រោមដែនសមត្ថកិច្ចពន្ធដារ", description: "" },
-        { id: 4, title: "កិច្ចសម្រួលពាណិជ្ជកម្មក្រោមដែនសមត្ថកិច្ចគយ", description: "" },
-        { id: 5, title: "ការលើកកម្ពស់ការដឹកជញ្ជូន និងហេដ្ឋារចនាសម្ព័ន្ធ", description: "" },
-        { id: 6, title: "ការស្តារ និងការលើកស្ទួយការអភិវឌ្ឍវិស័យទេសចរណ៍", description: "" },
-        { id: 7, title: "ការអភិវឌ្ឍវិស័យកសិកម្ម និងកសិឧស្សាហកម្ម", description: "" },
-        { id: 8, title: "វិស័យធនាគារ និងហិរញ្ញវត្ថុ", description: "" },
-        { id: 9, title: "វិស័យរ៉ែ និងថាមពល", description: "" },
-        { id: 10, title: "វិស័យសំណង់ និងអចលនទ្រព្យ", description: "" },
-        { id: 11, title: "បញ្ហាផ្សេងៗ", description: "" },
+        {
+            id: 1,
+            title: "ការកែសម្រួលបរិយាកាសធុរកិច្ច និងការវិនិយោគ",
+            description: "",
+        },
+        {
+            id: 2,
+            title: "ការសម្រាលបន្ទុកលើអនុលោមភាព",
+            description: "",
+        },
+        {
+            id: 3,
+            title: "ការសម្រួលដល់ធុរកិច្ចក្រោមដែនសមត្ថកិច្ចពន្ធដារ",
+            description: "",
+        },
+        {
+            id: 4,
+            title: "កិច្ចសម្រួលពាណិជ្ជកម្មក្រោមដែនសមត្ថកិច្ចគយ",
+            description: "",
+        },
+        {
+            id: 5,
+            title: "ការលើកកម្ពស់ការដឹកជញ្ជូន និងហេដ្ឋារចនាសម្ព័ន្ធ",
+            description: "",
+        },
+        {
+            id: 6,
+            title: "ការស្តារ និងការលើកស្ទួយការអភិវឌ្ឍវិស័យទេសចរណ៍",
+            description: "",
+        },
+        {
+            id: 7,
+            title: "ការអភិវឌ្ឍវិស័យកសិកម្ម និងកសិឧស្សាហកម្ម",
+            description: "",
+        },
+        {
+            id: 8,
+            title: "វិស័យធនាគារ និងហិរញ្ញវត្ថុ",
+            description: "",
+        },
+        {
+            id: 9,
+            title: "វិស័យរ៉ែ និងថាមពល",
+            description: "",
+        },
+        {
+            id: 10,
+            title: "វិស័យសំណង់ និងអចលនទ្រព្យ",
+            description: "",
+        },
+        {
+            id: 11,
+            title: "បញ្ហាផ្សេងៗ",
+            description: "",
+        },
     ],
 };
 
@@ -112,12 +201,10 @@ function pickText(value: I18n | undefined, lang: Lang, fallback: string) {
 function formatPlenaryTitle(title: string, lang: Lang) {
     const normalizedTitle = title.trim().replace(/\s+/g, " ");
 
-    // Show the Khmer title on one line and keep G-PSF on the next line.
     if (lang === "kh" && normalizedTitle.includes("G-PSF")) {
         return normalizedTitle.replace(/\s*G-PSF\s*/i, "\nG-PSF");
     }
 
-    // Show G-PSF first and move "Plenary" to the second line in English.
     if (lang === "en" && normalizedTitle.toLowerCase().includes("plenary")) {
         return normalizedTitle.replace(/g-psf\s*plenary/i, "G-PSF\nPlenary");
     }
@@ -128,6 +215,14 @@ function formatPlenaryTitle(title: string, lang: Lang) {
 const PlenaryPage: React.FC = () => {
     const { language } = useLanguage();
     const lang = (language === "kh" ? "kh" : "en") as Lang;
+    const isKh = lang === "kh";
+
+    const titleFontClass = isKh ? "title-km" : "title-en";
+    const bodyFontClass = isKh ? "body-km" : "body-en";
+
+    // Timeline item title: use global body font, but bold.
+    const itemTitleFontClass = isKh ? "body-km !font-bold" : "body-en !font-bold";
+
     const [copy, setCopy] = useState(FALLBACK_COPY);
     const [objectivesTitle, setObjectivesTitle] = useState(FALLBACK_OBJECTIVES_TITLE);
     const [objectives, setObjectives] = useState(FALLBACK_OBJECTIVES);
@@ -149,12 +244,10 @@ const PlenaryPage: React.FC = () => {
                 const result = (await response.json()) as ApiResponse;
                 const blocks = result?.data?.blocks ?? [];
 
-                // Use block 51 for the left intro copy.
                 const introBlock =
                     blocks.find((block) => block.enabled !== false && block.id === 51) ||
                     blocks.find((block) => block.enabled !== false && block.type === "text_block");
 
-                // Use block 52 for the right timeline heading and items.
                 const objectivesBlock =
                     blocks.find((block) => block.enabled !== false && block.id === 52) || null;
 
@@ -184,17 +277,24 @@ const PlenaryPage: React.FC = () => {
                         kh: pickText(objectivesBlock.title, "kh", FALLBACK_OBJECTIVES_TITLE.kh),
                     });
 
-                    // Convert the CMS items into the same simple list shape used by the old UI.
                     if (items.length > 0) {
                         setObjectives({
                             en: items.map((item, index) => ({
                                 id: index + 1,
-                                title: pickText(item.title, "en", FALLBACK_OBJECTIVES.en[index]?.title || ""),
+                                title: pickText(
+                                    item.title,
+                                    "en",
+                                    FALLBACK_OBJECTIVES.en[index]?.title || ""
+                                ),
                                 description: pickText(item.description, "en", ""),
                             })),
                             kh: items.map((item, index) => ({
                                 id: index + 1,
-                                title: pickText(item.title, "kh", FALLBACK_OBJECTIVES.kh[index]?.title || ""),
+                                title: pickText(
+                                    item.title,
+                                    "kh",
+                                    FALLBACK_OBJECTIVES.kh[index]?.title || ""
+                                ),
                                 description: pickText(item.description, "kh", ""),
                             })),
                         });
@@ -205,7 +305,6 @@ const PlenaryPage: React.FC = () => {
             }
         }
 
-        // Load both text blocks from the same plenary section endpoint.
         void loadPlenaryTextBlocks();
 
         return () => {
@@ -231,22 +330,25 @@ const PlenaryPage: React.FC = () => {
     return (
         <section className="bg-white py-16 md:py-24">
             <div className="mx-auto max-w-7xl px-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+                <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
                     <div className="lg:sticky lg:top-40">
                         <h1
-                            className={`whitespace-pre-line text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight ${
-                                lang === "kh" ? "khmer-font" : ""
-                            }`}
+                            className={`
+                                whitespace-pre-line text-gray-900
+                                ${titleFontClass}
+                            `}
                         >
                             {t.title}
                         </h1>
 
-                        <div className="mt-5 h-1.5 bg-orange-500 w-56 sm:w-72 md:w-96 lg:w-[360px] translate-x-0 sm:translate-x-8 md:translate-x-32" />
+                        <div className="mt-5 h-1.5 w-56 translate-x-0 bg-orange-500 sm:w-72 sm:translate-x-8 md:w-96 md:translate-x-32 lg:w-[360px]" />
 
                         <p
-                            className={`whitespace-pre-line mt-8 max-w-md text-lg sm:text-xl leading-relaxed font-bold text-[#1e3a8a] translate-x-0 sm:translate-x-8 md:translate-x-32 ${
-                                lang === "kh" ? "khmer-font" : ""
-                            }`}
+                            className={`
+                                mt-8 max-w-md translate-x-0 whitespace-pre-line text-[#1e3a8a]
+                                sm:translate-x-8 md:translate-x-32
+                                ${bodyFontClass} !font-bold
+                            `}
                         >
                             {t.desc}
                         </p>
@@ -254,15 +356,16 @@ const PlenaryPage: React.FC = () => {
 
                     <div className="lg:pt-24 xl:pt-80">
                         <h2
-                            className={`text-4xl md:text-5xl font-extrabold text-gray-900 mb-10 ${
-                                lang === "kh" ? "khmer-font" : ""
-                            }`}
+                            className={`
+                                mb-10 text-gray-900
+                                ${titleFontClass}
+                            `}
                         >
                             {t.objectives}
                         </h2>
 
                         <div className="relative">
-                            <div className="absolute left-[23px] top-0 bottom-0 w-[4px] bg-orange-500" />
+                            <div className="absolute bottom-0 left-[23px] top-0 w-[4px] bg-orange-500" />
 
                             <div className="space-y-6">
                                 {data.map((obj) => (
@@ -273,20 +376,25 @@ const PlenaryPage: React.FC = () => {
 
                                         <div className="pt-1">
                                             <h3
-                                                className={`text-xl font-extrabold text-gray-900 ${
-                                                    lang === "kh" ? "khmer-font" : ""
-                                                }`}
+                                                className={`
+                                                    text-gray-900
+                                                    !whitespace-normal !overflow-visible !text-clip
+                                                    ${itemTitleFontClass}
+                                                `}
                                             >
                                                 {obj.title}
                                             </h3>
 
-                                            {/* <p
-                                                className={`mt-2 text-base sm:text-lg text-gray-600 leading-relaxed max-w-sm ${
-                                                    lang === "kh" ? "khmer-font" : ""
-                                                }`}
-                                            >
-                                                {obj.description}
-                                            </p> */}
+                                            {obj.description ? (
+                                                <p
+                                                    className={`
+                                                        mt-2 max-w-sm text-gray-600
+                                                        ${bodyFontClass}
+                                                    `}
+                                                >
+                                                    {obj.description}
+                                                </p>
+                                            ) : null}
                                         </div>
                                     </div>
                                 ))}

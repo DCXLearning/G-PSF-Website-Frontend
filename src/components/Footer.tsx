@@ -164,6 +164,8 @@ const Footer: React.FC = () => {
     const [menuLoading, setMenuLoading] = useState(true);
     const [quickLoading, setQuickLoading] = useState(true);
 
+    const footerFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+
     useEffect(() => {
         const fetchSiteSettings = async () => {
             try {
@@ -282,14 +284,15 @@ const Footer: React.FC = () => {
     );
 
     return (
-        <footer className="bg-white mt-0 shadow-[0_-6px_12px_rgba(0,0,0,0.08)]">
+        <footer
+            className={`bg-white mt-0 shadow-[0_-6px_12px_rgba(0,0,0,0.08)] ${footerFontClass}`}
+        >
             <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-14 lg:gap-20">
-                {/* ========== LOGO + DESCRIPTION ========== */}
                 {/* ========== LOGO + DESCRIPTION ========== */}
                 <div className="flex flex-col items-start text-left sm:items-center sm:text-center">
                     <div className="relative w-55 h-28 mb-5 -mt-4">
                         <Image
-                            src={siteData?.logo || "/image/logo1.png"}
+                            src={logoSrc}
                             alt={title || "G-PSF Logo"}
                             fill
                             className="object-cover object-left sm:object-center"
@@ -305,8 +308,11 @@ const Footer: React.FC = () => {
                         </div>
                     ) : (
                         <p
-                            className={`text-lg text-gray-800 max-w-sm leading-8 text-left sm:text-center ${isKhmer ? "khmer-font" : ""
-                                }`}
+                            className={`
+                                text-lg text-gray-800 max-w-sm leading-8 text-left sm:text-center
+                                ${footerFontClass}
+                            `}
+                            style={{ fontWeight: 400 }}
                         >
                             {description}
                         </p>
@@ -314,7 +320,11 @@ const Footer: React.FC = () => {
                 </div>
 
                 {/* ========== KEY UPDATES ========== */}
-                <LinkSection group={keyUpdates} isKhmer={isKhmer} loading={menuLoading} />
+                <LinkSection
+                    group={keyUpdates}
+                    isKhmer={isKhmer}
+                    loading={menuLoading}
+                />
 
                 {/* ========== QUICK LINKS ========== */}
                 <LinkSection
@@ -327,25 +337,38 @@ const Footer: React.FC = () => {
                 <div className="space-y-6">
                     <div>
                         <h3
-                            className={`text-2xl font-bold mb-3 ${isKhmer ? "khmer-font" : ""
-                                }`}
+                            className={`text-2xl mb-3 ${footerFontClass}`}
+                            style={{ fontWeight: 700 }}
                         >
                             {isKhmer ? "ទំនាក់ទំនង" : "CONTACT"}
                         </h3>
 
                         <div className="space-y-3 text-gray-700">
                             {firstPhone ? (
-                                <ContactItem icon={<Phone size={18} />} text={firstPhone} />
+                                <ContactItem
+                                    icon={<Phone size={18} />}
+                                    text={firstPhone}
+                                    fontClass={footerFontClass}
+                                />
                             ) : (
-                                <ContactItem icon={<Phone size={18} />} text="+855 99 799 579" />
+                                <ContactItem
+                                    icon={<Phone size={18} />}
+                                    text="+855 99 799 579"
+                                    fontClass={footerFontClass}
+                                />
                             )}
 
                             {firstEmail ? (
-                                <ContactItem icon={<Mail size={18} />} text={firstEmail} />
+                                <ContactItem
+                                    icon={<Mail size={18} />}
+                                    text={firstEmail}
+                                    fontClass={footerFontClass}
+                                />
                             ) : (
                                 <ContactItem
                                     icon={<Mail size={18} />}
                                     text="helpdesk@cdc.gov.kh"
+                                    fontClass={footerFontClass}
                                 />
                             )}
                         </div>
@@ -353,8 +376,8 @@ const Footer: React.FC = () => {
 
                     <div>
                         <h3
-                            className={`text-2xl font-bold mb-3 ${isKhmer ? "khmer-font" : ""
-                                }`}
+                            className={`text-2xl mb-3 ${footerFontClass}`}
+                            style={{ fontWeight: 700 }}
                         >
                             {isKhmer ? "តាមដានពួកយើង" : "FOLLOW US"}
                         </h3>
@@ -388,11 +411,16 @@ const Footer: React.FC = () => {
 const ContactItem = ({
     icon,
     text,
+    fontClass,
 }: {
     icon: React.ReactNode;
     text: string;
+    fontClass: string;
 }) => (
-    <div className="flex items-center gap-2 text-sm font-medium">
+    <div
+        className={`flex items-center gap-2 text-sm ${fontClass}`}
+        style={{ fontWeight: 500 }}
+    >
         <span className="text-[#00008b]">{icon}</span>
         <span>{text}</span>
     </div>
@@ -406,35 +434,48 @@ const LinkSection = ({
     group: LinkGroup;
     isKhmer: boolean;
     loading?: boolean;
-}) => (
-    <div>
-        <h3 className={`text-2xl font-bold mb-4 ${isKhmer ? "khmer-font" : ""}`}>
-            {isKhmer ? group.titleKh : group.titleEn}
-        </h3>
+}) => {
+    const footerFontClass = isKhmer ? "khmer-font" : "airbnb-font";
 
-        {loading ? (
-            <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="h-5 w-40 bg-gray-200 animate-pulse rounded" />
-                ))}
-            </div>
-        ) : (
-            <ul className="space-y-3">
-                {group.links.map((link) => (
-                    <li key={`${link.nameEn}-${link.href}`}>
-                        <a
-                            href={link.href}
-                            className={`text-lg text-gray-700 hover:text-[#0808e1] transition ${isKhmer ? "khmer-font" : ""
-                                }`}
-                        >
-                            {isKhmer ? link.nameKh : link.nameEn}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-        )}
-    </div>
-);
+    return (
+        <div>
+            <h3
+                className={`text-2xl mb-4 ${footerFontClass}`}
+                style={{ fontWeight: 700 }}
+            >
+                {isKhmer ? group.titleKh : group.titleEn}
+            </h3>
+
+            {loading ? (
+                <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <div
+                            key={i}
+                            className="h-5 w-40 bg-gray-200 animate-pulse rounded"
+                        />
+                    ))}
+                </div>
+            ) : (
+                <ul className="space-y-3">
+                    {group.links.map((link) => (
+                        <li key={`${link.nameEn}-${link.href}`}>
+                            <a
+                                href={link.href}
+                                className={`
+                                    text-lg text-gray-700 hover:text-[#0808e1] transition
+                                    ${footerFontClass}
+                                `}
+                                style={{ fontWeight: 400 }}
+                            >
+                                {isKhmer ? link.nameKh : link.nameEn}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+};
 
 const SocialIcon = ({
     icon,

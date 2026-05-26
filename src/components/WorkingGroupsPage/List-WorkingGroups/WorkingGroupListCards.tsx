@@ -37,6 +37,10 @@ type WorkingGroupListCardsProps = {
 
 const ICON_BG = "#4C518D";
 
+function normalizeLanguage(value: unknown): Lang {
+    return value === "kh" || value === "km" ? "kh" : "en";
+}
+
 function getText(value?: string | null) {
     const text = value?.trim() ?? "";
     return text === "." ? "" : text;
@@ -46,13 +50,14 @@ function pickText(value: I18nText | undefined, apiLang: ApiLang) {
     if (!value) return "";
 
     const primary = apiLang === "km" ? getText(value.km) : getText(value.en);
+
     return primary || getText(value.en) || getText(value.km);
 }
 
 function buildCards(
     items: ApiWorkingGroup[],
     apiLang: ApiLang,
-    currentSlug?: string
+    currentSlug?: string,
 ): WorkingGroupCard[] {
     const cleanCurrentSlug = getText(currentSlug);
 
@@ -75,9 +80,13 @@ export default function WorkingGroupListCards({
     currentSlug,
 }: WorkingGroupListCardsProps) {
     const { language } = useLanguage();
-    const lang: Lang = language === "kh" ? "kh" : "en";
-    const apiLang: ApiLang = lang === "kh" ? "km" : "en";
+
+    const lang = normalizeLanguage(language);
     const isKh = lang === "kh";
+    const apiLang: ApiLang = isKh ? "km" : "en";
+
+    const titleFontClass = isKh ? "title-km" : "title-en";
+    const bodyFontClass = isKh ? "body-km" : "body-en";
 
     const sliderRef = useRef<HTMLDivElement | null>(null);
 
@@ -124,7 +133,7 @@ export default function WorkingGroupListCards({
 
     const cards = useMemo(
         () => buildCards(items, apiLang, currentSlug),
-        [apiLang, currentSlug, items]
+        [apiLang, currentSlug, items],
     );
 
     const scrollSlide = (direction: "left" | "right") => {
@@ -139,18 +148,19 @@ export default function WorkingGroupListCards({
         });
     };
 
-    const emptyLabel = isKh ? "មិនទាន់មានក្រុមការងារ" : "No working groups found";
-    const title = isKh ? "ក្រុមការងារតាមវិស័យផ្សេងទៀត" : "Related Working Groups";
+    const emptyLabel = isKh
+        ? "មិនទាន់មានក្រុមការងារ"
+        : "No working groups found";
+
+    const title = isKh
+        ? "ក្រុមការងារតាមវិស័យផ្សេងទៀត"
+        : "Related Working Groups";
 
     return (
         <section className="bg-white px-4 pb-20 pt-8 sm:px-6 md:px-10 lg:px-14">
             <div className="mx-auto max-w-7xl px-0 sm:px-4">
                 <header className="mb-8 flex items-center justify-between gap-4 md:mb-12">
-                    <h2
-                        className={`text-2xl font-extrabold leading-tight text-blue-950 sm:text-4xl md:text-5xl ${
-                            isKh ? "khmer-font" : ""
-                        }`}
-                    >
+                    <h2 className={`text-blue-950 ${titleFontClass}`}>
                         {title}
                     </h2>
 
@@ -158,7 +168,7 @@ export default function WorkingGroupListCards({
                         <button
                             type="button"
                             onClick={() => scrollSlide("left")}
-                            className="flex h-12 w-12 items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white text-2xl font-bold text-blue-950 shadow-sm transition hover:bg-blue-950 hover:text-white"
+                            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-2xl font-bold text-blue-950 shadow-sm transition hover:bg-blue-950 hover:text-white"
                             aria-label="Previous slide"
                         >
                             ‹
@@ -167,7 +177,7 @@ export default function WorkingGroupListCards({
                         <button
                             type="button"
                             onClick={() => scrollSlide("right")}
-                            className="flex h-12 w-12 items-center cursor-pointer justify-center rounded-full border border-slate-200 bg-white text-2xl font-bold text-blue-950 shadow-sm transition hover:bg-blue-950 hover:text-white"
+                            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-2xl font-bold text-blue-950 shadow-sm transition hover:bg-blue-950 hover:text-white"
                             aria-label="Next slide"
                         >
                             ›
@@ -186,6 +196,7 @@ export default function WorkingGroupListCards({
                                 className="flex h-[210px] min-w-[165px] snap-start animate-pulse flex-col items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 px-4 py-6 shadow-sm sm:min-w-[190px]"
                             >
                                 <div className="mb-4 h-20 w-20 shrink-0 rounded-full bg-slate-200" />
+
                                 <div className="flex h-[52px] flex-col items-center justify-center">
                                     <div className="mb-2 h-4 w-24 rounded bg-slate-200" />
                                     <div className="h-4 w-20 rounded bg-slate-200" />
@@ -222,9 +233,7 @@ export default function WorkingGroupListCards({
 
                                 <div className="flex h-[52px] items-center justify-center">
                                     <span
-                                        className={`m-0 line-clamp-2 max-w-[160px] text-center text-sm font-semibold leading-snug text-gray-900 sm:text-base ${
-                                            isKh ? "khmer-font" : ""
-                                        }`}
+                                        className={`m-0 line-clamp-2 max-w-[160px] text-center text-gray-900 ${bodyFontClass} working-group-card-body !font-semibold`}
                                         title={item.title}
                                     >
                                         {item.title}
@@ -234,11 +243,7 @@ export default function WorkingGroupListCards({
                         ))}
                     </div>
                 ) : (
-                    <p
-                        className={`text-center text-sm text-slate-500 ${
-                            isKh ? "khmer-font" : ""
-                        }`}
-                    >
+                    <p className={`text-center text-slate-500 ${bodyFontClass}`}>
                         {emptyLabel}
                     </p>
                 )}

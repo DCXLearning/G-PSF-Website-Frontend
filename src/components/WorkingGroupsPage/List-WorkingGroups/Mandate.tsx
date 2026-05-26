@@ -1,7 +1,11 @@
 "use client";
 
-import React, { type CSSProperties, type ReactNode, useEffect, useState } from "react";
-import Link from "next/link";
+import React, {
+  type CSSProperties,
+  type ReactNode,
+  useEffect,
+  useState,
+} from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 type Lang = "en" | "kh";
@@ -104,15 +108,12 @@ function isTiptapDoc(value: unknown): value is TiptapNode {
 }
 
 function hasVisibleTiptapContent(node: TiptapNode | undefined): boolean {
-  if (!node) {
-    return false;
-  }
+  if (!node) return false;
 
   if (node.type === "text") {
     return getText(node.text ?? "").length > 0;
   }
 
-  // These nodes still show something on screen even without text.
   if (
     node.type === "image" ||
     node.type === "youtube" ||
@@ -135,9 +136,7 @@ function hasVisibleTiptapContent(node: TiptapNode | undefined): boolean {
 }
 
 function extractTiptapText(node: TiptapNode | undefined): string {
-  if (!node) {
-    return "";
-  }
+  if (!node) return "";
 
   if (node.type === "text") {
     return node.text ?? "";
@@ -147,9 +146,10 @@ function extractTiptapText(node: TiptapNode | undefined): string {
     return "\n";
   }
 
-  const childText = (node.content ?? []).map((item) => extractTiptapText(item)).join("");
+  const childText = (node.content ?? [])
+    .map((item) => extractTiptapText(item))
+    .join("");
 
-  // Add a line break after block-level nodes so the final text stays readable.
   if (
     node.type === "paragraph" ||
     node.type === "heading" ||
@@ -194,12 +194,10 @@ function getRichTextValue(value: unknown): RichTextValue {
         .replace(/\n{3,}/g, "\n\n")
         .trim()
     );
-    const hasVisibleContent = hasVisibleTiptapContent(value);
 
-    // Keep the original TipTap document so the page can render full rich text.
     return {
       text,
-      doc: hasVisibleContent ? value : null,
+      doc: hasVisibleTiptapContent(value) ? value : null,
     };
   }
 
@@ -210,15 +208,18 @@ function getRichTextValue(value: unknown): RichTextValue {
 }
 
 function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
-  if (!value) {
-    return "";
-  }
+  if (!value) return "";
 
-  const primary = apiLang === "km" ? getRichText(value.km) : getRichText(value.en);
+  const primary =
+    apiLang === "km" ? getRichText(value.km) : getRichText(value.en);
+
   return primary || getRichText(value.en) || getRichText(value.km);
 }
 
-function pickI18nRichText(value: I18nText | undefined, apiLang: ApiLang): RichTextValue {
+function pickI18nRichText(
+  value: I18nText | undefined,
+  apiLang: ApiLang
+): RichTextValue {
   if (!value) {
     return {
       text: "",
@@ -226,7 +227,10 @@ function pickI18nRichText(value: I18nText | undefined, apiLang: ApiLang): RichTe
     };
   }
 
-  const primary = apiLang === "km" ? getRichTextValue(value.km) : getRichTextValue(value.en);
+  const primary =
+    apiLang === "km"
+      ? getRichTextValue(value.km)
+      : getRichTextValue(value.en);
 
   if (primary.text || primary.doc) {
     return primary;
@@ -246,17 +250,17 @@ function pickTemplateContent(
   apiLang: ApiLang
 ): WgTemplateContent | null {
   const blocks = response.data?.blocks ?? [];
+
   const block =
-    blocks.find((item) => item.enabled !== false && item.type === "wg_template") ??
-    blocks.find((item) => item.enabled !== false);
+    blocks.find(
+      (item) => item.enabled !== false && item.type === "wg_template"
+    ) ?? blocks.find((item) => item.enabled !== false);
 
   const post =
     block?.posts?.find((item) => item.status === "published") ??
     block?.posts?.[0];
 
-  if (!post) {
-    return null;
-  }
+  if (!post) return null;
 
   return post.content?.[apiLang] ?? post.content?.en ?? post.content?.km ?? null;
 }
@@ -286,7 +290,11 @@ function countIssueStatuses(items: WgTemplateIssueItem[] | undefined) {
       continue;
     }
 
-    if (status === "in_progress" || status === "in progress" || status === "in-progress") {
+    if (
+      status === "in_progress" ||
+      status === "in progress" ||
+      status === "in-progress"
+    ) {
       counts.inProgress += 1;
       continue;
     }
@@ -303,9 +311,7 @@ function mapMandateContent(
 ): MandateContent | null {
   const content = pickTemplateContent(response, apiLang);
 
-  if (!content) {
-    return null;
-  }
+  if (!content) return null;
 
   const items = content.textBlock?.items ?? [];
   const sections: MandateSection[] = [];
@@ -315,7 +321,6 @@ function mapMandateContent(
     const title = pickI18nText(item?.title, apiLang);
     const description = pickI18nRichText(item?.description, apiLang);
 
-    // Keep only sections that have something to show on screen.
     if (!title && !description.text && !description.doc) {
       continue;
     }
@@ -346,35 +351,80 @@ function containsKhmer(value?: string): boolean {
   return /[\u1780-\u17FF]/.test(value ?? "");
 }
 
+function normalizeLang(value: unknown): Lang {
+  const lang = String(value || "en").toLowerCase();
+
+  if (lang === "kh" || lang === "km") {
+    return "kh";
+  }
+
+  return "en";
+}
+
+function getTitleFontClass(isKh: boolean): string {
+  return isKh ? "title-km khmer-font" : "title-en airbnb-font";
+}
+
+function getBodyFontClass(isKh: boolean): string {
+  return isKh ? "body-km khmer-font" : "body-en airbnb-font";
+}
+
+function getMainTitleFontClass(isKh: boolean): string {
+  return isKh ? "main-title-km khmer-font" : "main-title-en airbnb-font";
+}
+
 function MandateRichText({
   doc,
-  isKh,
-  text,
+  bodyFontClass,
+  titleFontClass,
 }: {
   doc: TiptapNode;
-  isKh: boolean;
-  text: string;
+  bodyFontClass: string;
+  titleFontClass: string;
 }) {
-  // This renderer shows TipTap JSON from the CMS inside the Mandate section.
   return (
-    <div className={`mt-5 text-slate-500 ${isKh || containsKhmer(text) ? "khmer-font" : ""}`}>
-      {renderTiptapNodes(doc.content ?? [], "mandate-root")}
+    <div
+      className={`mt-5 text-slate-500 ${bodyFontClass}`}
+      style={{ fontWeight: 400 }}
+    >
+      {renderTiptapNodes(
+        doc.content ?? [],
+        "mandate-root",
+        bodyFontClass,
+        titleFontClass
+      )}
     </div>
   );
 }
 
-function renderTiptapNodes(nodes: TiptapNode[], path: string): ReactNode[] {
-  return nodes.map((node, index) => renderTiptapNode(node, `${path}-${index}`));
+function renderTiptapNodes(
+  nodes: TiptapNode[],
+  path: string,
+  bodyFontClass: string,
+  titleFontClass: string
+): ReactNode[] {
+  return nodes.map((node, index) =>
+    renderTiptapNode(node, `${path}-${index}`, bodyFontClass, titleFontClass)
+  );
 }
 
-function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
+function renderTiptapNode(
+  node: TiptapNode,
+  key: string,
+  bodyFontClass: string,
+  titleFontClass: string
+): ReactNode {
   const type = node.type ?? "";
   const content = node.content ?? [];
   const attrs = node.attrs ?? {};
   const style = getTextAlignStyle(attrs);
 
   if (type === "doc") {
-    return <React.Fragment key={key}>{renderTiptapNodes(content, key)}</React.Fragment>;
+    return (
+      <React.Fragment key={key}>
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
+      </React.Fragment>
+    );
   }
 
   if (type === "text") {
@@ -391,67 +441,82 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
 
   if (type === "paragraph") {
     return (
-      <p key={key} className="mt-4 text-base leading-relaxed md:text-lg" style={style}>
-        {renderTiptapNodes(content, key)}
+      <p
+        key={key}
+        className={`mt-4 text-slate-500 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
       </p>
     );
   }
 
   if (type === "heading") {
     const level = normalizeHeadingLevel(attrs.level);
-    const headingClass = getHeadingClass(level);
+    const headingClass = getHeadingClass(level, titleFontClass);
+    const children = renderTiptapNodes(
+      content,
+      key,
+      bodyFontClass,
+      titleFontClass
+    );
+    const headingStyle = { ...style, fontWeight: 600 };
 
     if (level === 1) {
       return (
-        <h1 key={key} className={headingClass} style={style}>
-          {renderTiptapNodes(content, key)}
+        <h1 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h1>
       );
     }
 
     if (level === 2) {
       return (
-        <h2 key={key} className={headingClass} style={style}>
-          {renderTiptapNodes(content, key)}
+        <h2 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h2>
       );
     }
 
     if (level === 3) {
       return (
-        <h3 key={key} className={headingClass} style={style}>
-          {renderTiptapNodes(content, key)}
+        <h3 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h3>
       );
     }
 
     if (level === 4) {
       return (
-        <h4 key={key} className={headingClass} style={style}>
-          {renderTiptapNodes(content, key)}
+        <h4 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h4>
       );
     }
 
     if (level === 5) {
       return (
-        <h5 key={key} className={headingClass} style={style}>
-          {renderTiptapNodes(content, key)}
+        <h5 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h5>
       );
     }
 
     return (
-      <h6 key={key} className={headingClass} style={style}>
-        {renderTiptapNodes(content, key)}
+      <h6 key={key} className={headingClass} style={headingStyle}>
+        {children}
       </h6>
     );
   }
 
   if (type === "bulletList") {
     return (
-      <ul key={key} className="mt-4 list-disc space-y-2 pl-6" style={style}>
-        {renderTiptapNodes(content, key)}
+      <ul
+        key={key}
+        className={`mt-4 list-disc space-y-2 pl-6 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
       </ul>
     );
   }
@@ -460,16 +525,25 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     const start = typeof attrs.start === "number" ? attrs.start : 1;
 
     return (
-      <ol key={key} start={start} className="mt-4 list-decimal space-y-2 pl-6" style={style}>
-        {renderTiptapNodes(content, key)}
+      <ol
+        key={key}
+        start={start}
+        className={`mt-4 list-decimal space-y-2 pl-6 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
       </ol>
     );
   }
 
   if (type === "listItem") {
     return (
-      <li key={key} className="leading-relaxed md:text-lg">
-        {renderTiptapNodes(content, key)}
+      <li
+        key={key}
+        className={`leading-relaxed ${bodyFontClass}`}
+        style={{ fontWeight: 400 }}
+      >
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
       </li>
     );
   }
@@ -478,10 +552,10 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     return (
       <blockquote
         key={key}
-        className="mt-4 border-l-4 border-amber-500 pl-4 italic text-slate-600"
-        style={style}
+        className={`mt-4 border-l-4 border-amber-500 pl-4 italic text-slate-600 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
       >
-        {renderTiptapNodes(content, key)}
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
       </blockquote>
     );
   }
@@ -506,14 +580,16 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     const src = getStringAttr(attrs, "src");
     const alt = getStringAttr(attrs, "alt") || "Image";
 
-    if (!src) {
-      return null;
-    }
+    if (!src) return null;
 
     return (
       <figure key={key} className="mt-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className="w-full rounded-xl border border-slate-200" />
+        <img
+          src={src}
+          alt={alt}
+          className="w-full rounded-xl border border-slate-200"
+        />
       </figure>
     );
   }
@@ -521,12 +597,13 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
   if (type === "youtube") {
     const src = normalizeVideoUrl(getStringAttr(attrs, "src"));
     const title = getStringAttr(attrs, "title") || "YouTube video";
-    const allowFullScreenAttr = getStringAttr(attrs, "allowfullscreen").toLowerCase();
+    const allowFullScreenAttr = getStringAttr(
+      attrs,
+      "allowfullscreen"
+    ).toLowerCase();
     const allowFullScreen = allowFullScreenAttr !== "false";
 
-    if (!src) {
-      return null;
-    }
+    if (!src) return null;
 
     return (
       <div key={key} className="mt-6">
@@ -550,9 +627,7 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     const src = normalizeVideoUrl(getStringAttr(attrs, "src"));
     const poster = getStringAttr(attrs, "poster");
 
-    if (!src) {
-      return null;
-    }
+    if (!src) return null;
 
     return (
       <div key={key} className="mt-6">
@@ -571,39 +646,55 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
   if (type === "table") {
     return (
       <div key={key} className="mt-6 overflow-x-auto">
-        <table className="min-w-full border-collapse border border-slate-300">
-          <tbody>{renderTiptapNodes(content, key)}</tbody>
+        <table
+          className={`min-w-full border-collapse border border-slate-300 ${bodyFontClass}`}
+        >
+          <tbody>
+            {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
+          </tbody>
         </table>
       </div>
     );
   }
 
   if (type === "tableRow") {
-    return <tr key={key}>{renderTiptapNodes(content, key)}</tr>;
+    return (
+      <tr key={key}>
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
+      </tr>
+    );
   }
 
   if (type === "tableHeader") {
     return (
       <th
         key={key}
-        className="border border-slate-300 bg-slate-100 px-3 py-2 text-left font-semibold"
-        style={style}
+        className={`border border-slate-300 bg-slate-100 px-3 py-2 text-left ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 600 }}
       >
-        {renderTiptapNodes(content, key)}
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
       </th>
     );
   }
 
   if (type === "tableCell") {
     return (
-      <td key={key} className="border border-slate-300 px-3 py-2" style={style}>
-        {renderTiptapNodes(content, key)}
+      <td
+        key={key}
+        className={`border border-slate-300 px-3 py-2 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
       </td>
     );
   }
 
   if (content.length > 0) {
-    return <div key={key}>{renderTiptapNodes(content, key)}</div>;
+    return (
+      <div key={key}>
+        {renderTiptapNodes(content, key, bodyFontClass, titleFontClass)}
+      </div>
+    );
   }
 
   return null;
@@ -666,8 +757,9 @@ function applyTiptapMarks(
     if (mark.type === "link") {
       const href = getStringAttr(mark.attrs ?? {}, "href") || "#";
       const target = getStringAttr(mark.attrs ?? {}, "target") || undefined;
-      const rel = getStringAttr(mark.attrs ?? {}, "rel")
-        || (target === "_blank" ? "noopener noreferrer" : undefined);
+      const rel =
+        getStringAttr(mark.attrs ?? {}, "rel") ||
+        (target === "_blank" ? "noopener noreferrer" : undefined);
 
       result = (
         <a
@@ -675,7 +767,7 @@ function applyTiptapMarks(
           href={href}
           target={target}
           rel={rel}
-          className="break-words underline text-blue-700"
+          className="break-words text-blue-700 underline"
         >
           {result}
         </a>
@@ -711,7 +803,9 @@ function extractPlainText(nodes: TiptapNode[]): string {
   return text;
 }
 
-function getTextAlignStyle(attrs: Record<string, unknown>): CSSProperties | undefined {
+function getTextAlignStyle(
+  attrs: Record<string, unknown>
+): CSSProperties | undefined {
   const textAlign = getStringAttr(attrs, "textAlign");
 
   if (
@@ -727,28 +821,19 @@ function getTextAlignStyle(attrs: Record<string, unknown>): CSSProperties | unde
 }
 
 function normalizeHeadingLevel(level: unknown): number {
-  if (typeof level !== "number") {
-    return 2;
-  }
-
-  if (level < 1) {
-    return 1;
-  }
-
-  if (level > 6) {
-    return 6;
-  }
-
+  if (typeof level !== "number") return 2;
+  if (level < 1) return 1;
+  if (level > 6) return 6;
   return level;
 }
 
-function getHeadingClass(level: number): string {
-  if (level === 1) return "mt-6 text-3xl font-bold text-slate-900 md:text-4xl";
-  if (level === 2) return "mt-6 text-2xl font-bold text-slate-900 md:text-3xl";
-  if (level === 3) return "mt-6 text-xl font-bold text-slate-900 md:text-2xl";
-  if (level === 4) return "mt-6 text-lg font-bold text-slate-900 md:text-xl";
-  if (level === 5) return "mt-6 text-base font-bold text-slate-900 md:text-lg";
-  return "mt-6 text-sm font-bold text-slate-900 md:text-base";
+function getHeadingClass(level: number, titleFontClass: string): string {
+  if (level === 1) return `mt-6 text-slate-900 ${titleFontClass}`;
+  if (level === 2) return `mt-6 text-slate-900 ${titleFontClass}`;
+  if (level === 3) return `mt-6 text-slate-900 ${titleFontClass}`;
+  if (level === 4) return `mt-6 text-xl text-slate-900 ${titleFontClass}`;
+  if (level === 5) return `mt-6 text-lg text-slate-900 ${titleFontClass}`;
+  return `mt-6 text-base text-slate-900 ${titleFontClass}`;
 }
 
 function getStringAttr(attrs: Record<string, unknown>, key: string): string {
@@ -757,24 +842,16 @@ function getStringAttr(attrs: Record<string, unknown>, key: string): string {
 }
 
 function normalizeVideoUrl(url: string): string {
-  if (!url) {
-    return "";
-  }
+  if (!url) return "";
 
   if (url.includes("youtube.com/watch")) {
     const value = extractQueryParam(url, "v");
-
-    if (value) {
-      return `https://www.youtube.com/embed/${value}`;
-    }
+    if (value) return `https://www.youtube.com/embed/${value}`;
   }
 
   if (url.includes("youtu.be/")) {
     const value = url.split("youtu.be/")[1]?.split(/[?&/]/)[0] ?? "";
-
-    if (value) {
-      return `https://www.youtube.com/embed/${value}`;
-    }
+    if (value) return `https://www.youtube.com/embed/${value}`;
   }
 
   return url;
@@ -812,9 +889,21 @@ function Donut({
   const offset = circumference * (1 - clamped / 100);
 
   return (
-    <div className="relative inline-flex items-center justify-center shrink-0">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
-        <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#E7EDF3" strokeWidth={stroke} />
+    <div className="relative inline-flex shrink-0 items-center justify-center">
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className="block"
+      >
+        <circle
+          cx={cx}
+          cy={cy}
+          r={radius}
+          fill="none"
+          stroke="#E7EDF3"
+          strokeWidth={stroke}
+        />
         <circle
           cx={cx}
           cy={cy}
@@ -830,7 +919,9 @@ function Donut({
       </svg>
 
       <div className="absolute text-center">
-        <div className="text-base font-extrabold text-slate-900">{clamped}%</div>
+        <div className="text-base text-slate-900" style={{ fontWeight: 600 }}>
+          {clamped}%
+        </div>
       </div>
     </div>
   );
@@ -886,11 +977,12 @@ function MiniBarChart({
       <svg
         viewBox={`0 0 ${chartW} ${chartH}`}
         preserveAspectRatio="xMidYMid meet"
-        className="w-full h-auto"
+        className="h-auto w-full"
         aria-label="Issues and responses bar chart"
       >
         {yTicks.map((tick) => {
           const y = padding.top + innerH - (tick / max) * innerH;
+
           return (
             <g key={tick}>
               <line
@@ -930,7 +1022,14 @@ function MiniBarChart({
 
           return (
             <g key={item.label}>
-              <rect x={x} y={y} width={barW} height={height} rx="4" fill={item.color} />
+              <rect
+                x={x}
+                y={y}
+                width={barW}
+                height={height}
+                rx="4"
+                fill={item.color}
+              />
               <text
                 x={x + barW / 2}
                 y={chartH - 15}
@@ -952,11 +1051,17 @@ export default function MandateScopePage({
   pageSlug = DEFAULT_PAGE_SLUG,
 }: MandateScopePageProps) {
   const { language } = useLanguage();
-  const lang = (language as Lang) ?? "en";
+
+  const lang = normalizeLang(language);
   const isKh = lang === "kh";
   const apiLang: ApiLang = isKh ? "km" : "en";
 
-  const [mandateContent, setMandateContent] = useState<MandateContent | null>(null);
+  const titleFontClass = getTitleFontClass(isKh);
+  const bodyFontClass = getBodyFontClass(isKh);
+  const mainTitleFontClass = getMainTitleFontClass(isKh);
+
+  const [mandateContent, setMandateContent] =
+    useState<MandateContent | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -965,6 +1070,7 @@ export default function MandateScopePage({
     async function loadMandate() {
       try {
         setLoading(true);
+
         const response = await fetch(
           `/api/working-groups-page/section?slug=${encodeURIComponent(pageSlug)}`,
           {
@@ -1046,7 +1152,9 @@ export default function MandateScopePage({
           },
         },
       ];
+
   const progressValue = mandateContent?.progress ?? 0;
+
   const issueCounts = mandateContent?.issueCounts ?? {
     resolved: 0,
     inProgress: 0,
@@ -1058,35 +1166,38 @@ export default function MandateScopePage({
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-4 lg:py-16">
         <header className="mb-12">
           <h1
-            className={`text-4xl font-black tracking-tight text-slate-900 md:text-5xl lg:text-6xl ${
-              isKh ? "khmer-font" : ""
-            }`}
+            className={`tracking-tight text-slate-900 ${titleFontClass}`}
+            style={{ fontWeight: 600 }}
           >
             {t.title1}{" "}
             <span className="relative inline-block">
               {t.title2}
-              <span className="absolute -bottom-1 left-0 h-[4px] md:h-[6px] w-full rounded-full bg-orange-400" />
+              <span className="absolute -bottom-1 left-0 h-[4px] w-full rounded-full bg-orange-400 md:h-[6px]" />
             </span>
           </h1>
         </header>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start">
           <section className="lg:col-span-7">
-            <div className="rounded-[40px] border border-slate-100 bg-white p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <div className="rounded-[40px] border border-slate-100 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:p-12">
               <div className="space-y-12">
                 {sections.map((section, index) => {
-                  const titleClass =
-                    isKh || containsKhmer(section.title) ? "khmer-font" : "";
-                  const descriptionClass =
+                  const sectionTitleFontClass =
+                    isKh || containsKhmer(section.title)
+                      ? "main-title-km khmer-font"
+                      : "main-title-en airbnb-font";
+
+                  const sectionBodyFontClass =
                     isKh || containsKhmer(section.description.text)
-                      ? "khmer-font"
-                      : "";
+                      ? "body-km khmer-font"
+                      : "body-en airbnb-font";
 
                   return (
                     <div key={`${section.title}-${index}`}>
                       {section.title ? (
                         <h2
-                          className={`text-2xl font-bold text-slate-900 md:text-3xl ${titleClass}`}
+                          className={`text-slate-900 ${sectionTitleFontClass}`}
+                          style={{ fontWeight: 600 }}
                         >
                           {section.title}
                         </h2>
@@ -1095,12 +1206,13 @@ export default function MandateScopePage({
                       {section.description.doc ? (
                         <MandateRichText
                           doc={section.description.doc}
-                          isKh={isKh}
-                          text={section.description.text}
+                          bodyFontClass={sectionBodyFontClass}
+                          titleFontClass={sectionTitleFontClass}
                         />
                       ) : (
                         <p
-                          className={`mt-5 whitespace-pre-line text-base leading-relaxed text-slate-500 md:text-lg ${descriptionClass}`}
+                          className={`mt-5 whitespace-pre-line text-slate-500 ${sectionBodyFontClass}`}
+                          style={{ fontWeight: 400 }}
                         >
                           {section.description.text}
                         </p>
@@ -1108,32 +1220,35 @@ export default function MandateScopePage({
                     </div>
                   );
                 })}
-                {/*<div className="pt-4">*/}
-                {/*  <Link*/}
-                {/*    href="/contact-us"*/}
-                {/*    className={`inline-flex h-14 items-center rounded-2xl bg-[#0F3D5E] px-10 text-lg font-bold text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] ${*/}
-                {/*      isKh ? "khmer-font" : ""*/}
-                {/*    }`}*/}
-                {/*  >*/}
-                {/*    {t.submit}*/}
-                {/*  </Link>*/}
-                {/*</div>*/}
               </div>
             </div>
           </section>
 
-          <aside className="lg:col-span-5 flex flex-col gap-10">
+          <aside className="flex flex-col gap-10 lg:col-span-5">
             <div className="rounded-[40px] bg-[#F8FAFC] p-8 md:p-10">
-              <h2 className={`text-2xl font-bold text-slate-900 ${isKh ? "khmer-font" : ""}`}>{t.progress}</h2>
+              <h2
+                className={`text-slate-900 ${mainTitleFontClass}`}
+                style={{ fontWeight: 600 }}
+              >
+                {t.progress}
+              </h2>
 
               <div className="mt-8 flex items-center gap-8">
                 <Donut value={progressValue} />
+
                 <div className="flex flex-col">
-                  <span className="text-4xl font-black text-[#0F3D5E]">{progressValue}%</span>
                   <span
-                    className={`text-slate-500 font-semibold uppercase tracking-wider text-sm ${
-                      isKh ? "khmer-font normal-case" : ""
+                    className={`text-[#0F3D5E] ${mainTitleFontClass}`}
+                    style={{ fontWeight: 600 }}
+                  >
+                    {progressValue}%
+                  </span>
+
+                  <span
+                    className={`text-slate-500 uppercase tracking-wider ${bodyFontClass} ${
+                      isKh ? "normal-case" : ""
                     }`}
+                    style={{ fontWeight: 600 }}
                   >
                     {t.resolution}
                   </span>
@@ -1142,7 +1257,13 @@ export default function MandateScopePage({
             </div>
 
             <div className="px-2">
-              <h2 className={`mb-6 text-2xl font-bold text-slate-900 ${isKh ? "khmer-font" : ""}`}>{t.issues}</h2>
+              <h2
+                className={`mb-6 text-slate-900 ${mainTitleFontClass}`}
+                style={{ fontWeight: 600 }}
+              >
+                {t.issues}
+              </h2>
+
               <div className="rounded-[30px] border border-slate-100 bg-white p-6 shadow-sm">
                 <MiniBarChart lang={lang} counts={issueCounts} />
               </div>
@@ -1151,7 +1272,10 @@ export default function MandateScopePage({
         </div>
 
         {loading ? (
-          <p className={`mt-4 text-sm text-slate-500 ${isKh ? "khmer-font" : ""}`}>
+          <p
+            className={`mt-4 text-slate-500 ${bodyFontClass}`}
+            style={{ fontWeight: 400 }}
+          >
             {isKh ? "កំពុងទាញទិន្នន័យ..." : "Loading data..."}
           </p>
         ) : null}

@@ -70,9 +70,10 @@ function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
 
 function pickTemplateContent(
   response: WgTemplateResponse,
-  apiLang: ApiLang
+  apiLang: ApiLang,
 ): WgTemplateContent | null {
   const blocks = response.data?.blocks ?? [];
+
   const block =
     blocks.find((item) => item.enabled !== false && item.type === "wg_template") ??
     blocks.find((item) => item.enabled !== false);
@@ -133,13 +134,16 @@ function mapIssueRows(response: WgTemplateResponse, apiLang: ApiLang): IssueRow[
 }
 
 function StatusPill({ status, lang }: { status: Status; lang: Lang }) {
+  const isKh = lang === "kh";
+  const bodyFontClass = isKh ? "body-km" : "body-en";
+
   const label =
     lang === "kh"
       ? status === "Resolved"
         ? "ដោះស្រាយរួច"
         : status === "In Progress"
-        ? "កំពុងដំណើរការ"
-        : "កំពុងរង់ចាំ"
+          ? "កំពុងដំណើរការ"
+          : "កំពុងរង់ចាំ"
       : status;
 
   const styles: Record<Status, string> = {
@@ -151,7 +155,8 @@ function StatusPill({ status, lang }: { status: Status; lang: Lang }) {
   return (
     <span
       className={[
-        "inline-flex h-10 w-full md:w-auto md:min-w-[170px] items-center justify-center rounded-full px-6 text-sm font-semibold",
+        "inline-flex h-10 w-full items-center justify-center rounded-full px-6 !font-semibold md:w-auto md:min-w-[170px]",
+        bodyFontClass,
         styles[status],
       ].join(" ")}
     >
@@ -169,19 +174,32 @@ function IssueLinkButton({
   label: string;
   isKh: boolean;
 }) {
+  const bodyFontClass = isKh ? "body-km" : "body-en";
+
   const buttonClass = [
-    "inline-flex h-10 w-full md:w-auto items-center justify-center rounded-full bg-[#0F3D5E] px-8 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-[0.99]",
-    isKh ? "khmer-font" : "",
+    "inline-flex h-10 w-full items-center justify-center rounded-full bg-[#0F3D5E] px-8 !font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-[0.99] md:w-auto",
+    bodyFontClass,
+  ].join(" ");
+
+  const disabledClass = [
+    "inline-flex h-10 w-full items-center justify-center rounded-full bg-slate-300 px-8 !font-semibold text-white md:w-auto",
+    bodyFontClass,
   ].join(" ");
 
   if (!href || href === "#") {
-    return <span className="inline-flex h-10 w-full md:w-auto items-center justify-center rounded-full bg-slate-300 px-8 text-sm font-semibold text-white">{label}</span>;
+    return <span className={disabledClass}>{label}</span>;
   }
 
   const isExternal = href.startsWith("http://") || href.startsWith("https://");
+
   if (isExternal) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={buttonClass}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={buttonClass}
+      >
         {label}
       </a>
     );
@@ -202,6 +220,9 @@ export default function RecentIssuesPage({
   const isKh = lang === "kh";
   const apiLang: ApiLang = isKh ? "km" : "en";
 
+  const titleFontClass = isKh ? "title-km" : "title-en";
+  const bodyFontClass = isKh ? "body-km" : "body-en";
+
   const [rows, setRows] = useState<IssueRow[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -211,12 +232,13 @@ export default function RecentIssuesPage({
     async function loadIssues() {
       try {
         setLoading(true);
+
         const response = await fetch(
           `/api/working-groups-page/section?slug=${encodeURIComponent(pageSlug)}`,
           {
             cache: "no-store",
             signal: controller.signal,
-          }
+          },
         );
 
         if (!response.ok) {
@@ -271,30 +293,25 @@ export default function RecentIssuesPage({
     <main className="bg-white px-4 py-10 sm:px-6 md:px-10 lg:px-14">
       <div className="mx-auto w-full max-w-7xl px-4">
         <header className="mb-8 md:mb-10">
-          <h1
-            className={`text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl md:text-5xl ${
-              isKh ? "khmer-font" : ""
-            }`}
-          >
+          <h1 className={`tracking-tight text-slate-950 ${titleFontClass}`}>
             {t.title1}{" "}
             <span className="relative inline-block">
               {t.title2}
               <span className="absolute -bottom-2 left-0 h-[5px] w-2/3 rounded-full bg-orange-400 md:w-full" />
             </span>
           </h1>
+
           {loading ? (
-            <p className={`mt-3 text-sm text-slate-500 ${isKh ? "khmer-font" : ""}`}>
+            <p className={`mt-3 text-slate-500 ${bodyFontClass}`}>
               {isKh ? "កំពុងទាញទិន្នន័យ..." : "Loading data..."}
             </p>
           ) : null}
         </header>
 
-        <section className="rounded-[22px] sm:rounded-[28px] border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="hidden md:block bg-slate-50 px-6 py-6 md:px-10">
+        <section className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm sm:rounded-[28px]">
+          <div className="hidden bg-slate-50 px-6 py-6 md:block md:px-10">
             <div
-              className={`grid grid-cols-12 items-center text-sm font-bold text-slate-900 ${
-                isKh ? "khmer-font" : ""
-              }`}
+              className={`grid grid-cols-12 items-center text-slate-900 ${bodyFontClass} !font-bold`}
             >
               <div className="col-span-6">{t.issueTheme}</div>
               <div className="col-span-3 text-center">{t.status}</div>
@@ -305,7 +322,7 @@ export default function RecentIssuesPage({
 
           <div className="px-4 py-4 sm:px-6 md:px-10 md:py-6">
             {rows.length === 0 ? (
-              <p className={`py-6 text-center text-slate-500 ${isKh ? "khmer-font" : ""}`}>
+              <p className={`py-6 text-center text-slate-500 ${bodyFontClass}`}>
                 {t.empty}
               </p>
             ) : (
@@ -313,40 +330,51 @@ export default function RecentIssuesPage({
                 {rows.map((row) => (
                   <div
                     key={row.id}
-                    className="py-5 md:py-6 grid gap-4 grid-cols-1 md:grid-cols-12 md:items-center"
+                    className="grid grid-cols-1 gap-4 py-5 md:grid-cols-12 md:items-center md:py-6"
                   >
                     <div className="md:col-span-6">
                       <div
-                        className={`text-base font-semibold text-slate-800 ${
-                          isKh ? "khmer-font" : ""
-                        }`}
+                        className={`line-clamp-2 text-slate-800 ${bodyFontClass} !font-semibold`}
                       >
                         {row.title}
                       </div>
 
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 md:hidden">
-                        <span className={`rounded-full bg-slate-100 px-3 py-1 ${isKh ? "khmer-font" : ""}`}>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-slate-500 md:hidden">
+                        <span
+                          className={`rounded-full bg-slate-100 px-3 py-1 ${bodyFontClass}`}
+                        >
                           {t.lastUpdateMobile}{" "}
-                          <span className="font-semibold text-slate-700">{row.lastUpdate}</span>
+                          <span className="!font-semibold text-slate-700">
+                            {row.lastUpdate}
+                          </span>
                         </span>
                       </div>
                     </div>
 
                     <div className="md:col-span-3 md:text-center">
-                      <div className={`mb-2 text-xs font-semibold text-slate-500 md:hidden ${isKh ? "khmer-font" : ""}`}>
+                      <div
+                        className={`mb-2 text-slate-500 md:hidden ${bodyFontClass} !font-semibold`}
+                      >
                         {t.status}
                       </div>
+
                       <StatusPill status={row.status} lang={lang} />
                     </div>
 
-                    <div className="hidden md:block md:col-span-2 md:text-center">
-                      <span className="text-sm font-semibold text-slate-700">
+                    <div className="hidden md:col-span-2 md:block md:text-center">
+                      <span
+                        className={`text-slate-700 ${bodyFontClass} !font-semibold`}
+                      >
                         {row.lastUpdate}
                       </span>
                     </div>
 
                     <div className="md:col-span-1 md:text-right">
-                      <IssueLinkButton href={row.href} label={t.view} isKh={isKh} />
+                      <IssueLinkButton
+                        href={row.href}
+                        label={t.view}
+                        isKh={isKh}
+                      />
                     </div>
                   </div>
                 ))}

@@ -45,7 +45,9 @@ const CACHE_KEY = "about-how-it-works-blocks-cache";
 
 function pickText(obj: I18n | undefined, lang: ApiLang, fallback = "") {
     if (!obj) return fallback;
+
     const primary = lang === "km" ? obj.km : obj.en;
+
     return primary || obj.en || obj.km || fallback;
 }
 
@@ -59,8 +61,11 @@ function splitLines(s: string) {
 function readCache(): Block[] {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
+
         if (!raw) return [];
+
         const parsed = JSON.parse(raw);
+
         return Array.isArray(parsed) ? parsed : [];
     } catch {
         return [];
@@ -79,7 +84,7 @@ function WorkCardSkeleton({ dark = false }: { dark?: boolean }) {
     return (
         <div
             className={[
-                "relative overflow-hidden",
+                "relative h-full overflow-hidden",
                 "min-h-[220px] md:min-h-[260px]",
                 "rounded-tl-[70px] rounded-br-[70px] rounded-tr-none rounded-bl-none",
                 "md:rounded-tl-[90px] md:rounded-br-[90px]",
@@ -89,20 +94,30 @@ function WorkCardSkeleton({ dark = false }: { dark?: boolean }) {
                     : "bg-white text-gray-900 shadow-[0_18px_35px_rgba(0,0,0,0.25)]",
             ].join(" ")}
         >
-            <div className="absolute right-0 top-0 h-full w-20 md:w-24 bg-white/0" />
+            <div className="absolute right-0 top-0 h-full w-20 bg-white/0 md:w-24" />
+
             <div className="w-full">
                 <div
-                    className={`h-8 w-2/3 mx-auto rounded ${dark ? "bg-white/15" : "bg-slate-200"}`}
+                    className={`mx-auto h-8 w-2/3 rounded ${
+                        dark ? "bg-white/15" : "bg-slate-200"
+                    }`}
                 />
+
                 <div className="mt-4 space-y-2">
                     <div
-                        className={`h-5 w-3/4 mx-auto rounded ${dark ? "bg-white/15" : "bg-slate-200"}`}
+                        className={`mx-auto h-5 w-3/4 rounded ${
+                            dark ? "bg-white/15" : "bg-slate-200"
+                        }`}
                     />
                     <div
-                        className={`h-5 w-2/3 mx-auto rounded ${dark ? "bg-white/15" : "bg-slate-200"}`}
+                        className={`mx-auto h-5 w-2/3 rounded ${
+                            dark ? "bg-white/15" : "bg-slate-200"
+                        }`}
                     />
                     <div
-                        className={`h-5 w-1/2 mx-auto rounded ${dark ? "bg-white/15" : "bg-slate-200"}`}
+                        className={`mx-auto h-5 w-1/2 rounded ${
+                            dark ? "bg-white/15" : "bg-slate-200"
+                        }`}
                     />
                 </div>
             </div>
@@ -112,18 +127,25 @@ function WorkCardSkeleton({ dark = false }: { dark?: boolean }) {
 
 export default function Works() {
     const { language } = useLanguage();
-    const uiLang: UiLang = (language as UiLang) || "en";
+
+    const uiLang: UiLang = language === "kh" ? "kh" : "en";
     const apiLang: ApiLang = uiLang === "kh" ? "km" : "en";
+    const isKh = uiLang === "kh";
 
     const [mounted, setMounted] = useState(false);
     const [blocks, setBlocks] = useState<Block[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const titleFontClass = isKh ? "title-km" : "title-en";
+    const mainTitleFontClass = isKh ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKh ? "body-km" : "body-en";
+
     useEffect(() => {
         setMounted(true);
 
         const cached = readCache();
+
         if (cached.length > 0) {
             setBlocks(cached);
             setLoading(false);
@@ -141,12 +163,15 @@ export default function Works() {
                 });
 
                 const ct = res.headers.get("content-type") || "";
+
                 if (!ct.includes("application/json")) {
                     const text = await res.text();
+
                     throw new Error(`Expected JSON, got: ${text.slice(0, 80)}...`);
                 }
 
                 const json: ApiResponse = await res.json();
+
                 if (!alive) return;
 
                 if (!res.ok || !json?.success) {
@@ -154,14 +179,16 @@ export default function Works() {
                 }
 
                 const nextBlocks = json?.data?.blocks || [];
+
                 setBlocks(nextBlocks);
                 writeCache(nextBlocks);
             } catch (e: any) {
                 if (!alive) return;
+
                 setError(e?.message || "Failed to load data");
-                // keep cached blocks, do not clear state
             } finally {
                 if (!alive) return;
+
                 setLoading(false);
             }
         }
@@ -210,25 +237,25 @@ export default function Works() {
 
     return (
         <section className="bg-white py-16 md:py-4">
-            <div className="max-w-7xl mx-auto px-4">
+            <div className="mx-auto max-w-7xl px-4">
                 {showErrorOnly && (
-                    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                    <div
+                        className={`
+                            mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700
+                            ${bodyFontClass}
+                        `}
+                    >
                         {error}
                     </div>
                 )}
 
-                {/* Title */}
-                <h2
-                    className={`text-4xl md:text-5xl font-bold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
-                        }`}
-                >
+                <h2 className={`text-gray-900 ${titleFontClass}`}>
                     {title}
                 </h2>
 
-                <div className="mt-6 w-58 md:w-50 h-1.5 bg-orange-500 sm:translate-x-2 md:translate-x-48" />
+                <div className="mt-6 h-1.5 w-58 bg-orange-500 sm:translate-x-2 md:w-50 md:translate-x-25" />
 
-                {/* Cards */}
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div className="mt-12 grid grid-cols-1 items-stretch gap-10 md:grid-cols-3">
                     {showSkeleton ? (
                         <>
                             <WorkCardSkeleton dark />
@@ -236,18 +263,18 @@ export default function Works() {
                             <WorkCardSkeleton />
                         </>
                     ) : cards.length === 0 ? (
-                        <p className={`text-gray-500 ${uiLang === "kh" ? "khmer-font" : ""}`}>
+                        <p className={`text-gray-500 ${bodyFontClass}`}>
                             {uiLang === "kh" ? "មិនមានទិន្នន័យ" : "No data"}
                         </p>
                     ) : (
-                        cards.map((c, i) => {
-                            const isDark = c.variant === "dark";
+                        cards.map((card, index) => {
+                            const isDark = card.variant === "dark";
 
                             return (
                                 <div
-                                    key={i}
+                                    key={index}
                                     className={[
-                                        "relative overflow-hidden",
+                                        "relative h-full overflow-hidden",
                                         "min-h-[220px] md:min-h-[260px]",
                                         "rounded-tl-[70px] rounded-br-[70px] rounded-tr-none rounded-bl-none",
                                         "md:rounded-tl-[90px] md:rounded-br-[90px]",
@@ -257,29 +284,27 @@ export default function Works() {
                                             : "bg-white text-gray-900 shadow-[0_18px_35px_rgba(0,0,0,0.25)]",
                                     ].join(" ")}
                                 >
-                                    <div className="absolute right-0 top-0 h-full w-20 md:w-24 bg-white/0" />
+                                    <div className="absolute right-0 top-0 h-full w-20 bg-white/0 md:w-24" />
 
-                                    <div>
+                                    <div className="flex h-full w-full flex-col items-center justify-center">
                                         <h3
                                             className={[
-                                                "font-bold",
-                                                "text-xl md:text-2xl",
+                                                mainTitleFontClass,
+                                                "!whitespace-normal !overflow-visible !text-clip",
                                                 isDark ? "text-white" : "text-gray-800",
-                                                uiLang === "kh" ? "khmer-font" : "",
                                             ].join(" ")}
                                         >
-                                            {c.title}
+                                            {card.title}
                                         </h3>
 
                                         <div
                                             className={[
                                                 "mt-4 space-y-1",
+                                                bodyFontClass,
                                                 isDark ? "text-white/90" : "text-gray-700",
-                                                "text-base md:text-lg",
-                                                uiLang === "kh" ? "khmer-font" : "",
                                             ].join(" ")}
                                         >
-                                            {c.lines.map((line, idx) => (
+                                            {card.lines.map((line, idx) => (
                                                 <p key={idx}>{line}</p>
                                             ))}
                                         </div>

@@ -56,32 +56,31 @@ function pickText(i18n: I18n | null | undefined, lang: UiLang, fallback = "") {
     return (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || fallback;
 }
 
-function pickThumbnail(p: ApiPost) {
+function pickThumbnail(post: ApiPost) {
     return (
-        p.documentThumbnail ||
-        p.documents?.en?.thumbnailUrl ||
-        p.documents?.km?.thumbnailUrl ||
+        post.documentThumbnail ||
+        post.documents?.en?.thumbnailUrl ||
+        post.documents?.km?.thumbnailUrl ||
         ""
     );
 }
 
-function pickDocUrl(p: ApiPost) {
-    return p.document || p.documents?.en?.url || p.documents?.km?.url || "";
+function pickDocUrl(post: ApiPost) {
+    return post.document || post.documents?.en?.url || post.documents?.km?.url || "";
 }
 
 function getPostListBlock(json: ApiResponse): ApiBlock | null {
     const blocks = json?.data?.blocks ?? [];
+
     return (
-        // Pick the Policy Documents block from the CMS section config.
-        // This uses the category id set on the block instead of hardcoded titles.
         blocks.find(
-            (b) =>
-                b.enabled !== false &&
-                b.type === "post_list" &&
-                b.settings?.categoryIds?.includes(6)
+            (block) =>
+                block.enabled !== false &&
+                block.type === "post_list" &&
+                block.settings?.categoryIds?.includes(6)
         ) ||
-        blocks.find((b) => b.enabled && b.type === "post_list") ||
-        blocks.find((b) => b.type === "post_list") ||
+        blocks.find((block) => block.enabled && block.type === "post_list") ||
+        blocks.find((block) => block.type === "post_list") ||
         null
     );
 }
@@ -108,17 +107,22 @@ function writeCachedBlock(block: ApiBlock | null) {
 
 export default function PolicyDocuments() {
     const { language, fontClass } = useLanguage();
-    const uiLang: UiLang = language === "kh" ? "kh" : "en";
+
+    const uiLang: UiLang =
+        String(language) === "kh" || String(language) === "km" ? "kh" : "en";
+
+    const isKh = uiLang === "kh";
+
     const [block, setBlock] = useState<ApiBlock | null>(null);
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
     const [mounted, setMounted] = useState(false);
-    const isKh = uiLang === "kh";
 
     useEffect(() => {
         setMounted(true);
 
         const cached = readCachedBlock();
+
         if (cached) {
             setBlock(cached);
             setLoading(false);
@@ -146,9 +150,9 @@ export default function PolicyDocuments() {
                     setBlock(postList);
                     writeCachedBlock(postList);
                 }
-            } catch (e: any) {
+            } catch (error: any) {
                 if (!alive) return;
-                setErr(e?.message || "Failed to load policy documents");
+                setErr(error?.message || "Failed to load policy documents");
             } finally {
                 if (alive) setLoading(false);
             }
@@ -163,45 +167,44 @@ export default function PolicyDocuments() {
 
     const posts = useMemo(() => {
         const list = block?.posts ?? [];
+
         return [...list].sort((a, b) => {
-            const ta = new Date(a.createdAt || 0).getTime();
-            const tb = new Date(b.createdAt || 0).getTime();
-            return tb - ta;
+            const firstDate = new Date(a.createdAt || 0).getTime();
+            const secondDate = new Date(b.createdAt || 0).getTime();
+
+            return secondDate - firstDate;
         });
     }, [block]);
 
-    // Use the title and description from the CMS block in the current language.
     const headerTitle = pickText(block?.title, uiLang, "Policy Documents");
     const headerDesc = pickText(block?.description, uiLang, "");
-    const headerTitleClass = isKh || containsKhmer(headerTitle) ? "khmer-font" : "";
-    const headerDescClass = isKh || containsKhmer(headerDesc) ? "khmer-font" : "";
+
+    const sectionMainTitleClass = isKh ? "main-title-km" : "main-title-en";
+    const sectionTitleClass =
+        isKh || containsKhmer(headerTitle) ? "title-km" : "title-en";
+    const sectionBodyClass =
+        isKh || containsKhmer(headerDesc) ? "body-km" : "body-en";
 
     const showSkeleton = !mounted || (loading && !block);
     const showEmpty = !showSkeleton && !err && posts.length === 0;
     const showErrorOnly = !showSkeleton && !block && !!err;
 
     return (
-        <section className={`relative bg-white overflow-hidden py-16 print:py-0 ${fontClass}`}>
+        <section className={`relative bg-white overflow-hidden py-16 print:py-0 ${fontClass || ""}`}>
             <div className="max-w-5xl mx-auto text-center px-4 mb-16 relative z-10 print:mb-6 print:text-left print:max-w-none">
-                <p
-                    className={`text-gray-900 font-bold text-3xl md:text-4xl mb-1 print:text-xl print:mb-1 ${
-                        isKh ? "khmer-font" : ""
-                    }`}
-                >
-                    {/* Show the Khmer section heading when the site language is Khmer. */}
+                {/* Main title */}
+                <p className={`text-gray-900 mb-1 ${sectionMainTitleClass}`}>
                     {isKh ? "គោលនយោបាយ និងក្របខ័ណ្ឌ" : "Core Policies & Frameworks"}
                 </p>
 
-                <h2
-                    className={`text-[#1a2b4b] text-4xl md:text-5xl font-semibold mb-4 print:text-2xl print:mb-2 ${headerTitleClass}`}
-                >
+                {/* Title */}
+                <h2 className={`text-[#1a2b4b] mb-4 ${sectionTitleClass}`}>
                     {headerTitle}
                 </h2>
 
+                {/* Body */}
                 {headerDesc ? (
-                    <p
-                        className={`text-gray-900 font-semibold text-xl md:text-2xl print:text-sm print:font-normal ${headerDescClass}`}
-                    >
+                    <p className={`text-gray-900 font-semibold max-w-5xl mx-auto ${sectionBodyClass}`}>
                         {headerDesc}
                     </p>
                 ) : null}
@@ -213,12 +216,13 @@ export default function PolicyDocuments() {
                 {showSkeleton ? (
                     <div className="print:hidden">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {Array.from({ length: 3 }).map((_, i) => (
+                            {Array.from({ length: 3 }).map((_, index) => (
                                 <div
-                                    key={i}
+                                    key={index}
                                     className="bg-[#e9ecef] flex flex-col shadow-xl min-h-[560px] animate-pulse overflow-hidden"
                                 >
                                     <div className="m-4 h-[300px] bg-[#dfe3e6] rounded-sm" />
+
                                     <div className="px-6 pb-8 pt-2 flex flex-col grow">
                                         <div className="h-4 w-24 bg-slate-200 rounded mb-4" />
                                         <div className="h-8 w-3/4 bg-slate-200 rounded mb-3" />
@@ -236,7 +240,7 @@ export default function PolicyDocuments() {
                     </div>
                 ) : showEmpty ? (
                     <div className="bg-white/70 rounded-xl p-8 text-center shadow print:shadow-none print:border print:rounded-none">
-                        <p className={`text-[#1a2b4b] font-semibold ${isKh ? "khmer-font" : ""}`}>
+                        <p className={`text-[#1a2b4b] font-semibold ${isKh ? "body-km" : "body-en"}`}>
                             {isKh ? "មិនមានឯកសារ" : "No documents found."}
                         </p>
                     </div>
@@ -247,8 +251,14 @@ export default function PolicyDocuments() {
                                 modules={[Pagination, Autoplay]}
                                 spaceBetween={30}
                                 slidesPerView={1}
-                                autoplay={{ delay: 5000, disableOnInteraction: false }}
-                                pagination={{ clickable: true, el: ".custom-pagination" }}
+                                autoplay={{
+                                    delay: 5000,
+                                    disableOnInteraction: false,
+                                }}
+                                pagination={{
+                                    clickable: true,
+                                    el: ".custom-pagination",
+                                }}
                                 breakpoints={{
                                     640: { slidesPerView: 1 },
                                     768: { slidesPerView: 2 },
@@ -256,15 +266,15 @@ export default function PolicyDocuments() {
                                 }}
                                 className="pb-20"
                             >
-                                {posts.map((p) => {
-                                    const thumb = pickThumbnail(p);
-                                    const title = pickText(p.title, uiLang, "Untitled");
-                                    const desc = pickText(p.description, uiLang, "");
-                                    const dateText = formatLocalizedDate(p.createdAt, uiLang);
-                                    const docUrl = pickDocUrl(p);
+                                {posts.map((post) => {
+                                    const thumb = pickThumbnail(post);
+                                    const title = pickText(post.title, uiLang, "Untitled");
+                                    const desc = pickText(post.description, uiLang, "");
+                                    const dateText = formatLocalizedDate(post.createdAt, uiLang);
+                                    const docUrl = pickDocUrl(post);
 
                                     return (
-                                        <SwiperSlide key={p.id} className="h-auto">
+                                        <SwiperSlide key={post.id} className="h-auto">
                                             <div className="h-full">
                                                 <Card
                                                     thumb={thumb}
@@ -285,24 +295,27 @@ export default function PolicyDocuments() {
                             <div className="mt-8 -mb-[30px] flex justify-center">
                                 <Link
                                     href="/publication/detail"
-                                    className="inline-flex items-center justify-center rounded-full bg-[#fb923c] px-6 py-2 text-sm font-semibold uppercase tracking-wider text-white shadow-md hover:opacity-90"
+                                    className={`inline-flex items-center justify-center rounded-full bg-[#fb923c] px-6 py-2 text-white shadow-md hover:opacity-90 ${
+                                        isKh ? "body-km normal-case" : "body-en uppercase"
+                                    }`}
                                 >
-                                    {isKh ? "មើលបន្ថែម" : "View More"} <span className="ml-2 text-lg">›</span>
+                                    {isKh ? "មើលបន្ថែម" : "View More"}
+                                    <span className="ml-2 text-lg">›</span>
                                 </Link>
                             </div>
                         </div>
 
                         <div className="hidden print:grid print:grid-cols-2 print:gap-3">
-                            {posts.map((p) => {
-                                const thumb = pickThumbnail(p);
-                                const title = pickText(p.title, uiLang, "Untitled");
-                                const desc = pickText(p.description, uiLang, "");
-                                const dateText = formatLocalizedDate(p.createdAt, uiLang);
-                                const docUrl = pickDocUrl(p);
+                            {posts.map((post) => {
+                                const thumb = pickThumbnail(post);
+                                const title = pickText(post.title, uiLang, "Untitled");
+                                const desc = pickText(post.description, uiLang, "");
+                                const dateText = formatLocalizedDate(post.createdAt, uiLang);
+                                const docUrl = pickDocUrl(post);
 
                                 return (
                                     <div
-                                        key={p.id}
+                                        key={post.id}
                                         className="border border-slate-300 p-3 break-inside-avoid"
                                     >
                                         <div className="text-[10pt] font-semibold text-slate-800">
@@ -311,7 +324,7 @@ export default function PolicyDocuments() {
 
                                         <div
                                             className={`mt-1 text-[11pt] font-bold text-[#1a2b4b] leading-snug ${
-                                                isKh ? "khmer-font normal-case" : "uppercase"
+                                                containsKhmer(title) ? "khmer-font normal-case" : "uppercase"
                                             }`}
                                         >
                                             {title}
@@ -330,7 +343,7 @@ export default function PolicyDocuments() {
                                         {desc ? (
                                             <div
                                                 className={`mt-2 text-[10pt] text-slate-700 leading-snug ${
-                                                    isKh ? "khmer-font" : ""
+                                                    containsKhmer(desc) ? "khmer-font" : ""
                                                 }`}
                                             >
                                                 {desc}
@@ -367,15 +380,15 @@ export default function PolicyDocuments() {
 
                             @media print {
                                 @page {
-                                size: A4;
-                                margin: 12mm;
+                                    size: A4;
+                                    margin: 12mm;
                                 }
 
                                 html,
                                 body {
-                                background: #fff !important;
-                                -webkit-print-color-adjust: exact;
-                                print-color-adjust: exact;
+                                    background: #fff !important;
+                                    -webkit-print-color-adjust: exact;
+                                    print-color-adjust: exact;
                                 }
                             }
                         `}</style>
@@ -401,8 +414,13 @@ function Card({
     docUrl: string;
     isKh: boolean;
 }) {
-    const titleClass = isKh || containsKhmer(title) ? "khmer-font normal-case" : "uppercase";
-    const descClass = isKh || containsKhmer(desc || title) ? "khmer-font" : "";
+    const isTitleKh = containsKhmer(title);
+    const isDescKh = containsKhmer(desc || title);
+
+    const cardTitleClass = isTitleKh ? "main-title-km" : "main-title-en";
+    const descClass = isDescKh ? "body-km" : "body-en";
+    const dateClass = isKh ? "body-km" : "body-en";
+    const actionClass = isKh ? "body-km normal-case" : "body-en uppercase";
 
     return (
         <div className="bg-[#e9ecef] flex flex-col shadow-xl h-full min-h-[560px] overflow-hidden">
@@ -418,7 +436,7 @@ function Card({
                     </div>
                 ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center px-6 text-center">
-                        <span className={`text-gray-500 font-medium text-lg ${isKh ? "khmer-font" : ""}`}>
+                        <span className={`text-gray-500 font-medium ${isKh ? "body-km" : "body-en"}`}>
                             {isKh ? "មិនមានរូបភាព" : "No thumbnail"}
                         </span>
                     </div>
@@ -426,17 +444,18 @@ function Card({
             </div>
 
             <div className="px-6 pb-8 pt-2 flex flex-col grow min-h-[220px]">
-                <span className={`text-[#1a2b4b] text-xs font-semibold mb-3 shrink-0 ${isKh ? "khmer-font" : ""}`}>
+                <span className={`text-[#1a2b4b] mb-3 shrink-0 ${dateClass}`}>
                     {dateText}
                 </span>
 
                 <h3
-                    className={`text-[#1a2b4b] text-2xl font-bold mb-3 line-clamp-1 leading-tight ${titleClass}`}
+                    className={`text-[#1a2b4b] mb-3 shrink-0 ${cardTitleClass}`}
+                    title={title}
                 >
                     {title}
                 </h3>
 
-                <p className={`text-gray-700 text-sm mb-4 line-clamp-3 min-h-[32x] ${descClass}`}>
+                <p className={`text-gray-700 mb-4 min-h-[32px] line-clamp-3 ${descClass}`}>
                     {desc || title}
                 </p>
 
@@ -446,18 +465,15 @@ function Card({
                             href={docUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:underline tracking-wider ${
-                                isKh ? "khmer-font normal-case" : "uppercase"
-                            }`}
+                            className={`text-[#1a2b4b] flex items-center hover:underline tracking-wider font-bold ${actionClass}`}
                         >
-                            {isKh ? "ទាញយក" : "Download"} <span className="ml-1 text-lg">›</span>
+                            {isKh ? "ទាញយក" : "Download"}
+                            <span className="ml-1 text-lg">›</span>
                         </a>
                     ) : (
                         <button
                             disabled
-                            className={`text-gray-400 text-xs font-bold flex items-center tracking-wider cursor-not-allowed ${
-                                isKh ? "khmer-font normal-case" : "uppercase"
-                            }`}
+                            className={`text-gray-400 flex items-center tracking-wider cursor-not-allowed font-bold ${actionClass}`}
                         >
                             {isKh ? "មិនមានឯកសារ" : "No document"}
                         </button>

@@ -41,16 +41,20 @@ function pickText(i18n: I18n | null | undefined, lang: UiLang) {
 
 function buildDetailHref(post: ApiPost): string {
     const slug = post.slug?.trim() || "";
+
     if (slug) {
         return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
     }
+
     return `/new-update/view-detail?id=${post.id}`;
 }
 
 function readCache(): ApiBlock | null {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
+
         if (!raw) return null;
+
         return JSON.parse(raw) as ApiBlock;
     } catch {
         return null;
@@ -59,10 +63,11 @@ function readCache(): ApiBlock | null {
 
 function writeCache(block: ApiBlock | null) {
     if (!block) return;
+
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(block));
     } catch {
-        //
+        // ignore cache error
     }
 }
 
@@ -113,48 +118,62 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
     isKhmer,
     href,
     disabled,
-}) => (
-    <div
-        className={`flex flex-col items-start gap-4 md:flex-row md:gap-10 ${
-            disabled ? "pointer-events-none" : ""
-        }`}
-    >
-        <div className="mt-6 flex-shrink-0 p-4 md:p-3">
-            <SafeBenefitImage src={icon} alt={title || "benefit"} />
+}) => {
+    const mainTitleFontClass = isKhmer ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
+    const buttonFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+
+    return (
+        <div
+            className={`flex flex-col items-start gap-4 md:flex-row md:gap-10 ${
+                disabled ? "pointer-events-none" : ""
+            }`}
+        >
+            <div className="mt-6 flex-shrink-0 p-4 md:p-3">
+                <SafeBenefitImage src={icon} alt={title || "benefit"} />
+            </div>
+
+            <div className="flex-1">
+                <h3
+                    className={`
+                        mb-2 text-gray-900
+                        !whitespace-normal !overflow-visible !text-clip
+                        ${mainTitleFontClass}
+                    `}
+                >
+                    {title}
+                </h3>
+
+                <p
+                    className={`
+                        mb-4 whitespace-pre-line text-gray-600
+                        ${bodyFontClass}
+                    `}
+                >
+                    {description}
+                </p>
+
+                <Link
+                    href={href}
+                    aria-disabled={disabled}
+                    tabIndex={disabled ? -1 : 0}
+                    className={`
+                        inline-flex rounded-full bg-[#1B1D4E] px-4 py-2
+                        font-semibold text-white transition hover:bg-[#03057f] sm:px-5
+                        ${buttonFontClass}
+                        ${disabled ? "opacity-60" : ""}
+                    `}
+                >
+                    {isKhmer ? "ស្វែងយល់បន្ថែម" : "Learn More"}
+                </Link>
+            </div>
         </div>
-
-        <div className="flex-1">
-            <h3
-                className={`mb-2 text-xl font-semibold text-gray-900 sm:text-2xl md:text-2xl ${
-                    isKhmer ? "khmer-font" : ""
-                }`}
-            >
-                {title}
-            </h3>
-
-            <p
-                className={`mb-4 whitespace-pre-line text-sm leading-relaxed text-gray-600 sm:text-base md:text-lg ${
-                    isKhmer ? "khmer-font" : ""
-                }`}
-            >
-                {description}
-            </p>
-
-            <Link
-                href={href}
-                aria-disabled={disabled}
-                tabIndex={disabled ? -1 : 0}
-                className={`inline-flex rounded-full bg-[#1B1D4E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#03057f] sm:px-5 sm:text-base ${
-                    isKhmer ? "khmer-font" : ""
-                } ${disabled ? "opacity-60" : ""}`}
-            >
-                {isKhmer ? "ស្វែងយល់បន្ថែម" : "Learn More"}
-            </Link>
-        </div>
-    </div>
-);
+    );
+};
 
 function BenefitCardSkeleton({ isKhmer }: { isKhmer: boolean }) {
+    const buttonFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+
     return (
         <div className="flex animate-pulse flex-col items-start gap-4 md:flex-row md:gap-10">
             <div className="mt-6 flex-shrink-0 p-4 md:p-3">
@@ -176,9 +195,11 @@ function BenefitCardSkeleton({ isKhmer }: { isKhmer: boolean }) {
                 <div className="mb-4 h-4 w-2/3 rounded bg-slate-200" />
 
                 <div
-                    className={`inline-flex rounded-full bg-[#1B1D4E] px-4 py-2 text-sm font-semibold text-white opacity-50 sm:px-5 sm:text-base ${
-                        isKhmer ? "khmer-font" : ""
-                    }`}
+                    className={`
+                        inline-flex rounded-full bg-[#1B1D4E] px-4 py-2
+                        font-semibold text-white opacity-50 sm:px-5
+                        ${buttonFontClass}
+                    `}
                 >
                     {isKhmer ? "ស្វែងយល់បន្ថែម" : "Learn More"}
                 </div>
@@ -188,9 +209,12 @@ function BenefitCardSkeleton({ isKhmer }: { isKhmer: boolean }) {
 }
 
 export default function Benefits() {
-    const { language, fontClass } = useLanguage();
+    const { language } = useLanguage();
     const uiLang = (language as UiLang) ?? "en";
     const isKhmer = uiLang === "kh";
+
+    const titleFontClass = isKhmer ? "title-km" : "title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
 
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -201,6 +225,7 @@ export default function Benefits() {
         setMounted(true);
 
         const cached = readCache();
+
         if (cached) {
             setBlock(cached);
             setLoading(false);
@@ -241,6 +266,7 @@ export default function Benefits() {
                 }
             } catch (err) {
                 if (!alive) return;
+
                 const message = err instanceof Error ? err.message : "Fetch failed";
                 setError(message);
             } finally {
@@ -273,23 +299,22 @@ export default function Benefits() {
     const showErrorOnly = !showSkeleton && !block && !!error;
 
     return (
-        <section className={`bg-white px-4 py-12 sm:px-8 md:px-16 md:py-16 lg:px-34 ${fontClass}`}>
+        <section className="bg-white px-4 py-12 sm:px-8 md:px-16 md:py-16 lg:px-34">
             <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
                 <div className="mb-32 sm:mb-25 md:mb-56">
-                    <h2
-                        className={`text-4xl font-bold leading-tight text-gray-900 md:text-5xl ${
-                            isKhmer ? "khmer-font" : ""
-                        }`}
-                    >
+                    <h2 className={`text-gray-900 ${titleFontClass}`}>
                         {heading.h || (isKhmer ? "អត្ថប្រយោជន៍ G-PSF" : "G-PSF Benefit")}
                     </h2>
 
                     <div className="relative mt-6 sm:mt-8">
                         <div className="absolute left-0 top-0 mb-4 h-1 w-20 rounded-full bg-orange-500 sm:left-4 sm:w-24 md:left-22 md:w-72" />
+
                         <p
-                            className={`absolute left-0 top-0 mt-6 text-sm leading-relaxed text-gray-700 sm:left-4 sm:text-base md:left-22 md:text-xl ${
-                                isKhmer ? "khmer-font" : ""
-                            }`}
+                            className={`
+                                absolute left-0 top-0 mt-6 text-gray-700
+                                sm:left-4 md:left-22
+                                ${bodyFontClass}
+                            `}
                         >
                             {heading.d}
                         </p>
@@ -307,18 +332,24 @@ export default function Benefits() {
                                 key={p.id}
                                 icon={p.coverImage}
                                 title={pickText(p.title, uiLang) || "\u00A0"}
-                                description={pickText(p.description ?? undefined, uiLang) || "\u00A0"}
+                                description={
+                                    pickText(p.description ?? undefined, uiLang) || "\u00A0"
+                                }
                                 isKhmer={isKhmer}
                                 href={buildDetailHref(p)}
                             />
                         ))
                     ) : (
-                        <p className="text-sm text-slate-600">
+                        <p className={`text-slate-600 ${bodyFontClass}`}>
                             {isKhmer ? "មិនមានទិន្នន័យ" : "No benefits found."}
                         </p>
                     )}
 
-                    {showErrorOnly && <p className="text-sm text-red-600">Failed: {error}</p>}
+                    {showErrorOnly && (
+                        <p className={`text-red-600 ${bodyFontClass}`}>
+                            Failed: {error}
+                        </p>
+                    )}
                 </div>
             </div>
         </section>

@@ -52,7 +52,6 @@ export default function PlenaryProcessFlow() {
     return (
         <section className="bg-[#efefef] py-10 md:py-12">
             <div className="mx-auto max-w-7xl px-4">
-                {/* Title */}
                 <h2
                     className={`text-center text-2xl md:text-3xl font-bold mb-10 ${
                         isKh ? "khmer-font" : ""
@@ -61,19 +60,16 @@ export default function PlenaryProcessFlow() {
                     {isKh ? "ឯកសារគតិយុត្ត" : "Legal Documents"}
                 </h2>
 
-                {/* Document Grid */}
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {documents.map((doc, index) => (
                         <div
                             key={index}
                             className="bg-white border border-slate-200 rounded-2xl shadow-md p-5 flex flex-col justify-between hover:shadow-lg transition"
                         >
-                            {/* Label */}
                             <span className="text-xl font-semibold text-indigo-600 mb-2">
                                 {doc.label}
                             </span>
 
-                            {/* Title */}
                             <p
                                 className={`text-lg text-gray-700 mb-6 leading-relaxed ${
                                     isKh ? "khmer-font" : ""
@@ -82,9 +78,7 @@ export default function PlenaryProcessFlow() {
                                 {isKh ? doc.titleKh : doc.titleEn}
                             </p>
 
-                            {/* Download Button */}
                             <div className="flex gap-3 mt-auto">
-                                {/* Download */}
                                 <a
                                     href={doc.file}
                                     download

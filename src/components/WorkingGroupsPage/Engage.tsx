@@ -40,17 +40,43 @@ type ApiResponse = {
 
 const CACHE_KEY = "working-groups-engage-blocks-cache";
 
+function normalizeLang(language: unknown): UiLang {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
 function pickText(obj: I18n | undefined, lang: ApiLang, fallback = "") {
     if (!obj) return fallback;
+
     const primary = lang === "km" ? obj.km : obj.en;
+
     return primary || obj.en || obj.km || fallback;
+}
+
+function toKhmerNumber(value: number, isKh: boolean) {
+    if (!isKh) return String(value);
+
+    return String(value).replace(
+        /\d/g,
+        (digit) => "០១២៣៤៥៦៧៨៩"[Number(digit)]
+    );
 }
 
 function readCache(): Block[] {
     try {
+        if (typeof window === "undefined") return [];
+
         const raw = localStorage.getItem(CACHE_KEY);
+
         if (!raw) return [];
+
         const parsed = JSON.parse(raw);
+
         return Array.isArray(parsed) ? parsed : [];
     } catch {
         return [];
@@ -59,33 +85,36 @@ function readCache(): Block[] {
 
 function writeCache(blocks: Block[]) {
     try {
+        if (typeof window === "undefined") return;
+
         localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
     } catch {
         // ignore cache error
     }
 }
 
-function EngageSkeleton({ isKh }: { isKh: boolean }) {
+function EngageSkeleton() {
     return (
-        <section className="bg-white mt-5 md:mt-10 lg:mt-14 py-8 md:py-10">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 animate-pulse">
-                <div className="h-10 w-64 rounded bg-slate-200 mb-8" />
-                <div className="mb-8 h-1.5 bg-orange-200 w-40 sm:w-52 rounded-full" />
+        <section className="mt-5 bg-white py-8 md:mt-10 md:py-10 lg:mt-14">
+            <div className="mx-auto max-w-7xl animate-pulse px-4 sm:px-6">
+                <div className="mb-8 h-10 w-64 rounded bg-slate-200" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div className="mb-8 h-1.5 w-40 rounded-full bg-orange-200 sm:w-52" />
+
+                <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
                     {Array.from({ length: 3 }).map((_, index) => (
                         <div
                             key={index}
-                            className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm h-full"
+                            className="h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
                         >
                             <div className="mb-3 flex items-start gap-3">
-                                <div className="h-8 w-8 rounded-full bg-orange-200 shrink-0" />
-                                <div className="h-6 w-36 rounded bg-slate-200 mt-1" />
+                                <div className="h-8 w-8 shrink-0 rounded-full bg-orange-200" />
+                                <div className="mt-1 h-6 w-36 rounded bg-slate-200" />
                             </div>
 
                             <div className="pl-11">
-                                <div className="h-4 w-full rounded bg-slate-200 mb-2" />
-                                <div className="h-4 w-5/6 rounded bg-slate-200 mb-2" />
+                                <div className="mb-2 h-4 w-full rounded bg-slate-200" />
+                                <div className="mb-2 h-4 w-5/6 rounded bg-slate-200" />
                                 <div className="h-4 w-4/6 rounded bg-slate-200" />
                             </div>
                         </div>
@@ -98,7 +127,8 @@ function EngageSkeleton({ isKh }: { isKh: boolean }) {
 
 export default function Engage() {
     const { language } = useLanguage();
-    const uiLang: UiLang = (language as UiLang) || "en";
+
+    const uiLang = normalizeLang(language);
     const apiLang: ApiLang = uiLang === "kh" ? "km" : "en";
     const isKh = uiLang === "kh";
 
@@ -107,10 +137,18 @@ export default function Engage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const titleFontClass = isKh ? "title-km" : "title-en";
+    const mainTitleFontClass = isKh ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKh ? "body-km" : "body-en";
+    const numberFontClass = isKh
+        ? "khmer-font text-sm font-bold leading-none"
+        : "airbnb-font text-sm font-bold leading-none";
+
     useEffect(() => {
         setMounted(true);
 
         const cached = readCache();
+
         if (cached.length > 0) {
             setBlocks(cached);
             setLoading(false);
@@ -139,13 +177,16 @@ export default function Engage() {
                 }
 
                 const nextBlocks = json?.data?.blocks || [];
+
                 setBlocks(nextBlocks);
                 writeCache(nextBlocks);
             } catch (err: any) {
                 if (!alive) return;
+
                 setError(err?.message || "Failed to fetch engage section.");
             } finally {
                 if (!alive) return;
+
                 setLoading(false);
             }
         }
@@ -181,14 +222,17 @@ export default function Engage() {
             }))
             .filter((item) => item.title || item.description);
 
-        return { sectionTitle, items };
+        return {
+            sectionTitle,
+            items,
+        };
     }, [blocks, apiLang, isKh]);
 
     const showSkeleton = !mounted || (loading && blocks.length === 0);
     const showErrorOnly = !showSkeleton && blocks.length === 0 && !!error;
 
     if (showSkeleton) {
-        return <EngageSkeleton isKh={isKh} />;
+        return <EngageSkeleton />;
     }
 
     if (view.items.length === 0 && !showErrorOnly) {
@@ -196,45 +240,62 @@ export default function Engage() {
     }
 
     return (
-        <section className="bg-white mt-4 md:mt-6 lg:mt-8 py-8 md:py-10">
+        <section className="mt-4 bg-white py-8 md:mt-6 md:py-10 lg:mt-8">
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 {showErrorOnly && (
-                    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                    <div
+                        className={`
+                            mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700
+                            ${bodyFontClass}
+                        `}
+                    >
                         {error}
                     </div>
                 )}
 
                 <h2
-                    className={`text-4xl md:text-5xl font-bold text-gray-900 mb-8 md:mb-10 tracking-tight ${isKh ? "khmer-font" : ""
-                        }`}
+                    className={`
+                        mb-8 text-gray-900 md:mb-10
+                        ${titleFontClass}
+                    `}
                 >
                     {view.sectionTitle}
                 </h2>
 
-                <div className="mt-5 mb-12 h-1.5 bg-orange-500 w-3/4 sm:w-full max-w-[300px]" />
+                <div className="mb-12 mt-5 h-1.5 w-3/4 max-w-[300px] bg-orange-500 sm:w-full" />
 
-                <ol className="grid grid-cols-1 lg:grid-cols-3 gap-5 list-none p-0 m-0">
+                <ol className="m-0 grid list-none grid-cols-1 gap-5 p-0 lg:grid-cols-3">
                     {view.items.map((item, index) => (
                         <li
                             key={item.id}
-                            className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm h-full"
+                            className="h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
                         >
                             <div className="mb-3 flex items-start gap-3">
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white text-sm sm:text-base font-bold">
-                                    {index + 1}
+                                <div
+                                    className={`
+                                        flex h-8 w-8 shrink-0 items-center justify-center
+                                        rounded-full bg-orange-500 text-white
+                                        ${numberFontClass}
+                                    `}
+                                >
+                                    {toKhmerNumber(index + 1, isKh)}
                                 </div>
 
                                 <h3
-                                    className={`text-lg sm:text-xl md:text-2xl font-bold text-gray-900 leading-snug ${isKh ? "khmer-font" : ""
-                                        }`}
+                                    className={`
+                                        text-gray-900
+                                        ${mainTitleFontClass}
+                                    `}
                                 >
                                     {item.title}
                                 </h3>
                             </div>
 
                             <p
-                                className={`pl-11 text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed ${isKh ? "khmer-font" : ""
-                                    }`}
+                                className={`
+                                    pl-11 text-gray-600
+                                    ${bodyFontClass}
+                                `}
                             >
                                 {item.description}
                             </p>

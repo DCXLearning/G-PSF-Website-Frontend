@@ -79,6 +79,7 @@ function readCache(langKey: "en" | "km"): UIItem[] {
     try {
         const raw = sessionStorage.getItem(getCacheKey(langKey));
         if (!raw) return [];
+
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [];
     } catch {
@@ -119,34 +120,47 @@ function Card({
     isKhmer?: boolean;
     href: string;
 }) {
+    const mainTitleFontClass = isKhmer ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
+    const buttonFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+
     if (isPrimary) {
         return (
-            <div className="p-8 rounded-tl-[120px] rounded-br-[120px] bg-blue-950 shadow-2xl text-white min-h-[300px] flex flex-col justify-between transform hover:scale-[1.02] transition duration-300 ease-in-out">
-                <div className="text-center mb-4">
+            <div className="flex min-h-[300px] transform flex-col justify-between rounded-br-[120px] rounded-tl-[120px] bg-blue-950 p-8 text-white shadow-2xl transition duration-300 ease-in-out hover:scale-[1.02]">
+                <div className="mb-4 text-center">
                     {icon ? (
                         <img
                             src={icon}
                             alt={title}
-                            className="w-14 h-14 mx-auto mb-4 filter brightness-0 invert"
+                            className="mx-auto mb-4 h-14 w-14 brightness-0 invert filter"
                         />
                     ) : (
-                        <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-white/10" />
+                        <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-white/10" />
                     )}
 
-                    <h3 className={`text-2xl font-bold mb-2 ${isKhmer ? "khmer-font" : ""}`}>
+                    <h3
+                        className={`
+                            mb-2 text-white
+                            !whitespace-normal !overflow-visible !text-clip
+                            ${mainTitleFontClass}
+                        `}
+                    >
                         {title}
                     </h3>
 
-                    <p className={`text-lg opacity-90 ${isKhmer ? "khmer-font" : ""}`}>
+                    <p className={`text-white/90 ${bodyFontClass}`}>
                         {description}
                     </p>
                 </div>
 
-                <div className="text-center mt-4">
+                <div className="mt-4 text-center">
                     <Link
                         href={href}
-                        className={`inline-flex items-center justify-center mx-auto text-sm font-semibold opacity-80 hover:opacity-100 ${isKhmer ? "khmer-font" : ""
-                            }`}
+                        className={`
+                            mx-auto inline-flex items-center justify-center
+                            font-semibold opacity-80 hover:opacity-100
+                            ${buttonFontClass}
+                        `}
                     >
                         {isKhmer ? "ស្វែងយល់បន្ថែម" : "LEARN MORE"}
                     </Link>
@@ -156,28 +170,37 @@ function Card({
     }
 
     return (
-        <div className="p-8 rounded-tl-[120px] rounded-br-[120px] shadow-xl border border-gray-100 min-h-[280px] flex flex-col justify-between relative overflow-hidden transform hover:scale-[1.02] transition duration-300 ease-in-out">
-            <div className="pt-4 text-center mb-4">
+        <div className="relative flex min-h-[280px] transform flex-col justify-between overflow-hidden rounded-br-[120px] rounded-tl-[120px] border border-gray-100 p-8 shadow-xl transition duration-300 ease-in-out hover:scale-[1.02]">
+            <div className="mb-4 pt-4 text-center">
                 {icon ? (
-                    <img src={icon} alt={title} className="w-12 h-12 mx-auto mb-4" />
+                    <img src={icon} alt={title} className="mx-auto mb-4 h-12 w-12" />
                 ) : (
-                    <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100" />
+                    <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-gray-100" />
                 )}
 
-                <h3 className={`text-2xl font-bold mb-2 ${isKhmer ? "khmer-font" : ""}`}>
+                <h3
+                    className={`
+                        mb-2 text-gray-900
+                        !whitespace-normal !overflow-visible !text-clip
+                        ${mainTitleFontClass}
+                    `}
+                >
                     {title}
                 </h3>
 
-                <p className={`text-lg text-gray-600 ${isKhmer ? "khmer-font" : ""}`}>
+                <p className={`text-gray-600 ${bodyFontClass}`}>
                     {description}
                 </p>
             </div>
 
-            <div className="text-center mt-4">
+            <div className="mt-4 text-center">
                 <Link
                     href={href}
-                    className={`inline-flex items-center justify-center mx-auto text-sm font-semibold text-indigo-900 hover:text-indigo-700 ${isKhmer ? "khmer-font" : ""
-                        }`}
+                    className={`
+                        mx-auto inline-flex items-center justify-center
+                        font-semibold text-indigo-900 hover:text-indigo-700
+                        ${buttonFontClass}
+                    `}
                 >
                     {isKhmer ? "ស្វែងយល់បន្ថែម" : "LEARN MORE"}
                 </Link>
@@ -189,32 +212,48 @@ function Card({
 function CardSkeleton({ primary = false }: { primary?: boolean }) {
     return (
         <div
-            className={`animate-pulse p-8 rounded-tl-[120px] rounded-br-[120px] min-h-[280px] flex flex-col justify-between ${primary ? "bg-blue-950 text-white min-h-[300px]" : "shadow-xl border border-gray-100"
-                }`}
+            className={`
+                flex min-h-[280px] animate-pulse flex-col justify-between
+                rounded-br-[120px] rounded-tl-[120px] p-8
+                ${primary ? "min-h-[300px] bg-blue-950 text-white" : "border border-gray-100 shadow-xl"}
+            `}
         >
-            <div className="pt-4 text-center mb-4">
+            <div className="mb-4 pt-4 text-center">
                 <div
-                    className={`w-14 h-14 mx-auto mb-4 rounded-full ${primary ? "bg-white/15" : "bg-gray-200"
-                        }`}
+                    className={`
+                        mx-auto mb-4 h-14 w-14 rounded-full
+                        ${primary ? "bg-white/15" : "bg-gray-200"}
+                    `}
                 />
+
                 <div
-                    className={`h-7 w-2/3 mx-auto rounded mb-3 ${primary ? "bg-white/15" : "bg-gray-200"
-                        }`}
+                    className={`
+                        mx-auto mb-3 h-7 w-2/3 rounded
+                        ${primary ? "bg-white/15" : "bg-gray-200"}
+                    `}
                 />
+
                 <div
-                    className={`h-5 w-5/6 mx-auto rounded mb-2 ${primary ? "bg-white/15" : "bg-gray-200"
-                        }`}
+                    className={`
+                        mx-auto mb-2 h-5 w-5/6 rounded
+                        ${primary ? "bg-white/15" : "bg-gray-200"}
+                    `}
                 />
+
                 <div
-                    className={`h-5 w-3/4 mx-auto rounded ${primary ? "bg-white/15" : "bg-gray-200"
-                        }`}
+                    className={`
+                        mx-auto h-5 w-3/4 rounded
+                        ${primary ? "bg-white/15" : "bg-gray-200"}
+                    `}
                 />
             </div>
 
-            <div className="text-center mt-4">
+            <div className="mt-4 text-center">
                 <div
-                    className={`h-4 w-28 mx-auto rounded ${primary ? "bg-white/15" : "bg-gray-200"
-                        }`}
+                    className={`
+                        mx-auto h-4 w-28 rounded
+                        ${primary ? "bg-white/15" : "bg-gray-200"}
+                    `}
                 />
             </div>
         </div>
@@ -223,8 +262,12 @@ function CardSkeleton({ primary = false }: { primary?: boolean }) {
 
 export default function GrowthVision() {
     const { language } = useLanguage();
+
     const isKhmer = language === "kh";
     const langKey: "en" | "km" = isKhmer ? "km" : "en";
+
+    const titleFontClass = isKhmer ? "title-km" : "title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
 
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -240,6 +283,7 @@ export default function GrowthVision() {
         setMounted(true);
 
         const cached = readCache(langKey);
+
         if (cached.length > 0) {
             setItems(cached);
             setLoading(false);
@@ -282,11 +326,14 @@ export default function GrowthVision() {
                 writeCache(langKey, mapped);
             } catch (error) {
                 if (!alive) return;
+
                 const message =
                     error instanceof Error ? error.message : "Failed to load Growth Vision";
+
                 setError(message);
             } finally {
                 if (!alive) return;
+
                 setLoading(false);
             }
         }
@@ -315,10 +362,12 @@ export default function GrowthVision() {
     const showEmpty = !showSkeleton && !error && items.length === 0;
 
     return (
-        <div className="container mx-auto px-4 max-w-7xl py-16 relative">
+        <div className="container relative mx-auto max-w-7xl px-4 py-16">
             <h2
-                className={`text-4xl md:text-5xl font-extrabold text-gray-900 mb-12 ${isKhmer ? "khmer-font" : ""
-                    }`}
+                className={`
+                    mb-12 whitespace-pre-line text-gray-900
+                    ${titleFontClass}
+                `}
             >
                 {isKhmer ? (
                     <>
@@ -336,41 +385,53 @@ export default function GrowthVision() {
             </h2>
 
             {showErrorOnly && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                <div
+                    className={`
+                        rounded-xl border border-red-200 bg-red-50 p-4 text-red-700
+                        ${bodyFontClass}
+                    `}
+                >
                     {error}
                 </div>
             )}
 
             {showEmpty && (
-                <div className="text-gray-600">
-                    {isKhmer ? "មិនមានទិន្នន័យ Growth Vision ទេ" : "No Growth Vision items found"}
+                <div className={`text-gray-600 ${bodyFontClass}`}>
+                    {isKhmer
+                        ? "មិនមានទិន្នន័យ Growth Vision ទេ"
+                        : "No Growth Vision items found"}
                 </div>
             )}
 
             {showSkeleton ? (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:hidden">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:hidden">
                         <CardSkeleton />
                         <CardSkeleton />
                         <CardSkeleton primary />
                     </div>
 
-                    <div className="relative mb-34 hidden xl:block h-[700px]">
-                        <div className="absolute top-32 left-0 w-91">
+                    <div className="relative mb-34 hidden h-[700px] xl:block">
+                        <div className="absolute left-0 top-32 w-91">
                             <CardSkeleton />
                         </div>
-                        <div className="absolute top-[22%] -translate-y-1/2 left-1/2 -translate-x-1/2 w-91 z-10">
+
+                        <div className="absolute left-1/2 top-[22%] z-10 w-91 -translate-x-1/2 -translate-y-1/2">
                             <CardSkeleton primary />
                         </div>
-                        <div className="absolute top-0 -translate-y-2/5 right-0 w-91">
+
+                        <div className="absolute right-0 top-0 w-91 -translate-y-2/5">
                             <CardSkeleton />
                         </div>
-                        <div className="absolute bottom-0 top-139 left-0 w-91">
+
+                        <div className="absolute bottom-0 left-0 top-139 w-91">
                             <CardSkeleton />
                         </div>
-                        <div className="absolute bottom-0 top-106 left-1/2 -translate-x-1/2 w-91">
+
+                        <div className="absolute bottom-0 left-1/2 top-106 w-91 -translate-x-1/2">
                             <CardSkeleton />
                         </div>
+
                         <div className="absolute bottom-28 right-0 w-91">
                             <CardSkeleton />
                         </div>
@@ -378,7 +439,7 @@ export default function GrowthVision() {
                 </>
             ) : items.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:hidden">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:hidden">
                         {[...secondary, ...(primary ? [primary] : [])].map((card) => (
                             <Card
                                 key={card.id}
@@ -392,9 +453,9 @@ export default function GrowthVision() {
                         ))}
                     </div>
 
-                    <div className="relative mb-34 hidden xl:block h-[700px]">
+                    <div className="relative mb-34 hidden h-[700px] xl:block">
                         {secondary[0] && (
-                            <div className="absolute top-32 left-0 w-91">
+                            <div className="absolute left-0 top-32 w-91">
                                 <Card
                                     title={secondary[0].title}
                                     icon={secondary[0].icon}
@@ -406,7 +467,7 @@ export default function GrowthVision() {
                         )}
 
                         {primary && (
-                            <div className="absolute top-[22%] -translate-y-1/2 left-1/2 -translate-x-1/2 w-91 z-10">
+                            <div className="absolute left-1/2 top-[22%] z-10 w-91 -translate-x-1/2 -translate-y-1/2">
                                 <Card
                                     title={primary.title}
                                     icon={primary.icon}
@@ -419,7 +480,7 @@ export default function GrowthVision() {
                         )}
 
                         {secondary[1] && (
-                            <div className="absolute top-0 -translate-y-2/5 right-0 w-91">
+                            <div className="absolute right-0 top-0 w-91 -translate-y-2/5">
                                 <Card
                                     title={secondary[1].title}
                                     icon={secondary[1].icon}
@@ -431,7 +492,7 @@ export default function GrowthVision() {
                         )}
 
                         {secondary[2] && (
-                            <div className="absolute bottom-0 top-139 left-0 w-91">
+                            <div className="absolute bottom-0 left-0 top-139 w-91">
                                 <Card
                                     title={secondary[2].title}
                                     icon={secondary[2].icon}
@@ -443,7 +504,7 @@ export default function GrowthVision() {
                         )}
 
                         {secondary[3] && (
-                            <div className="absolute bottom-0 top-106 left-1/2 -translate-x-1/2 w-91">
+                            <div className="absolute bottom-0 left-1/2 top-106 w-91 -translate-x-1/2">
                                 <Card
                                     title={secondary[3].title}
                                     icon={secondary[3].icon}

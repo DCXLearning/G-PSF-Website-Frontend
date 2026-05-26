@@ -114,6 +114,7 @@ function FlowSkeleton() {
 
 export default function Flow() {
     const { language } = useLanguage();
+
     const uiLang: UiLang = (language as UiLang) || "en";
     const apiLang: ApiLang = uiLang === "kh" ? "km" : "en";
 
@@ -121,10 +122,21 @@ export default function Flow() {
     const [blocks, setBlocks] = useState<Block[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const titleFontClass =
+        uiLang === "kh"
+            ? "title-km khmer-font font-bold"
+            : "title-en airbnb-font font-extrabold";
+
+    const subtitleFontClass =
+        uiLang === "kh"
+            ? "body-km khmer-font font-bold"
+            : "body-en airbnb-font font-bold";
+
     useEffect(() => {
         setMounted(true);
 
         const cached = readCache();
+
         if (cached.length > 0) {
             setBlocks(cached);
             setLoading(false);
@@ -140,6 +152,7 @@ export default function Flow() {
                 });
 
                 const json: ApiResponse = await res.json();
+
                 if (!alive) return;
 
                 if (!res.ok || !json?.success) {
@@ -147,6 +160,7 @@ export default function Flow() {
                 }
 
                 const nextBlocks = json?.data?.blocks || [];
+
                 setBlocks(nextBlocks);
                 writeCache(nextBlocks);
             } catch {
@@ -206,15 +220,19 @@ export default function Flow() {
             <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4">
                 <div className="text-center mb-8 md:mb-10">
                     <p
-                        className={`mt-2 max-w-2xl mx-auto text-xl sm:text-3xl font-bold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
-                            }`}
+                        className={`
+                            mt-2 max-w-2xl mx-auto text-gray-900
+                            ${subtitleFontClass}
+                        `}
                     >
                         {view.subtitle}
                     </p>
 
                     <h1
-                        className={`mt-3 text-4xl md:text-5xl font-extrabold text-gray-900 ${uiLang === "kh" ? "khmer-font" : ""
-                            }`}
+                        className={`
+                            mt-3 text-gray-900
+                            ${titleFontClass}
+                        `}
                     >
                         {view.title}
                     </h1>

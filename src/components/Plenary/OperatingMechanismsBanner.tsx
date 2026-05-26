@@ -23,10 +23,8 @@ export default function OperatingMechanismsBanner({
         <section className="bg-white py-8 md:py-12">
             <div className="mx-auto max-w-7xl px-4 sm:px-4 lg:px-4">
 
-                {/* FRAME (Same as Flow & PlenaryStructure) */}
                 <div className="border border-slate-200 rounded-2xl bg-white p-3 sm:p-4 md:p-5 lg:p-6 shadow-md">
 
-                    {/* IMAGE CONTAINER */}
                     <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[720px] rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
 
                         <Image

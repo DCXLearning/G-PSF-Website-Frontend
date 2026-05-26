@@ -67,6 +67,26 @@ type FeaturedItem = {
 
 const FEATURED_POSTS_ENDPOINT = "/api/posts?pageId=6&isFeatured=true";
 
+function normalizeLang(language: unknown): UiLang {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
+function getFontClass(language: UiLang) {
+    return language === "kh" ? "khmer-font" : "airbnb-font";
+}
+
+function getTitleFontClass(language: UiLang) {
+    return language === "kh"
+        ? "title-km khmer-font"
+        : "title-en airbnb-font";
+}
+
 function getText(value: LangText | undefined, language: UiLang): string {
     if (!value) {
         return "";
@@ -178,6 +198,7 @@ function NewsImage({
 }) {
     const [error, setError] = useState(false);
     const isValid = !!src && !error;
+    const fontClass = getFontClass(language);
 
     return (
         <div className={`relative overflow-hidden bg-[#ECECEC] ${className}`}>
@@ -215,7 +236,10 @@ function NewsImage({
                             </div>
                         </div>
 
-                        <p className="mt-6 text-center text-[12px] leading-[18px] text-[#777777]">
+                        <p
+                            className={`mt-6 text-center text-[12px] leading-[18px] text-[#777777] ${fontClass}`}
+                            style={{ fontWeight: 400 }}
+                        >
                             {language === "kh" ? (
                                 <>
                                     រូបភាពឯកសារ
@@ -250,12 +274,19 @@ function Header({
     view: ViewMode;
     setView: (value: ViewMode) => void;
 }) {
+    const fontClass = getFontClass(language);
+    const titleFontClass = getTitleFontClass(language);
+
     return (
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-                <h1 className="mt-1 text-3xl font-extrabold leading-none text-[#0B2C5F] md:text-[44px]">
+                <h1
+                    className={`mt-1 leading-none text-[#0B2C5F] ${titleFontClass}`}
+                    style={{ fontWeight: 600 }}
+                >
                     {language === "kh" ? "ព័ត៌មានលេចធ្លោ" : "Featured News"}
                 </h1>
+
                 <div className="mt-4 h-[4px] w-[150px] bg-orange-500" />
             </div>
 
@@ -263,40 +294,43 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${
                         view === "list"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
                     }`}
+                    style={{ fontWeight: 600 }}
                 >
                     <List className="h-3.5 w-3.5" />
-                    <span className={language === "kh" ? "khmer-font" : ""}>
-                        {language === "kh" ? "បញ្ជី" : "List"}
-                    </span>
+                    <span>{language === "kh" ? "បញ្ជី" : "List"}</span>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${
                         view === "grid"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
                     }`}
+                    style={{ fontWeight: 600 }}
                 >
                     <LayoutGrid className="h-3.5 w-3.5" />
-                    <span className={language === "kh" ? "khmer-font" : ""}>
-                        {language === "kh" ? "ក្រឡា" : "Grid"}
-                    </span>
+                    <span>{language === "kh" ? "ក្រឡា" : "Grid"}</span>
                 </button>
             </div>
         </div>
     );
 }
 
-function DateRow({ date }: { date: string }) {
+function DateRow({ date, language }: { date: string; language: UiLang }) {
+    const fontClass = getFontClass(language);
+
     return (
-        <div className="mt-2 flex items-center gap-2 text-[13px] text-[#64748B]">
+        <div
+            className={`mt-2 flex items-center gap-2 text-[13px] text-[#64748B] ${fontClass}`}
+            style={{ fontWeight: 400 }}
+        >
             <CalendarDays className="h-4 w-4" />
             <span>{date}</span>
         </div>
@@ -310,10 +344,13 @@ function ViewDetailButton({
     href: string;
     language: UiLang;
 }) {
+    const fontClass = getFontClass(language);
+
     return (
         <Link
             href={href}
-            className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-orange-500 px-3 py-1 text-[12px] font-bold text-orange-600 transition hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]"
+            className={`mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-orange-500 px-3 py-1 text-[12px] text-orange-600 transition hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] ${fontClass}`}
+            style={{ fontWeight: 600 }}
         >
             {language === "kh" ? "អានបន្ថែម" : "View details"}
             <FaArrowRight className="text-[12px]" />
@@ -328,6 +365,8 @@ function ListCard({
     item: FeaturedItem;
     language: UiLang;
 }) {
+    const fontClass = getFontClass(language);
+
     return (
         <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)] md:items-center">
             <Link href={item.href} className="block">
@@ -340,15 +379,21 @@ function ListCard({
             </Link>
 
             <div className="flex min-w-0 flex-col justify-center">
-                <h2 className="mt-0 line-clamp-1 text-[18px] font-extrabold leading-[1.5] text-[#0B2C5F] md:text-[20px]">
+                <h2
+                    className={`mt-0 line-clamp-1 text-[18px] leading-[1.5] text-[#0B2C5F] md:text-[20px] ${fontClass}`}
+                    style={{ fontWeight: 600 }}
+                >
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
                 </h2>
 
-                <DateRow date={item.date} />
+                <DateRow date={item.date} language={language} />
 
-                <p className="mt-3 line-clamp-2 text-[16px] leading-7 text-[#64748B]">
+                <p
+                    className={`mt-3 line-clamp-2 text-[16px] leading-7 text-[#64748B] ${fontClass}`}
+                    style={{ fontWeight: 400 }}
+                >
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
@@ -368,6 +413,8 @@ function GridCard({
     item: FeaturedItem;
     language: UiLang;
 }) {
+    const fontClass = getFontClass(language);
+
     return (
         <article className="overflow-hidden rounded-md border border-[#D9DEE7] bg-white transition hover:shadow-md">
             <Link href={item.href} className="block">
@@ -380,15 +427,21 @@ function GridCard({
             </Link>
 
             <div className="p-5">
-                <h2 className="mt-3 line-clamp-2 text-[20px] font-extrabold leading-snug text-[#0B2C5F]">
+                <h2
+                    className={`mt-3 line-clamp-2 text-[20px] leading-snug text-[#0B2C5F] ${fontClass}`}
+                    style={{ fontWeight: 600 }}
+                >
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
                 </h2>
 
-                <DateRow date={item.date} />
+                <DateRow date={item.date} language={language} />
 
-                <p className="mt-3 line-clamp-3 text-[16px] leading-7 text-[#64748B]">
+                <p
+                    className={`mt-3 line-clamp-3 text-[16px] leading-7 text-[#64748B] ${fontClass}`}
+                    style={{ fontWeight: 400 }}
+                >
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
@@ -403,7 +456,8 @@ function GridCard({
 
 export default function FeaturedPage() {
     const { language } = useLanguage();
-    const uiLanguage = language as UiLang;
+    const uiLanguage = normalizeLang(language);
+    const fontClass = getFontClass(uiLanguage);
 
     const [view, setView] = useState<ViewMode>("list");
     const [items, setItems] = useState<PostItem[]>([]);
@@ -469,19 +523,28 @@ export default function FeaturedPage() {
                 <Header language={uiLanguage} view={view} setView={setView} />
 
                 {loading ? (
-                    <div className="py-8 text-center text-[#64748B]">
+                    <div
+                        className={`py-8 text-center text-[#64748B] ${fontClass}`}
+                        style={{ fontWeight: 400 }}
+                    >
                         {uiLanguage === "kh" ? "កំពុងផ្ទុក..." : "Loading..."}
                     </div>
                 ) : null}
 
                 {!loading && error ? (
-                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600">
+                    <div
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600 ${fontClass}`}
+                        style={{ fontWeight: 400 }}
+                    >
                         {error}
                     </div>
                 ) : null}
 
                 {!loading && !error && featuredItems.length === 0 ? (
-                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B]">
+                    <div
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B] ${fontClass}`}
+                        style={{ fontWeight: 400 }}
+                    >
                         {uiLanguage === "kh"
                             ? "មិនមានព័ត៌មានលេចធ្លោទេ។"
                             : "No featured posts found."}

@@ -12,6 +12,7 @@ import {
 } from "@/utils/socialShare";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
+
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -52,31 +53,67 @@ type ImageSlide = {
   alt: string;
 };
 
+type UiLang = "en" | "kh";
+
+function normalizeUiLang(value: unknown): UiLang {
+  const lang = String(value || "en").toLowerCase();
+  return lang === "kh" || lang === "km" ? "kh" : "en";
+}
+
+function getTitleFontClass(lang: UiLang) {
+  return lang === "kh" ? "title-km khmer-font" : "title-en airbnb-font";
+}
+
+function getBodyFontClass(lang: UiLang) {
+  return lang === "kh" ? "body-km khmer-font" : "body-en airbnb-font";
+}
+
 export default function DetailPage({ data }: DetailPageProps) {
   const { language } = useLanguage();
-  const hasDocContent = Array.isArray(data.contentDoc?.content) && data.contentDoc.content.length > 0;
-  const isKhmerContent = shouldUseKhmerFont(data);
-  const khmerClass = isKhmerContent ? "khmer-font" : "";
+
+  const dateLang = normalizeUiLang(language);
+  const contentLang: UiLang = shouldUseKhmerFont(data) ? "kh" : "en";
+
+  const titleFontClass = getTitleFontClass(contentLang);
+  const bodyFontClass = getBodyFontClass(contentLang);
+
+  const hasDocContent =
+    Array.isArray(data.contentDoc?.content) &&
+    data.contentDoc.content.length > 0;
+
   const facebookShareUrl = buildFacebookShareUrl(data.shareUrl);
   const telegramShareUrl = buildTelegramShareUrl(data.shareUrl, data.title);
+
   const dateText = formatLocalizedDate(
     data.dateValue || data.date,
-    language === "kh" ? "kh" : "en"
+    dateLang
   );
 
   return (
-    <section className={`bg-white ${khmerClass}`}>
-      <div className="max-w-7xl mx-auto px-4 py-8 pt-8">
+    <section className={`bg-white ${contentLang === "kh" ? "khmer-font" : "airbnb-font"}`}>
+      <div className="mx-auto max-w-7xl px-4 py-8 pt-8">
         <div className="inline-flex flex-col">
-          <span className={`text-lg font-semibold text-slate-700 ${khmerClass}`}>{data.category}</span>
+          <span
+            className={`text-slate-700 ${bodyFontClass}`}
+            style={{ fontWeight: 600 }}
+          >
+            {data.category}
+          </span>
           <span className="mt-1 h-[3px] w-20 rounded-full bg-amber-500" />
         </div>
 
-        <h1 className={`mt-4 max-w-5xl text-3xl font-semibold leading-tight tracking-tight text-[#0f1637] md:text-4xl ${khmerClass}`}>
+        {/* Main title: global title size + font-semibold */}
+        <h1
+          className={`mt-4 max-w-5xl tracking-tight text-[#0f1637] ${titleFontClass}`}
+          style={{ fontWeight: 600 }}
+        >
           {data.title}
         </h1>
 
-        <div className={`mt-4 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-slate-600 ${khmerClass}`}>
+        <div
+          className={`mt-4 flex flex-wrap items-center gap-x-8 gap-y-3 text-slate-600 ${bodyFontClass}`}
+          style={{ fontWeight: 400 }}
+        >
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-slate-500" />
             <span>{dateText}</span>
@@ -84,7 +121,8 @@ export default function DetailPage({ data }: DetailPageProps) {
 
           <Link
             href={data.tagHref}
-            className="inline-flex items-center gap-3 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className={`inline-flex items-center gap-3 bg-white px-3 py-2 text-slate-700 hover:bg-slate-50 ${bodyFontClass}`}
+            style={{ fontWeight: 600 }}
           >
             <span className="grid h-8 w-8 place-items-center rounded-md bg-amber-50 text-amber-600">
               <FileText className="h-4 w-4" />
@@ -94,7 +132,10 @@ export default function DetailPage({ data }: DetailPageProps) {
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <span className={`text-[16px] font-medium text-[#2f2f2f] ${khmerClass}`}>
+          <span
+            className={`text-[#2f2f2f] ${bodyFontClass}`}
+            style={{ fontWeight: 600 }}
+          >
             Share:
           </span>
 
@@ -119,17 +160,22 @@ export default function DetailPage({ data }: DetailPageProps) {
           </a>
         </div>
 
-        {/*{heroImage ? <HeroImage src={heroImage} alt={data.title} /> : null}*/}
-
-        <article className={`mt-6 max-w-7xl text-slate-700 ${khmerClass}`}>
+        <article className={`mt-6 max-w-7xl text-slate-700 ${bodyFontClass}`}>
           {hasDocContent && data.contentDoc ? (
             <div className="mt-2">
-              <TiptapRenderer doc={data.contentDoc} />
+              <TiptapRenderer
+                doc={data.contentDoc}
+                bodyFontClass={bodyFontClass}
+                titleFontClass={titleFontClass}
+              />
             </div>
           ) : null}
 
           {!hasDocContent ? (
-            <p className="mt-4 text-[18px] leading-7 text-slate-500">
+            <p
+              className={`mt-4 text-slate-500 ${bodyFontClass}`}
+              style={{ fontWeight: 400 }}
+            >
               No detail content available.
             </p>
           ) : null}
@@ -139,33 +185,18 @@ export default function DetailPage({ data }: DetailPageProps) {
   );
 }
 
-// function HeroImage({ src, alt }: { src: string; alt: string }) {
-//   const [failed, setFailed] = useState(false);
-//
-//   return (
-//     <div className="mt-6 overflow-hidden rounded-md border border-slate-200 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
-//       {/*<div className="relative aspect-[16/9] w-full">*/}
-//       {/*  {!failed && src ? (*/}
-//       {/*    // eslint-disable-next-line @next/next/no-img-element*/}
-//       {/*    <img*/}
-//       {/*      src={src}*/}
-//       {/*      alt={alt}*/}
-//       {/*      className="h-full w-full object-cover"*/}
-//       {/*      onError={() => setFailed(true)}*/}
-//       {/*    />*/}
-//       {/*  ) : (*/}
-//       {/*    <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm text-slate-500">*/}
-//       {/*      Image not available*/}
-//       {/*    </div>*/}
-//       {/*  )}*/}
-//       {/*</div>*/}
-//     </div>
-//   );
-// }
-
-function TiptapRenderer({ doc }: { doc: TiptapNode }) {
+function TiptapRenderer({
+  doc,
+  bodyFontClass,
+  titleFontClass,
+}: {
+  doc: TiptapNode;
+  bodyFontClass: string;
+  titleFontClass: string;
+}) {
   const nodes = doc.content ?? [];
-  return <>{renderNodes(nodes, "root")}</>;
+
+  return <>{renderNodes(nodes, "root", bodyFontClass, titleFontClass)}</>;
 }
 
 function containsKhmer(value?: string): boolean {
@@ -173,12 +204,23 @@ function containsKhmer(value?: string): boolean {
 }
 
 function shouldUseKhmerFont(data: DetailPageData): boolean {
-  const docText = data.contentDoc ? extractPlainText(data.contentDoc.content ?? []) : "";
-  const fullText = `${data.category} ${data.title} ${data.tagLabel} ${data.summary ?? ""} ${docText}`;
+  const docText = data.contentDoc
+    ? extractPlainText(data.contentDoc.content ?? [])
+    : "";
+
+  const fullText = `${data.category} ${data.title} ${data.tagLabel} ${
+    data.summary ?? ""
+  } ${docText}`;
+
   return containsKhmer(fullText);
 }
 
-function renderNodes(nodes: TiptapNode[], path: string): ReactNode[] {
+function renderNodes(
+  nodes: TiptapNode[],
+  path: string,
+  bodyFontClass: string,
+  titleFontClass: string
+): ReactNode[] {
   const imageSlides = getImageSlides(nodes, path);
   const shouldUseCarousel = imageSlides.length > 1;
   let hasRenderedCarousel = false;
@@ -192,25 +234,41 @@ function renderNodes(nodes: TiptapNode[], path: string): ReactNode[] {
       }
 
       hasRenderedCarousel = true;
-      return <ImageCarousel key={`${path}-photo-carousel`} slides={imageSlides} />;
+
+      return (
+        <ImageCarousel key={`${path}-photo-carousel`} slides={imageSlides} />
+      );
     }
 
-    return renderNode(node, key);
+    return renderNode(node, key, bodyFontClass, titleFontClass);
   });
 }
 
-function renderNode(node: TiptapNode, key: string): ReactNode {
+function renderNode(
+  node: TiptapNode,
+  key: string,
+  bodyFontClass: string,
+  titleFontClass: string
+): ReactNode {
   const type = node.type ?? "";
   const content = node.content ?? [];
   const attrs = node.attrs ?? {};
   const style = getTextAlignStyle(attrs);
 
   if (type === "doc") {
-    return <React.Fragment key={key}>{renderNodes(content, key)}</React.Fragment>;
+    return (
+      <React.Fragment key={key}>
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
+      </React.Fragment>
+    );
   }
 
   if (type === "text") {
-    return <React.Fragment key={key}>{applyMarks(node.text ?? "", node.marks, key)}</React.Fragment>;
+    return (
+      <React.Fragment key={key}>
+        {applyMarks(node.text ?? "", node.marks, key)}
+      </React.Fragment>
+    );
   }
 
   if (type === "hardBreak") {
@@ -219,99 +277,128 @@ function renderNode(node: TiptapNode, key: string): ReactNode {
 
   if (type === "paragraph") {
     return (
-      <p key={key} className="mt-4 text-[18px] leading-7" style={style}>
-        {renderNodes(content, key)}
+      <p
+        key={key}
+        className={`mt-4 text-slate-700 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
       </p>
     );
   }
 
   if (type === "heading") {
     const level = normalizeHeadingLevel(attrs.level);
-    const headingClass = getHeadingClass(level);
+    const headingClass = getHeadingClass(level, titleFontClass);
+
+    const children = renderNodes(content, key, bodyFontClass, titleFontClass);
+    const headingStyle = { ...style, fontWeight: 600 };
 
     if (level === 1) {
       return (
-        <h1 key={key} className={headingClass} style={style}>
-          {renderNodes(content, key)}
+        <h1 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h1>
       );
     }
 
     if (level === 2) {
       return (
-        <h2 key={key} className={headingClass} style={style}>
-          {renderNodes(content, key)}
+        <h2 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h2>
       );
     }
 
     if (level === 3) {
       return (
-        <h3 key={key} className={headingClass} style={style}>
-          {renderNodes(content, key)}
+        <h3 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h3>
       );
     }
 
     if (level === 4) {
       return (
-        <h4 key={key} className={headingClass} style={style}>
-          {renderNodes(content, key)}
+        <h4 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h4>
       );
     }
 
     if (level === 5) {
       return (
-        <h5 key={key} className={headingClass} style={style}>
-          {renderNodes(content, key)}
+        <h5 key={key} className={headingClass} style={headingStyle}>
+          {children}
         </h5>
       );
     }
 
     return (
-      <h6 key={key} className={headingClass} style={style}>
-        {renderNodes(content, key)}
+      <h6 key={key} className={headingClass} style={headingStyle}>
+        {children}
       </h6>
     );
   }
 
   if (type === "bulletList") {
     return (
-      <ul key={key} className="mt-4 list-disc pl-6 space-y-2" style={style}>
-        {renderNodes(content, key)}
+      <ul
+        key={key}
+        className={`mt-4 list-disc space-y-2 pl-6 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
       </ul>
     );
   }
 
   if (type === "orderedList") {
     const start = typeof attrs.start === "number" ? attrs.start : 1;
+
     return (
-      <ol key={key} start={start} className="mt-4 list-decimal pl-6 space-y-2" style={style}>
-        {renderNodes(content, key)}
+      <ol
+        key={key}
+        start={start}
+        className={`mt-4 list-decimal space-y-2 pl-6 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
       </ol>
     );
   }
 
   if (type === "listItem") {
     return (
-      <li key={key} className="leading-7">
-        {renderNodes(content, key)}
+      <li
+        key={key}
+        className={`leading-7 ${bodyFontClass}`}
+        style={{ fontWeight: 400 }}
+      >
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
       </li>
     );
   }
 
   if (type === "blockquote") {
     return (
-      <blockquote key={key} className="mt-4 border-l-4 border-amber-500 pl-4 italic text-slate-700" style={style}>
-        {renderNodes(content, key)}
+      <blockquote
+        key={key}
+        className={`mt-4 border-l-4 border-amber-500 pl-4 italic text-slate-700 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
       </blockquote>
     );
   }
 
   if (type === "codeBlock") {
     return (
-      <pre key={key} className="mt-4 overflow-x-auto rounded bg-slate-900 p-4 text-sm text-slate-100" style={style}>
+      <pre
+        key={key}
+        className="mt-4 overflow-x-auto rounded bg-slate-900 p-4 text-sm text-slate-100"
+        style={style}
+      >
         <code>{extractPlainText(content)}</code>
       </pre>
     );
@@ -323,7 +410,8 @@ function renderNode(node: TiptapNode, key: string): ReactNode {
 
   if (type === "image") {
     const src = normalizeImageUrl(getStringAttr(attrs, "src"));
-    const alt = getStringAttr(attrs, "alt") || getStringAttr(attrs, "title") || "Image";
+    const alt =
+      getStringAttr(attrs, "alt") || getStringAttr(attrs, "title") || "Image";
 
     if (!src) {
       return null;
@@ -335,7 +423,10 @@ function renderNode(node: TiptapNode, key: string): ReactNode {
   if (type === "youtube") {
     const src = normalizeVideoUrl(getStringAttr(attrs, "src"));
     const title = getStringAttr(attrs, "title") || "YouTube video";
-    const allowFullScreenAttr = getStringAttr(attrs, "allowfullscreen").toLowerCase();
+    const allowFullScreenAttr = getStringAttr(
+      attrs,
+      "allowfullscreen"
+    ).toLowerCase();
     const allowFullScreen = allowFullScreenAttr !== "false";
 
     if (!src) {
@@ -344,7 +435,10 @@ function renderNode(node: TiptapNode, key: string): ReactNode {
 
     return (
       <div key={key} className="mt-6">
-        <div className="relative w-full overflow-hidden rounded-md border border-slate-200" style={{ paddingBottom: "56.25%" }}>
+        <div
+          className="relative w-full overflow-hidden rounded-md border border-slate-200"
+          style={{ paddingBottom: "56.25%" }}
+        >
           <iframe
             src={src}
             title={title}
@@ -382,35 +476,51 @@ function renderNode(node: TiptapNode, key: string): ReactNode {
   if (type === "table") {
     return (
       <div key={key} className="mt-6 overflow-x-auto">
-        <table className="min-w-full border-collapse border border-slate-300">
-          <tbody>{renderNodes(content, key)}</tbody>
+        <table className={`min-w-full border-collapse border border-slate-300 ${bodyFontClass}`}>
+          <tbody>{renderNodes(content, key, bodyFontClass, titleFontClass)}</tbody>
         </table>
       </div>
     );
   }
 
   if (type === "tableRow") {
-    return <tr key={key}>{renderNodes(content, key)}</tr>;
+    return (
+      <tr key={key}>
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
+      </tr>
+    );
   }
 
   if (type === "tableHeader") {
     return (
-      <th key={key} className="border border-slate-300 bg-slate-100 px-3 py-2 text-left font-semibold" style={style}>
-        {renderNodes(content, key)}
+      <th
+        key={key}
+        className={`border border-slate-300 bg-slate-100 px-3 py-2 text-left ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 600 }}
+      >
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
       </th>
     );
   }
 
   if (type === "tableCell") {
     return (
-      <td key={key} className="border border-slate-300 px-3 py-2" style={style}>
-        {renderNodes(content, key)}
+      <td
+        key={key}
+        className={`border border-slate-300 px-3 py-2 ${bodyFontClass}`}
+        style={{ ...style, fontWeight: 400 }}
+      >
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
       </td>
     );
   }
 
   if (content.length > 0) {
-    return <div key={key}>{renderNodes(content, key)}</div>;
+    return (
+      <div key={key}>
+        {renderNodes(content, key, bodyFontClass, titleFontClass)}
+      </div>
+    );
   }
 
   return null;
@@ -492,7 +602,11 @@ function getImageSlide(node: TiptapNode, key: string): ImageSlide | null {
   };
 }
 
-function applyMarks(text: string, marks: TiptapMark[] | undefined, keyBase: string): ReactNode {
+function applyMarks(
+  text: string,
+  marks: TiptapMark[] | undefined,
+  keyBase: string
+): ReactNode {
   let result: ReactNode = text;
 
   if (!marks || marks.length === 0) {
@@ -524,7 +638,11 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, keyBase: stri
     }
 
     if (mark.type === "code") {
-      result = <code key={markKey} className="rounded bg-slate-100 px-1">{result}</code>;
+      result = (
+        <code key={markKey} className="rounded bg-slate-100 px-1">
+          {result}
+        </code>
+      );
       continue;
     }
 
@@ -540,18 +658,27 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, keyBase: stri
 
     if (mark.type === "link") {
       const href = typeof mark.attrs?.href === "string" ? mark.attrs.href : "#";
-      const target = typeof mark.attrs?.target === "string" ? mark.attrs.target : undefined;
-      const rel = typeof mark.attrs?.rel === "string"
-        ? mark.attrs.rel
-        : target === "_blank"
-          ? "noopener noreferrer"
-          : undefined;
+      const target =
+        typeof mark.attrs?.target === "string" ? mark.attrs.target : undefined;
+      const rel =
+        typeof mark.attrs?.rel === "string"
+          ? mark.attrs.rel
+          : target === "_blank"
+            ? "noopener noreferrer"
+            : undefined;
 
       result = (
-        <a key={markKey} href={href} target={target} rel={rel} className="underline text-blue-700 break-words">
+        <a
+          key={markKey}
+          href={href}
+          target={target}
+          rel={rel}
+          className="break-words text-blue-700 underline"
+        >
           {result}
         </a>
       );
+
       continue;
     }
   }
@@ -583,10 +710,18 @@ function extractPlainText(nodes: TiptapNode[]): string {
   return text;
 }
 
-function getTextAlignStyle(attrs: Record<string, unknown>): CSSProperties | undefined {
-  const textAlign = typeof attrs.textAlign === "string" ? attrs.textAlign : "";
+function getTextAlignStyle(
+  attrs: Record<string, unknown>
+): CSSProperties | undefined {
+  const textAlign =
+    typeof attrs.textAlign === "string" ? attrs.textAlign : "";
 
-  if (textAlign === "left" || textAlign === "center" || textAlign === "right" || textAlign === "justify") {
+  if (
+    textAlign === "left" ||
+    textAlign === "center" ||
+    textAlign === "right" ||
+    textAlign === "justify"
+  ) {
     return { textAlign };
   }
 
@@ -609,13 +744,13 @@ function normalizeHeadingLevel(level: unknown): number {
   return level;
 }
 
-function getHeadingClass(level: number): string {
-  if (level === 1) return "mt-6 text-4xl font-bold text-slate-900";
-  if (level === 2) return "mt-6 text-3xl font-bold text-slate-900";
-  if (level === 3) return "mt-6 text-2xl font-bold text-slate-900";
-  if (level === 4) return "mt-6 text-xl font-bold text-slate-900";
-  if (level === 5) return "mt-6 text-lg font-bold text-slate-900";
-  return "mt-6 text-base font-bold text-slate-900";
+function getHeadingClass(level: number, titleFontClass: string): string {
+  if (level === 1) return `mt-6 text-slate-900 ${titleFontClass}`;
+  if (level === 2) return `mt-6 text-slate-900 ${titleFontClass}`;
+  if (level === 3) return `mt-6 text-slate-900 ${titleFontClass}`;
+  if (level === 4) return `mt-6 text-xl text-slate-900 ${titleFontClass}`;
+  if (level === 5) return `mt-6 text-lg text-slate-900 ${titleFontClass}`;
+  return `mt-6 text-base text-slate-900 ${titleFontClass}`;
 }
 
 function getStringAttr(attrs: Record<string, unknown>, key: string): string {
@@ -636,7 +771,6 @@ function normalizeVideoUrl(url: string): string {
     return "";
   }
 
-  // Convert common YouTube URLs to embed URL.
   if (url.includes("youtube.com/watch")) {
     const value = extractQueryParam(url, "v");
     if (value) {
@@ -651,7 +785,6 @@ function normalizeVideoUrl(url: string): string {
     }
   }
 
-  // Keep as provided for already-embedded or direct video URLs.
   return url;
 }
 
@@ -661,6 +794,7 @@ function extractQueryParam(url: string, key: string): string {
 
   for (let index = 0; index < params.length; index += 1) {
     const pair = params[index].split("=");
+
     if (pair[0] === key && pair[1]) {
       return pair[1];
     }

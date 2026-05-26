@@ -67,15 +67,13 @@ function normalizeDesks(desks: any[], lang: UiLang, apiKey: "en" | "km"): Desk[]
       const rawTitle =
         typeof x?.title === "object"
           ? x.title?.[apiKey] ||
-            x.title?.km ||
-            x.title?.kh ||
-            x.title?.en ||
-            ""
+          x.title?.km ||
+          x.title?.kh ||
+          x.title?.en ||
+          ""
           : x?.title || "";
 
-      const emails = Array.isArray(x?.emails)
-        ? x.emails.filter(Boolean)
-        : [];
+      const emails = Array.isArray(x?.emails) ? x.emails.filter(Boolean) : [];
 
       return {
         label: translateDeskLabel(String(rawTitle).trim(), lang),
@@ -117,10 +115,10 @@ function normalizeSiteSettings(apiJson: any, lang: UiLang): SiteSettingsUI {
 
   const openText = String(
     d?.openTime?.[apiKey] ||
-      d?.openTime?.kh ||
-      d?.openTime?.km ||
-      d?.openTime?.en ||
-      ""
+    d?.openTime?.kh ||
+    d?.openTime?.km ||
+    d?.openTime?.en ||
+    ""
   ).trim();
 
   const openLines = openText
@@ -205,8 +203,14 @@ const translations = {
 
 export default function ContactSection() {
   const { language } = useLanguage();
-  const lang = language === "kh" ? "kh" : "en";
+  const lang: UiLang = language === "kh" ? "kh" : "en";
   const t = translations[lang];
+
+  const isKh = lang === "kh";
+  const mainTitleClass = isKh ? "main-title-km" : "main-title-en";
+  const bodyClass = isKh ? "body-km" : "body-en";
+  const enBodyClass = "body-en";
+  const smallFontClass = isKh ? "khmer-font" : "airbnb-font";
 
   const [form, setForm] = useState<ContactPayload>({
     firstName: "",
@@ -331,45 +335,35 @@ export default function ContactSection() {
   }
 
   return (
-    <section className="max-w-7xl mx-auto px-4 pt-8 pb-10 md:pt-10 md:pb-14 bg-white">
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch mb-10">
-        <div className="xl:col-span-8">
-          <div className="w-full h-[380px] md:h-[520px] xl:h-[620px] overflow-hidden rounded-3xl shadow-lg border border-gray-200">
+    <section className="mx-auto max-w-7xl bg-white px-4 pb-10 pt-8 md:pb-14 md:pt-10">
+      <div className="mb-10 grid grid-cols-1 items-stretch gap-8 xl:grid-cols-12">
+    <div className="h-full xl:col-span-8">
+        <div className="h-full min-h-[380px] w-full overflow-hidden rounded-3xl border border-gray-200 shadow-lg md:min-h-[520px] xl:min-h-[680px]">
             <iframe
-              title="CDC Cambodia Location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.770535316462!2d104.9255855758416!3d11.568305044030615!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109515ad9d95963%3A0xf0260c4d444dee3a!2sThe%20Council%20for%20the%20Development%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1704810000000!5m2!1sen!2skh"
-              className="w-full h-full border-0"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
+                title="CDC Cambodia Location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.770535316462!2d104.9255855758416!3d11.568305044030615!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109515ad9d95963%3A0xf0260c4d444dee3a!2sThe%20Council%20for%20the%20Development%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1704810000000!5m2!1sen!2skh"
+                className="h-full min-h-[380px] w-full border-0 md:min-h-[520px] xl:min-h-[680px]"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
             />
-          </div>
         </div>
+    </div>
 
-        <div className="xl:col-span-4">
-          <div className="h-full bg-[#1e2653] text-white p-6 md:p-8 rounded-3xl space-y-8 shadow-lg">
+    <div className="h-full xl:col-span-4">
+        <div className="flex h-full min-h-[380px] flex-col space-y-8 rounded-3xl bg-[#1e2653] p-6 text-white shadow-lg md:min-h-[520px] md:p-8 xl:min-h-[680px]">
             {settingsLoading ? (
-              <div className={lang === "kh" ? "khmer-font" : ""}>
-                {t.loadingInfo}
-              </div>
+              <div className={bodyClass}>{t.loadingInfo}</div>
             ) : settingsError ? (
-              <div className="text-red-400">{settingsError}</div>
+              <div className={`text-red-400 ${bodyClass}`}>{settingsError}</div>
             ) : (
               <>
                 <section>
-                  <h4
-                    className={`text-xl font-semibold mb-3 ${
-                      lang === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
+                  <h4 className={`mb-3 text-white ${mainTitleClass}`}>
                     {t.address}
                   </h4>
 
-                  <div
-                    className={`text-gray-300 text-sm leading-7 ${
-                      lang === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
+                  <div className={`text-gray-300 ${bodyClass}`}>
                     {settings?.addressLines.map((line, idx) => (
                       <p key={idx}>{line}</p>
                     ))}
@@ -377,15 +371,11 @@ export default function ContactSection() {
                 </section>
 
                 <section className="space-y-4">
-                  <h4
-                    className={`text-xl font-semibold ${
-                      lang === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
+                  <h4 className={`text-white ${mainTitleClass}`}>
                     {t.contact}
                   </h4>
 
-                  <div className="text-sm space-y-1 text-gray-200">
+                  <div className={`space-y-1 text-gray-200 ${bodyClass}`}>
                     {settings?.phones.map((p, idx) => (
                       <p key={idx}>{p}</p>
                     ))}
@@ -393,11 +383,7 @@ export default function ContactSection() {
 
                   {settings?.desks.map((desk, index) => (
                     <div key={`${desk.label}-${index}`} className="pt-2">
-                      <p
-                        className={`font-semibold text-white mb-1 ${
-                          lang === "kh" ? "khmer-font" : ""
-                        }`}
-                      >
+                      <p className={`mb-1 text-white ${mainTitleClass}`}>
                         {desk.label}
                       </p>
 
@@ -405,7 +391,7 @@ export default function ContactSection() {
                         {desk.emails.map((em) => (
                           <p
                             key={em}
-                            className="text-gray-300 break-all font-sans text-sm"
+                            className={`break-all text-gray-300 ${enBodyClass}`}
                           >
                             {em}
                           </p>
@@ -416,33 +402,21 @@ export default function ContactSection() {
                 </section>
 
                 <section>
-                  <h4
-                    className={`text-xl font-semibold mb-3 ${
-                      lang === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
+                  <h4 className={`mb-3 text-white ${mainTitleClass}`}>
                     {t.openTime}
                   </h4>
 
-                  <p
-                    className={`text-sm text-gray-300 ${
-                      lang === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
+                  <p className={`text-gray-300 ${bodyClass}`}>
                     {settings?.openDaysText}
                   </p>
 
-                  <p className="text-sm text-white font-medium font-sans">
+                  <p className={`font-medium text-white ${bodyClass}`}>
                     {settings?.openTimeText}
                   </p>
                 </section>
 
                 <section>
-                  <h4
-                    className={`text-xl font-semibold mb-4 ${
-                      lang === "kh" ? "khmer-font" : ""
-                    }`}
-                  >
+                  <h4 className={`mb-4 text-white ${mainTitleClass}`}>
                     {t.connected}
                   </h4>
 
@@ -453,7 +427,7 @@ export default function ContactSection() {
                         target="_blank"
                         rel="noreferrer"
                         aria-label="Facebook"
-                        className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
+                        className="rounded-full bg-[#f39233] p-3 transition hover:bg-orange-400"
                       >
                         <Facebook size={20} />
                       </a>
@@ -465,7 +439,7 @@ export default function ContactSection() {
                         target="_blank"
                         rel="noreferrer"
                         aria-label="Telegram"
-                        className="bg-[#f39233] p-3 rounded-full hover:bg-orange-400 transition"
+                        className="rounded-full bg-[#f39233] p-3 transition hover:bg-orange-400"
                       >
                         <Send size={20} />
                       </a>
@@ -478,7 +452,7 @@ export default function ContactSection() {
         </div>
       </div>
 
-            {/* ===============from contact========== */}
+      {/* ===============from contact========== */}
 
       {/* <div className="max-w-7xl mx-auto">
         <form onSubmit={onSubmit} className="space-y-6 bg-white rounded-3xl">
@@ -615,7 +589,6 @@ export default function ContactSection() {
           </button>
         </form>
       </div> */}
-      
     </section>
   );
 }

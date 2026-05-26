@@ -62,9 +62,11 @@ function pickThumbUrl(post: ApiPost, apiLang: ApiLang) {
 
 function buildDetailHref(post: ApiPost): string {
     const slug = post.slug?.trim() || "";
+
     if (slug) {
         return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
     }
+
     return `/new-update/view-detail?id=${post.id}`;
 }
 
@@ -80,6 +82,7 @@ function readCache(): ApiBlock | null {
 
 function writeCache(block: ApiBlock | null) {
     if (!block) return;
+
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(block));
     } catch {
@@ -89,14 +92,14 @@ function writeCache(block: ApiBlock | null) {
 
 function SideCardSkeleton() {
     return (
-        <div className="bg-[#e9ecef] p-12 flex-1 flex flex-col justify-center animate-pulse">
-            <div className="h-4 w-32 bg-slate-200 rounded mb-3" />
-            <div className="h-10 w-3/4 bg-slate-200 rounded mb-4" />
-            <div className="h-4 w-full max-w-sm bg-slate-200 rounded mb-2" />
-            <div className="h-4 w-5/6 max-w-xs bg-slate-200 rounded mb-8" />
+        <div className="flex flex-1 animate-pulse flex-col justify-center bg-[#e9ecef] p-12">
+            <div className="mb-3 h-4 w-32 rounded bg-slate-200" />
+            <div className="mb-4 h-10 w-3/4 rounded bg-slate-200" />
+            <div className="mb-2 h-4 w-full max-w-sm rounded bg-slate-200" />
+            <div className="mb-8 h-4 w-5/6 max-w-xs rounded bg-slate-200" />
             <div className="flex gap-6">
-                <div className="h-4 w-20 bg-slate-200 rounded" />
-                <div className="h-4 w-24 bg-slate-200 rounded" />
+                <div className="h-4 w-20 rounded bg-slate-200" />
+                <div className="h-4 w-24 rounded bg-slate-200" />
             </div>
         </div>
     );
@@ -104,21 +107,21 @@ function SideCardSkeleton() {
 
 function FeaturedSkeleton() {
     return (
-        <div className="bg-[#e9ecef] flex flex-col h-full shadow-sm animate-pulse">
-            <div className="bg-gray-200/50 flex-1 flex flex-col items-center justify-center p-12 min-h-[390px]">
-                <div className="bg-white p-6 border border-gray-100 shadow-sm flex flex-col items-center justify-center w-full max-w-[360px]">
-                    <div className="relative w-full aspect-[3/4] overflow-hidden bg-slate-200" />
+        <div className="flex h-full animate-pulse flex-col bg-[#e9ecef] shadow-sm">
+            <div className="flex min-h-[390px] flex-1 flex-col items-center justify-center bg-gray-200/50 p-12">
+                <div className="flex w-full max-w-[360px] flex-col items-center justify-center border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-200" />
                 </div>
             </div>
 
-            <div className="p-10 bg-[#eceff1]">
-                <div className="h-5 w-40 bg-slate-200 rounded mb-4" />
-                <div className="h-12 w-3/4 bg-slate-200 rounded mb-4" />
-                <div className="h-4 w-full max-w-md bg-slate-200 rounded mb-2" />
-                <div className="h-4 w-5/6 max-w-sm bg-slate-200 rounded mb-8" />
+            <div className="bg-[#eceff1] p-10">
+                <div className="mb-4 h-5 w-40 rounded bg-slate-200" />
+                <div className="mb-4 h-12 w-3/4 rounded bg-slate-200" />
+                <div className="mb-2 h-4 w-full max-w-md rounded bg-slate-200" />
+                <div className="mb-8 h-4 w-5/6 max-w-sm rounded bg-slate-200" />
                 <div className="flex gap-6">
-                    <div className="h-4 w-20 bg-slate-200 rounded" />
-                    <div className="h-4 w-24 bg-slate-200 rounded" />
+                    <div className="h-4 w-20 rounded bg-slate-200" />
+                    <div className="h-4 w-24 rounded bg-slate-200" />
                 </div>
             </div>
         </div>
@@ -138,9 +141,17 @@ export function CaseStudiesSection({
     showSeeMoreButton = true,
     showAllPosts = false,
 }: CaseStudiesSectionProps = {}) {
-    const { language, apiLang, fontClass } = useLanguage();
+    const { language, apiLang } = useLanguage();
+
     const uiLang = (language as UiLang) ?? "en";
     const apiLanguage = (apiLang as ApiLang) ?? "en";
+
+    const isKh = uiLang === "kh";
+
+    const titleClass = isKh ? "title-km" : "title-en";
+    const mainTitleClass = isKh ? "main-title-km" : "main-title-en";
+    const bodyClass = isKh ? "body-km" : "body-en";
+    const smallFontClass = isKh ? "khmer-font" : "airbnb-font";
 
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -151,6 +162,7 @@ export function CaseStudiesSection({
         setMounted(true);
 
         const cached = readCache();
+
         if (cached) {
             setBlock(cached);
             setLoading(false);
@@ -188,9 +200,9 @@ export function CaseStudiesSection({
                 }
             } catch (error) {
                 if (!alive) return;
+
                 const message = error instanceof Error ? error.message : "Fetch failed";
                 setError(message);
-                // keep cached block, do not clear state
             } finally {
                 if (alive) setLoading(false);
             }
@@ -206,8 +218,6 @@ export function CaseStudiesSection({
     const posts = useMemo(() => {
         const p = block?.posts || [];
 
-        // On the homepage we keep the CMS limit.
-        // On the dedicated page we show the full list.
         if (showAllPosts) {
             return p;
         }
@@ -240,44 +250,49 @@ export function CaseStudiesSection({
     const showErrorOnly = !showSkeleton && !block && !!error;
 
     return (
-        <section className={`bg-white py-12 px-4 md:px-8 ${fontClass}`}>
-            <div className="max-w-7xl px-4 mx-auto">
+        <section className="bg-white px-4 py-12 md:px-8">
+            <div className="mx-auto max-w-7xl px-4">
                 {/* Header Section */}
                 <div className="mb-12">
-                    <p
-                        className={`text-[#1a2b4b] text-xl font-bold mb-1 ${uiLang === "kh" ? "khmer-font" : ""
-                            }`}
-                    >
+                    <p className={`mb-1 text-[#1a2b4b] ${mainTitleClass}`}>
                         {t.header}
                     </p>
+
                     <h2
-                        className={`text-[#1a2b4b] text-4xl md:text-5xl font-bold mb-6 leading-tight ${uiLang === "kh" ? "khmer-font" : ""
-                            }`}
+                        className={`
+                            mb-6 text-[#1a2b4b]
+                            !whitespace-normal !overflow-visible !text-clip
+                            ${titleClass}
+                        `}
                     >
                         {t.title}
                     </h2>
-                    <div className="w-full max-w-[480px] h-1.5 bg-orange-500"></div>
+
+                    <div className="h-1.5 w-full max-w-[480px] bg-orange-500" />
                 </div>
 
-                {showErrorOnly && <div className="text-red-600 text-sm">Failed: {error}</div>}
+                {showErrorOnly && (
+                    <div className="text-sm text-red-600">Failed: {error}</div>
+                )}
 
                 {showSkeleton ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                         <FeaturedSkeleton />
+
                         <div className="flex flex-col gap-8">
                             <SideCardSkeleton />
                             <SideCardSkeleton />
                         </div>
                     </div>
                 ) : posts.length > 0 ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                         {/* LEFT: Featured */}
                         {featured && (
-                            <div className="bg-[#e9ecef] flex flex-col h-full shadow-sm">
-                                <div className="bg-gray-200/50 flex-1 flex flex-col items-center justify-center p-12 min-h-[390px]">
-                                    <div className="bg-white p-6 border border-gray-100 shadow-sm flex flex-col items-center justify-center w-full max-w-[360px]">
+                            <div className="flex h-full flex-col bg-[#e9ecef] shadow-sm">
+                                <div className="flex min-h-[390px] flex-1 flex-col items-center justify-center bg-gray-200/50 p-12">
+                                    <div className="flex w-full max-w-[360px] flex-col items-center justify-center border border-gray-100 bg-white p-6 shadow-sm">
                                         {pickThumbUrl(featured, apiLanguage) ? (
-                                            <div className="relative w-full aspect-[3/4] overflow-hidden bg-gray-100">
+                                            <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-100">
                                                 <Image
                                                     src={pickThumbUrl(featured, apiLanguage)}
                                                     alt="Related"
@@ -286,8 +301,16 @@ export function CaseStudiesSection({
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="aspect-[4/3] w-full bg-gray-50 flex items-center justify-center">
-                                                <span className="text-gray-400 font-bold text-xs tracking-widest uppercase">
+                                            <div className="flex aspect-[4/3] w-full items-center justify-center bg-gray-50">
+                                                <span
+                                                    className={`
+                                                        text-xs font-bold text-gray-400
+                                                        ${isKh
+                                                            ? "khmer-font normal-case tracking-normal"
+                                                            : "airbnb-font uppercase tracking-widest"
+                                                        }
+                                                    `}
+                                                >
                                                     {t.relatedPhoto}
                                                 </span>
                                             </div>
@@ -295,26 +318,34 @@ export function CaseStudiesSection({
                                     </div>
                                 </div>
 
-                                <div className="p-10 bg-[#eceff1]">
+                                <div className="bg-[#eceff1] p-10">
                                     <span
-                                        className={`inline-block bg-[#1a2b4b] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 ${uiLang === "kh" ? "khmer-font" : ""
-                                            }`}
+                                        className={`
+                                            mb-4 inline-block rounded-full bg-[#1a2b4b]
+                                            px-3 py-1 text-[10px] font-bold text-white
+                                            ${isKh
+                                                ? "khmer-font normal-case tracking-normal"
+                                                : "airbnb-font uppercase tracking-wider"
+                                            }
+                                        `}
                                     >
-                                        {t.workingGroup}: {pickText(featured.category?.name, uiLang) || "—"}
+                                        {t.workingGroup}:{" "}
+                                        {pickText(featured.category?.name, uiLang) || "—"}
                                     </span>
 
                                     <h3
-                                        className={`text-[#1a2b4b] text-4xl khmer-font font-black mb-4 leading-tight ${uiLang === "kh" ? "khmer-font" : ""
-                                            }`}
+                                        className={`
+                                            mb-4 max-w-md text-[#1a2b4b]
+                                            !whitespace-normal !overflow-visible !text-clip
+                                            ${titleClass}
+                                        `}
                                     >
                                         {pickText(featured.title, uiLang) || "—"}
                                     </h3>
 
-                                    <p
-                                        className={`text-gray-700 text-sm khmer-font leading-relaxed mb-8 max-w-md ${uiLang === "kh" ? "khmer-font" : ""
-                                            }`}
-                                    >
-                                        {pickText(featured.description ?? undefined, uiLang) || t.fallbackDesc}
+                                    <p className={`mb-8 max-w-md text-gray-700 ${bodyClass}`}>
+                                        {pickText(featured.description ?? undefined, uiLang) ||
+                                            t.fallbackDesc}
                                     </p>
 
                                     <div className="flex flex-wrap items-center gap-6">
@@ -322,23 +353,32 @@ export function CaseStudiesSection({
                                             href={pickDocUrl(featured, apiLanguage) || "#"}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${!pickDocUrl(featured, apiLanguage)
+                                            className={`
+                                                flex items-center text-xs font-bold text-[#1a2b4b]
+                                                transition-colors hover:text-orange-600
+                                                ${!pickDocUrl(featured, apiLanguage)
                                                     ? "pointer-events-none opacity-60"
                                                     : ""
-                                                } ${uiLang === "kh"
+                                                }
+                                                ${isKh
                                                     ? "khmer-font normal-case tracking-normal"
-                                                    : ""
-                                                }`}
+                                                    : "airbnb-font uppercase tracking-widest"
+                                                }
+                                            `}
                                         >
                                             {t.download} <span className="ml-2 text-lg">›</span>
                                         </a>
 
                                         <Link
                                             href={buildDetailHref(featured)}
-                                            className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${uiLang === "kh"
+                                            className={`
+                                                flex items-center text-xs font-bold text-[#1a2b4b]
+                                                transition-colors hover:text-orange-600
+                                                ${isKh
                                                     ? "khmer-font normal-case tracking-normal"
-                                                    : ""
-                                                }`}
+                                                    : "airbnb-font uppercase tracking-widest"
+                                                }
+                                            `}
                                         >
                                             {t.viewDetail} <span className="ml-2 text-lg">›</span>
                                         </Link>
@@ -355,27 +395,34 @@ export function CaseStudiesSection({
                                 return (
                                     <div
                                         key={post.id}
-                                        className="bg-[#e9ecef] p-12 flex-1 flex flex-col justify-center"
+                                        className="flex flex-1 flex-col justify-center bg-[#e9ecef] p-12"
                                     >
                                         <div
-                                            className={`text-[#1a2b4b] text-[10px] font-bold mb-3 uppercase tracking-wider ${uiLang === "kh" ? "khmer-font" : ""
-                                                }`}
+                                            className={`
+                                                mb-3 text-[10px] font-bold text-[#1a2b4b]
+                                                ${isKh
+                                                    ? "khmer-font normal-case tracking-normal"
+                                                    : "airbnb-font uppercase tracking-wider"
+                                                }
+                                            `}
                                         >
-                                            {t.workingGroup}: {pickText(post.category?.name, uiLang) || "—"}
+                                            {t.workingGroup}:{" "}
+                                            {pickText(post.category?.name, uiLang) || "—"}
                                         </div>
 
                                         <h3
-                                            className={`text-[#1a2b4b] text-3xl khmer-font font-black mb-4 leading-tight ${uiLang === "kh" ? "khmer-font" : ""
-                                                }`}
+                                            className={`
+                                                mb-4 text-[#1a2b4b]
+                                                !whitespace-normal !overflow-visible !text-clip
+                                                ${titleClass}
+                                            `}
                                         >
                                             {pickText(post.title, uiLang) || "—"}
                                         </h3>
 
-                                        <p
-                                            className={`text-gray-700 khmer-font text-sm leading-relaxed mb-8 max-w-sm ${uiLang === "kh" ? "khmer-font" : ""
-                                                }`}
-                                        >
-                                            {pickText(post.description ?? undefined, uiLang) || t.fallbackDesc}
+                                        <p className={`mb-8 max-w-sm text-gray-700 ${bodyClass}`}>
+                                            {pickText(post.description ?? undefined, uiLang) ||
+                                                t.fallbackDesc}
                                         </p>
 
                                         <div className="mt-auto flex flex-wrap items-center gap-6">
@@ -383,23 +430,33 @@ export function CaseStudiesSection({
                                                 href={docUrl || "#"}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${!docUrl ? "pointer-events-none opacity-60" : ""
-                                                    } ${uiLang === "kh"
+                                                className={`
+                                                    flex items-center text-xs font-bold text-[#1a2b4b]
+                                                    transition-colors hover:text-orange-600
+                                                    ${!docUrl ? "pointer-events-none opacity-60" : ""}
+                                                    ${isKh
                                                         ? "khmer-font normal-case tracking-normal"
-                                                        : ""
-                                                    }`}
+                                                        : "airbnb-font uppercase tracking-widest"
+                                                    }
+                                                `}
                                             >
-                                                {t.download} <span className="ml-2 text-lg">›</span>
+                                                {t.download}{" "}
+                                                <span className="ml-2 text-lg">›</span>
                                             </a>
 
                                             <Link
                                                 href={buildDetailHref(post)}
-                                                className={`text-[#1a2b4b] text-xs font-bold flex items-center hover:text-orange-600 transition-colors uppercase tracking-widest ${uiLang === "kh"
+                                                className={`
+                                                    flex items-center text-xs font-bold text-[#1a2b4b]
+                                                    transition-colors hover:text-orange-600
+                                                    ${isKh
                                                         ? "khmer-font normal-case tracking-normal"
-                                                        : ""
-                                                    }`}
+                                                        : "airbnb-font uppercase tracking-widest"
+                                                    }
+                                                `}
                                             >
-                                                {t.viewDetail} <span className="ml-2 text-lg">›</span>
+                                                {t.viewDetail}{" "}
+                                                <span className="ml-2 text-lg">›</span>
                                             </Link>
                                         </div>
                                     </div>
@@ -408,18 +465,22 @@ export function CaseStudiesSection({
                         </div>
                     </div>
                 ) : (
-                    <div className="text-slate-600 text-sm">No case studies found.</div>
+                    <div className={`text-sm text-slate-600 ${bodyClass}`}>
+                        No case studies found.
+                    </div>
                 )}
 
                 {showSeeMoreButton && posts.length > 0 ? (
                     <div className="mt-10 flex justify-center">
                         <Link
                             href="/case-studies"
-                            className={`text-white bg-blue-950 hover:bg-blue-900 py-2 px-6 rounded-lg font-semibold ${
-                                uiLang === "kh" ? "khmer-font" : ""
-                            }`}
+                            className={`
+                                rounded-lg bg-blue-950 px-6 py-2 font-semibold text-white
+                                hover:bg-blue-900
+                                ${smallFontClass}
+                            `}
                         >
-                            {uiLang === "kh" ? "មើលបន្ថែម" : "See More"}
+                            {isKh ? "មើលបន្ថែម" : "See More"}
                         </Link>
                     </div>
                 ) : null}

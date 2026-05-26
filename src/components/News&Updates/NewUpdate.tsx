@@ -31,7 +31,11 @@ export interface NewUpdateSectionProps {
     data: NewsUpdateCard[];
 }
 
-function pickLocalizedText(value: LocalizedText | undefined, isKh: boolean, fallback: string) {
+function pickLocalizedText(
+    value: LocalizedText | undefined,
+    isKh: boolean,
+    fallback: string
+) {
     if (!value) {
         return fallback;
     }
@@ -58,17 +62,22 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
     const hasData = data.length > 0;
     const isKh = language === "kh";
 
+    const titleClass = isKh ? "title-km" : "title-en";
+    const mainTitleClass = isKh ? "main-title-km" : "main-title-en";
+    const bodyClass = isKh ? "body-km" : "body-en";
+
     return (
         <section className="relative overflow-hidden bg-white py-16">
             {/* Header */}
             <div className="relative z-10 mx-auto mb-16 max-w-7xl px-4">
-                <p className={`mb-1 text-3xl font-bold text-gray-900 ${isKh ? "khmer-font" : ""}`}>
-                    {/* Switch the section heading text by the current site language. */}
+                <p className={`mb-1 text-gray-900 ${mainTitleClass}`}>
                     {isKh ? "ថ្មីៗបំផុត" : "Latest"}
                 </p>
-                <h2 className={`mb-4 text-5xl font-bold text-[#1a2b4b] ${isKh ? "khmer-font" : ""}`}>
+
+                <h2 className={`mb-4 text-[#1a2b4b] ${titleClass}`}>
                     {isKh ? "ព័ត៌មាន និងបច្ចុប្បន្នភាព" : "News & Updates"}
                 </h2>
+
                 <div className="h-1.5 w-72 bg-orange-500" />
             </div>
 
@@ -81,13 +90,19 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                         modules={[Pagination, Autoplay]}
                         spaceBetween={30}
                         slidesPerView={1}
-                        autoplay={{ delay: 5000, disableOnInteraction: false }}
-                        pagination={{ clickable: true, el: ".custom-pagination" }}
+                        autoplay={{
+                            delay: 5000,
+                            disableOnInteraction: false,
+                        }}
+                        pagination={{
+                            clickable: true,
+                            el: ".custom-pagination",
+                        }}
                         breakpoints={{
                             768: { slidesPerView: 2 },
                             1024: { slidesPerView: 3 },
                         }}
-                        className="pb-20"
+                        className="new-update-swiper pb-20"
                     >
                         {data.map((item) => {
                             const categoryLabel = pickLocalizedText(
@@ -95,22 +110,28 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                 isKh,
                                 getCategoryFallback(item.group, isKh)
                             );
+
                             const detailHref = {
                                 pathname: "/new-update/view-detail",
                                 query: item.slug
-                                    ? { slug: item.slug, id: String(item.id) }
-                                    : { id: String(item.id) },
+                                    ? {
+                                          slug: item.slug,
+                                          id: String(item.id),
+                                      }
+                                    : {
+                                          id: String(item.id),
+                                      },
                             };
 
                             return (
-                                <SwiperSlide key={item.id}>
+                                <SwiperSlide key={item.id} className="!h-auto">
                                     <Link
                                         href={detailHref}
                                         className="group block h-full focus:outline-none"
                                     >
-                                        <article className="flex min-h-[500px] rounded-2xl h-full flex-col bg-[#e9ecef] shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                                        <article className="flex h-full min-h-[500px] flex-col rounded-2xl bg-[#e9ecef] shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
                                             {/* Image */}
-                                            <div className="relative m-4 rounded-2xl aspect-square overflow-hidden bg-white">
+                                            <div className="relative m-4 aspect-square overflow-hidden rounded-2xl bg-white">
                                                 {item.imageUrl ? (
                                                     <Image
                                                         src={item.imageUrl}
@@ -127,19 +148,40 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
 
                                             {/* Content */}
                                             <div className="flex grow flex-col px-6 pb-8 pt-2">
-                                                <span className="mb-2 text-xs font-semibold text-[#1a2b4b]">
-                                                    {formatLocalizedDate(item.createdAt, isKh ? "kh" : "en")}
+                                                <span className={`mb-2 text-[#1a2b4b] ${bodyClass}`}>
+                                                    {formatLocalizedDate(
+                                                        item.createdAt,
+                                                        isKh ? "kh" : "en"
+                                                    )}
                                                 </span>
 
-                                                <span className={`mb-3 w-fit rounded-full bg-[#1a2b4b] px-3 py-1 text-[10px] font-bold uppercase text-white ${isKh ? "khmer-font" : ""}`}>
+                                                <span
+                                                    className={`
+                                                        mb-3 w-fit rounded-full bg-[#1a2b4b]
+                                                        px-3 py-1 text-[10px] font-bold uppercase text-white
+                                                        ${isKh ? "khmer-font" : "airbnb-font"}
+                                                    `}
+                                                >
                                                     {categoryLabel}
                                                 </span>
 
-                                                <h3 className="khmer-font mb-3 min-h-[28px] line-clamp-1 text-xl font-bold uppercase text-[#1a2b4b] group-hover:underline">
+                                                <h3
+                                                    className={`
+                                                        mb-3 min-h-[28px] text-[#1a2b4b]
+                                                        group-hover:underline
+                                                        ${mainTitleClass}
+                                                    `}
+                                                    title={item.title}
+                                                >
                                                     {item.title}
                                                 </h3>
 
-                                                <p className="khmer-font mb-6 min-h-[40px] line-clamp-2 text-sm text-gray-700">
+                                                <p
+                                                    className={`
+                                                        mb-6 min-h-[40px] line-clamp-2 text-gray-700
+                                                        ${bodyClass}
+                                                    `}
+                                                >
                                                     {item.excerpt || "No description available."}
                                                 </p>
 
@@ -150,8 +192,10 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                         px-3 py-1
                                                         text-[12px] font-bold text-orange-600
                                                         no-underline transition
-                                                        hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
-                                                        ${isKh ? "khmer-font" : ""}
+                                                        hover:border-[#1D4ED8]
+                                                        hover:bg-[#EFF6FF]
+                                                        hover:text-[#1D4ED8]
+                                                        ${isKh ? "khmer-font" : "airbnb-font"}
                                                     `}
                                                 >
                                                     {isKh ? "អានបន្ថែម" : "View details"}
@@ -171,14 +215,20 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                 )}
 
                 {/* Pagination */}
-                {hasData && <div className="custom-pagination mt-4 flex justify-center gap-3" />}
+                {hasData && (
+                    <div className="custom-pagination mt-4 flex justify-center gap-3" />
+                )}
 
                 {/* Bottom See More */}
                 {hasData && (
                     <div className="mt-8 flex justify-center">
                         <Link
                             href="/new-update/see-more"
-                            className={`rounded-md bg-blue-950 px-5 py-2 font-semibold text-white transition hover:bg-blue-900 ${isKh ? "khmer-font" : ""}`}
+                            className={`
+                                rounded-md bg-blue-950 px-5 py-2 font-semibold text-white
+                                transition hover:bg-blue-900
+                                ${isKh ? "khmer-font" : "airbnb-font"}
+                            `}
                         >
                             {isKh ? "មើលបន្ថែម" : "See More"}
                         </Link>
@@ -187,15 +237,29 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
             </div>
 
             <style jsx global>{`
+                .new-update-swiper .swiper-wrapper {
+                    align-items: stretch;
+                }
+
+                .new-update-swiper .swiper-slide {
+                    height: auto;
+                    display: flex;
+                }
+
+                .new-update-swiper .swiper-slide > a {
+                    width: 100%;
+                    height: 100%;
+                }
+
                 .custom-pagination .swiper-pagination-bullet {
-                width: 14px;
-                height: 14px;
-                background: #fb923c;
-                opacity: 0.5;
+                    width: 14px;
+                    height: 14px;
+                    background: #fb923c;
+                    opacity: 0.5;
                 }
 
                 .custom-pagination .swiper-pagination-bullet-active {
-                opacity: 1;
+                    opacity: 1;
                 }
             `}</style>
         </section>

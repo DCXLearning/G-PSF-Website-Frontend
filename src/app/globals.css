@@ -40,8 +40,13 @@
   font-display: swap;
 }
 
+/* =========================
+   Base Font
+========================= */
+
 body {
   font-family: "Airbnb Cereal", var(--font-kantumruy-pro), sans-serif;
+  letter-spacing: 0.5px;
 }
 
 .khmer-font {
@@ -59,3 +64,165 @@ body {
 .stroke-text-label {
   -webkit-text-stroke: 0.5px blue;
 }
+
+/* =========================
+   Responsive Typography
+   Mobile default
+========================= */
+
+:root {
+  /* Main card title */
+  --main-title-en-size: 21px;
+  --main-title-km-size: 22px;
+  --main-title-line-height: 32px;
+
+  /* Banner title / middle title */
+  --title-en-size: 19px;
+  --title-km-size: 22px;
+
+  /* Body text */
+  --body-en-size: 14px;
+  --body-km-size: 15px;
+
+  /* Line height */
+  --body-line-height: 30px;
+  --title-en-line-height: 42px;
+  --title-km-line-height: 35px;
+
+  /* Letter spacing */
+  --text-letter-spacing: 0.5px;
+  --header-letter-spacing: 0.7px;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  :root {
+    --title-en-size: 28px;
+    --title-km-size: 30px;
+
+    --body-en-size: 15px;
+    --body-km-size: 16px;
+
+    --title-km-line-height: 42px;
+  }
+}
+
+/* Small Desktop */
+@media (min-width: 1024px) {
+  :root {
+    --title-en-size: 32px;
+    --title-km-size: 35px;
+
+    --body-en-size: 16px;
+    --body-km-size: 17px;
+
+    --title-km-line-height: 50px;
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1280px) {
+  :root {
+    --body-en-size: 17px;
+    --body-km-size: 18px;
+  }
+}
+
+/* =========================
+   Utility Classes
+========================= */
+
+/* Main title for card title: EN 21px / KM 22px */
+.main-title,
+.main-title-en,
+.main-title-km {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: var(--header-letter-spacing);
+}
+
+.main-title-en {
+  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-size: var(--main-title-en-size) !important;
+  line-height: var(--main-title-line-height);
+  font-weight: 800;
+}
+
+.main-title-km {
+  font-family: var(--font-kantumruy-pro), sans-serif;
+  font-size: var(--main-title-km-size) !important;
+  line-height: var(--main-title-line-height);
+  font-weight: 700;
+}
+
+/* Auto main-title by language */
+html[lang="en"] .main-title,
+body[data-language="en"] .main-title {
+  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-size: var(--main-title-en-size) !important;
+  line-height: var(--main-title-line-height);
+  font-weight: 800;
+}
+
+html[lang="km"] .main-title,
+html[lang="kh"] .main-title,
+body[data-language="km"] .main-title,
+body[data-language="kh"] .main-title {
+  font-family: var(--font-kantumruy-pro), sans-serif;
+  font-size: var(--main-title-km-size) !important;
+  line-height: var(--main-title-line-height);
+  font-weight: 700;
+}
+
+/* English banner title / middle title */
+.title-en,
+.banner-title-en,
+.middle-title-en {
+  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-size: var(--title-en-size);
+  line-height: var(--title-en-line-height);
+  letter-spacing: var(--header-letter-spacing);
+  font-weight: 800;
+}
+
+/* Khmer banner title / middle title */
+.title-km,
+.banner-title-km,
+.middle-title-km {
+  font-family: var(--font-kantumruy-pro), sans-serif;
+  font-size: var(--title-km-size);
+  line-height: var(--title-km-line-height);
+  letter-spacing: var(--header-letter-spacing);
+  font-weight: 700;
+}
+
+/* English body text */
+.body-en {
+  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-size: var(--body-en-size);
+  line-height: var(--body-line-height);
+  letter-spacing: var(--text-letter-spacing);
+  font-weight: 400;
+}
+
+/* Khmer body text */
+.body-km {
+  font-family: var(--font-kantumruy-pro), sans-serif;
+  font-size: var(--body-km-size);
+  line-height: var(--body-line-height);
+  letter-spacing: var(--text-letter-spacing);
+  font-weight: 400;
+}
+
+/* Old class support */
+.font-size-desktop-km {
+  font-size: var(--title-km-size);
+}
+
+.font-size-desktop-en {
+  font-size: var(--title-en-size);
+}
+

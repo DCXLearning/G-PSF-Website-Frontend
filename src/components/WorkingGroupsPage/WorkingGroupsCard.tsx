@@ -20,7 +20,7 @@ type GridApiResponse = {
     items: ApiWG[];
 };
 
-type MultiLang = string | { en?: string; km?: string };
+type MultiLang = string | { en?: string; km?: string; kh?: string };
 
 type SectionBlock = {
     id: number;
@@ -46,7 +46,16 @@ type WorkGroupUI = {
 
 const CACHE_KEY = "working_groups_grid_cache";
 
-/* Khmer Number */
+function normalizeLang(language: unknown): Lang {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
 function toKhmerNumber(n: number) {
     const map: Record<string, string> = {
         "0": "០",
@@ -66,6 +75,8 @@ function toKhmerNumber(n: number) {
 
 function readCache(): GridApiResponse | null {
     try {
+        if (typeof window === "undefined") return null;
+
         const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
 
@@ -77,31 +88,32 @@ function readCache(): GridApiResponse | null {
 
 function writeCache(data: GridApiResponse) {
     try {
+        if (typeof window === "undefined") return;
         localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    } catch {}
+    } catch {
+        // ignore cache error
+    }
 }
 
 function getText(value: MultiLang | null | undefined, lang: ApiLang): string {
     if (!value) return "";
     if (typeof value === "string") return value;
 
-    return value[lang] || value.en || "";
+    return value[lang] || value.km || value.kh || value.en || "";
 }
 
 function WorkGroupCardSkeleton() {
     return (
-        <div className="flex flex-col items-center aspect-square p-3 rounded-2xl md:rounded-[1.8rem] shadow-xl bg-white animate-pulse">
-            {/* Icon area fixed height */}
+        <div className="flex aspect-square animate-pulse flex-col items-center rounded-2xl bg-white p-3 shadow-xl md:rounded-[1.8rem]">
             <div className="flex h-[62%] w-full items-end justify-center pb-2">
-                <div className="bg-[#1E2257] p-2 md:p-3 rounded-full">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full bg-white/20" />
+                <div className="rounded-full bg-[#1E2257] p-2 md:p-3">
+                    <div className="h-8 w-8 rounded-full bg-white/20 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14" />
                 </div>
             </div>
 
-            {/* Text area fixed height */}
-            <div className="flex h-[38%] w-full flex-col items-center justify-start pt-1">
-                <div className="h-3 w-16 md:w-20 bg-slate-200 rounded mb-2" />
-                <div className="h-3 w-12 md:w-16 bg-slate-200 rounded" />
+            <div className="flex h-[38%] w-full flex-col items-center justify-start overflow-hidden pt-2">
+                <div className="mb-2 h-3 w-16 rounded bg-slate-200 md:w-20" />
+                <div className="h-3 w-12 rounded bg-slate-200 md:w-16" />
             </div>
         </div>
     );
@@ -110,7 +122,7 @@ function WorkGroupCardSkeleton() {
 export default function WorkGroupsGrid() {
     const { language } = useLanguage();
 
-    const lang = (language as Lang) ?? "en";
+    const lang = normalizeLang(language);
     const isKh = lang === "kh";
     const apiLang: ApiLang = isKh ? "km" : "en";
 
@@ -126,6 +138,47 @@ export default function WorkGroupsGrid() {
     const [flexTitle, setFlexTitle] = useState(
         "New Working Groups may be established, merged, or dissolved in response to changing economic conditions and sector needs."
     );
+
+    const titleFontClass = isKh
+        ? "title-km khmer-font !font-bold"
+        : "title-en airbnb-font !font-bold";
+
+    const bodyFontClass = isKh
+        ? "body-km khmer-font"
+        : "body-en airbnb-font";
+
+    const labelFontClass = isKh
+        ? "body-km khmer-font !font-bold"
+        : "body-en airbnb-font !font-bold";
+
+    const cardTextFontClass = isKh
+        ? "khmer-font"
+        : "airbnb-font";
+
+    const cardTextStyle: React.CSSProperties & {
+        WebkitBoxOrient?: "vertical";
+        WebkitLineClamp?: number;
+    } = {
+        display: "-webkit-box",
+        WebkitBoxOrient: "vertical",
+        WebkitLineClamp: 2,
+        width: "100%",
+        maxWidth: "92%",
+        height: "56px",
+        maxHeight: "56px",
+        margin: "0 auto",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "normal",
+        textAlign: "center",
+        wordBreak: "break-word",
+        overflowWrap: "break-word",
+        color: "#1a1a1a",
+        fontSize: isKh ? "17px" : "16px",
+        lineHeight: "28px",
+        fontWeight: 700,
+        letterSpacing: "var(--text-letter-spacing)",
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -167,11 +220,9 @@ export default function WorkGroupsGrid() {
                 writeCache(nextData);
             } catch (e: any) {
                 if (!alive) return;
-
                 setError(e?.message || "Failed to load");
             } finally {
                 if (!alive) return;
-
                 setLoadingGrid(false);
             }
         }
@@ -207,7 +258,6 @@ export default function WorkGroupsGrid() {
                 console.error("Failed to load block 44:", e);
             } finally {
                 if (!alive) return;
-
                 setLoadingFlex(false);
             }
         }
@@ -229,7 +279,6 @@ export default function WorkGroupsGrid() {
         }));
     }, [items, apiLang]);
 
-    /* FIX NUMBER ONLY */
     const count = total || workGroups.length;
 
     const numberText = isKh
@@ -245,33 +294,27 @@ export default function WorkGroupsGrid() {
 
     return (
         <div className="bg-white">
-            <div className="bg-gradient-to-br from-[#2B3175] to-[#3B55A4] py-10 px-4 sm:px-6 lg:px-8 font-sans">
-                <div className="max-w-7xl px-4 mx-auto">
-                    <header className="text-center mb-8 md:mb-12">
-                        <h1
-                            className={`text-white text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight ${
-                                isKh ? "khmer-font" : ""
-                            }`}
-                        >
+            <div className="bg-gradient-to-br from-[#2B3175] to-[#3B55A4] px-4 py-10 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl px-4">
+                    <header className="mb-8 text-center md:mb-12">
+                        <h1 className={`text-white ${titleFontClass}`}>
                             {headerTitle}
                         </h1>
 
                         {showErrorOnly ? (
-                            <div className="mt-4 text-white/80 text-sm">
+                            <div className={`mt-4 text-white/80 ${bodyFontClass}`}>
                                 {isKh ? `មានបញ្ហា៖ ${error}` : `Error: ${error}`}
                             </div>
                         ) : null}
                     </header>
 
-                    {/* 6 Cards per row on desktop, smaller cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 lg:gap-5">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-6 lg:gap-5">
                         {showSkeleton ? (
                             Array.from({ length: 12 }).map((_, i) => (
                                 <WorkGroupCardSkeleton key={i} />
                             ))
                         ) : workGroups.length > 0 ? (
                             workGroups.map((group, index) => {
-                                /* FIX gray/white pattern for 6 columns */
                                 const isGray =
                                     (Math.floor(index / 6) + (index % 6)) % 2 !== 0;
 
@@ -279,28 +322,32 @@ export default function WorkGroupsGrid() {
                                     <Link
                                         key={group.id}
                                         href={group.href}
-                                        className={`group flex flex-col items-center aspect-square p-3 rounded-2xl md:rounded-[1.8rem] shadow-xl transition-all duration-300 hover:scale-[1.03]
-                                        focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
-                                        ${isGray ? "bg-[#d1d5db]" : "bg-white"}`}
+                                        className={`
+                                            group flex aspect-square flex-col items-center rounded-2xl p-3 shadow-xl
+                                            transition-all duration-300 hover:scale-[1.03]
+                                            focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
+                                            md:rounded-[1.8rem]
+                                            ${isGray ? "bg-[#d1d5db]" : "bg-white"}
+                                        `}
                                         aria-label={group.title}
                                     >
                                         {/* Icon area fixed height */}
                                         <div className="flex h-[62%] w-full items-end justify-center pb-2">
-                                            <div className="bg-[#1E2257] text-white p-2 md:p-3 rounded-full shadow-inner transition-transform duration-300 group-hover:scale-110">
+                                            <div className="rounded-full bg-[#1E2257] p-2 text-white shadow-inner transition-transform duration-300 group-hover:scale-110 md:p-3">
                                                 <img
                                                     src={group.icon}
                                                     alt=""
-                                                    className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 object-contain"
+                                                    className="h-8 w-8 object-contain sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14"
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Text area fixed height */}
-                                        <div className="flex h-[38%] w-full items-start justify-center pt-1">
+                                        <div className="flex h-[38%] w-full items-start justify-center overflow-hidden pt-1">
                                             <p
-                                                className={`text-[#1a1a1a] text-center text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold leading-tight max-w-[92%] line-clamp-3 ${
-                                                    isKh ? "khmer-font" : ""
-                                                }`}
+                                                className={cardTextFontClass}
+                                                style={cardTextStyle}
+                                                title={group.title}
                                             >
                                                 {group.title}
                                             </p>
@@ -309,7 +356,12 @@ export default function WorkGroupsGrid() {
                                 );
                             })
                         ) : (
-                            <div className="col-span-full text-center text-white/90 py-8">
+                            <div
+                                className={`
+                                    col-span-full py-8 text-center text-white/90
+                                    ${bodyFontClass}
+                                `}
+                            >
                                 {isKh ? "មិនមានក្រុមការងារ" : "No work groups found"}
                             </div>
                         )}
@@ -317,19 +369,19 @@ export default function WorkGroupsGrid() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 md:px-4 py-8">
+            <div className="mx-auto max-w-7xl px-4 py-8 md:px-4">
                 <p
-                    className={`text-lg md:text-2xl font-semibold text-gray-900 mb-3 ${
-                        isKh ? "khmer-font normal-case" : ""
-                    }`}
+                    className={`mb-3 text-gray-900 ${labelFontClass}`}
+                    style={{ fontWeight: 700 }}
                 >
                     {loadingFlex ? "..." : flexLabel}
                 </p>
 
                 <h2
-                    className={`text-4xl md:text-5xl font-bold text-gray-900 leading-[1.2] max-w-[850px] ${
-                        isKh ? "khmer-font" : ""
-                    }`}
+                    className={`
+                        max-w-[850px] text-gray-900
+                        ${titleFontClass}
+                    `}
                 >
                     {loadingFlex ? "..." : flexTitle}
                 </h2>

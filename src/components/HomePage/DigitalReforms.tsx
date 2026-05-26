@@ -81,6 +81,7 @@ function readCache(lang: Lang): PostListBlock | null {
 
 function writeCache(lang: Lang, block: PostListBlock | null) {
     if (!block) return;
+
     try {
         localStorage.setItem(getCacheKey(lang), JSON.stringify(block));
     } catch {
@@ -138,27 +139,26 @@ function pickThumbUrl(post: ApiPost, lang: Lang): string {
 function ReformCardSkeleton() {
     return (
         <div
-            className="rounded-tl-[120px] bg-white overflow-hidden rounded-bl-[25px] rounded-br-[25px] relative pt-12 h-[430px] pb-10 flex flex-col animate-pulse"
+            className="relative flex h-[430px] animate-pulse flex-col overflow-hidden rounded-bl-[25px] rounded-br-[25px] rounded-tl-[120px] bg-white pb-10 pt-12"
             style={{ boxShadow: "0 7px 15px rgba(0,0,0,0.4)" }}
         >
-            <div className="absolute bg-blue-950 top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-70">
-                <div className="flex items-center justify-center w-full h-[160px]">
+            <div className="absolute left-1/2 top-0 h-70 w-full -translate-x-1/2 -translate-y-1/2 bg-blue-950">
+                <div className="flex h-[160px] w-full items-center justify-center">
                     <div className="h-[120px] w-[120px] rounded-full border-4 border-white bg-white/20" />
                 </div>
             </div>
 
-            <div className="w-25 h-25 relative rounded-[200px] ml-10 top-8 mb-6">
-                <div className="bg-blue-950 w-25 h-25 border-white border-3 rounded-[200px] flex items-center justify-center overflow-hidden">
-                    <div className="w-full h-full bg-white/20" />
+            <div className="relative top-8 mb-4 ml-10 h-25 w-25 rounded-[200px]">
+                <div className="flex h-25 w-25 items-center justify-center overflow-hidden rounded-[200px] border-3 border-white bg-blue-950">
+                    <div className="h-full w-full bg-white/20" />
                 </div>
             </div>
 
-            <div className="p-6 pt-10 flex flex-col flex-1">
-                <div className="h-7 bg-slate-200 rounded w-3/4 mb-4" />
-                <div className="h-4 bg-slate-200 rounded w-full mb-2" />
-                <div className="h-4 bg-slate-200 rounded w-5/6 mb-2" />
-                <div className="h-4 bg-slate-200 rounded w-2/3 mb-6" />
-                <div className="mt-auto h-11 bg-slate-200 rounded w-full" />
+            <div className="flex flex-1 flex-col p-6 pt-8">
+                <div className="mb-4 h-16 w-full rounded bg-slate-200" />
+                <div className="mb-2 h-4 w-full rounded bg-slate-200" />
+                <div className="mb-6 h-4 w-5/6 rounded bg-slate-200" />
+                <div className="mt-auto h-8 w-28 rounded bg-slate-200" />
             </div>
         </div>
     );
@@ -166,8 +166,14 @@ function ReformCardSkeleton() {
 
 const LatestReport: React.FC = () => {
     const { language } = useLanguage();
+
     const lang: Lang = language === "kh" ? "km" : "en";
     const isKhmer = lang === "km";
+
+    const titleFontClass = isKhmer ? "title-km" : "title-en";
+    const mainTitleFontClass = isKhmer ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
+    const smallFontClass = isKhmer ? "khmer-font" : "airbnb-font";
 
     const [mounted, setMounted] = useState(false);
     const [block, setBlock] = useState<PostListBlock | null>(null);
@@ -177,6 +183,7 @@ const LatestReport: React.FC = () => {
         setMounted(true);
 
         const cached = readCache(lang);
+
         if (cached) {
             setBlock(cached);
             setLoading(false);
@@ -196,6 +203,7 @@ const LatestReport: React.FC = () => {
                 }
 
                 const json = (await res.json()) as ApiResponse;
+
                 if (!alive) return;
 
                 const apiBlock = pickSemesterReportsBlock(json);
@@ -222,6 +230,7 @@ const LatestReport: React.FC = () => {
     const posts = useMemo(() => {
         const arr = block?.posts ?? [];
         const limit = block?.settings?.limit ?? arr.length;
+
         return arr.slice(0, limit);
     }, [block]);
 
@@ -237,40 +246,44 @@ const LatestReport: React.FC = () => {
 
     return (
         <>
-            <div className="text-center mb-90 mt-20">
+            <div className="mb-90 mt-4 md:mt-14 text-center">
                 <p
-                    className={`text-xl font-medium text-indigo-400 uppercase tracking-wider ${isKhmer ? "khmer-font" : ""
-                        }`}
+                    className={`
+                        text-indigo-400
+                        !whitespace-normal !overflow-visible !text-clip
+                        ${mainTitleFontClass}
+                    `}
                 >
                     {subHeading}
                 </p>
 
-                <h1
-                    className={`text-4xl md:text-5xl font-extrabold text-blue-950 mt-2 ${isKhmer ? "khmer-font" : ""
-                        }`}
-                >
+                <h1 className={`mt-2 text-blue-950 ${titleFontClass}`}>
                     {mainHeading}
                 </h1>
 
                 <p
-                    className={`mt-4 text-2xl text-gray-500 max-w-4xl mx-auto ${isKhmer ? "khmer-font" : ""
-                        }`}
+                    className={`
+                        mx-auto mt-4 max-w-4xl text-gray-500
+                        ${bodyFontClass}
+                    `}
                 >
                     {description}
                 </p>
             </div>
 
             <div
-                className="h-[220px] flex flex-col justify-end relative"
+                className="relative flex h-[220px] flex-col justify-end"
                 style={{ backgroundColor: DARK_BLUE }}
             >
-                <div className="container mx-auto px-4 max-w-7xl py-8">
+                <div className="container mx-auto max-w-7xl px-4 py-8">
                     {showSkeleton ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                             <ReformCardSkeleton />
+
                             <div className="hidden sm:block">
                                 <ReformCardSkeleton />
                             </div>
+
                             <div className="hidden lg:block">
                                 <ReformCardSkeleton />
                             </div>
@@ -290,32 +303,33 @@ const LatestReport: React.FC = () => {
                             className="custom-swiper-pagination-white"
                         >
                             {posts.map((post) => {
-                                const title =
-                                    isKhmer
-                                        ? post.title?.km || post.title?.en || "Untitled"
-                                        : post.title?.en || post.title?.km || "Untitled";
+                                const title = isKhmer
+                                    ? post.title?.km || post.title?.en || "Untitled"
+                                    : post.title?.en || post.title?.km || "Untitled";
 
-                                const desc =
-                                    isKhmer
-                                        ? post.description?.km || post.description?.en || ""
-                                        : post.description?.en || post.description?.km || "";
+                                const desc = isKhmer
+                                    ? post.description?.km || post.description?.en || ""
+                                    : post.description?.en || post.description?.km || "";
 
                                 const cover = pickThumbUrl(post, lang);
                                 const docUrl = pickDocUrl(post, lang);
 
                                 return (
-                                    <SwiperSlide key={post.id} className="pb-10 pt-12 px-[10px] h-auto">
+                                    <SwiperSlide
+                                        key={post.id}
+                                        className="h-auto px-[10px] pb-10 pt-12"
+                                    >
                                         <div
-                                            className="rounded-tl-[120px] bg-white overflow-hidden rounded-bl-[25px] rounded-br-[25px] relative pt-12 h-[390px] flex flex-col"
+                                            className="relative flex h-[430px] flex-col overflow-hidden rounded-bl-[25px] rounded-br-[25px] rounded-tl-[120px] bg-white pt-12"
                                             style={{ boxShadow: "0 7px 15px rgba(0,0,0,0.4)" }}
                                         >
-                                            <div className="absolute bg-blue-950 top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-70">
-                                                <div className="flex items-center justify-center w-full h-[160px] text-white text-4xl">
+                                            <div className="absolute left-1/2 top-0 h-70 w-full -translate-x-1/2 -translate-y-1/2 bg-blue-950">
+                                                <div className="flex h-[160px] w-full items-center justify-center text-white">
                                                     {cover ? (
                                                         <img
                                                             src={cover}
                                                             alt={title}
-                                                            className="h-[120px] w-[120px] object-cover rounded-full border-4 border-white"
+                                                            className="h-[120px] w-[120px] rounded-full border-4 border-white object-cover"
                                                         />
                                                     ) : (
                                                         <span className="text-3xl">📰</span>
@@ -323,31 +337,37 @@ const LatestReport: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="w-25 h-25 relative rounded-[200px] ml-10 top-8 mb-4 shrink-0">
-                                                <div className="bg-gray-200 w-25 h-25 border-white border-3 rounded-[200px] flex items-center justify-center overflow-hidden">
+                                            <div className="relative top-8 mb-4 ml-10 h-25 w-25 shrink-0 rounded-[200px]">
+                                                <div className="flex h-25 w-25 items-center justify-center overflow-hidden rounded-[200px] border-3 border-white bg-gray-200">
                                                     {cover ? (
                                                         <img
                                                             src={cover}
                                                             alt={title}
-                                                            className="w-full h-full object-cover"
+                                                            className="h-full w-full object-cover"
                                                         />
                                                     ) : (
-                                                        <span className="text-white text-3xl">📰</span>
+                                                        <span className="text-3xl text-white">📰</span>
                                                     )}
                                                 </div>
                                             </div>
 
-                                            <div className="p-6 pt-8 flex flex-col flex-1">
+                                            <div className="flex flex-1 flex-col p-6 pt-8">
                                                 <h3
-                                                    className={`text-xl font-bold text-gray-800 mb-3 line-clamp-2 min-h-[60px] ${isKhmer ? "khmer-font" : ""
-                                                        }`}
+                                                    className={`
+                                                        report-card-title-2line
+                                                        mb-3 text-gray-800
+                                                        ${isKhmer ? "report-card-title-km" : "report-card-title-en"}
+                                                    `}
+                                                    title={title}
                                                 >
                                                     {title}
                                                 </h3>
 
                                                 <p
-                                                    className={`text-gray-600 leading-relaxed text-base line-clamp-2 min-h-[56px] ${isKhmer ? "khmer-font" : ""
-                                                        }`}
+                                                    className={`
+                                                        min-h-[56px] line-clamp-2 text-gray-600
+                                                        ${bodyFontClass}
+                                                    `}
                                                 >
                                                     {desc}
                                                 </p>
@@ -356,11 +376,15 @@ const LatestReport: React.FC = () => {
                                                     href={docUrl || "#"}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className={`mt-4 inline-flex items-center gap-2 text-[#1d3ea6] hover:text-[#16338a] text-base md:text-lg font-semibold transition self-start ${!docUrl ? "pointer-events-none opacity-50" : ""
-                                                        }`}
+                                                    className={`
+                                                        mt-auto inline-flex items-center gap-2 self-start
+                                                        font-semibold text-[#1d3ea6] transition hover:text-[#16338a]
+                                                        ${smallFontClass}
+                                                        ${!docUrl ? "pointer-events-none opacity-50" : ""}
+                                                    `}
                                                 >
                                                     <span>{isKhmer ? "ទាញយក" : "Download"}</span>
-                                                    <ChevronRight className="w-4 h-4" />
+                                                    <ChevronRight className="h-4 w-4" />
                                                 </a>
                                             </div>
                                         </div>
@@ -369,15 +393,50 @@ const LatestReport: React.FC = () => {
                             })}
                         </Swiper>
                     ) : (
-                        <div
-                            className={`text-center text-white/80 text-sm ${isKhmer ? "khmer-font" : ""
-                                }`}
-                        >
+                        <div className={`text-center text-white/80 ${bodyFontClass}`}>
                             {isKhmer ? "មិនមានទិន្នន័យរបាយការណ៍" : "No report items found."}
                         </div>
                     )}
                 </div>
             </div>
+
+            <style jsx global>{`
+                .report-card-title-2line {
+                    display: -webkit-box !important;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden !important;
+                    text-overflow: ellipsis;
+                    white-space: normal !important;
+                    min-height: calc(var(--main-title-line-height) * 2);
+                    max-height: calc(var(--main-title-line-height) * 2);
+                }
+
+                .report-card-title-en {
+                    font-family: "Airbnb Cereal", system-ui, sans-serif;
+                    font-size: var(--main-title-en-size) !important;
+                    line-height: var(--main-title-line-height);
+                    letter-spacing: var(--header-letter-spacing);
+                    font-weight: 800;
+                }
+
+                .report-card-title-km {
+                    font-family: var(--font-kantumruy-pro), sans-serif;
+                    font-size: var(--main-title-km-size) !important;
+                    line-height: var(--main-title-line-height);
+                    letter-spacing: var(--header-letter-spacing);
+                    font-weight: 700;
+                }
+
+                .custom-swiper-pagination-white .swiper-pagination-bullet {
+                    background: #ffffff !important;
+                    opacity: 0.55;
+                }
+
+                .custom-swiper-pagination-white .swiper-pagination-bullet-active {
+                    opacity: 1;
+                }
+            `}</style>
         </>
     );
 };

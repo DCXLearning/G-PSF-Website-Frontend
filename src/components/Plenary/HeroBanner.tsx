@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
+type Lang = "en" | "kh" | "km";
+
 type BannerTranslation = {
     en: string;
     km: string;
@@ -51,6 +53,16 @@ const FALLBACK_BANNER: HeroBannerData = {
     },
 };
 
+function normalizeLang(language: unknown): Lang {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
 function pickText(
     value: { en?: string; km?: string } | undefined,
     fallback: BannerTranslation
@@ -63,9 +75,12 @@ function pickText(
 
 function buildBannerFromBlock(block: HeroBannerBlock | undefined): HeroBannerData | null {
     const post = block?.posts?.[0];
+
     const content = post?.content?.en || post?.content?.km;
 
-    if (!content) return null;
+    if (!content) {
+        return null;
+    }
 
     return {
         imageUrl: content.backgroundImages?.[0] || FALLBACK_BANNER.imageUrl,
@@ -76,7 +91,19 @@ function buildBannerFromBlock(block: HeroBannerBlock | undefined): HeroBannerDat
 
 export default function HeroBanner() {
     const { language } = useLanguage();
+
+    const currentLang = normalizeLang(language);
+    const isKh = currentLang === "kh";
+
     const [banner, setBanner] = useState<HeroBannerData>(FALLBACK_BANNER);
+
+    const titleFontClass = isKh
+        ? "title-km khmer-font font-bold"
+        : "title-en airbnb-font font-extrabold";
+
+    const subtitleFontClass = isKh
+        ? "body-km khmer-font"
+        : "body-en airbnb-font";
 
     useEffect(() => {
         const controller = new AbortController();
@@ -91,54 +118,64 @@ export default function HeroBanner() {
                     },
                 });
 
-                if (!response.ok) return;
+                if (!response.ok) {
+                    return;
+                }
 
                 const result = await response.json();
+
                 const blocks = Array.isArray(result?.data?.blocks)
                     ? (result.data.blocks as HeroBannerBlock[])
                     : [];
 
-                // Use the CMS hero banner when it exists, otherwise keep the old fallback.
                 const heroBlock =
                     blocks.find((block) => block.enabled !== false && block.id === 50) ||
-                    blocks.find((block) => block.enabled !== false && block.type === "hero_banner");
+                    blocks.find(
+                        (block) =>
+                            block.enabled !== false && block.type === "hero_banner"
+                    );
+
                 const nextBanner = buildBannerFromBlock(heroBlock);
 
                 if (nextBanner) {
                     setBanner(nextBanner);
                 }
             } catch (error) {
-                if (error instanceof DOMException && error.name === "AbortError") return;
+                if (error instanceof DOMException && error.name === "AbortError") {
+                    return;
+                }
+
                 console.error("Failed to load plenary hero banner:", error);
             }
         };
 
-        // Load the CMS banner after mount without changing the current layout structure.
         void loadBanner();
 
         return () => controller.abort();
     }, []);
 
-    const title = language === "kh" ? banner.title.km : banner.title.en;
-    const subtitle = language === "kh" ? banner.subtitle.km : banner.subtitle.en;
+    const title = isKh ? banner.title.km : banner.title.en;
+    const subtitle = isKh ? banner.subtitle.km : banner.subtitle.en;
 
     return (
         <main className="bg-white">
             <section className="mx-auto max-w-full overflow-hidden bg-white shadow-2xl">
                 {/* Title */}
-                <div className="px-6 pt-8 pb-6 max-w-5xl mx-auto text-center sm:px-8 md:px-8">
+                <div className="mx-auto max-w-5xl px-6 pt-8 pb-6 text-center sm:px-8 md:px-8">
                     <h1
-                        className={`font-extrabold tracking-tight text-[#1f1f1f] 
-                        text-2xl sm:text-3xl md:text-5xl
-                        ${language === "kh" ? "khmer-font leading-relaxed" : ""}`}
+                        className={`
+                            text-[#1f1f1f]
+                            ${titleFontClass}
+                        `}
                     >
                         {title}
                     </h1>
 
                     <p
-                        className={`mt-4 text-gray-600 
-                        text-sm sm:text-base md:text-xl lg:text-2xl
-                        ${language === "kh" ? "khmer-font leading-relaxed" : ""}`}
+                        className={`
+                            mt-4 text-gray-600
+                            ${subtitleFontClass}
+                        `}
                     >
                         {subtitle}
                     </p>
@@ -149,7 +186,7 @@ export default function HeroBanner() {
                     <div className="relative h-[260px] sm:h-[400px] md:h-[550px] lg:h-[700px] xl:h-[820px]">
                         <Image
                             src={banner.imageUrl}
-                            alt="Plenary"
+                            alt={title || "Plenary"}
                             fill
                             priority
                             className="object-cover"
@@ -157,7 +194,7 @@ export default function HeroBanner() {
                     </div>
 
                     {/* Light overlay */}
-                    <div className="absolute inset-0 bg-white/10 pointer-events-none" />
+                    <div className="pointer-events-none absolute inset-0 bg-white/10" />
                 </div>
             </section>
         </main>

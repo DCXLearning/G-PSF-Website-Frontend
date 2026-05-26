@@ -16,32 +16,43 @@ const content = {
     },
 };
 
+function normalizeLang(language: unknown): "en" | "kh" {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
 export default function PlenaryStructure() {
     const { language } = useLanguage();
-    const lang = language === "kh" ? "kh" : "en";
+
+    const lang = normalizeLang(language);
     const t = content[lang];
+
+    const titleFontClass =
+        lang === "kh"
+            ? "title-km khmer-font font-bold"
+            : "title-en airbnb-font font-extrabold";
 
     return (
         <section className="bg-white py-8 md:py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4">
-
-                {/* Title */}
-                <div className="text-center mb-8 md:mb-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-4 lg:px-4">
+                <div className="mb-8 text-center md:mb-10">
                     <h1
-                        className={`text-3xl sm:text-5xl font-bold text-gray-900 ${
-                            lang === "kh" ? "khmer-font leading-relaxed" : ""
-                        }`}
+                        className={`
+                            text-gray-900
+                            ${titleFontClass}
+                        `}
                     >
                         {t.title}
                     </h1>
                 </div>
 
-                {/* Frame (MATCH Flow Page) */}
-                <div className="border border-slate-200 rounded-2xl bg-white p-3 sm:p-4 md:p-5 lg:p-6 shadow-md">
-
-                    {/* Image Container */}
-                    <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[720px] rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
-
+                <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-md sm:p-4 md:p-5 lg:p-6">
+                    <div className="relative h-[240px] w-full overflow-hidden rounded-xl border border-slate-100 bg-slate-50 sm:h-[360px] md:h-[480px] lg:h-[720px]">
                         <Image
                             src={t.image}
                             alt={t.imageAlt}
@@ -52,7 +63,6 @@ export default function PlenaryStructure() {
                         />
                     </div>
                 </div>
-
             </div>
         </section>
     );

@@ -105,23 +105,27 @@ const BannerAbout = ({
         <div className="text-center mb-6">
           <h1
             className={`
-              font-extrabold tracking-tight text-[#1f1f1f] 
-                        text-2xl sm:text-3xl md:text-5xl
-              ${lang === "kh" ? "khmer-font font-bold" : ""}
+              text-[#1f1f1f]
+              ${lang === "kh"
+                ? "title-km khmer-font font-bold"
+                : "title-en airbnb-font font-extrabold"
+              }
             `}
           >
             {finalTitle}
           </h1>
 
           <p
-            className={`
-              mt-4 text-gray-600 
-                        text-sm sm:text-base md:text-xl lg:text-2xl
-              ${lang === "kh" ? "khmer-font" : ""}
-            `}
-          >
-            {finalSubtitle}
-          </p>
+  className={`
+    mt-4 text-gray-600
+    ${lang === "kh"
+      ? "body-km khmer-font"
+      : "body-en airbnb-font"
+    }
+  `}
+>
+  {finalSubtitle}
+</p>
         </div>
       </div>
 

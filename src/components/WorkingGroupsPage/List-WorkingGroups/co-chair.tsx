@@ -384,21 +384,21 @@ export default function TeamSection({
 
     const text = isKh
         ? {
-            title: buildSectionTitle(isKh, workingGroupTitleData),
-            governmentLabel: "សហប្រធានផ្នែករាជរដ្ឋាភិបាល",
-            sectorLabel: "សហប្រធានផ្នែកឯកជន",
-            imageAlt: "រូបភាពសហប្រធានក្រុមការងារ",
-            noImage: "មិនមានរូបភាព",
-            noName: "មិនទាន់មានឈ្មោះ",
-        }
+              title: buildSectionTitle(isKh, workingGroupTitleData),
+              governmentLabel: "សហប្រធានផ្នែករាជរដ្ឋាភិបាល",
+              sectorLabel: "សហប្រធានផ្នែកឯកជន",
+              imageAlt: "រូបភាពសហប្រធានក្រុមការងារ",
+              noImage: "មិនមានរូបភាព",
+              noName: "មិនទាន់មានឈ្មោះ",
+          }
         : {
-            title: buildSectionTitle(isKh, workingGroupTitleData),
-            governmentLabel: "Government Co-Chair",
-            sectorLabel: "Private Sector Co-Chair",
-            imageAlt: "Working group co-chair",
-            noImage: "No image available",
-            noName: "Name unavailable",
-        };
+              title: buildSectionTitle(isKh, workingGroupTitleData),
+              governmentLabel: "Government Co-Chair",
+              sectorLabel: "Private Sector Co-Chair",
+              imageAlt: "Working group co-chair",
+              noImage: "No image available",
+              noName: "Name unavailable",
+          };
 
     const coChairCards: CoChairCardData[] = [
         {
@@ -418,15 +418,13 @@ export default function TeamSection({
             representative.name || representative.description || representative.imageUrl
     );
 
+    const titleFontClass = isKh ? "title-km" : "title-en";
+
     return (
         <section className="bg-[#f5f6fa] py-12 md:py-16">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="mb-8 md:mb-10">
-                    <h2
-                        className={`max-w-4xl text-4xl font-black leading-tight text-[#101a3f] md:text-6xl ${
-                            isKh ? "khmer-font" : ""
-                        }`}
-                    >
+                    <h2 className={`max-w-4xl text-[#101a3f] ${titleFontClass}`}>
                         {text.title}
                     </h2>
                     <div className="mt-4 h-1.5 w-56 rounded-full bg-orange-500" />
@@ -462,6 +460,9 @@ function CoChairCard({
     noNameText: string;
     representative: CoChairCardData;
 }) {
+    const mainTitleFontClass = isKh ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKh ? "body-km" : "body-en";
+
     return (
         <article className="overflow-hidden rounded-[1.4rem] bg-white shadow-[0_22px_55px_rgba(15,23,42,0.12)] ring-1 ring-slate-100">
             <div className="h-[320px] bg-slate-200 sm:h-[400px] lg:h-[430px]">
@@ -472,23 +473,31 @@ function CoChairCard({
                         className="h-full w-full object-cover object-top"
                     />
                 ) : (
-                    <div className={`flex h-full items-center justify-center px-6 text-center text-slate-400 ${isKh ? "khmer-font" : ""}`}>
+                    <div
+                        className={`flex h-full items-center justify-center px-6 text-center text-slate-400 ${bodyFontClass}`}
+                    >
                         {noImageText}
                     </div>
                 )}
             </div>
 
             <div className="flex min-h-[135px] flex-col items-center justify-center px-6 py-8 text-center">
-                <span className={`mb-3 text-sm font-extrabold text-orange-500 ${isKh ? "khmer-font" : ""}`}>
+                <span
+                    className={`mb-3 block text-orange-500 ${bodyFontClass} !font-extrabold`}
+                >
                     {representative.label}
                 </span>
 
-                <h3 className={`text-3xl font-black leading-tight text-[#101a3f] md:text-4xl ${isKh ? "khmer-font" : ""}`}>
+                <h3
+                    className={`${mainTitleFontClass} main-title-2line text-[#101a3f]`}
+                >
                     {representative.name || noNameText}
                 </h3>
 
                 {representative.description ? (
-                    <p className={`mt-3 text-sm font-semibold text-slate-500 ${isKh ? "khmer-font" : ""}`}>
+                    <p
+                        className={`mt-3 text-slate-500 ${bodyFontClass} body-2line !font-semibold`}
+                    >
                         {representative.description}
                     </p>
                 ) : null}

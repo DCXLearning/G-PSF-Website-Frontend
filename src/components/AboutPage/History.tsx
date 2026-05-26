@@ -70,7 +70,7 @@ function writeCache(blocks: Block[]) {
 }
 
 const HexNode = () => (
-    <div className="relative w-12 h-12 flex items-center justify-center bg-white">
+    <div className="relative flex h-12 w-12 items-center justify-center bg-white">
         <svg width="48" height="48" viewBox="0 0 100 100" className="block">
             <polygon
                 points="50,6 86,28 86,72 50,94 14,72 14,28"
@@ -79,35 +79,33 @@ const HexNode = () => (
                 strokeWidth="6"
             />
         </svg>
-        <span className="absolute w-3.5 h-3.5 rounded-full bg-[#1e3a8a]" />
+        <span className="absolute h-3.5 w-3.5 rounded-full bg-[#1e3a8a]" />
     </div>
 );
 
-function HistorySkeleton({ isKh }: { isKh: boolean }) {
+function HistorySkeleton() {
     return (
         <section className="bg-white py-16 md:py-24">
-            <div className="mx-auto max-w-7xl px-4 animate-pulse">
-                <div className="h-4 w-24 bg-slate-200 rounded mb-3" />
-                <div className="h-12 md:h-14 w-full max-w-4xl bg-slate-200 rounded mb-4" />
-                <div className="h-12 md:h-14 w-4/5 max-w-3xl bg-slate-200 rounded" />
+            <div className="mx-auto max-w-7xl animate-pulse px-4">
+                <div className="mb-3 h-4 w-24 rounded bg-slate-200" />
+                <div className="mb-4 h-12 w-full max-w-4xl rounded bg-slate-200 md:h-14" />
+                <div className="h-12 w-4/5 max-w-3xl rounded bg-slate-200 md:h-14" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start mt-8">
-                    {/* LEFT */}
+                <div className="mt-8 grid grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
                     <div className="lg:sticky lg:top-1">
-                        <div className="mt-12 h-1.5 bg-orange-200 w-72 sm:w-[520px] lg:w-[528px]" />
+                        <div className="mt-12 h-1.5 w-72 bg-orange-200 sm:w-[520px] lg:w-[528px]" />
 
-                        <div className="mt-8 h-5 w-full max-w-xl bg-slate-200 rounded" />
-                        <div className="mt-4 h-5 w-11/12 max-w-lg bg-slate-200 rounded" />
-                        <div className="mt-8 h-5 w-full max-w-xl bg-slate-200 rounded" />
-                        <div className="mt-4 h-5 w-5/6 max-w-md bg-slate-200 rounded" />
+                        <div className="mt-8 h-5 w-full max-w-xl rounded bg-slate-200" />
+                        <div className="mt-4 h-5 w-11/12 max-w-lg rounded bg-slate-200" />
+                        <div className="mt-8 h-5 w-full max-w-xl rounded bg-slate-200" />
+                        <div className="mt-4 h-5 w-5/6 max-w-md rounded bg-slate-200" />
                     </div>
 
-                    {/* RIGHT */}
                     <div className="lg:pt-24 xl:pt-64">
-                        <div className="h-12 w-full max-w-xl bg-slate-200 rounded mb-10" />
+                        <div className="mb-10 h-12 w-full max-w-xl rounded bg-slate-200" />
 
                         <div className="relative">
-                            <div className="absolute left-[22px] top-0 bottom-0 w-[4px] bg-orange-200" />
+                            <div className="absolute top-0 bottom-0 left-[22px] w-[4px] bg-orange-200" />
 
                             <div className="space-y-12">
                                 {Array.from({ length: 3 }).map((_, i) => (
@@ -116,17 +114,16 @@ function HistorySkeleton({ isKh }: { isKh: boolean }) {
                                             <HexNode />
                                         </div>
 
-                                        <div className="pt-1 w-full">
-                                            <div className="h-7 w-64 bg-slate-200 rounded mb-3" />
-                                            <div className="h-5 w-full max-w-sm bg-slate-200 rounded mb-2" />
-                                            <div className="h-5 w-5/6 max-w-xs bg-slate-200 rounded" />
+                                        <div className="w-full pt-1">
+                                            <div className="mb-3 h-7 w-64 rounded bg-slate-200" />
+                                            <div className="mb-2 h-5 w-full max-w-sm rounded bg-slate-200" />
+                                            <div className="h-5 w-5/6 max-w-xs rounded bg-slate-200" />
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     </div>
-                    {/* end right */}
                 </div>
             </div>
         </section>
@@ -135,6 +132,7 @@ function HistorySkeleton({ isKh }: { isKh: boolean }) {
 
 export default function History() {
     const { language } = useLanguage();
+
     const uiLang: UiLang = (language as UiLang) || "en";
     const apiLang: ApiLang = uiLang === "kh" ? "km" : "en";
     const isKh = uiLang === "kh";
@@ -144,10 +142,23 @@ export default function History() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const titleFontClass = isKh
+        ? "title-km khmer-font font-bold"
+        : "title-en airbnb-font font-extrabold";
+
+    const bodyFontClass = isKh
+        ? "body-km khmer-font"
+        : "body-en airbnb-font";
+
+    const labelFontClass = isKh
+        ? "body-km khmer-font font-bold normal-case"
+        : "body-en airbnb-font font-bold uppercase tracking-[0.7px]";
+
     useEffect(() => {
         setMounted(true);
 
         const cached = readCache();
+
         if (cached.length > 0) {
             setBlocks(cached);
             setLoading(false);
@@ -173,12 +184,12 @@ export default function History() {
                 }
 
                 const nextBlocks = json?.data?.blocks || [];
+
                 setBlocks(nextBlocks);
                 writeCache(nextBlocks);
             } catch (e: any) {
                 if (!alive) return;
                 setError(e?.message || "Failed to load About Us data.");
-                // keep cached blocks, do not clear state
             } finally {
                 if (!alive) return;
                 setLoading(false);
@@ -240,45 +251,45 @@ export default function History() {
     const showErrorOnly = !showSkeleton && blocks.length === 0 && !!error;
 
     if (showSkeleton) {
-        return <HistorySkeleton isKh={isKh} />;
+        return <HistorySkeleton />;
     }
 
     return (
         <section className="bg-white py-16 md:py-24">
             <div className="mx-auto max-w-7xl px-4">
                 {showErrorOnly && (
-                    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                    <div className={`mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 ${bodyFontClass}`}>
                         {error}
                     </div>
                 )}
 
-                <p
-                    className={`text-xl font-bold text-gray-700 mb-2  tracking-wider ${isKh ? "khmer-font normal-case" : ""
-                        }`}
-                >
+                <p className={`mb-2 text-gray-700 ${labelFontClass}`}>
                     {view.badge}
                 </p>
 
                 <h1
-                    className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold 
-                    max-w-full md:max-w-[800px] 
-                    text-gray-900 leading-tight whitespace-pre-line
-                    ${isKh ? "khmer-font" : ""}`}
+                    className={`
+                        max-w-full whitespace-pre-line text-gray-900
+                        md:max-w-[800px]
+                        ${titleFontClass}
+                    `}
                 >
                     {view.hero}
                 </h1>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+                <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
                     {/* LEFT */}
                     <div className="lg:sticky lg:top-1">
-                        <div className="mt-20 h-1.5 bg-orange-500 w-72 sm:w-[520px] lg:w-[528px]" />
+                        <div className="mt-20 h-1.5 w-72 bg-orange-500 sm:w-[520px] lg:w-[528px]" />
 
-                        <ul className="mt-8 space-y-7 list-disc pl-4">
+                        <ul className="mt-8 list-disc space-y-7 pl-4">
                             {view.paras.map((p, i) => (
                                 <li
                                     key={i}
-                                    className={`max-w-xl text-lg leading-relaxed font-bold text-[#1e3a8a] ${isKh ? "khmer-font" : ""
-                                        }`}
+                                    className={`
+                                        max-w-xl font-bold text-[#1e3a8a]
+                                        ${bodyFontClass}
+                                    `}
                                 >
                                     {p}
                                 </li>
@@ -289,18 +300,20 @@ export default function History() {
                     {/* RIGHT */}
                     <div className="lg:pt-24 xl:pt-64">
                         <h2
-                            className={`text-4xl md:text-5xl font-bold text-gray-900 mb-10 whitespace-pre-line ${isKh ? "khmer-font" : ""
-                                }`}
+                            className={`
+                                mb-10 whitespace-pre-line text-gray-900
+                                ${titleFontClass}
+                            `}
                         >
                             {view.rightTitle}
                         </h2>
 
                         <div className="relative">
-                            <div className="absolute left-[22px] top-0 bottom-0 w-[4px] bg-orange-500" />
+                            <div className="absolute top-0 bottom-0 left-[22px] w-[4px] bg-orange-500" />
 
                             <div className="space-y-12">
                                 {view.objectives.length === 0 && (
-                                    <div className={`text-gray-500 ${isKh ? "khmer-font" : ""}`}>
+                                    <div className={`text-gray-500 ${bodyFontClass}`}>
                                         {isKh ? "មិនមានទិន្នន័យ" : "No data"}
                                     </div>
                                 )}
@@ -313,14 +326,19 @@ export default function History() {
 
                                         <div className="pt-1">
                                             <h3
-                                                className={`text-xl font-extrabold text-gray-900 ${isKh ? "khmer-font" : ""
-                                                    }`}
+                                                className={`
+                                                    font-extrabold text-gray-900
+                                                    ${bodyFontClass}
+                                                `}
                                             >
                                                 {obj.title}
                                             </h3>
+
                                             <p
-                                                className={`mt-2 text-base sm:text-lg text-gray-600 leading-relaxed max-w-sm ${isKh ? "khmer-font" : ""
-                                                    }`}
+                                                className={`
+                                                    mt-2 max-w-sm text-gray-600
+                                                    ${bodyFontClass}
+                                                `}
                                             >
                                                 {obj.description}
                                             </p>

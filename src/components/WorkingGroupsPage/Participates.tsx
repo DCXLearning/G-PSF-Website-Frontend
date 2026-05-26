@@ -25,6 +25,16 @@ type ParticipatesResponse = {
     message?: string;
 };
 
+function normalizeLang(language: unknown): UiLang {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
 function uiToApiLang(ui: UiLang): ApiLang {
     return ui === "kh" ? "km" : "en";
 }
@@ -35,7 +45,8 @@ function isSvg(url?: string) {
 
 const Participates: React.FC = () => {
     const { language } = useLanguage();
-    const uiLang = (language as UiLang) ?? "en";
+
+    const uiLang = normalizeLang(language);
     const apiLang = uiToApiLang(uiLang);
     const isKh = uiLang === "kh";
 
@@ -45,18 +56,23 @@ const Participates: React.FC = () => {
     const [items, setItems] = useState<Stakeholder[]>([]);
     const [error, setError] = useState("");
 
+    const titleFontClass = isKh ? "title-km" : "title-en";
+    const mainTitleFontClass = isKh ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKh ? "body-km" : "body-en";
+    const smallFontClass = isKh ? "khmer-font" : "airbnb-font";
+
     const fallback = useMemo(() => {
         return uiLang === "kh"
             ? {
-                title: "អ្នកចូលរួម",
-                subtitle:
-                    "អង្គប្រជុំក្រុមការងារ រួមបញ្ចូលភាគីពាក់ព័ន្ធជាច្រើនប្រភេទ។",
-            }
+                  title: "អ្នកចូលរួម",
+                  subtitle:
+                      "អង្គប្រជុំក្រុមការងារ រួមបញ្ចូលភាគីពាក់ព័ន្ធជាច្រើនប្រភេទ។",
+              }
             : {
-                title: "Who Participates",
-                subtitle:
-                    "Working Group meetings bring together a broad range of stakeholders.",
-            };
+                  title: "Who Participates",
+                  subtitle:
+                      "Working Group meetings bring together a broad range of stakeholders.",
+              };
     }, [uiLang]);
 
     useEffect(() => {
@@ -106,80 +122,77 @@ const Participates: React.FC = () => {
     const viewSubtitle = subtitle || fallback.subtitle;
 
     return (
-        <section className="relative bg-white pt-16 pb-0 cursor-pointer">
+        <section className="relative cursor-pointer bg-white pt-16 pb-0">
             {/* HEADER LEFT */}
-            <div className="mx-auto max-w-7xl px-4 text-left mb-12">
-                <h2
-                    className={`ttext-4xl md:text-5xl font-bold text-gray-900 mb-4 ${isKh ? "khmer-font" : ""
-                        }`}
-                >
+            <div className="mx-auto mb-12 max-w-7xl px-4 text-left">
+                <h2 className={`mb-4 text-gray-900 ${titleFontClass}`}>
                     {viewTitle}
                 </h2>
 
-                <p
-                    className={`text-xl text-gray-500 font-medium ${isKh ? "khmer-font" : ""
-                        }`}
-                >
+                <p className={`text-gray-500 ${bodyFontClass}`}>
                     {viewSubtitle}
                 </p>
 
                 {error ? (
-                    <p className={`mt-4 text-red-600 ${isKh ? "khmer-font" : ""}`}>
+                    <p className={`mt-4 text-red-600 ${bodyFontClass}`}>
                         {error}
                     </p>
                 ) : null}
             </div>
 
             <div className="relative">
-                <div className="absolute bottom-0 w-full h-[150px] bg-[#1e234a]" />
+                <div className="absolute bottom-0 h-[150px] w-full bg-[#1e234a]" />
 
-                <div className="container mx-auto px-4 relative z-10">
+                <div className="container relative z-10 mx-auto px-4">
                     {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                             {Array.from({ length: 4 }).map((_, i) => (
                                 <div
                                     key={i}
-                                    className="bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 animate-pulse"
+                                    className="animate-pulse rounded-2xl border border-gray-100 bg-white p-8 shadow-2xl"
                                 >
-                                    <div className="w-full h-25 flex justify-center -mt-12 mb-10">
-                                        <div className="bg-[#1e234a] p-8 rounded-b-[100px] rounded-t-sm w-[110px] h-[110px]" />
+                                    <div className="mb-10 flex h-25 w-full justify-center -mt-12">
+                                        <div className="h-[110px] w-[110px] rounded-t-sm rounded-b-[100px] bg-[#1e234a] p-8" />
                                     </div>
 
-                                    <div className="h-6 bg-gray-200 rounded mb-4" />
-                                    <div className="h-4 bg-gray-200 rounded mb-2" />
-                                    <div className="h-4 bg-gray-200 rounded w-4/5" />
+                                    <div className="mb-4 h-6 rounded bg-gray-200" />
+                                    <div className="mb-2 h-4 rounded bg-gray-200" />
+                                    <div className="h-4 w-4/5 rounded bg-gray-200" />
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                             {items.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="bg-white rounded-2xl hover:translate-y-[-1.5%] transition-all overflow-hidden p-8 shadow-2xl flex flex-col items-start text-left h-full border border-gray-100"
+                                    className="flex h-full flex-col items-start overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 text-left shadow-2xl transition-all hover:translate-y-[-1.5%]"
                                 >
-                                    <div className="w-full h-25 flex justify-center -mt-12 mb-10">
-                                        <div className="bg-[#1e234a] p-8 rounded-b-[100px] rounded-t-sm shadow-md">
+                                    <div className="mb-10 flex h-25 w-full justify-center -mt-12">
+                                        <div className="rounded-t-sm rounded-b-[100px] bg-[#1e234a] p-8 shadow-md">
                                             <img
                                                 src={item.icon}
                                                 alt="icon"
-                                                className={`w-14 h-14 ${isSvg(item.icon) ? "brightness-0 invert" : ""
-                                                    }`}
+                                                className={`h-14 w-14 ${
+                                                    isSvg(item.icon)
+                                                        ? "brightness-0 invert"
+                                                        : ""
+                                                }`}
                                             />
                                         </div>
                                     </div>
 
                                     <h3
-                                        className={`text-2xl font-bold text-[#3a475a] mb-4 leading-tight min-h-[4rem] ${isKh ? "khmer-font" : ""
-                                            }`}
+                                        className={`
+                                            mb-4 min-h-[4rem] text-[#01265a]
+                                            !whitespace-normal !overflow-visible !text-clip
+                                            ${mainTitleFontClass}
+                                        `}
                                     >
                                         {item.title}
                                     </h3>
 
-                                    <p
-                                        className={`text-gray-600 text-lg leading-relaxed ${isKh ? "khmer-font" : ""
-                                            }`}
-                                    >
+                                    <p className={`text-gray-600 ${bodyFontClass}`}>
                                         {item.description}
                                     </p>
                                 </div>
@@ -189,7 +202,7 @@ const Participates: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-[#1e234a] h-24 w-full" />
+            <div className="h-24 w-full bg-[#1e234a]" />
         </section>
     );
 };

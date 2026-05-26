@@ -83,9 +83,7 @@ export default function DualGovernanceModel() {
                         </p>
                     </div>
 
-                    {/* GRID */}
                     <div className="grid grid-cols-1 md:grid-cols-2">
-                        {/* LEFT IMAGE */}
                         <div className="relative h-[300px] md:h-[420px] bg-gray-300 flex items-center justify-center">
                             <Image
                                 src="/image/photo-placeholder-1.png"

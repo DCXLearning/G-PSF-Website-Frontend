@@ -114,6 +114,7 @@ function buildDetailHref(post: ApiPost) {
     if (slug) {
         return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
     }
+
     return `/new-update/view-detail?id=${post.id}`;
 }
 
@@ -223,12 +224,12 @@ function buildHighlightedDates(posts: ApiPost[], lang: ApiLang): HighlightedDate
 
 function PostCardSkeleton() {
     return (
-        <div className="border border-gray-200 p-6 animate-pulse min-h-[252px]">
-            <div className="h-3 w-36 bg-slate-200 rounded mb-3" />
-            <div className="h-8 w-3/4 bg-slate-200 rounded mb-3" />
-            <div className="h-4 w-full bg-slate-200 rounded mb-2" />
-            <div className="h-4 w-5/6 bg-slate-200 rounded mb-4" />
-            <div className="h-4 w-24 bg-slate-200 rounded" />
+        <div className="min-h-[252px] animate-pulse border border-gray-200 p-6">
+            <div className="mb-3 h-3 w-36 rounded bg-slate-200" />
+            <div className="mb-3 h-8 w-3/4 rounded bg-slate-200" />
+            <div className="mb-2 h-4 w-full rounded bg-slate-200" />
+            <div className="mb-4 h-4 w-5/6 rounded bg-slate-200" />
+            <div className="h-4 w-24 rounded bg-slate-200" />
         </div>
     );
 }
@@ -236,6 +237,12 @@ function PostCardSkeleton() {
 export default function EventsAndAnnouncements() {
     const { language } = useLanguage();
     const apiLang: ApiLang = language === "kh" ? "km" : "en";
+
+    const isKh = apiLang === "km";
+    const titleClass = isKh ? "title-km" : "title-en";
+    const mainTitleClass = isKh ? "main-title-km" : "main-title-en";
+    const bodyClass = isKh ? "body-km" : "body-en";
+    const smallFontClass = isKh ? "khmer-font" : "airbnb-font";
 
     const [eventLoading, setEventLoading] = useState(true);
     const [eventError, setEventError] = useState("");
@@ -265,8 +272,6 @@ export default function EventsAndAnnouncements() {
                 if (!alive) return;
 
                 const publishedPosts = (json.data || []).filter(isPublishedPost);
-
-                //  Do not slice here, keep all old events for calendar navigation.
                 setEventPosts(sortPostsByDate(publishedPosts));
             } catch (error) {
                 if (!alive) return;
@@ -312,8 +317,12 @@ export default function EventsAndAnnouncements() {
                 }
 
                 const publishedPosts = (announcementBlock.posts || []).filter(isPublishedPost);
+
                 setAnnouncementPosts(
-                    sortPostsByDate(publishedPosts).slice(0, announcementBlock.settings?.limit || 2)
+                    sortPostsByDate(publishedPosts).slice(
+                        0,
+                        announcementBlock.settings?.limit || 2
+                    )
                 );
             } catch (error) {
                 if (!alive) return;
@@ -335,12 +344,16 @@ export default function EventsAndAnnouncements() {
     const labels = useMemo(
         () => ({
             eventsTitle:
-                language === "kh" ? "កាលវិភាគប្រជុំ និងព្រឹត្តិការណ៍" : "Events & Meetings Schedule",
+                language === "kh"
+                    ? "កាលវិភាគប្រជុំ និងព្រឹត្តិការណ៍"
+                    : "Events & Meetings Schedule",
             announcementsTitle: language === "kh" ? "សេចក្តីជូនដំណឹង" : "Announcement",
             download: language === "kh" ? "ទាញយក" : "Download",
             noEvents: language === "kh" ? "មិនមានព្រឹត្តិការណ៍" : "No events available",
             noAnnouncements:
-                language === "kh" ? "មិនមានសេចក្តីជូនដំណឹង" : "No announcements available",
+                language === "kh"
+                    ? "មិនមានសេចក្តីជូនដំណឹង"
+                    : "No announcements available",
             untitled: language === "kh" ? "គ្មានចំណងជើង" : "Untitled",
             seeMore: language === "kh" ? "មើលបន្ថែម" : "See More",
         }),
@@ -390,31 +403,31 @@ export default function EventsAndAnnouncements() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8 bg-white font-sans text-[#1a2b4b]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
-                <div className="flex flex-col h-full">
-                    <h2 className="text-3xl md:text-4xl khmer-font font-bold mb-6 min-h-[48px]">
+        <div className="mx-auto max-w-7xl bg-white px-4 py-8 text-[#1a2b4b]">
+            <div className="grid grid-cols-1 items-stretch gap-12 lg:grid-cols-2">
+                <div className="flex h-full flex-col">
+                    <h2 className={`mb-6 min-h-[48px] text-[#1a2b4b] ${titleClass}`}>
                         {labels.eventsTitle}
                     </h2>
 
-                    <div className={`bg-[#e9ecef] p-6 rounded-sm ${SAME_CONTENT_HEIGHT}`}>
+                    <div className={`rounded-sm bg-[#e9ecef] p-6 ${SAME_CONTENT_HEIGHT}`}>
                         {showEventSkeleton ? (
                             <>
                                 <PostCardSkeleton />
                                 <PostCardSkeleton />
                             </>
                         ) : eventPosts.length === 0 ? (
-                            <div className="bg-white rounded-2xl border border-gray-200 p-8 text-sm text-gray-500">
+                            <div className={`rounded-2xl border border-gray-200 bg-white p-8 text-gray-500 ${bodyClass}`}>
                                 {eventError || labels.noEvents}
                             </div>
                         ) : (
                             <>
-                                <div className="flex items-center gap-1 bg-white/50 p-1 rounded-full mb-6 border border-gray-200">
+                                <div className="mb-6 flex items-center gap-1 rounded-full border border-gray-200 bg-white/50 p-1">
                                     <button
                                         type="button"
                                         onClick={goToPreviousMonth}
                                         disabled={selectedMonthIndex === 0}
-                                        className="w-10 h-10 flex items-center cursor-pointer justify-center text-gray-600 font-bold shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+                                        className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center font-bold text-gray-600 disabled:cursor-not-allowed disabled:opacity-30"
                                         aria-label="Previous month"
                                     >
                                         ‹
@@ -428,11 +441,11 @@ export default function EventsAndAnnouncements() {
                                                 key={month.key}
                                                 type="button"
                                                 onClick={() => setSelectedMonthIndex(month.realIndex)}
-                                                className={`flex-1 h-10 px-2 rounded-full cursor-pointer font-bold transition text-center whitespace-nowrap ${
+                                                className={`h-10 flex-1 cursor-pointer whitespace-nowrap rounded-full px-2 text-center text-sm font-bold transition ${
                                                     isActive
-                                                        ? "bg-white shadow-sm text-gray-700"
+                                                        ? "bg-white text-gray-700 shadow-sm"
                                                         : "text-gray-400"
-                                                } ${apiLang === "km" ? "khmer-font text-sm" : "text-sm"}`}
+                                                } ${smallFontClass}`}
                                             >
                                                 {formatMonthLabel(month, apiLang)}
                                             </button>
@@ -443,28 +456,26 @@ export default function EventsAndAnnouncements() {
                                         type="button"
                                         onClick={goToNextMonth}
                                         disabled={selectedMonthIndex === calendarMonths.length - 1}
-                                        className="w-10 h-10 flex items-center cursor-pointer justify-center text-gray-600 font-bold shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+                                        className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center font-bold text-gray-600 disabled:cursor-not-allowed disabled:opacity-30"
                                         aria-label="Next month"
                                     >
                                         ›
                                     </button>
                                 </div>
 
-                                <div className="bg-white rounded-2xl p-6 shadow-sm min-h-[408px]">
-                                    <div className="grid grid-cols-7 mb-4">
+                                <div className="min-h-[408px] rounded-2xl bg-white p-6 shadow-sm">
+                                    <div className="mb-4 grid grid-cols-7">
                                         {DAYS_OF_WEEK[apiLang].map((day, index) => (
                                             <div
                                                 key={`${selectedMonth?.key || "month"}-${day}-${index}`}
-                                                className={`h-8 flex items-center justify-center text-gray-400 font-bold ${
-                                                    apiLang === "km" ? "khmer-font text-sm" : "text-xl"
-                                                }`}
+                                                className={`flex h-8 items-center justify-center font-bold text-gray-400 ${smallFontClass}`}
                                             >
                                                 {day}
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="grid grid-cols-7 grid-rows-6 gap-y-2 min-h-[300px]">
+                                    <div className="grid min-h-[300px] grid-cols-7 grid-rows-6 gap-y-2">
                                         {calendarCells.map((cell) => {
                                             if (!cell.day || !selectedMonth) {
                                                 return <div key={cell.key} className="h-10" />;
@@ -481,27 +492,27 @@ export default function EventsAndAnnouncements() {
                                                     <Link
                                                         key={cell.key}
                                                         href={highlightedDate.href}
-                                                        className="group relative h-10 flex justify-center items-center"
+                                                        className="group relative flex h-10 items-center justify-center"
                                                     >
-                                                        <div className="w-10 h-10 bg-orange-400 rounded-full flex items-center justify-center text-gray-800 font-bold text-xl shadow-inner shrink-0">
+                                                        <div
+                                                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-400 font-bold text-gray-800 shadow-inner ${smallFontClass}`}
+                                                        >
                                                             {toLocalizedNumber(cell.day, apiLang)}
                                                         </div>
 
                                                         {(highlightedDate.title ||
                                                             highlightedDate.description) && (
                                                             <div
-                                                                className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${
-                                                                    apiLang === "km" ? "khmer-font" : ""
-                                                                }`}
+                                                                className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${smallFontClass}`}
                                                             >
                                                                 {highlightedDate.title && (
-                                                                    <p className="text-xs sm:text-sm font-semibold whitespace-pre-line">
+                                                                    <p className="whitespace-pre-line text-xs font-semibold sm:text-sm">
                                                                         {highlightedDate.title}
                                                                     </p>
                                                                 )}
 
                                                                 {highlightedDate.description && (
-                                                                    <p className="mt-2 text-[11px] sm:text-xs leading-5 text-white/85 whitespace-pre-line">
+                                                                    <p className="mt-2 whitespace-pre-line text-[11px] leading-5 text-white/85 sm:text-xs">
                                                                         {highlightedDate.description}
                                                                     </p>
                                                                 )}
@@ -514,9 +525,11 @@ export default function EventsAndAnnouncements() {
                                             return (
                                                 <div
                                                     key={cell.key}
-                                                    className="h-10 flex justify-center items-center"
+                                                    className="flex h-10 items-center justify-center"
                                                 >
-                                                    <span className="w-10 h-10 flex items-center khmer-font justify-center text-xl font-medium text-gray-800">
+                                                    <span
+                                                        className={`flex h-10 w-10 items-center justify-center font-medium text-gray-800 ${smallFontClass}`}
+                                                    >
                                                         {toLocalizedNumber(cell.day, apiLang)}
                                                     </span>
                                                 </div>
@@ -531,21 +544,15 @@ export default function EventsAndAnnouncements() {
                     <div className="mt-6 flex justify-center">
                         <Link
                             href="/events-meetings"
-                            className="text-white khmer-font bg-blue-950 hover:bg-blue-900 py-2 px-5 rounded-lg font-semibold"
+                            className={`rounded-lg bg-blue-950 px-5 py-2 font-semibold text-white hover:bg-blue-900 ${smallFontClass}`}
                         >
                             {labels.seeMore}
                         </Link>
                     </div>
                 </div>
 
-                <div className="flex flex-col h-full">
-                    <h2
-                        className={`text-3xl md:text-4xl font-bold mb-6 min-h-[48px] ${
-                            apiLang === "km" || containsKhmer(labels.announcementsTitle)
-                                ? "khmer-font"
-                                : ""
-                        }`}
-                    >
+                <div className="flex h-full flex-col">
+                    <h2 className={`mb-6 min-h-[48px] text-[#1a2b4b] ${titleClass}`}>
                         {labels.announcementsTitle}
                     </h2>
 
@@ -556,13 +563,7 @@ export default function EventsAndAnnouncements() {
                                 <PostCardSkeleton />
                             </>
                         ) : announcementPosts.length === 0 ? (
-                            <div
-                                className={`border border-gray-200 p-6 text-sm text-gray-500 min-h-[252px] ${
-                                    apiLang === "km" || containsKhmer(labels.noAnnouncements)
-                                        ? "khmer-font"
-                                        : ""
-                                }`}
-                            >
+                            <div className={`min-h-[252px] border border-gray-200 p-6 text-gray-500 ${bodyClass}`}>
                                 {announcementError || labels.noAnnouncements}
                             </div>
                         ) : (
@@ -570,7 +571,8 @@ export default function EventsAndAnnouncements() {
                                 const title = pickText(post.title, apiLang) || labels.untitled;
                                 const description = pickText(post.description, apiLang);
                                 const categoryName =
-                                    pickText(post.category?.name, apiLang) || labels.announcementsTitle;
+                                    pickText(post.category?.name, apiLang) ||
+                                    labels.announcementsTitle;
                                 const documentUrl = pickDocumentUrl(post, apiLang);
                                 const useKhmerFont =
                                     apiLang === "km" ||
@@ -581,22 +583,22 @@ export default function EventsAndAnnouncements() {
                                 return (
                                     <div
                                         key={post.id}
-                                        className="border border-gray-200 p-6 flex gap-6 hover:shadow-md transition-shadow items-start min-h-[252px]"
+                                        className="flex min-h-[252px] items-start gap-6 border border-gray-200 p-6 transition-shadow hover:shadow-md"
                                     >
-                                        <div className="flex-shrink-0 mt-2">
+                                        <div className="mt-2 flex-shrink-0">
                                             <img
                                                 src="/icon_NewUpdate_page/icon1.svg"
                                                 alt="icon"
-                                                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
+                                                className="h-10 w-10 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14"
                                             />
                                         </div>
 
-                                        <div className="flex flex-col min-w-0 flex-1">
+                                        <div className="flex min-w-0 flex-1 flex-col">
                                             <span
-                                                className={`text-[10px] font-bold mb-1 text-[#1a2b4b] ${
+                                                className={`mb-1 text-[10px] font-bold text-[#1a2b4b] ${
                                                     useKhmerFont
                                                         ? "khmer-font normal-case"
-                                                        : "uppercase tracking-wider"
+                                                        : "airbnb-font uppercase tracking-wider"
                                                 }`}
                                             >
                                                 {categoryName}
@@ -606,18 +608,16 @@ export default function EventsAndAnnouncements() {
                                             </span>
 
                                             <h3
-                                                className={`text-2xl font-bold mb-3 leading-tight text-[#1a2b4b] ${
-                                                    useKhmerFont ? "khmer-font" : ""
-                                                }`}
+                                                className={`
+                                                    mb-3 text-[#1a2b4b]
+                                                    !whitespace-normal !leading-tight line-clamp-2
+                                                    ${mainTitleClass}
+                                                `}
                                             >
                                                 {title}
                                             </h3>
 
-                                            <p
-                                                className={`text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3 ${
-                                                    useKhmerFont ? "khmer-font" : ""
-                                                }`}
-                                            >
+                                            <p className={`mb-4 line-clamp-3 text-gray-600 ${bodyClass}`}>
                                                 {description || "-"}
                                             </p>
 
@@ -626,10 +626,10 @@ export default function EventsAndAnnouncements() {
                                                     href={documentUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={`text-[10px] font-bold flex items-center mt-auto hover:text-orange-500 ${
+                                                    className={`mt-auto flex items-center text-[10px] font-bold hover:text-orange-500 ${
                                                         useKhmerFont
                                                             ? "khmer-font normal-case"
-                                                            : "uppercase tracking-tighter"
+                                                            : "airbnb-font uppercase tracking-tighter"
                                                     }`}
                                                 >
                                                     {labels.download}
@@ -646,9 +646,7 @@ export default function EventsAndAnnouncements() {
                     <div className="mt-6 flex justify-center">
                         <Link
                             href="/announcement"
-                            className={`text-white bg-blue-950 hover:bg-blue-900 py-2 px-5 rounded-lg font-semibold ${
-                                apiLang === "km" ? "khmer-font" : ""
-                            }`}
+                            className={`rounded-lg bg-blue-950 px-5 py-2 font-semibold text-white hover:bg-blue-900 ${smallFontClass}`}
                         >
                             {labels.seeMore}
                         </Link>

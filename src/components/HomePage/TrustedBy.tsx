@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Mousewheel } from "swiper/modules";
 import { useLanguage } from "@/app/context/LanguageContext";
+
 import "swiper/css";
 
 interface Logo {
@@ -18,7 +19,10 @@ const TrustedByCarousel: React.FC = () => {
   const { language } = useLanguage();
   const [logos, setLogos] = useState<Logo[]>([]);
   const [loading, setLoading] = useState(true);
+
   const isKh = language === "kh";
+  const titleFontClass = isKh ? "title-km" : "title-en";
+  const bodyFontClass = isKh ? "body-km" : "body-en";
 
   useEffect(() => {
     let alive = true;
@@ -60,21 +64,25 @@ const TrustedByCarousel: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <p className="py-12 text-center text-gray-500">Loading logos...</p>;
+    return (
+      <p className={`py-12 text-center text-gray-500 ${bodyFontClass}`}>
+        {isKh ? "កំពុងទាញយកឡូហ្គោ..." : "Loading logos..."}
+      </p>
+    );
   }
 
   if (!logos.length) {
-    return <p className="py-12 text-center text-gray-500">No logos found...</p>;
+    return (
+      <p className={`py-12 text-center text-gray-500 ${bodyFontClass}`}>
+        {isKh ? "មិនមានឡូហ្គោ..." : "No logos found..."}
+      </p>
+    );
   }
 
   return (
     <section className="relative overflow-hidden bg-white pt-6 pb-25 mb-6">
       <div className="container relative mx-auto max-w-7xl px-4">
-        <h2
-          className={`mb-12 text-center text-4xl font-extrabold text-blue-950 md:text-5xl ${
-            isKh ? "khmer-font normal-case" : ""
-          }`}
-        >
+        <h2 className={`mb-12 text-center text-blue-950 ${titleFontClass}`}>
           {isKh ? "ជឿទុកចិត្តដោយ" : "Trusted By"}
         </h2>
 

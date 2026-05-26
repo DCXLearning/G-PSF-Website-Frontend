@@ -33,20 +33,27 @@ interface StatItemProps {
     isKhmer: boolean;
 }
 
-const StatItem: React.FC<StatItemProps> = ({ value, label, isKhmer }) => (
-    <div className="flex flex-col items-center justify-center p-3 border-5 border-dashed border-indigo-900">
-        <div className="text-5xl lg:text-4xl font-extrabold text-indigo-900">
-            {value}
-        </div>
+const StatItem: React.FC<StatItemProps> = ({ value, label, isKhmer }) => {
+    const valueFontClass = isKhmer ? "title-km" : "title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
 
-        <div
-            className={`text-base lg:text-lg text-indigo-900 font-medium tracking-wider mt-2 opacity-90 text-center ${isKhmer ? "khmer-font" : ""
-                }`}
-        >
-            {label}
+    return (
+        <div className="flex flex-col items-center justify-center border-5 border-dashed border-indigo-900 p-3">
+            <div className={`text-indigo-900 ${valueFontClass}`}>
+                {value}
+            </div>
+
+            <div
+                className={`
+                    mt-2 text-center font-medium text-indigo-900 opacity-90
+                    ${bodyFontClass}
+                `}
+            >
+                {label}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 function readCache(): StatsApiResponse | null {
     try {
@@ -69,17 +76,17 @@ function writeCache(data: StatsApiResponse) {
 function StatsBarSkeleton() {
     return (
         <section className="w-full bg-white py-16">
-            <div className="container mx-auto px-4 max-w-7xl">
-                <div className="h-6 w-full max-w-3xl mx-auto bg-slate-200 rounded mb-12 animate-pulse" />
+            <div className="container mx-auto max-w-7xl px-4">
+                <div className="mx-auto mb-12 h-8 w-full max-w-3xl animate-pulse rounded bg-slate-200" />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
                     {Array.from({ length: 4 }).map((_, index) => (
                         <div
                             key={index}
-                            className="flex flex-col items-center justify-center p-3 border-5 border-dashed border-indigo-900 animate-pulse"
+                            className="flex animate-pulse flex-col items-center justify-center border-5 border-dashed border-indigo-900 p-3"
                         >
-                            <div className="h-12 w-24 bg-slate-200 rounded mb-3" />
-                            <div className="h-5 w-28 bg-slate-200 rounded" />
+                            <div className="mb-3 h-12 w-24 rounded bg-slate-200" />
+                            <div className="h-5 w-28 rounded bg-slate-200" />
                         </div>
                     ))}
                 </div>
@@ -90,8 +97,12 @@ function StatsBarSkeleton() {
 
 const StatsBar: React.FC = () => {
     const { language } = useLanguage();
+
     const isKhmer = language === "kh";
     const langKey: "en" | "km" = isKhmer ? "km" : "en";
+
+    const mainTitleFontClass = isKhmer ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
 
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -103,6 +114,7 @@ const StatsBar: React.FC = () => {
         setMounted(true);
 
         const cached = readCache();
+
         if (cached?.data) {
             setItems(cached.data.items ?? []);
             setDesc(cached.data.description ?? null);
@@ -134,7 +146,6 @@ const StatsBar: React.FC = () => {
             } catch (e: any) {
                 if (!alive) return;
                 setError(e?.message || "Failed to load stats");
-                // keep old cached content, do not clear state
             } finally {
                 if (!alive) return;
                 setLoading(false);
@@ -169,8 +180,13 @@ const StatsBar: React.FC = () => {
     if (showErrorOnly) {
         return (
             <section className="w-full bg-white py-16">
-                <div className="container mx-auto px-4 max-w-7xl">
-                    <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                <div className="container mx-auto max-w-7xl px-4">
+                    <div
+                        className={`
+                            rounded-xl border border-red-200 bg-red-50 p-4 text-red-700
+                            ${bodyFontClass}
+                        `}
+                    >
                         {error}
                     </div>
                 </div>
@@ -180,18 +196,21 @@ const StatsBar: React.FC = () => {
 
     return (
         <section className="w-full bg-white py-16">
-            <div className="container mx-auto px-4 max-w-7xl">
+            <div className="container mx-auto max-w-7xl px-4">
                 {descriptionText && (
-                    <p
-                        className={`text-center text-gray-600 mb-12 text-xl font-medium ${isKhmer ? "khmer-font" : ""
-                            }`}
+                    <h2
+                        className={`
+                            mx-auto mb-12 max-w-5xl text-center text-gray-600
+                            !whitespace-normal !overflow-visible !text-clip
+                            ${mainTitleFontClass}
+                        `}
                     >
                         {descriptionText}
-                    </p>
+                    </h2>
                 )}
 
                 {uiItems.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
                         {uiItems.map((stat, index) => (
                             <StatItem
                                 key={index}
@@ -202,7 +221,7 @@ const StatsBar: React.FC = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className={`text-center text-gray-600 ${isKhmer ? "khmer-font" : ""}`}>
+                    <div className={`text-center text-gray-600 ${bodyFontClass}`}>
                         {isKhmer ? "មិនមានទិន្នន័យស្ថិតិ" : "No stats found"}
                     </div>
                 )}
