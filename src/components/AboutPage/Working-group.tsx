@@ -80,39 +80,6 @@ function pickText(value: I18nText | undefined, apiLang: ApiLang, fallback = ""):
     return value.en || value.km || fallback;
 }
 
-function buildFallbackSlides(lang: Lang): Slide[] {
-    const title =
-        lang === "kh"
-            ? "ស្វែងយល់អំពីក្រុមការងារ (WGs) ដែលជួយជំរុញការកែទម្រង់"
-            : "Explore the Working Groups driving reform";
-
-    const ctaText = lang === "kh" ? "មើលក្រុមការងារ" : "View working group";
-
-    return [
-        {
-            id: 1,
-            title,
-            backgroundImage: "/image/Banner-g.bmp",
-            ctaText,
-            href: "/working-groups",
-        },
-        {
-            id: 2,
-            title,
-            backgroundImage: "/image/Banner.bmp",
-            ctaText,
-            href: "/working-groups",
-        },
-        {
-            id: 3,
-            title,
-            backgroundImage: "/image/BannerAbout.bmp",
-            ctaText,
-            href: "/working-groups",
-        },
-    ];
-}
-
 function findHeroBlock(blocks: HeroBlock[]): HeroBlock | undefined {
     return (
         blocks.find(
@@ -146,7 +113,7 @@ function buildSlides(blocks: HeroBlock[], lang: Lang): Slide[] {
         heroPost?.content?.km;
 
     if (!content) {
-        return buildFallbackSlides(lang);
+        return [];
     }
 
     const title = pickText(
@@ -169,7 +136,7 @@ function buildSlides(blocks: HeroBlock[], lang: Lang): Slide[] {
     const backgroundImages = (content.backgroundImages ?? []).filter(Boolean);
 
     if (backgroundImages.length === 0) {
-        return buildFallbackSlides(lang);
+        return [];
     }
 
     return backgroundImages.map((backgroundImage, index) => ({
@@ -181,6 +148,22 @@ function buildSlides(blocks: HeroBlock[], lang: Lang): Slide[] {
     }));
 }
 
+function WorkingGroupSkeleton() {
+    return (
+        <section className="relative h-[55vh] min-h-[360px] w-full overflow-hidden bg-slate-200 sm:h-[60vh] sm:min-h-[420px] lg:h-[70vh] lg:min-h-[520px]">
+            <div className="absolute inset-0 animate-pulse bg-slate-200" />
+
+            <div className="relative mx-auto flex h-full items-center justify-center px-4 pb-[130px] text-center sm:px-6 lg:px-8">
+                <div className="w-full max-w-5xl">
+                    <div className="mx-auto h-10 w-4/5 max-w-3xl rounded bg-slate-300 md:h-14" />
+                    <div className="mx-auto mt-4 h-10 w-3/5 max-w-2xl rounded bg-slate-300 md:h-14" />
+                    <div className="mx-auto mt-8 h-12 w-44 rounded-xl bg-slate-300" />
+                </div>
+            </div>
+        </section>
+    );
+}
+
 export default function WorkingGroup() {
     const { language } = useLanguage();
 
@@ -189,6 +172,7 @@ export default function WorkingGroup() {
 
     const [blocks, setBlocks] = useState<HeroBlock[]>([]);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     const sectionClass =
         "relative w-full overflow-hidden h-[55vh] min-h-[360px] sm:h-[60vh] sm:min-h-[420px] lg:h-[70vh] lg:min-h-[520px]";
@@ -220,6 +204,10 @@ export default function WorkingGroup() {
                 setBlocks(json.data?.blocks ?? []);
             } catch (error) {
                 console.error("Failed to load About Us working groups banner:", error);
+            } finally {
+                if (alive) {
+                    setLoading(false);
+                }
             }
         }
 
@@ -246,6 +234,14 @@ export default function WorkingGroup() {
 
         return () => window.clearInterval(timer);
     }, [slides.length]);
+
+    if (loading && blocks.length === 0) {
+        return <WorkingGroupSkeleton />;
+    }
+
+    if (slides.length === 0) {
+        return null;
+    }
 
     return (
         <section className={sectionClass}>

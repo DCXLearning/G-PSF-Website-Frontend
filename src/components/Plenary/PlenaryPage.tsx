@@ -61,6 +61,48 @@ const HexNode = () => (
     </div>
 );
 
+function PlenaryPageSkeleton() {
+    return (
+        <section className="bg-white py-16 md:py-24">
+            <div className="mx-auto max-w-7xl animate-pulse px-4">
+                <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
+                    <div className="lg:sticky lg:top-40">
+                        <div className="h-12 w-56 rounded bg-slate-200 md:h-14" />
+                        <div className="mt-4 h-12 w-44 rounded bg-slate-200 md:h-14" />
+                        <div className="mt-5 h-1.5 w-56 bg-orange-300 sm:w-72 md:w-96 lg:w-[360px]" />
+                        <div className="mt-8 h-5 w-full max-w-md rounded bg-slate-200" />
+                        <div className="mt-3 h-5 w-5/6 max-w-sm rounded bg-slate-200" />
+                        <div className="mt-3 h-5 w-2/3 max-w-xs rounded bg-slate-200" />
+                    </div>
+
+                    <div className="lg:pt-24 xl:pt-80">
+                        <div className="mb-10 h-12 w-64 rounded bg-slate-200" />
+
+                        <div className="relative">
+                            <div className="absolute bottom-0 left-[23px] top-0 w-[4px] bg-orange-200" />
+
+                            <div className="space-y-6">
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                    <div key={index} className="relative flex items-start gap-6">
+                                        <div className="relative z-10">
+                                            <HexNode />
+                                        </div>
+
+                                        <div className="w-full pt-1">
+                                            <div className="h-6 w-full max-w-md rounded bg-slate-200" />
+                                            <div className="mt-2 h-4 w-5/6 max-w-sm rounded bg-slate-200" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
 const FALLBACK_COPY: Record<Lang, { title: string; desc: string }> = {
     en: {
         title: "G-PSF\nPlenary",
@@ -226,6 +268,7 @@ const PlenaryPage: React.FC = () => {
     const [copy, setCopy] = useState(FALLBACK_COPY);
     const [objectivesTitle, setObjectivesTitle] = useState(FALLBACK_OBJECTIVES_TITLE);
     const [objectives, setObjectives] = useState(FALLBACK_OBJECTIVES);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let alive = true;
@@ -302,6 +345,10 @@ const PlenaryPage: React.FC = () => {
                 }
             } catch (error) {
                 console.error("Failed to load plenary text blocks:", error);
+            } finally {
+                if (alive) {
+                    setLoading(false);
+                }
             }
         }
 
@@ -326,6 +373,10 @@ const PlenaryPage: React.FC = () => {
     }[lang];
 
     const data = objectives[lang];
+
+    if (loading) {
+        return <PlenaryPageSkeleton />;
+    }
 
     return (
         <section className="bg-white py-16 md:py-24">

@@ -26,8 +26,37 @@ type HomePostApi = {
     };
 };
 
-const PLACEHOLDER_IMAGE_URL = "/image/Banner.bmp";
 const CACHE_KEY = "home-post-cache-v2";
+
+function HeroBannerSkeleton() {
+    return (
+        <div className="relative flex min-h-[680px] animate-pulse flex-col overflow-hidden bg-slate-200 md:min-h-[500px] lg:min-h-[650px]">
+            <div className="absolute inset-0 bg-slate-200" />
+
+            <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-6 pb-20 pt-24 text-center md:pt-32">
+                <div className="h-10 w-4/5 max-w-3xl rounded bg-slate-300 md:h-14" />
+                <div className="mt-5 h-10 w-3/5 max-w-2xl rounded bg-slate-300 md:h-14" />
+                <div className="mt-8 h-6 w-5/6 max-w-4xl rounded bg-slate-300 md:h-8" />
+                <div className="mt-3 h-6 w-2/3 max-w-3xl rounded bg-slate-300 md:h-8" />
+            </div>
+
+            <div className="relative z-20 mt-auto px-4 pb-8">
+                <div className="mx-auto max-w-6xl">
+                    <div className="h-[2px] bg-white/80" />
+
+                    <div className="grid grid-cols-3 gap-4 py-6 text-center">
+                        {Array.from({ length: 3 }).map((_, index) => (
+                            <div key={index} className="px-2">
+                                <div className="mx-auto h-10 w-20 rounded bg-white/45" />
+                                <div className="mx-auto mt-3 h-4 w-24 rounded bg-white/45" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function HeroBanner() {
     const { language } = useLanguage();
@@ -104,7 +133,8 @@ export default function HeroBanner() {
         hero?.description?.km ||
         "";
 
-    const bgImage = hero?.backgroundImages?.[0] || PLACEHOLDER_IMAGE_URL;
+    const bgImage =
+        hero?.backgroundImages?.find((image) => image?.trim())?.trim() || "";
 
     const cta = hero?.ctas?.[0];
     const ctaLabel = cta?.label?.[langKey] || cta?.label?.en || cta?.label?.km || "";
@@ -117,14 +147,20 @@ export default function HeroBanner() {
             ? data.bannerStats.itemsKm
             : data?.bannerStats?.itemsEn ?? [];
 
+    if (loading && !data) {
+        return <HeroBannerSkeleton />;
+    }
+
     return (
         <div className="relative flex min-h-[680px] flex-col overflow-hidden bg-gray-100 md:min-h-[500px] lg:min-h-[650px]">
             {/* Background Image */}
             <div
-                className="absolute inset-0 h-full w-full bg-cover bg-bottom bg-no-repeat"
-                style={{ backgroundImage: `url(${bgImage})` }}
+                className={`absolute inset-0 h-full w-full bg-cover bg-bottom bg-no-repeat ${
+                    bgImage ? "" : "bg-[#1e3a8a]"
+                }`}
+                style={bgImage ? { backgroundImage: `url(${bgImage})` } : undefined}
             >
-                <div className="absolute inset-0 bg-black/25" />
+                {bgImage ? <div className="absolute inset-0 bg-black/25" /> : null}
             </div>
             
             {/* Hero Content */}

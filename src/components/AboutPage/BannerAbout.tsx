@@ -42,6 +42,21 @@ function pickText(v?: I18nText, lang?: "en" | "kh") {
   return lang === "kh" ? v.km || v.en : v.en || v.km;
 }
 
+function BannerAboutSkeleton() {
+  return (
+    <section className="bg-white py-8">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 animate-pulse text-center">
+          <div className="mx-auto h-10 w-4/5 max-w-2xl rounded bg-slate-200 md:h-12" />
+          <div className="mx-auto mt-4 h-5 w-3/5 max-w-xl rounded bg-slate-200" />
+        </div>
+      </div>
+
+      <div className="h-[240px] w-full animate-pulse bg-slate-200 sm:h-[360px] md:h-[480px] lg:h-[675px]" />
+    </section>
+  );
+}
+
 const BannerAbout = ({
   title,
   subtitle,
@@ -61,11 +76,12 @@ const BannerAbout = ({
       ? "យន្តការសន្ទនារវាងរដ្ឋ និងឯកជនកំពូលរបស់កម្ពុជា"
       : "Cambodia’s peak public–private dialogue mechanism";
 
-  const defaultImage = "/image/BannerAbout.bmp";
-
   const [api, setApi] = useState<ApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let alive = true;
+
     (async () => {
       try {
         const res = await fetch("/api/about-us-page/banner", {
@@ -74,11 +90,23 @@ const BannerAbout = ({
 
         if (!res.ok) throw new Error(await res.text());
 
-        setApi((await res.json()) as ApiResponse);
+        if (alive) {
+          setApi((await res.json()) as ApiResponse);
+        }
       } catch {
-        setApi(null);
+        if (alive) {
+          setApi(null);
+        }
+      } finally {
+        if (alive) {
+          setLoading(false);
+        }
       }
     })();
+
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const hero = useMemo(() => {
@@ -96,7 +124,12 @@ const BannerAbout = ({
   const finalSubtitle =
     subtitle ?? pickText(content?.subtitle, lang) ?? defaultSubtitle;
 
-  const finalImage = imageUrl ?? content?.backgroundImages?.[0] ?? defaultImage;
+  const finalImage = imageUrl ?? content?.backgroundImages?.[0];
+  const showSkeleton = loading && !title && !subtitle && !imageUrl;
+
+  if (showSkeleton) {
+    return <BannerAboutSkeleton />;
+  }
 
   return (
     <section className="bg-white py-8">
@@ -116,31 +149,32 @@ const BannerAbout = ({
           </h1>
 
           <p
-  className={`
-    mt-4 text-gray-600
-    ${lang === "kh"
-      ? "body-km khmer-font"
-      : "body-en airbnb-font"
-    }
-  `}
->
-  {finalSubtitle}
-</p>
+            className={`
+              mt-4 text-gray-600
+              ${lang === "kh"
+                ? "body-km khmer-font"
+                : "body-en airbnb-font"
+              }
+            `}
+          >
+            {finalSubtitle}
+          </p>
         </div>
       </div>
 
-      {/* FULL-WIDTH BANNER */}
-      <div className="w-full">
-        <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px]">
-          <Image
-            src={finalImage}
-            alt={imageAlt}
-            fill
-            priority
-            className="object-cover"
-          />
+      {finalImage && (
+        <div className="w-full">
+          <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] lg:h-[675px]">
+            <Image
+              src={finalImage}
+              alt={imageAlt}
+              fill
+              priority
+              className="object-cover"
+            />
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 };

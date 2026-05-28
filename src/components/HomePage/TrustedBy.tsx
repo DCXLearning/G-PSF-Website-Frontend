@@ -15,6 +15,24 @@ interface Logo {
   link: string;
 }
 
+function TrustedBySkeleton() {
+  return (
+    <section className="relative mb-6 overflow-hidden bg-white pt-6 pb-25">
+      <div className="container relative mx-auto max-w-7xl animate-pulse px-4">
+        <div className="mx-auto mb-12 h-10 w-56 rounded bg-slate-200" />
+
+        <div className="grid grid-cols-3 items-center gap-5 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="flex items-center justify-center">
+              <div className="h-24 w-24 rounded-full bg-slate-200" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const TrustedByCarousel: React.FC = () => {
   const { language } = useLanguage();
   const [logos, setLogos] = useState<Logo[]>([]);
@@ -64,11 +82,7 @@ const TrustedByCarousel: React.FC = () => {
   }, []);
 
   if (loading) {
-    return (
-      <p className={`py-12 text-center text-gray-500 ${bodyFontClass}`}>
-        {isKh ? "កំពុងទាញយកឡូហ្គោ..." : "Loading logos..."}
-      </p>
-    );
+    return <TrustedBySkeleton />;
   }
 
   if (!logos.length) {
