@@ -127,7 +127,7 @@ function normalizeSiteSettings(apiJson: any, lang: UiLang): SiteSettingsUI {
     .filter(Boolean);
 
   const openDaysText = openLines[0] ?? "";
-  const openTimeText = openLines.slice(1).join(" ") ?? "";
+  const openTimeText = openLines.slice(1).join("\n");
 
   const socialLinks: Array<{ url?: string; icon?: string; title?: string }> =
     d?.socialLinks ?? [];
@@ -410,7 +410,7 @@ export default function ContactSection() {
                     {settings?.openDaysText}
                   </p>
 
-                  <p className={`font-medium text-white ${bodyClass}`}>
+                  <p className={`whitespace-pre-line font-medium text-white ${bodyClass}`}>
                     {settings?.openTimeText}
                   </p>
                 </section>
