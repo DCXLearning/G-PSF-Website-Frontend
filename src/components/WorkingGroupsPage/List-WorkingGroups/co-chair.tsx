@@ -246,6 +246,39 @@ function getKhmerGroupLetter(orderIndex: number | null) {
     return KHMER_GROUP_LETTERS[groupIndex] ?? "";
 }
 
+function removeKhmerGroupPrefix(title: string, groupLetter: string) {
+    const spacing = "[\\s\\u00A0\\u200B]*";
+    let cleanTitle = title.trim();
+
+    if (groupLetter) {
+        const exactGroupPrefix = new RegExp(
+            `^ក្រុមការងារ${spacing}${groupLetter}${spacing}[៖:]${spacing}`
+        );
+        cleanTitle = cleanTitle.replace(exactGroupPrefix, "").trim();
+    }
+
+    return cleanTitle
+        .replace(new RegExp(`^ក្រុមការងារ${spacing}[៖:]?${spacing}`), "")
+        .trim();
+}
+
+function removeEnglishGroupPrefix(title: string, groupLetter: string) {
+    const spacing = "[\\s\\u00A0\\u200B]*";
+    let cleanTitle = title.trim();
+
+    if (groupLetter) {
+        const exactGroupPrefix = new RegExp(
+            `^Working${spacing}Group${spacing}${groupLetter}${spacing}:${spacing}`,
+            "i"
+        );
+        cleanTitle = cleanTitle.replace(exactGroupPrefix, "").trim();
+    }
+
+    return cleanTitle
+        .replace(new RegExp(`^Working${spacing}Group${spacing}:?${spacing}`, "i"), "")
+        .trim();
+}
+
 function buildSectionTitle(
     isKh: boolean,
     titleData: WorkingGroupTitleData | null
@@ -255,14 +288,24 @@ function buildSectionTitle(
     }
 
     if (isKh) {
+        const titleWithoutGroup = removeKhmerGroupPrefix(
+            titleData.title,
+            titleData.groupLetterKh
+        );
+
         return titleData.groupLetterKh
-            ? `សហប្រធាននៃ ${titleData.title}`
-            : `សហប្រធាននៃ${titleData.title}`;
+            ? `សហប្រធាននៃ ក្រុមការងារ ${titleData.groupLetterKh}៖\n${titleWithoutGroup}`
+        : `សហប្រធាននៃ ${titleWithoutGroup}`;
     }
 
+    const titleWithoutGroup = removeEnglishGroupPrefix(
+        titleData.title,
+        titleData.groupLetterEn
+    );
+
     return titleData.groupLetterEn
-        ? `Co-chairs of Working Group ${titleData.groupLetterEn}: ${titleData.title}`
-        : `Co-chairs of Working Group: ${titleData.title}`;
+        ? `Co-chairs of Working Group ${titleData.groupLetterEn}:\n${titleWithoutGroup}`
+        : `Co-chairs of Working Group:\n${titleWithoutGroup}`;
 }
 
 export default function TeamSection({
@@ -424,7 +467,7 @@ export default function TeamSection({
         <section className="bg-[#f5f6fa] py-12 md:py-16">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="mb-8 md:mb-10">
-                    <h2 className={`max-w-4xl text-[#101a3f] ${titleFontClass}`}>
+                    <h2 className={`max-w-4xl whitespace-pre-line text-[#101a3f] ${titleFontClass}`}>
                         {text.title}
                     </h2>
                     <div className="mt-4 h-1.5 w-56 rounded-full bg-orange-500" />
