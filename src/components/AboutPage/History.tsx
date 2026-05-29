@@ -65,7 +65,7 @@ function writeCache(blocks: Block[]) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
     } catch {
-        // ignore cache errors
+
     }
 }
 
@@ -151,8 +151,8 @@ export default function History() {
         : "body-en airbnb-font";
 
     const labelFontClass = isKh
-        ? "body-km khmer-font font-bold normal-case"
-        : "body-en airbnb-font font-bold uppercase tracking-[0.7px]";
+        ? "body-km !font-bold normal-case"
+        : "body-en !font-bold uppercase tracking-[0.7px]";
 
     useEffect(() => {
         setMounted(true);
@@ -278,7 +278,6 @@ export default function History() {
                 </h1>
 
                 <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
-                    {/* LEFT */}
                     <div className="lg:sticky lg:top-1">
                         <div className="mt-20 h-1.5 w-72 bg-orange-500 sm:w-[520px] lg:w-[528px]" />
 
@@ -297,7 +296,6 @@ export default function History() {
                         </ul>
                     </div>
 
-                    {/* RIGHT */}
                     <div className="lg:pt-24 xl:pt-64">
                         <h2
                             className={`
@@ -348,7 +346,6 @@ export default function History() {
                             </div>
                         </div>
                     </div>
-                    {/* end right */}
                 </div>
             </div>
         </section>

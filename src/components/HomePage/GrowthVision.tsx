@@ -91,7 +91,7 @@ function writeCache(langKey: "en" | "km", items: UIItem[]) {
     try {
         sessionStorage.setItem(getCacheKey(langKey), JSON.stringify(items));
     } catch {
-        // ignore cache write errors
+
     }
 }
 

@@ -300,7 +300,7 @@ export default function Benefits() {
 
     return (
         <section className="bg-white px-4 py-12 sm:px-8 md:px-16 md:py-16 lg:px-34">
-            <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
+            <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-15">
                 <div className="mb-32 sm:mb-25 md:mb-56">
                     <h2 className={`text-gray-900 ${titleFontClass}`}>
                         {heading.h || (isKhmer ? "អត្ថប្រយោជន៍ G-PSF" : "G-PSF Benefit")}

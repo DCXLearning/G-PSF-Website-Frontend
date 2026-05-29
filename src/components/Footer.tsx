@@ -166,6 +166,18 @@ const Footer: React.FC = () => {
 
     const footerFontClass = isKhmer ? "khmer-font" : "airbnb-font";
 
+    const footerMainTitleClass = isKhmer
+        ? "main-title-km !whitespace-normal !overflow-visible !text-clip !text-black !mb-4"
+        : "main-title-en !whitespace-normal !overflow-visible !text-clip !text-black !mb-4";
+
+    const footerBodyTitleClass = isKhmer
+        ? "body-km text-gray-700 hover:text-[#0808e1] transition-colors"
+        : "body-en text-gray-700 hover:text-[#0808e1] transition-colors";
+
+    const footerBodyTextClass = isKhmer
+        ? "body-km text-gray-800"
+        : "body-en text-gray-800";
+
     useEffect(() => {
         const fetchSiteSettings = async () => {
             try {
@@ -308,10 +320,7 @@ const Footer: React.FC = () => {
                         </div>
                     ) : (
                         <p
-                            className={`
-                                text-lg text-gray-800 max-w-sm leading-8 text-left sm:text-center
-                                ${footerFontClass}
-                            `}
+                            className={`${footerBodyTextClass} max-w-sm text-left sm:text-center`}
                             style={{ fontWeight: 400 }}
                         >
                             {description}
@@ -324,6 +333,8 @@ const Footer: React.FC = () => {
                     group={keyUpdates}
                     isKhmer={isKhmer}
                     loading={menuLoading}
+                    titleClass={footerMainTitleClass}
+                    bodyTitleClass={footerBodyTitleClass}
                 />
 
                 {/* ========== QUICK LINKS ========== */}
@@ -331,15 +342,14 @@ const Footer: React.FC = () => {
                     group={quickLinksGroup}
                     isKhmer={isKhmer}
                     loading={quickLoading}
+                    titleClass={footerMainTitleClass}
+                    bodyTitleClass={footerBodyTitleClass}
                 />
 
                 {/* ========== CONTACT + SOCIAL ========== */}
                 <div className="space-y-6">
                     <div>
-                        <h3
-                            className={`text-2xl mb-3 ${footerFontClass}`}
-                            style={{ fontWeight: 700 }}
-                        >
+                        <h3 className={footerMainTitleClass}>
                             {isKhmer ? "ទំនាក់ទំនង" : "CONTACT"}
                         </h3>
 
@@ -375,10 +385,7 @@ const Footer: React.FC = () => {
                     </div>
 
                     <div>
-                        <h3
-                            className={`text-2xl mb-3 ${footerFontClass}`}
-                            style={{ fontWeight: 700 }}
-                        >
+                        <h3 className={footerMainTitleClass}>
                             {isKhmer ? "តាមដានពួកយើង" : "FOLLOW US"}
                         </h3>
 
@@ -430,19 +437,18 @@ const LinkSection = ({
     group,
     isKhmer,
     loading = false,
+    titleClass,
+    bodyTitleClass,
 }: {
     group: LinkGroup;
     isKhmer: boolean;
     loading?: boolean;
+    titleClass: string;
+    bodyTitleClass: string;
 }) => {
-    const footerFontClass = isKhmer ? "khmer-font" : "airbnb-font";
-
     return (
         <div>
-            <h3
-                className={`text-2xl mb-4 ${footerFontClass}`}
-                style={{ fontWeight: 700 }}
-            >
+            <h3 className={titleClass}>
                 {isKhmer ? group.titleKh : group.titleEn}
             </h3>
 
@@ -459,14 +465,7 @@ const LinkSection = ({
                 <ul className="space-y-3">
                     {group.links.map((link) => (
                         <li key={`${link.nameEn}-${link.href}`}>
-                            <a
-                                href={link.href}
-                                className={`
-                                    text-lg text-gray-700 hover:text-[#0808e1] transition
-                                    ${footerFontClass}
-                                `}
-                                style={{ fontWeight: 400 }}
-                            >
+                            <a href={link.href} className={bodyTitleClass}>
                                 {isKhmer ? link.nameKh : link.nameEn}
                             </a>
                         </li>
