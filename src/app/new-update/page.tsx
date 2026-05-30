@@ -64,7 +64,6 @@ function mapNewsPosts(response: CmsResponse): NewUpdateData {
       category: getLocalizedText(post.category?.name),
       title,
       excerpt: getText(post.description?.en) || getText(post.description?.km),
-      // ✅ prefer coverImage, fallback to images[0].url
       imageUrl: getText(post.coverImage ?? undefined) || getText(post.images?.[0]?.url),
     });
   }

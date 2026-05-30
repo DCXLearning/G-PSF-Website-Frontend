@@ -2,16 +2,19 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
-import { useRef } from "react";
 
 import "swiper/css";
 import "swiper/css/navigation";
 
 import { useLanguage } from "@/app/context/LanguageContext";
 
-type I18nText = { en?: string; km?: string };
+type I18nText = {
+    en?: string;
+    km?: string;
+};
 
 interface WorkGroupItem {
     id: number;
@@ -23,17 +26,57 @@ interface WorkGroupItem {
 const ICON_BG = "#4C518D";
 
 const STATIC_GROUPS: WorkGroupItem[] = [
-    { id: 1, title: { en: "Paddy Rice", km: "ស្រូវអង្ករ" }, iconUrl: "/icon/working-group-1.png", slug: "paddy-rice" },
-    { id: 2, title: { en: "Energy & Mineral Resources", km: "ថាមពល និងរ៉ែ" }, iconUrl: "/icon/working-group-2.png", slug: "energy-mineral-resources" },
-    { id: 3, title: { en: "Education", km: "អប់រំ" }, iconUrl: "/icon/working-group-3.png", slug: "education" },
-    { id: 4, title: { en: "Health", km: "សុខាភិបាល" }, iconUrl: "/icon/working-group-4.png", slug: "health" },
-    { id: 5, title: { en: "Construction & Real Estate", km: "សំណង់ និងអចលនទ្រព្យ" }, iconUrl: "/icon/working-group-5.png", slug: "construction-real-estate" },
-    { id: 6, title: { en: "Non-Banking Financial Services", km: "សេវាហិរញ្ញវត្ថុមិនមែនធនាគារ" }, iconUrl: "/icon/working-group-6.png", slug: "non-banking-financial-services" },
+    {
+        id: 1,
+        title: { en: "Paddy Rice", km: "ស្រូវអង្ករ" },
+        iconUrl: "/icon/working-group-1.png",
+        slug: "paddy-rice",
+    },
+    {
+        id: 2,
+        title: { en: "Energy & Mineral Resources", km: "ថាមពល និងរ៉ែ" },
+        iconUrl: "/icon/working-group-2.png",
+        slug: "energy-mineral-resources",
+    },
+    {
+        id: 3,
+        title: { en: "Education", km: "អប់រំ" },
+        iconUrl: "/icon/working-group-3.png",
+        slug: "education",
+    },
+    {
+        id: 4,
+        title: { en: "Health", km: "សុខាភិបាល" },
+        iconUrl: "/icon/working-group-4.png",
+        slug: "health",
+    },
+    {
+        id: 5,
+        title: {
+            en: "Construction & Real Estate",
+            km: "សំណង់ និងអចលនទ្រព្យ",
+        },
+        iconUrl: "/icon/working-group-5.png",
+        slug: "construction-real-estate",
+    },
+    {
+        id: 6,
+        title: {
+            en: "Non-Banking Financial Services",
+            km: "សេវាហិរញ្ញវត្ថុមិនមែនធនាគារ",
+        },
+        iconUrl: "/icon/working-group-6.png",
+        slug: "non-banking-financial-services",
+    },
 ];
 
 function buildWorkingGroupHref(slug?: string) {
     const cleanSlug = slug?.trim() ?? "";
-    if (!cleanSlug) return "/working-groups";
+
+    if (!cleanSlug) {
+        return "/working-groups";
+    }
+
     return `/working-groups/${encodeURIComponent(cleanSlug)}`;
 }
 
@@ -56,18 +99,19 @@ function toKhmerNumber(n: number) {
 
 export default function WorkGroupsCarousel() {
     const { language } = useLanguage();
-    const isKhmer = language === "kh";
+
+    const currentLanguage = String(language).toLowerCase();
+    const isKhmer = currentLanguage === "kh" || currentLanguage === "km";
 
     const prevRef = useRef<HTMLButtonElement>(null);
     const nextRef = useRef<HTMLButtonElement>(null);
 
     const total = 16;
-    const groupWord = !isKhmer && total === 1 ? "Work Group" : "Working Groups";
     const numberText = isKhmer ? toKhmerNumber(total) : String(total);
 
     const titleRow1 = isKhmer
         ? `ក្រុមការងារតាមវិស័យទាំង ${numberText}`
-        : `${numberText} ${groupWord}`;
+        : `${numberText} Working Groups`;
 
     const sectionTitleFontClass = isKhmer ? "title-km" : "title-en";
     const cardTitleFontClass = isKhmer
@@ -86,6 +130,7 @@ export default function WorkGroupsCarousel() {
                 <div className="relative">
                     <button
                         ref={prevRef}
+                        type="button"
                         aria-label="Previous"
                         className="absolute left-0 top-1/2 z-20 flex h-[260px] w-14 -translate-y-1/2 items-center justify-center bg-transparent md:w-6"
                     >
@@ -96,6 +141,7 @@ export default function WorkGroupsCarousel() {
 
                     <button
                         ref={nextRef}
+                        type="button"
                         aria-label="Next"
                         className="absolute right-0 top-1/2 z-20 flex h-[260px] w-14 -translate-y-1/2 items-center justify-center bg-transparent md:w-6"
                     >
@@ -113,9 +159,12 @@ export default function WorkGroupsCarousel() {
                                 pauseOnMouseEnter: true,
                             }}
                             onBeforeInit={(swiper) => {
-                                if (typeof swiper.params.navigation !== "boolean") {
-                                    swiper.params.navigation!.prevEl = prevRef.current;
-                                    swiper.params.navigation!.nextEl = nextRef.current;
+                                if (
+                                    swiper.params.navigation &&
+                                    typeof swiper.params.navigation !== "boolean"
+                                ) {
+                                    swiper.params.navigation.prevEl = prevRef.current;
+                                    swiper.params.navigation.nextEl = nextRef.current;
                                 }
                             }}
                             loop={STATIC_GROUPS.length > 6}
@@ -127,17 +176,17 @@ export default function WorkGroupsCarousel() {
                                 1024: { slidesPerView: 6 },
                             }}
                         >
-                            {STATIC_GROUPS.map((g) => {
+                            {STATIC_GROUPS.map((group) => {
                                 const title =
                                     (isKhmer
-                                        ? g.title.km || g.title.en
-                                        : g.title.en || g.title.km
+                                        ? group.title.km || group.title.en
+                                        : group.title.en || group.title.km
                                     )?.trim() || "";
 
                                 return (
-                                    <SwiperSlide key={g.id} className="py-3">
+                                    <SwiperSlide key={group.id} className="py-3">
                                         <Link
-                                            href={buildWorkingGroupHref(g.slug)}
+                                            href={buildWorkingGroupHref(group.slug)}
                                             className="flex h-[210px] w-full flex-col items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 px-4 py-6 shadow-sm transition hover:-translate-y-1 hover:scale-[1.02] hover:shadow-md"
                                         >
                                             <div
@@ -145,7 +194,7 @@ export default function WorkGroupsCarousel() {
                                                 style={{ backgroundColor: ICON_BG }}
                                             >
                                                 <img
-                                                    src={g.iconUrl || "/icon/placeholder.png"}
+                                                    src={group.iconUrl || "/icon/placeholder.png"}
                                                     alt={title}
                                                     className="h-10 w-10 object-contain"
                                                 />

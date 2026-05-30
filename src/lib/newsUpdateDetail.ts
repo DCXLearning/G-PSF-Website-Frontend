@@ -1,21 +1,33 @@
-import type { DetailPageData, TiptapNode } from "@/components/News&Updates/list-New&Update/Detail_top";
+import type {
+    DetailPageData,
+    TiptapNode,
+} from "@/components/News&Updates/list-New&Update/Detail_top";
 import { API_URL } from "@/config/api";
 import { buildAbsoluteUrl, buildPathWithQuery } from "@/utils/socialShare";
 import { buildNewsDetailPath } from "@/utils/newsDetail";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
+type Locale = "en" | "km";
+
 export type CmsPost = {
-    id?: number;
-    slug?: string;
-    title?: { en?: string; km?: string };
-    description?: { en?: string; km?: string };
-    content?: { en?: unknown; km?: unknown };
+    id?: number | string;
+    slug?: string | null;
+    title?: { en?: string | null; km?: string | null; kh?: string | null } | string | null;
+    description?: { en?: string | null; km?: string | null; kh?: string | null } | string | null;
+    content?: { en?: unknown; km?: unknown; kh?: unknown } | TiptapNode | null;
     coverImage?: string | null;
-    images?: Array<{ url?: string }>;
+    images?: Array<{ url?: string | null }>;
     publishedAt?: string | null;
-    createdAt?: string;
-    updatedAt?: string;
-    category?: { name?: { en?: string; km?: string } };
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    category?: {
+        id?: number;
+        name?: {
+            en?: string | null;
+            km?: string | null;
+            kh?: string | null;
+        } | null;
+    } | null;
 };
 
 type CmsResponse = {
@@ -23,13 +35,19 @@ type CmsResponse = {
     message?: string;
     data?:
         | {
-            blocks?: Array<{
-                type?: string;
-                enabled?: boolean;
-                posts?: CmsPost[];
-            }>;
-        }
+              blocks?: Array<{
+                  type?: string;
+                  enabled?: boolean;
+                  posts?: CmsPost[];
+              }>;
+          }
         | CmsPost;
+};
+
+type LocalizedText = {
+    en?: string | null;
+    km?: string | null;
+    kh?: string | null;
 };
 
 export const NEWS_SITE_NAME = "G-PSF Cambodia";
@@ -39,12 +57,59 @@ export function cleanText(value?: string | null): string {
     return text === "." ? "" : text;
 }
 
-function normalizeSlug(value?: string): string {
+function normalizeSlug(value?: string | null): string {
     return cleanText(value).toLowerCase();
 }
 
-function pickI18nText(text?: { en?: string; km?: string }): string {
-    return cleanText(text?.en) || cleanText(text?.km);
+function normalizeLocale(locale?: string | null): Locale {
+    const value = String(locale || "km").toLowerCase();
+    return value === "en" ? "en" : "km";
+}
+
+function isLocalizedText(value: unknown): value is LocalizedText {
+    return typeof value === "object" && value !== null;
+}
+
+function plainText(
+    value: unknown,
+    locale: Locale = "km",
+    fallback = ""
+): string {
+    if (!value) {
+        return fallback;
+    }
+
+    if (typeof value === "string") {
+        return cleanText(value) || fallback;
+    }
+
+    if (isLocalizedText(value)) {
+        if (locale === "km") {
+            return (
+                cleanText(value.km) ||
+                cleanText(value.kh) ||
+                cleanText(value.en) ||
+                fallback
+            );
+        }
+
+        return (
+            cleanText(value.en) ||
+            cleanText(value.km) ||
+            cleanText(value.kh) ||
+            fallback
+        );
+    }
+
+    return fallback;
+}
+
+function pickI18nText(
+    text?: LocalizedText | string | null,
+    locale: Locale = "km",
+    fallback = ""
+): string {
+    return plainText(text, locale, fallback);
 }
 
 function isTiptapDoc(value: unknown): value is TiptapNode {
@@ -53,16 +118,58 @@ function isTiptapDoc(value: unknown): value is TiptapNode {
     }
 
     const doc = value as TiptapNode;
+
     return doc.type === "doc" || Array.isArray(doc.content);
 }
 
-function pickContentDoc(content?: { en?: unknown; km?: unknown }): TiptapNode | null {
-    if (isTiptapDoc(content?.en)) {
-        return content.en;
+function pickContentDoc(
+    content?: CmsPost["content"],
+    locale: Locale = "km"
+): TiptapNode | null {
+    if (!content) {
+        return null;
     }
 
-    if (isTiptapDoc(content?.km)) {
-        return content.km;
+    if (isTiptapDoc(content)) {
+        return content;
+    }
+
+    if (typeof content !== "object") {
+        return null;
+    }
+
+    const localizedContent = content as {
+        en?: unknown;
+        km?: unknown;
+        kh?: unknown;
+    };
+
+    if (locale === "km") {
+        if (isTiptapDoc(localizedContent.km)) {
+            return localizedContent.km;
+        }
+
+        if (isTiptapDoc(localizedContent.kh)) {
+            return localizedContent.kh;
+        }
+
+        if (isTiptapDoc(localizedContent.en)) {
+            return localizedContent.en;
+        }
+
+        return null;
+    }
+
+    if (isTiptapDoc(localizedContent.en)) {
+        return localizedContent.en;
+    }
+
+    if (isTiptapDoc(localizedContent.km)) {
+        return localizedContent.km;
+    }
+
+    if (isTiptapDoc(localizedContent.kh)) {
+        return localizedContent.kh;
     }
 
     return null;
@@ -72,7 +179,10 @@ export function pickPrimaryImage(post: CmsPost): string {
     return cleanText(post.coverImage) || cleanText(post.images?.[0]?.url);
 }
 
-function mergePostWithFallback(primaryPost: CmsPost, fallbackPost?: CmsPost): CmsPost {
+function mergePostWithFallback(
+    primaryPost: CmsPost,
+    fallbackPost?: CmsPost
+): CmsPost {
     if (!fallbackPost) {
         return primaryPost;
     }
@@ -80,31 +190,61 @@ function mergePostWithFallback(primaryPost: CmsPost, fallbackPost?: CmsPost): Cm
     return {
         ...fallbackPost,
         ...primaryPost,
-        coverImage: cleanText(primaryPost.coverImage) || cleanText(fallbackPost.coverImage),
-        images: primaryPost.images?.length ? primaryPost.images : fallbackPost.images,
+        coverImage:
+            cleanText(primaryPost.coverImage) ||
+            cleanText(fallbackPost.coverImage),
+        images: primaryPost.images?.length
+            ? primaryPost.images
+            : fallbackPost.images,
         description: primaryPost.description ?? fallbackPost.description,
         category: primaryPost.category ?? fallbackPost.category,
         title: primaryPost.title ?? fallbackPost.title,
+        content: primaryPost.content ?? fallbackPost.content,
     };
 }
 
-export function mapPostToDetail(post: CmsPost): DetailPageData {
+export function mapPostToDetail(
+    post: CmsPost,
+    localeValue: string | null = "km"
+): DetailPageData {
+    const locale = normalizeLocale(localeValue);
+
     const detailPath = buildNewsDetailPath({
         id: post.id,
-        slug: post.slug,
+        slug: post.slug || undefined,
     });
-    const dateValue = cleanText(post.publishedAt) || cleanText(post.createdAt) || cleanText(post.updatedAt);
+
+    const dateValue =
+        cleanText(post.publishedAt) ||
+        cleanText(post.createdAt) ||
+        cleanText(post.updatedAt);
+
+    const category =
+        pickI18nText(
+            post.category?.name,
+            locale,
+            locale === "km" ? "សារព័ត៌មាន" : "Press"
+        ) || (locale === "km" ? "សារព័ត៌មាន" : "Press");
+
+    const title =
+        pickI18nText(
+            post.title,
+            locale,
+            locale === "km" ? "គ្មានចំណងជើង" : "Untitled"
+        ) || (locale === "km" ? "គ្មានចំណងជើង" : "Untitled");
+
+    const summary = pickI18nText(post.description, locale, "");
 
     return {
-        category: pickI18nText(post.category?.name) || "News & Updates",
-        date: formatLocalizedDate(dateValue),
+        category,
+        date: formatLocalizedDate(dateValue, locale),
         dateValue,
-        title: pickI18nText(post.title) || "Untitled",
+        title,
         heroImage: pickPrimaryImage(post),
-        tagLabel: pickI18nText(post.category?.name) || "News & Updates",
+        tagLabel: category,
         tagHref: "/new-update",
-        summary: pickI18nText(post.description),
-        contentDoc: pickContentDoc(post.content),
+        summary,
+        contentDoc: pickContentDoc(post.content, locale),
         shareUrl: buildAbsoluteUrl(detailPath),
     };
 }
@@ -117,7 +257,11 @@ function isSinglePostData(data: CmsResponse["data"]): data is CmsPost {
     return "slug" in data || "title" in data || "id" in data;
 }
 
-function findPostBySlugOrId(response: CmsResponse, slug?: string, id?: string) {
+function findPostBySlugOrId(
+    response: CmsResponse,
+    slug?: string,
+    id?: string
+): CmsPost | undefined {
     const data = response.data;
     const targetSlug = normalizeSlug(slug);
 
@@ -137,6 +281,7 @@ function findPostBySlugOrId(response: CmsResponse, slug?: string, id?: string) {
     const postListBlock = blocks.find(
         (block) => block.enabled === true && block.type === "post_list"
     );
+
     const posts = postListBlock?.posts ?? [];
 
     if (id) {
@@ -151,16 +296,23 @@ function findPostBySlugOrId(response: CmsResponse, slug?: string, id?: string) {
 }
 
 async function fetchCmsResponse(url: string): Promise<CmsResponse | null> {
-    const response = await fetch(url, { cache: "no-store" });
+    try {
+        const response = await fetch(url, { cache: "no-store" });
 
-    if (!response.ok) {
+        if (!response.ok) {
+            return null;
+        }
+
+        return (await response.json()) as CmsResponse;
+    } catch {
         return null;
     }
-
-    return (await response.json()) as CmsResponse;
 }
 
-async function getSectionPost(slug?: string, id?: string): Promise<CmsPost | null> {
+async function getSectionPost(
+    slug?: string,
+    id?: string
+): Promise<CmsPost | null> {
     if (!API_URL) {
         return null;
     }
@@ -183,6 +335,7 @@ async function getSectionPost(slug?: string, id?: string): Promise<CmsPost | nul
         sectionUrl.searchParams.set(query.key, query.value);
 
         const sectionResponse = await fetchCmsResponse(sectionUrl.toString());
+
         if (!sectionResponse) {
             continue;
         }
@@ -200,7 +353,10 @@ async function getSectionPost(slug?: string, id?: string): Promise<CmsPost | nul
     return null;
 }
 
-export async function getNewsCmsPost(slug?: string, id?: string): Promise<CmsPost | null> {
+export async function getNewsCmsPost(
+    slug?: string,
+    id?: string
+): Promise<CmsPost | null> {
     if (!API_URL) {
         return null;
     }
@@ -220,7 +376,12 @@ export async function getNewsCmsPost(slug?: string, id?: string): Promise<CmsPos
         );
 
         if (byIdResponse) {
-            const byIdPost = findPostBySlugOrId(byIdResponse, undefined, cleanId);
+            const byIdPost = findPostBySlugOrId(
+                byIdResponse,
+                undefined,
+                cleanId
+            );
+
             if (byIdPost) {
                 return mergePostWithFallback(byIdPost, sectionPost ?? undefined);
             }
@@ -233,7 +394,12 @@ export async function getNewsCmsPost(slug?: string, id?: string): Promise<CmsPos
         );
 
         if (bySlugResponse) {
-            const bySlugPost = findPostBySlugOrId(bySlugResponse, cleanSlug, undefined);
+            const bySlugPost = findPostBySlugOrId(
+                bySlugResponse,
+                cleanSlug,
+                undefined
+            );
+
             if (bySlugPost) {
                 return mergePostWithFallback(bySlugPost, sectionPost ?? undefined);
             }
@@ -249,7 +415,12 @@ export async function getNewsCmsPost(slug?: string, id?: string): Promise<CmsPos
             );
 
             if (fullResponse) {
-                const fullPost = findPostBySlugOrId(fullResponse, undefined, sectionPostId);
+                const fullPost = findPostBySlugOrId(
+                    fullResponse,
+                    undefined,
+                    sectionPostId
+                );
+
                 if (fullPost) {
                     return mergePostWithFallback(fullPost, sectionPost);
                 }
@@ -262,13 +433,21 @@ export async function getNewsCmsPost(slug?: string, id?: string): Promise<CmsPos
     return null;
 }
 
-export async function getNewsDetailData(slug?: string, id?: string): Promise<DetailPageData | null> {
+export async function getNewsDetailData(
+    slug?: string,
+    id?: string,
+    locale: string = "km"
+): Promise<DetailPageData | null> {
     const post = await getNewsCmsPost(slug, id);
-    return post ? mapPostToDetail(post) : null;
+    return post ? mapPostToDetail(post, locale) : null;
 }
 
 export function buildMetadataDescription(detailData: DetailPageData): string {
-    return cleanText(detailData.summary) || `${detailData.category} - ${detailData.title}`;
+    const summary = plainText(detailData.summary);
+    const category = plainText(detailData.category);
+    const title = plainText(detailData.title);
+
+    return summary || `${category} - ${title}`;
 }
 
 export function buildShareImageUrl(heroImage: string): string {

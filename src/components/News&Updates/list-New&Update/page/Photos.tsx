@@ -481,11 +481,8 @@ function ListCard({
                         {item.title}
                     </Link>
                 </h2>
-
-                {/* Date moved under title */}
                 <DateRow date={item.date} language={language} />
 
-                {/* Description font size 16px */}
                 <p className="mt-3 line-clamp-2 text-[16px] leading-7 text-[#64748B]">
                     {item.description ||
                         (language === "kh"
@@ -493,7 +490,6 @@ function ListCard({
                             : "No description available.")}
                 </p>
 
-                {/* Outline rounded button, no underline */}
                 <ViewDetailButton href={item.href} language={language} />
             </div>
         </article>
@@ -526,10 +522,8 @@ function GridCard({
                     </Link>
                 </h2>
 
-                {/* Date moved under title */}
                 <DateRow date={item.date} language={language} />
 
-                {/* Description font size 16px */}
                 <p className="mt-3 line-clamp-3 text-[16px] leading-7 text-[#64748B]">
                     {item.description ||
                         (language === "kh"

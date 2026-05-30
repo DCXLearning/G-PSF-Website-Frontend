@@ -30,16 +30,39 @@ export type TiptapNode = {
   content?: TiptapNode[];
 };
 
+type UiLang = "en" | "kh";
+
+type LocalizedText = {
+  en?: string | null;
+  km?: string | null;
+  kh?: string | null;
+};
+
+type MaybeLocalizedText = string | LocalizedText | null | undefined;
+
+type ApiCategory = {
+  id?: number;
+  name?: LocalizedText | null;
+};
+
+type MaybeCategory = string | LocalizedText | ApiCategory | null | undefined;
+
+type LocalizedContentDoc = {
+  en?: TiptapNode | null;
+  km?: TiptapNode | null;
+  kh?: TiptapNode | null;
+};
+
 export type DetailPageData = {
-  category: string;
+  category?: MaybeCategory;
   date: string;
   dateValue?: string;
-  title: string;
-  heroImage: string;
-  tagLabel: string;
+  title: MaybeLocalizedText;
+  heroImage?: string;
+  tagLabel?: MaybeCategory;
   tagHref: string;
-  summary?: string;
-  contentDoc?: TiptapNode | null;
+  summary?: MaybeLocalizedText;
+  contentDoc?: TiptapNode | LocalizedContentDoc | null;
   shareUrl: string;
 };
 
@@ -52,8 +75,6 @@ type ImageSlide = {
   src: string;
   alt: string;
 };
-
-type UiLang = "en" | "kh";
 
 function normalizeUiLang(value: unknown): UiLang {
   const lang = String(value || "en").toLowerCase();
@@ -68,46 +89,176 @@ function getBodyFontClass(lang: UiLang) {
   return lang === "kh" ? "body-km khmer-font" : "body-en airbnb-font";
 }
 
+function isLocalizedObject(value: unknown): value is LocalizedText {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    ("en" in value || "km" in value || "kh" in value)
+  );
+}
+
+function isApiCategory(value: unknown): value is ApiCategory {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "name" in value &&
+    typeof (value as ApiCategory).name === "object"
+  );
+}
+
+function pickLocalizedText(
+  value: MaybeLocalizedText,
+  lang: UiLang,
+  fallback = ""
+): string {
+  if (!value) return fallback;
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (lang === "kh") {
+    return value.km || value.kh || value.en || fallback;
+  }
+
+  return value.en || value.km || value.kh || fallback;
+}
+
+function pickCategoryText(
+  value: MaybeCategory,
+  lang: UiLang,
+  fallback = ""
+): string {
+  if (!value) return fallback;
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (isApiCategory(value)) {
+    return pickLocalizedText(value.name, lang, fallback);
+  }
+
+  if (isLocalizedObject(value)) {
+    return pickLocalizedText(value, lang, fallback);
+  }
+
+  return fallback;
+}
+
+function isLocalizedContentDoc(value: unknown): value is LocalizedContentDoc {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    ("en" in value || "km" in value || "kh" in value)
+  );
+}
+
+function isTiptapDoc(value: unknown): value is TiptapNode {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    ((value as TiptapNode).type === "doc" ||
+      Array.isArray((value as TiptapNode).content))
+  );
+}
+
+function pickContentDoc(
+  value: DetailPageData["contentDoc"],
+  lang: UiLang
+): TiptapNode | null {
+  if (!value) return null;
+
+  if (isTiptapDoc(value)) {
+    return value;
+  }
+
+  if (isLocalizedContentDoc(value)) {
+    if (lang === "kh") {
+      return value.km || value.kh || value.en || null;
+    }
+
+    return value.en || value.km || value.kh || null;
+  }
+
+  return null;
+}
+
 export default function DetailPage({ data }: DetailPageProps) {
   const { language } = useLanguage();
 
-  const dateLang = normalizeUiLang(language);
-  const contentLang: UiLang = shouldUseKhmerFont(data) ? "kh" : "en";
+  const uiLang = normalizeUiLang(language);
+  const dateLang = uiLang;
+
+  const selectedContentDoc = pickContentDoc(data.contentDoc, uiLang);
+
+  const titleText = pickLocalizedText(
+    data.title,
+    uiLang,
+    uiLang === "kh" ? "គ្មានចំណងជើង" : "No title"
+  );
+
+  const categoryText = pickCategoryText(
+    data.category,
+    uiLang,
+    uiLang === "kh" ? "សារព័ត៌មាន" : "Press"
+  );
+
+  const tagLabelText = pickCategoryText(
+    data.tagLabel ?? data.category,
+    uiLang,
+    uiLang === "kh" ? "សារព័ត៌មាន" : "Press"
+  );
+
+  const summaryText = pickLocalizedText(data.summary, uiLang, "");
+
+  const contentLang: UiLang =
+    shouldUseKhmerFont({
+      title: titleText,
+      category: categoryText,
+      tagLabel: tagLabelText,
+      summary: summaryText,
+      contentDoc: selectedContentDoc,
+    }) || uiLang === "kh"
+      ? "kh"
+      : "en";
 
   const titleFontClass = getTitleFontClass(contentLang);
   const bodyFontClass = getBodyFontClass(contentLang);
 
+  const shareLabel = uiLang === "kh" ? "ចែករំលែក៖" : "Share:";
+
   const hasDocContent =
-    Array.isArray(data.contentDoc?.content) &&
-    data.contentDoc.content.length > 0;
+    Array.isArray(selectedContentDoc?.content) &&
+    selectedContentDoc.content.length > 0;
 
   const facebookShareUrl = buildFacebookShareUrl(data.shareUrl);
-  const telegramShareUrl = buildTelegramShareUrl(data.shareUrl, data.title);
+  const telegramShareUrl = buildTelegramShareUrl(data.shareUrl, titleText);
 
-  const dateText = formatLocalizedDate(
-    data.dateValue || data.date,
-    dateLang
-  );
+  const dateText = formatLocalizedDate(data.dateValue || data.date, dateLang);
 
   return (
-    <section className={`bg-white ${contentLang === "kh" ? "khmer-font" : "airbnb-font"}`}>
+    <section
+      className={`bg-white ${
+        contentLang === "kh" ? "khmer-font" : "airbnb-font"
+      }`}
+    >
       <div className="mx-auto max-w-7xl px-4 py-8 pt-8">
         <div className="inline-flex flex-col">
           <span
             className={`text-slate-700 ${bodyFontClass}`}
             style={{ fontWeight: 600 }}
           >
-            {data.category}
+            {categoryText}
           </span>
           <span className="mt-1 h-[3px] w-20 rounded-full bg-amber-500" />
         </div>
 
-        {/* Main title: global title size + font-semibold */}
         <h1
           className={`mt-4 max-w-5xl tracking-tight text-[#0f1637] ${titleFontClass}`}
           style={{ fontWeight: 600 }}
         >
-          {data.title}
+          {titleText}
         </h1>
 
         <div
@@ -127,7 +278,7 @@ export default function DetailPage({ data }: DetailPageProps) {
             <span className="grid h-8 w-8 place-items-center rounded-md bg-amber-50 text-amber-600">
               <FileText className="h-4 w-4" />
             </span>
-            {data.tagLabel}
+            {tagLabelText}
           </Link>
         </div>
 
@@ -136,14 +287,14 @@ export default function DetailPage({ data }: DetailPageProps) {
             className={`text-[#2f2f2f] ${bodyFontClass}`}
             style={{ fontWeight: 600 }}
           >
-            Share:
+            {shareLabel}
           </span>
 
           <a
             href={facebookShareUrl}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Share ${data.title} on Facebook`}
+            aria-label={`Share ${titleText} on Facebook`}
             className="grid h-8 w-8 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
           >
             <FaFacebookF className="h-3.5 w-3.5" />
@@ -153,7 +304,7 @@ export default function DetailPage({ data }: DetailPageProps) {
             href={telegramShareUrl}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Share ${data.title} on Telegram`}
+            aria-label={`Share ${titleText} on Telegram`}
             className="grid h-8 w-8 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
           >
             <FaTelegramPlane className="h-3.5 w-3.5" />
@@ -161,10 +312,10 @@ export default function DetailPage({ data }: DetailPageProps) {
         </div>
 
         <article className={`mt-6 max-w-7xl text-slate-700 ${bodyFontClass}`}>
-          {hasDocContent && data.contentDoc ? (
+          {hasDocContent && selectedContentDoc ? (
             <div className="mt-2">
               <TiptapRenderer
-                doc={data.contentDoc}
+                doc={selectedContentDoc}
                 bodyFontClass={bodyFontClass}
                 titleFontClass={titleFontClass}
               />
@@ -176,7 +327,9 @@ export default function DetailPage({ data }: DetailPageProps) {
               className={`mt-4 text-slate-500 ${bodyFontClass}`}
               style={{ fontWeight: 400 }}
             >
-              No detail content available.
+              {uiLang === "kh"
+                ? "មិនមានមាតិកាលម្អិតទេ។"
+                : "No detail content available."}
             </p>
           ) : null}
         </article>
@@ -203,14 +356,20 @@ function containsKhmer(value?: string): boolean {
   return /[\u1780-\u17FF]/.test(value ?? "");
 }
 
-function shouldUseKhmerFont(data: DetailPageData): boolean {
+function shouldUseKhmerFont(data: {
+  category?: string;
+  title?: string;
+  tagLabel?: string;
+  summary?: string;
+  contentDoc?: TiptapNode | null;
+}): boolean {
   const docText = data.contentDoc
     ? extractPlainText(data.contentDoc.content ?? [])
     : "";
 
-  const fullText = `${data.category} ${data.title} ${data.tagLabel} ${
-    data.summary ?? ""
-  } ${docText}`;
+  const fullText = `${data.category ?? ""} ${data.title ?? ""} ${
+    data.tagLabel ?? ""
+  } ${data.summary ?? ""} ${docText}`;
 
   return containsKhmer(fullText);
 }
@@ -476,8 +635,12 @@ function renderNode(
   if (type === "table") {
     return (
       <div key={key} className="mt-6 overflow-x-auto">
-        <table className={`min-w-full border-collapse border border-slate-300 ${bodyFontClass}`}>
-          <tbody>{renderNodes(content, key, bodyFontClass, titleFontClass)}</tbody>
+        <table
+          className={`min-w-full border-collapse border border-slate-300 ${bodyFontClass}`}
+        >
+          <tbody>
+            {renderNodes(content, key, bodyFontClass, titleFontClass)}
+          </tbody>
         </table>
       </div>
     );

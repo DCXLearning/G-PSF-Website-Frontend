@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import Rout from "@/components/News&Updates/list-New&Update/Rout";
 import {
@@ -21,39 +22,123 @@ type PageProps = {
     searchParams?: SearchParams | Promise<SearchParams>;
 };
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+type Locale = "en" | "km";
+
+type LocalizedText = {
+    en?: string | null;
+    km?: string | null;
+    kh?: string | null;
+};
+
+function isLocalizedText(value: unknown): value is LocalizedText {
+    return typeof value === "object" && value !== null;
+}
+
+function toPlainText(
+    value: unknown,
+    locale: Locale = "km",
+    fallback = ""
+): string {
+    if (!value) {
+        return fallback;
+    }
+
+    if (typeof value === "string") {
+        return cleanText(value) || fallback;
+    }
+
+    if (isLocalizedText(value)) {
+        if (locale === "km") {
+            return (
+                cleanText(value.km) ||
+                cleanText(value.kh) ||
+                cleanText(value.en) ||
+                fallback
+            );
+        }
+
+        return (
+            cleanText(value.en) ||
+            cleanText(value.km) ||
+            cleanText(value.kh) ||
+            fallback
+        );
+    }
+
+    return fallback;
+}
+
+async function getCurrentLocale(): Promise<Locale> {
+    const cookieStore = await cookies();
+
+    const locale =
+        cookieStore.get("NEXT_LOCALE")?.value ||
+        cookieStore.get("language")?.value ||
+        cookieStore.get("locale")?.value ||
+        "km";
+
+    return locale === "en" ? "en" : "km";
+}
+
+export async function generateMetadata({
+    searchParams,
+}: PageProps): Promise<Metadata> {
+    const locale = await getCurrentLocale();
     const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+
     const slug = cleanText(resolvedSearchParams.slug) || undefined;
     const id = cleanText(resolvedSearchParams.id) || undefined;
-    const detailData = await getNewsDetailData(slug, id);
+
+    const detailData = await getNewsDetailData(slug, id, locale);
 
     if (!detailData) {
         return {
-            title: "News & Updates",
-            description: "Latest news and updates from G-PSF Cambodia.",
+            title:
+                locale === "km"
+                    ? "ព័ត៌មាន និងបច្ចុប្បន្នភាព"
+                    : "News & Updates",
+            description:
+                locale === "km"
+                    ? "ព័ត៌មាន និងបច្ចុប្បន្នភាពថ្មីៗពី G-PSF Cambodia។"
+                    : "Latest news and updates from G-PSF Cambodia.",
         };
     }
 
-    const description = buildMetadataDescription(detailData);
-    const shareImageUrl = buildShareImageUrl(detailData.heroImage);
+    const title = toPlainText(
+        detailData.title,
+        locale,
+        locale === "km" ? "ព័ត៌មាន និងបច្ចុប្បន្នភាព" : "News & Updates"
+    );
+
+    const description = toPlainText(
+        buildMetadataDescription(detailData),
+        locale,
+        locale === "km"
+            ? "ព័ត៌មាន និងបច្ចុប្បន្នភាពថ្មីៗពី G-PSF Cambodia។"
+            : "Latest news and updates from G-PSF Cambodia."
+    );
+
+    const heroImage = cleanText(detailData.heroImage) || "";
+    const shareImageUrl = buildShareImageUrl(heroImage);
+    const canonicalUrl = detailData.shareUrl;
 
     return {
-        title: detailData.title,
+        title,
         description,
         alternates: {
-            canonical: detailData.shareUrl,
+            canonical: canonicalUrl,
         },
         openGraph: {
-            title: detailData.title,
+            title,
             description,
-            url: detailData.shareUrl,
+            url: canonicalUrl,
             siteName: NEWS_SITE_NAME,
             type: "article",
             images: [
                 {
                     url: shareImageUrl,
                     secureUrl: shareImageUrl,
-                    alt: detailData.title,
+                    alt: title,
                     width: 1200,
                     height: 630,
                 },
@@ -61,7 +146,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
         },
         twitter: {
             card: "summary_large_image",
-            title: detailData.title,
+            title,
             description,
             images: [shareImageUrl],
         },
@@ -76,7 +161,9 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 }
 
 export default async function Page({ searchParams }: PageProps) {
+    const locale = await getCurrentLocale();
     const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+
     const slug = cleanText(resolvedSearchParams.slug) || undefined;
     const id = cleanText(resolvedSearchParams.id) || undefined;
 
@@ -102,7 +189,7 @@ export default async function Page({ searchParams }: PageProps) {
         redirect(canonicalPath);
     }
 
-    const detailData = mapPostToDetail(post);
+    const detailData = mapPostToDetail(post, locale);
 
     return <Rout detailData={detailData} />;
 }

@@ -35,8 +35,6 @@ function normalizeText(value?: string) {
 function isEventBlock(block: EventBlock) {
     const englishTitle = normalizeText(block.title?.en);
 
-    // Use the same block rule as WorkingGroupsPage/Date.tsx.
-    // The schedule is stored as a post_list block with this exact title.
     return (
         block.enabled !== false &&
         block.type === "post_list" &&
@@ -45,8 +43,7 @@ function isEventBlock(block: EventBlock) {
 }
 
 export async function GET() {
-    // Read events from the Working Groups page so this route stays in sync
-    // with the calendar data used in WorkingGroupsPage/Date.tsx.
+
     const url = `${API_URL || FALLBACK_API_URL}/pages/working-groups/section`;
 
     try {
@@ -64,12 +61,9 @@ export async function GET() {
 
         const json = (await res.json()) as SectionResponse;
         const blocks = Array.isArray(json.data?.blocks) ? json.data?.blocks : [];
-        // Find the single block that powers the Events & Meetings Schedule UI.
+
         const eventBlock = blocks.find(isEventBlock);
 
-        // Keep the response simple for the UI:
-        // - sectionTitle helps the component show the CMS title
-        // - limit helps the homepage show only the configured number of items
         return NextResponse.json(
             {
                 success: true,

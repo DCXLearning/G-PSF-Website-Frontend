@@ -68,7 +68,6 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
 
     return (
         <section className="relative overflow-hidden bg-white py-16">
-            {/* Header */}
             <div className="relative z-10 mx-auto mb-16 max-w-7xl px-4">
                 <p className={`mb-1 text-gray-900 ${mainTitleClass}`}>
                     {isKh ? "ថ្មីៗបំផុត" : "Latest"}
@@ -81,7 +80,6 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                 <div className="h-1.5 w-72 bg-orange-500" />
             </div>
 
-            {/* Background */}
             <div className="absolute bottom-0 left-0 h-[350px] w-full bg-[#3b5998]" />
 
             <div className="relative z-10 mx-auto max-w-7xl px-4">
@@ -115,12 +113,12 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                 pathname: "/new-update/view-detail",
                                 query: item.slug
                                     ? {
-                                          slug: item.slug,
-                                          id: String(item.id),
-                                      }
+                                        slug: item.slug,
+                                        id: String(item.id),
+                                    }
                                     : {
-                                          id: String(item.id),
-                                      },
+                                        id: String(item.id),
+                                    },
                             };
 
                             return (
@@ -130,7 +128,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                         className="group block h-full focus:outline-none"
                                     >
                                         <article className="flex h-full min-h-[500px] flex-col rounded-2xl bg-[#e9ecef] shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
-                                            {/* Image */}
+
                                             <div className="relative m-4 aspect-square overflow-hidden rounded-2xl bg-white">
                                                 {item.imageUrl ? (
                                                     <Image
@@ -146,7 +144,6 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                 )}
                                             </div>
 
-                                            {/* Content */}
                                             <div className="flex grow flex-col px-6 pb-8 pt-2">
                                                 <span className={`mb-2 text-[#1a2b4b] ${bodyClass}`}>
                                                     {formatLocalizedDate(
@@ -214,12 +211,10 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                     </div>
                 )}
 
-                {/* Pagination */}
                 {hasData && (
                     <div className="custom-pagination mt-4 flex justify-center gap-3" />
                 )}
 
-                {/* Bottom See More */}
                 {hasData && (
                     <div className="mt-8 flex justify-center">
                         <Link

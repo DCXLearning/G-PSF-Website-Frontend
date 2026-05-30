@@ -8,16 +8,49 @@ import {
 import { buildAbsoluteUrl } from "@/utils/socialShare";
 
 export const runtime = "nodejs";
+
 export const size = {
     width: 1200,
     height: 630,
 };
+
 export const contentType = "image/png";
 
 const GOOGLE_FONTS_USER_AGENT =
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 
-function truncateText(value: string, limit: number) {
+type LocalizedTextValue = {
+    en?: string | null;
+    km?: string | null;
+    kh?: string | null;
+};
+
+function isLocalizedTextValue(value: unknown): value is LocalizedTextValue {
+    return typeof value === "object" && value !== null;
+}
+
+function toPlainText(value: unknown, fallback = ""): string {
+    if (!value) {
+        return fallback;
+    }
+
+    if (typeof value === "string") {
+        return cleanText(value) || fallback;
+    }
+
+    if (isLocalizedTextValue(value)) {
+        return (
+            cleanText(value.km) ||
+            cleanText(value.kh) ||
+            cleanText(value.en) ||
+            fallback
+        );
+    }
+
+    return fallback;
+}
+
+function truncateText(value: string, limit: number): string {
     if (value.length <= limit) {
         return value;
     }
@@ -31,36 +64,42 @@ async function loadGoogleFont(text: string, weight: 400 | 700) {
     url.searchParams.set("display", "swap");
     url.searchParams.set("text", text);
 
-    const cssResponse = await fetch(url.toString(), {
-        headers: {
-            "User-Agent": GOOGLE_FONTS_USER_AGENT,
-        },
-        cache: "force-cache",
-    });
+    try {
+        const cssResponse = await fetch(url.toString(), {
+            headers: {
+                "User-Agent": GOOGLE_FONTS_USER_AGENT,
+            },
+            cache: "force-cache",
+        });
 
-    if (!cssResponse.ok) {
+        if (!cssResponse.ok) {
+            return null;
+        }
+
+        const css = await cssResponse.text();
+        const fontMatch = css.match(
+            /src: url\((https:[^)]+)\) format\('(opentype|truetype|woff2)'\)/
+        );
+
+        if (!fontMatch) {
+            return null;
+        }
+
+        const fontResponse = await fetch(fontMatch[1], {
+            cache: "force-cache",
+        });
+
+        if (!fontResponse.ok) {
+            return null;
+        }
+
+        return fontResponse.arrayBuffer();
+    } catch {
         return null;
     }
-
-    const css = await cssResponse.text();
-    const fontMatch = css.match(/src: url\((https:[^)]+)\) format\('(opentype|truetype|woff2)'\)/);
-
-    if (!fontMatch) {
-        return null;
-    }
-
-    const fontResponse = await fetch(fontMatch[1], {
-        cache: "force-cache",
-    });
-
-    if (!fontResponse.ok) {
-        return null;
-    }
-
-    return fontResponse.arrayBuffer();
 }
 
-async function fetchImageDataUrl(src: string) {
+async function fetchImageDataUrl(src: string): Promise<string> {
     const imageUrl = cleanText(src);
 
     if (!imageUrl) {
@@ -76,7 +115,9 @@ async function fetchImageDataUrl(src: string) {
             return "";
         }
 
-        const contentTypeHeader = response.headers.get("content-type") || "image/jpeg";
+        const contentTypeHeader =
+            response.headers.get("content-type") || "image/jpeg";
+
         const imageBuffer = Buffer.from(await response.arrayBuffer());
 
         return `data:${contentTypeHeader};base64,${imageBuffer.toString("base64")}`;
@@ -96,11 +137,22 @@ export default async function Image({ params }: PageProps) {
     const { id, slug } = await params;
     const post = await getNewsCmsPost(slug, id);
 
-    const detailData = post ? mapPostToDetail(post) : null;
-    const title = detailData?.title || "News & Updates";
-    const summary =
-        truncateText(detailData?.summary || "Latest news and updates from G-PSF Cambodia.", 180);
-    const coverImageDataUrl = post ? await fetchImageDataUrl(pickPrimaryImage(post)) : "";
+    const detailData = post ? mapPostToDetail(post, "km") : null;
+
+    const title = toPlainText(detailData?.title, "News & Updates");
+
+    const summary = truncateText(
+        toPlainText(
+            detailData?.summary,
+            "Latest news and updates from G-PSF Cambodia."
+        ),
+        180
+    );
+
+    const coverImageDataUrl = post
+        ? await fetchImageDataUrl(pickPrimaryImage(post))
+        : "";
+
     const fontText = `${title} ${summary} G-PSF Cambodia News & Updates`;
 
     const [regularFont, boldFont] = await Promise.all([
@@ -205,6 +257,7 @@ export default async function Image({ params }: PageProps) {
                             >
                                 G-PSF Cambodia
                             </div>
+
                             <div
                                 style={{
                                     fontSize: 20,
