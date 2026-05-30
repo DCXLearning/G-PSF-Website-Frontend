@@ -354,33 +354,17 @@ const Footer: React.FC = () => {
                         </h3>
 
                         <div className="space-y-3 text-gray-700">
-                            {firstPhone ? (
-                                <ContactItem
-                                    icon={<Phone size={18} />}
-                                    text={firstPhone}
-                                    fontClass={footerFontClass}
-                                />
-                            ) : (
-                                <ContactItem
-                                    icon={<Phone size={18} />}
-                                    text="+855 99 799 579"
-                                    fontClass={footerFontClass}
-                                />
-                            )}
+                            <ContactItem
+                                icon={<Phone size={18} />}
+                                text={firstPhone || "+855 99 799 579"}
+                                className={footerBodyTitleClass}
+                            />
 
-                            {firstEmail ? (
-                                <ContactItem
-                                    icon={<Mail size={18} />}
-                                    text={firstEmail}
-                                    fontClass={footerFontClass}
-                                />
-                            ) : (
-                                <ContactItem
-                                    icon={<Mail size={18} />}
-                                    text="helpdesk@cdc.gov.kh"
-                                    fontClass={footerFontClass}
-                                />
-                            )}
+                            <ContactItem
+                                icon={<Mail size={18} />}
+                                text={firstEmail || "helpdesk@cdc.gov.kh"}
+                                className={footerBodyTitleClass}
+                            />
                         </div>
                     </div>
 
@@ -418,17 +402,17 @@ const Footer: React.FC = () => {
 const ContactItem = ({
     icon,
     text,
-    fontClass,
+    className,
 }: {
     icon: React.ReactNode;
     text: string;
-    fontClass: string;
+    className: string;
 }) => (
     <div
-        className={`flex items-center gap-2 text-sm ${fontClass}`}
+        className={`flex items-center gap-2 ${className}`}
         style={{ fontWeight: 500 }}
     >
-        <span className="text-[#00008b]">{icon}</span>
+        <span className="text-[#00008b] shrink-0">{icon}</span>
         <span>{text}</span>
     </div>
 );
