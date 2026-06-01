@@ -17,6 +17,7 @@ type DateRangeId =
 interface Resource {
     id: number;
     categoryId?: number;
+    workingGroupId?: number | null;
     type: string;
     title: string;
     date: string;
@@ -112,6 +113,11 @@ type ApiResourcePost = {
     category?: {
         id?: number;
         name?: I18nText;
+    } | null;
+    workingGroupId?: number | null;
+    workingGroup?: {
+        id?: number;
+        title?: I18nText;
     } | null;
     coverImage?: string | null;
     documentThumbnail?: string | null;
@@ -356,14 +362,21 @@ function mapResourcePosts(response: ResourcePostResponse, apiLang: ApiLang): Res
 
         const publishedDate = pickPublishedDate(post);
 
+        // Badge shows the Working Group name directly (no prefix). Falls back to
+        // category, then a generic "Document" label, so we never render a blank chip.
+        const workingGroupName = pickText(post.workingGroup?.title, apiLang);
+        const categoryName = pickText(post.category?.name, apiLang);
+        const badgeLabel = workingGroupName || categoryName || "Document";
+
         resources.push({
             id: post.id ?? index + 1,
             categoryId: post.category?.id,
-            type: pickText(post.category?.name, apiLang) || "Document",
+            workingGroupId: post.workingGroupId ?? post.workingGroup?.id ?? null,
+            type: badgeLabel,
             title,
             date: formatLocalizedDate(publishedDate, apiLang),
             publishedDate,
-            org: pickText(post.category?.name, apiLang),
+            org: workingGroupName || categoryName,
             author: getText(post.author?.displayName),
             description: pickText(post.description ?? undefined, apiLang),
             languages: buildLanguages(post, title, apiLang),
@@ -409,26 +422,8 @@ function getPageIdFromSection(response: ResourceSectionResponse): number | null 
     return null;
 }
 
-const FilterSection = ({ title, items }: { title: string; items: string[] }) => (
-    <div className="mb-10">
-        <h3 className="text-xl font-bold mb-4 border-b-2 border-orange-500 w-fit pb-1 text-slate-800 tracking-tight">
-            {title}
-        </h3>
-        <div className="space-y-3">
-            {items.map((item) => (
-                <label key={item} className="flex items-start gap-3 cursor-pointer group">
-                    <input
-                        type="checkbox"
-                        className="mt-1 w-5 h-5 border-gray-300 rounded text-blue-800 focus:ring-blue-500"
-                    />
-                    <span className="text-[15px] text-slate-700 leading-snug group-hover:text-blue-700 transition-colors">
-                        {item}
-                    </span>
-                </label>
-            ))}
-        </div>
-    </div>
-);
+// The Working Groups filter now uses CategoryFilterSection with real IDs +
+// onToggle, so the old text-only FilterSection component is no longer needed.
 
 function DateFilterSection({
     title,
@@ -583,6 +578,9 @@ export default function ResourceLibraryPage({
     const [categories, setCategories] = useState<CategoryOption[]>([]);
     const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
     const [selectedDateRangeIds, setSelectedDateRangeIds] = useState<DateRangeId[]>([]);
+    // Working Group filter — fetched from /api/working-groups, multi-select by id.
+    const [workingGroups, setWorkingGroups] = useState<CategoryOption[]>([]);
+    const [selectedWorkingGroupIds, setSelectedWorkingGroupIds] = useState<number[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoadingCategories, setIsLoadingCategories] = useState(false);
     const [hasLoadedCategories, setHasLoadedCategories] = useState(false);
@@ -592,10 +590,19 @@ export default function ResourceLibraryPage({
     const normalizedQuery = query.trim().toLowerCase();
     const isSearching = normalizedQuery.length > 0;
     const visibleResources = useMemo(() => {
-        return resources.filter((resource) =>
-            matchesSelectedDateRanges(resource.publishedDate, selectedDateRangeIds)
-        );
-    }, [resources, selectedDateRangeIds]);
+        return resources.filter((resource) => {
+            if (!matchesSelectedDateRanges(resource.publishedDate, selectedDateRangeIds)) {
+                return false;
+            }
+            // WG filter is AND'd with the date filter. When no WGs are checked,
+            // it acts as "show all" (no constraint).
+            if (selectedWorkingGroupIds.length === 0) return true;
+            return (
+                typeof resource.workingGroupId === "number" &&
+                selectedWorkingGroupIds.includes(resource.workingGroupId)
+            );
+        });
+    }, [resources, selectedDateRangeIds, selectedWorkingGroupIds]);
     const totalPages = Math.ceil(visibleResources.length / RESOURCE_ITEMS_PER_PAGE);
     const paginatedResources = useMemo(() => {
         const startIndex = (currentPage - 1) * RESOURCE_ITEMS_PER_PAGE;
@@ -606,7 +613,41 @@ export default function ResourceLibraryPage({
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [normalizedQuery, resources, selectedCategoryIds, selectedDateRangeIds]);
+    }, [normalizedQuery, resources, selectedCategoryIds, selectedDateRangeIds, selectedWorkingGroupIds]);
+
+    // Load the WG list once. The API returns localized titles so we pick the
+    // right language right here instead of in the render.
+    useEffect(() => {
+        const controller = new AbortController();
+        async function loadWorkingGroups() {
+            try {
+                const response = await fetch("/api/working-groups", {
+                    cache: "no-store",
+                    signal: controller.signal,
+                });
+                if (!response.ok) return;
+                const json = await response.json();
+                const rawItems: Array<{
+                    id?: number;
+                    title?: { en?: string; km?: string };
+                }> = Array.isArray(json?.items) ? json.items : [];
+
+                const items: CategoryOption[] = rawItems
+                    .filter((item) => typeof item.id === "number")
+                    .map((item) => {
+                        const en = item.title?.en?.trim() ?? "";
+                        const km = item.title?.km?.trim() ?? "";
+                        const label = apiLang === "km" ? km || en : en || km;
+                        return { id: item.id as number, label: label || `WG ${item.id}` };
+                    });
+                setWorkingGroups(items);
+            } catch {
+                // silent — WG filter just won't appear
+            }
+        }
+        void loadWorkingGroups();
+        return () => controller.abort();
+    }, [apiLang]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -759,9 +800,12 @@ export default function ResourceLibraryPage({
                 }
 
                 if (selectedCategoryIds.length === 0) {
-                    // When no category is selected, load all posts that belong to this page.
+                    // Documents live where they're posted (any page) — what makes
+                    // them documents is having a file attached. So we ask the
+                    // backend for every published post with a document, then let
+                    // the date/WG filters narrow further.
                     const response = await fetch(
-                        `/api/posts?pageId=${pageId}&types=${encodeURIComponent(RESOURCE_LIBRARY_SECTION_TYPES)}`,
+                        `/api/posts?hasDocument=true&pageSize=50`,
                         {
                             cache: "no-store",
                             signal: controller.signal,
@@ -860,6 +904,14 @@ export default function ResourceLibraryPage({
         });
     }
 
+    function toggleWorkingGroup(workingGroupId: number) {
+        setSelectedWorkingGroupIds((currentIds) =>
+            currentIds.includes(workingGroupId)
+                ? currentIds.filter((id) => id !== workingGroupId)
+                : [...currentIds, workingGroupId]
+        );
+    }
+
     function changePage(page: number) {
         if (page < 1 || page > totalPages) {
             return;
@@ -928,27 +980,14 @@ export default function ResourceLibraryPage({
                                     onToggle={toggleDateRange}
                                 />
 
-                                <FilterSection
-                                    title="Working Groups"
-                                    items={[
-                                        "Agriculture & Agro-Industry",
-                                        "Tourism",
-                                        "Manufacturing & SMEs",
-                                        "Law, Tax & Governance",
-                                        "Banking & Financial Services",
-                                        "Transportation & Infrastructure",
-                                        "Export Processing & Trade Facilitation",
-                                        "Industrial Relations",
-                                        "Paddy-Rice",
-                                        "Energy & Mineral Resources",
-                                        "Education",
-                                        "Health",
-                                        "Construction & Real Estate",
-                                        "Non-Banking Financial Services",
-                                        "Digital Economy, Society & Telecommunications",
-                                        "Land Administration, Security & Public Order",
-                                    ]}
-                                />
+                                {workingGroups.length > 0 ? (
+                                    <CategoryFilterSection
+                                        title="Working Groups"
+                                        items={workingGroups}
+                                        selectedCategoryIds={selectedWorkingGroupIds}
+                                        onToggle={toggleWorkingGroup}
+                                    />
+                                ) : null}
                             </div>
                         </aside>
                     ) : null}

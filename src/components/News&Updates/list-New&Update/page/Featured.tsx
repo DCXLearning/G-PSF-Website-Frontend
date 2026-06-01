@@ -3,10 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, LayoutGrid, List } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 import { FaArrowRight } from "react-icons/fa";
+import Pagination from "@/components/Pagination";
+
+// Same items-per-page as Publication and /new-update/see-more so the three
+// pages feel consistent.
+const ITEMS_PER_PAGE = 6;
 
 type UiLang = "en" | "kh";
 type ViewMode = "list" | "grid";
@@ -33,6 +38,11 @@ type PostItem = {
     status?: string;
     isPublished?: boolean;
     isFeatured?: boolean;
+    // Posts with a document attached are publications, not news — filtered out below.
+    documents?: {
+        en?: { url?: string } | null;
+        km?: { url?: string } | null;
+    } | null;
     content?: {
         en?: {
             type?: string;
@@ -48,6 +58,13 @@ type PostItem = {
         };
     };
 };
+
+// A post is a "document" (publication) if it has a downloadable file attached.
+function isDocumentPost(post: PostItem): boolean {
+    const enUrl = post.documents?.en?.url?.trim() ?? "";
+    const kmUrl = post.documents?.km?.url?.trim() ?? "";
+    return Boolean(enUrl || kmUrl);
+}
 
 type ApiResponse = {
     success?: boolean;
@@ -65,7 +82,11 @@ type FeaturedItem = {
     href: string;
 };
 
-const FEATURED_POSTS_ENDPOINT = "/api/posts?pageId=6&isFeatured=true";
+// Pull every featured post site-wide (any page, any category, any WG). The
+// document/draft filters live in mapFeaturedPosts below so the page is honest
+// about what it shows — featured news posts, not publications.
+const FEATURED_POSTS_ENDPOINT =
+    "/api/posts?isFeatured=true&hasDocument=false&pageSize=100";
 
 function normalizeLang(language: unknown): UiLang {
     const value = String(language || "en").toLowerCase();
@@ -165,7 +186,8 @@ function mapFeaturedPosts(posts: PostItem[], language: UiLang): FeaturedItem[] {
         .filter(
             (post) =>
                 post.isFeatured === true &&
-                (post.isPublished === true || post.status === "published"),
+                (post.isPublished === true || post.status === "published") &&
+                !isDocumentPost(post),
         )
         .sort((leftPost, rightPost) => {
             const leftDate = new Date(
@@ -460,6 +482,13 @@ export default function FeaturedPage() {
     const [items, setItems] = useState<PostItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Reset to page 1 when the data set or view mode changes so the user
+    // doesn't land on a now-empty page.
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [items, view]);
 
     useEffect(() => {
         const htmlLang = uiLanguage === "kh" ? "km" : "en";
@@ -521,6 +550,30 @@ export default function FeaturedPage() {
 
     const featuredItems = mapFeaturedPosts(items, uiLanguage);
 
+    // Pagination math + a guard that snaps the page back into range if the
+    // list shrinks while the user is on a high page.
+    const totalPages = Math.max(
+        1,
+        Math.ceil(featuredItems.length / ITEMS_PER_PAGE),
+    );
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    const paginatedItems = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return featuredItems.slice(start, start + ITEMS_PER_PAGE);
+    }, [featuredItems, currentPage]);
+
+    function handlePageChange(nextPage: number) {
+        setCurrentPage(nextPage);
+        if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    }
+
     return (
         <main className={`min-h-screen ${bodyClass}`}>
             <section className="mx-auto max-w-7xl px-4 py-10 sm:px-4 lg:px-4">
@@ -551,27 +604,38 @@ export default function FeaturedPage() {
                 ) : null}
 
                 {!loading && !error && featuredItems.length > 0 ? (
-                    view === "list" ? (
-                        <div>
-                            {featuredItems.map((item) => (
-                                <ListCard
-                                    key={item.id}
-                                    item={item}
-                                    language={uiLanguage}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                            {featuredItems.map((item) => (
-                                <GridCard
-                                    key={item.id}
-                                    item={item}
-                                    language={uiLanguage}
-                                />
-                            ))}
-                        </div>
-                    )
+                    <>
+                        {view === "list" ? (
+                            <div>
+                                {paginatedItems.map((item) => (
+                                    <ListCard
+                                        key={item.id}
+                                        item={item}
+                                        language={uiLanguage}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                                {paginatedItems.map((item) => (
+                                    <GridCard
+                                        key={item.id}
+                                        item={item}
+                                        language={uiLanguage}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {featuredItems.length > ITEMS_PER_PAGE ? (
+                            <Pagination
+                                currentPage={currentPage}
+                                totalItems={featuredItems.length}
+                                itemsPerPage={ITEMS_PER_PAGE}
+                                onPageChange={handlePageChange}
+                            />
+                        ) : null}
+                    </>
                 ) : null}
             </section>
         </main>

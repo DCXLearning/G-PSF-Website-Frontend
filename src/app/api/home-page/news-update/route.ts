@@ -6,8 +6,20 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 
 const API_BASE = API_URL || "";
-const UPSTREAM_URL = `${API_BASE}/pages/news-and-updates/section`;
 const BASE_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, "");
+
+// Home page "News & Updates" strip — show the latest 6 news posts from both
+// the configured "News & Updates" section (id 4) AND any post tagged with a
+// Working Group. Posts with a document file are excluded — they belong on the
+// Publication page, not the news feed.
+// This mirrors /api/newupdate-page/detail's merge logic so the home strip and
+// the see-more page stay in lockstep.
+const SECTION_ID = 4;
+const PAGE_SIZE = 6;
+const FETCH_POOL = 50; // pool we sample from before sorting/slicing to 6
+
+const HEADING = { en: "News & Updates", km: "ព័ត៌មាន និងបច្ចុប្បន្នភាព" };
+const DESCRIPTION = { en: "", km: "" };
 
 function normalizeText(value: any) {
     if (!value) return { en: "", km: "" };
@@ -33,6 +45,42 @@ function toAbsoluteUrl(url?: string | null) {
     return `${BASE_ORIGIN}${value.startsWith("/") ? "" : "/"}${value}`;
 }
 
+function hasDocument(post: any): boolean {
+    const en = post?.documents?.en?.url;
+    const km = post?.documents?.km?.url;
+    return Boolean(
+        (typeof en === "string" && en.trim()) ||
+            (typeof km === "string" && km.trim())
+    );
+}
+
+function timestamp(post: any): number {
+    const value =
+        post?.publishedAt || post?.createdAt || post?.updatedAt || null;
+    if (!value) return 0;
+    const t = new Date(value).getTime();
+    return Number.isFinite(t) ? t : 0;
+}
+
+async function fetchJson(url: string): Promise<any | null> {
+    try {
+        const res = await fetch(url, {
+            method: "GET",
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+        });
+        const text = await res.text();
+        if (!res.ok) return null;
+        try {
+            return text ? JSON.parse(text) : null;
+        } catch {
+            return null;
+        }
+    } catch {
+        return null;
+    }
+}
+
 export async function GET() {
     try {
         if (!API_BASE) {
@@ -42,49 +90,37 @@ export async function GET() {
             );
         }
 
-        const res = await fetch(UPSTREAM_URL, {
-            method: "GET",
-            cache: "no-store",
-            headers: {
-                Accept: "application/json",
-            },
-        });
+        const [sectionResp, wgResp] = await Promise.all([
+            fetchJson(`${API_BASE}/sections/${SECTION_ID}/posts?pageSize=${FETCH_POOL}`),
+            fetchJson(
+                `${API_BASE}/posts?hasWorkingGroup=true&hasDocument=false&pageSize=${FETCH_POOL}`
+            ),
+        ]);
 
-        const text = await res.text();
+        const sectionPosts: any[] = Array.isArray(sectionResp?.data)
+            ? sectionResp.data
+            : [];
+        const wgPosts: any[] = Array.isArray(wgResp?.data) ? wgResp.data : [];
 
-        let json: any = null;
-        try {
-            json = text ? JSON.parse(text) : null;
-        } catch {
-            json = null;
+        // Section posts may contain documents — strip them. WG fetch already excludes via hasDocument=false.
+        const sectionNewsOnly = sectionPosts.filter((post) => !hasDocument(post));
+
+        // Merge dedupe by id, sort newest-first, take top N.
+        const byId = new Map<number, any>();
+        for (const post of wgPosts) {
+            if (typeof post?.id === "number") byId.set(post.id, post);
+        }
+        for (const post of sectionNewsOnly) {
+            if (typeof post?.id === "number" && !byId.has(post.id)) {
+                byId.set(post.id, post);
+            }
         }
 
-        if (!res.ok) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message: json?.message || `Upstream error ${res.status}`,
-                    upstreamStatus: res.status,
-                },
-                { status: 502 }
-            );
-        }
+        const top = Array.from(byId.values())
+            .sort((a, b) => timestamp(b) - timestamp(a))
+            .slice(0, PAGE_SIZE);
 
-        const blocks = Array.isArray(json?.data?.blocks) ? json.data.blocks : [];
-
-        const newsBlock =
-            blocks.find(
-                (block: any) =>
-                    block?.enabled !== false &&
-                    block?.type === "post_list" &&
-                    Array.isArray(block?.posts) &&
-                    block.posts.length > 0 &&
-                    (block?.title?.en === "News & Updates" || block?.id === 4)
-            ) || null;
-
-        const posts = Array.isArray(newsBlock?.posts) ? newsBlock.posts : [];
-
-        const items = posts.map((post: any) => {
+        const items = top.map((post: any) => {
             const id = post?.id ?? "";
             const slug = post?.slug ?? "";
             const safeId = encodeURIComponent(String(id));
@@ -107,8 +143,8 @@ export async function GET() {
         return NextResponse.json(
             {
                 success: true,
-                heading: normalizeText(newsBlock?.title),
-                description: normalizeText(newsBlock?.description),
+                heading: HEADING,
+                description: DESCRIPTION,
                 items,
             },
             {

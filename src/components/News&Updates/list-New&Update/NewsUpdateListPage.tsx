@@ -8,7 +8,11 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { buildAbsoluteUrl } from "@/utils/socialShare";
 import { buildNewsDetailPath } from "@/utils/newsDetail";
 import { formatLocalizedDate } from "@/utils/localizedDate";
+import Pagination from "@/components/Pagination";
 import SocialShareButtons from "./SocialShareButtons";
+
+// Same items-per-page as Publication so the two pages feel consistent.
+const ITEMS_PER_PAGE = 6;
 
 type UiLang = "en" | "kh";
 type ApiLang = "en" | "km";
@@ -138,6 +142,13 @@ export default function NewsUpdateListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to first page when the underlying data or the view mode changes so
+  // the user doesn't land on a now-empty page after filtering / refetching.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [items, viewMode]);
 
   useEffect(() => {
     let mounted = true;
@@ -206,6 +217,27 @@ export default function NewsUpdateListPage() {
     });
   }, [items, uiLanguage]);
 
+  // Paginated slice (window of ITEMS_PER_PAGE) plus a guard that snaps the page
+  // back into range if the data shrinks while the user is on a high page.
+  const totalPages = Math.max(1, Math.ceil(content.length / ITEMS_PER_PAGE));
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedContent = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return content.slice(start, start + ITEMS_PER_PAGE);
+  }, [content, currentPage]);
+
+  function handlePageChange(nextPage: number) {
+    setCurrentPage(nextPage);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
   return (
     <section className="min-h-screen bg-[#eef0f3] py-10 md:py-14">
       <div className="mx-auto max-w-7xl px-4">
@@ -263,10 +295,10 @@ export default function NewsUpdateListPage() {
 
         {!loading && !error && viewMode === "list" && (
           <div>
-            {content.map((item, index) => (
+            {paginatedContent.map((item, index) => (
               <article
                 key={item.id}
-                className={`grid grid-cols-1 gap-6 pb-10 md:grid-cols-[200px_minmax(0,1fr)] md:items-center md:gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10 ${index !== content.length - 1
+                className={`grid grid-cols-1 gap-6 pb-10 md:grid-cols-[200px_minmax(0,1fr)] md:items-center md:gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10 ${index !== paginatedContent.length - 1
                   ? "mb-10 border-b border-gray-300"
                   : ""
                   }`}
@@ -325,7 +357,7 @@ export default function NewsUpdateListPage() {
 
         {!loading && !error && viewMode === "grid" && (
           <div className="grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
-            {content.map((item) => (
+            {paginatedContent.map((item) => (
               <article
                 key={item.id}
                 className="overflow-hidden rounded bg-white shadow-sm"
@@ -381,6 +413,15 @@ export default function NewsUpdateListPage() {
             ))}
           </div>
         )}
+
+        {!loading && !error && content.length > ITEMS_PER_PAGE ? (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={content.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={handlePageChange}
+          />
+        ) : null}
       </div>
     </section>
   );

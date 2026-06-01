@@ -60,6 +60,7 @@ type ApiResponse = {
 };
 
 type WorkingGroupItem = {
+    id?: number;
     slug?: string;
     orderIndex?: number;
     title?: LangText;
@@ -83,7 +84,10 @@ type RelateNewsWorkingGroupProps = {
 };
 
 const DEFAULT_PAGE_SLUG = "agriculture-and-agro-industry";
-const RELATED_NEWS_ENDPOINT = "/api/posts?pageId=6";
+// We build the /api/posts URL after resolving the WG id from the slug
+// (see the effect below). The old `pageId=6` hardcoded News & Updates page
+// returned the same posts on every WG page — that's gone.
+const RELATED_NEWS_LIMIT = 9;
 
 function normalizeLanguage(value: unknown): UiLang {
     return value === "kh" || value === "km" ? "kh" : "en";
@@ -241,25 +245,97 @@ export default function RelateNewsWorkingGroup({
     const bodyFontClass = isKhmer ? "body-km" : "body-en";
 
     const [posts, setPosts] = useState<PostItem[]>([]);
+    const [workingGroupId, setWorkingGroupId] = useState<number | null>(null);
     const [workingGroupTitle, setWorkingGroupTitle] = useState("");
     const [workingGroupNumber, setWorkingGroupNumber] = useState<number | null>(
         null,
     );
     const [loading, setLoading] = useState(true);
 
+    // Resolve the WG (id + label + number) from the pageSlug. We need the id
+    // before we can fetch its posts, so the post fetch waits on this.
     useEffect(() => {
+        const controller = new AbortController();
+
+        async function loadWorkingGroup() {
+            try {
+                const response = await fetch("/api/working-groups", {
+                    cache: "no-store",
+                    signal: controller.signal,
+                    headers: { Accept: "application/json" },
+                });
+
+                if (!response.ok) {
+                    setWorkingGroupId(null);
+                    setWorkingGroupTitle("");
+                    setWorkingGroupNumber(null);
+                    return;
+                }
+
+                const json = (await response.json()) as WorkingGroupsResponse;
+                const groups = Array.isArray(json.items) ? json.items : [];
+
+                const currentIndex = groups.findIndex(
+                    (group) => getText(group.slug, lang) === pageSlug,
+                );
+
+                if (currentIndex < 0) {
+                    setWorkingGroupId(null);
+                    setWorkingGroupTitle("");
+                    setWorkingGroupNumber(null);
+                    return;
+                }
+
+                const currentGroup = groups[currentIndex];
+                const groupNumber =
+                    typeof currentGroup.orderIndex === "number"
+                        ? currentGroup.orderIndex
+                        : currentIndex;
+
+                setWorkingGroupId(
+                    typeof currentGroup.id === "number" && currentGroup.id > 0
+                        ? currentGroup.id
+                        : null,
+                );
+                setWorkingGroupTitle(getText(currentGroup.title, lang));
+                setWorkingGroupNumber(groupNumber);
+            } catch (error) {
+                if ((error as { name?: string })?.name !== "AbortError") {
+                    setWorkingGroupId(null);
+                    setWorkingGroupTitle("");
+                    setWorkingGroupNumber(null);
+                }
+            }
+        }
+
+        void loadWorkingGroup();
+
+        return () => controller.abort();
+    }, [lang, pageSlug]);
+
+    // Fetch posts tagged with this WG (workingGroupId on Post, set in the admin
+    // form's WG dropdown). Skips while WG id is still resolving.
+    useEffect(() => {
+        if (workingGroupId === null) {
+            // Don't clear posts to null while WG id is still resolving on initial mount,
+            // but if we tried to resolve and got back nothing valid, return empty.
+            return;
+        }
+
         const controller = new AbortController();
 
         async function loadRelatedNews() {
             try {
                 setLoading(true);
 
-                const response = await fetch(RELATED_NEWS_ENDPOINT, {
+                // hasDocument=false keeps the strip news-only: posts with a PDF
+                // attached are documents and belong on the Publication page, not
+                // the WG "Related Content" carousel.
+                const url = `/api/posts?workingGroupIds=${workingGroupId}&hasDocument=false&pageSize=${RELATED_NEWS_LIMIT}`;
+                const response = await fetch(url, {
                     cache: "no-store",
                     signal: controller.signal,
-                    headers: {
-                        Accept: "application/json",
-                    },
+                    headers: { Accept: "application/json" },
                 });
 
                 if (!response.ok) {
@@ -268,13 +344,11 @@ export default function RelateNewsWorkingGroup({
                 }
 
                 const json = (await response.json()) as ApiResponse;
-
                 const items = Array.isArray(json.data)
                     ? json.data
                     : Array.isArray(json.items)
                       ? json.items
                       : [];
-
                 setPosts(items);
             } catch (error) {
                 if ((error as { name?: string })?.name !== "AbortError") {
@@ -289,70 +363,8 @@ export default function RelateNewsWorkingGroup({
 
         void loadRelatedNews();
 
-        return () => {
-            controller.abort();
-        };
-    }, []);
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        async function loadWorkingGroupTitle() {
-            try {
-                const response = await fetch("/api/working-groups", {
-                    cache: "no-store",
-                    signal: controller.signal,
-                    headers: {
-                        Accept: "application/json",
-                    },
-                });
-
-                if (!response.ok) {
-                    setWorkingGroupTitle("");
-                    setWorkingGroupNumber(null);
-                    return;
-                }
-
-                const json = (await response.json()) as WorkingGroupsResponse;
-                const groups = Array.isArray(json.items) ? json.items : [];
-
-                const currentGroup = groups.find(
-                    (group) => getText(group.slug, lang) === pageSlug,
-                );
-
-                if (!currentGroup) {
-                    setWorkingGroupTitle("");
-                    setWorkingGroupNumber(null);
-                    return;
-                }
-
-                const fallbackIndex = groups.findIndex(
-                    (group) => getText(group.slug, lang) === pageSlug,
-                );
-
-                const groupNumber =
-                    typeof currentGroup.orderIndex === "number"
-                        ? currentGroup.orderIndex
-                        : fallbackIndex >= 0
-                          ? fallbackIndex
-                          : null;
-
-                setWorkingGroupTitle(getText(currentGroup.title, lang));
-                setWorkingGroupNumber(groupNumber);
-            } catch (error) {
-                if ((error as { name?: string })?.name !== "AbortError") {
-                    setWorkingGroupTitle("");
-                    setWorkingGroupNumber(null);
-                }
-            }
-        }
-
-        void loadWorkingGroupTitle();
-
-        return () => {
-            controller.abort();
-        };
-    }, [lang, pageSlug]);
+        return () => controller.abort();
+    }, [workingGroupId]);
 
     const relatedNews = useMemo(
         () => mapRelatedNews(posts, lang),

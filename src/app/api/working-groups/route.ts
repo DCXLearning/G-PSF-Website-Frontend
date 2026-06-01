@@ -1,7 +1,10 @@
 // src/app/api/working-groups/route.ts
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
-const EXTERNAL_URL = "https://api-gpsf.datacolabx.com/api/v1/working-groups";
+const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
+const API_BASE = API_URL || FALLBACK_API_BASE;
+const EXTERNAL_URL = `${API_BASE}/working-groups`;
 
 type I18nRaw = {
   en?: unknown;
