@@ -69,6 +69,14 @@ function getTitleFontClass(lang: UiLang) {
     return lang === "kh" ? "title-km khmer-font" : "title-en airbnb-font";
 }
 
+function getMainTitleClass(lang: UiLang) {
+    return lang === "kh" ? "main-title-km khmer-font" : "main-title-en airbnb-font";
+}
+
+function getBodyClass(lang: UiLang) {
+    return lang === "kh" ? "body-km khmer-font" : "body-en airbnb-font";
+}
+
 function DocumentPreview({ src, alt, className = "" }: DocumentPreviewProps) {
     const [failedSrc, setFailedSrc] = useState("");
     const imageSrc = failedSrc === src ? "" : src;
@@ -89,7 +97,7 @@ function DocumentPreview({ src, alt, className = "" }: DocumentPreviewProps) {
                 ) : (
                     <div className="flex h-full w-full items-center justify-center px-4 text-center">
                         <p
-                            className="text-[10px] leading-snug text-slate-500"
+                            className="body-en text-slate-500"
                             style={{ fontWeight: 400 }}
                         >
                             Document cover is not available
@@ -186,6 +194,7 @@ function Header({ view, setView, title, description }: HeaderProps) {
     const lang = normalizeLang(language);
     const fontClass = getFontClass(lang);
     const titleFontClass = getTitleFontClass(lang);
+    const bodyClass = getBodyClass(lang);
 
     const labels = {
         en: {
@@ -201,23 +210,12 @@ function Header({ view, setView, title, description }: HeaderProps) {
     return (
         <div className="mb-10 -mt-2 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-                {/* Main title: EN 32px / KM 35px from globals.css, font-weight 600 */}
-                <h1
-                    className={`text-[#0B2C5F] ${titleFontClass}`}
-                    style={{ fontWeight: 600 }}
-                >
+                <h1 className={`text-[#0B2C5F] ${titleFontClass}`}>
                     {title}
                 </h1>
 
-                {/* Description: font-weight 400 */}
                 {description ? (
-                    <p
-                        className={`
-                            mt-3 max-w-3xl text-sm leading-7 text-slate-600
-                            ${fontClass}
-                        `}
-                        style={{ fontWeight: 400 }}
-                    >
+                    <p className={`mt-3 max-w-3xl text-slate-600 ${bodyClass}`}>
                         {description}
                     </p>
                 ) : null}
@@ -269,6 +267,8 @@ function Header({ view, setView, title, description }: HeaderProps) {
 function ListCard({ item, lang, badgeText }: CardProps) {
     const resolvedBadgeText = item.badgeText || badgeText;
     const fontClass = getFontClass(lang);
+    const mainTitleClass = getMainTitleClass(lang);
+    const bodyClass = getBodyClass(lang);
 
     return (
         <article className="flex flex-col gap-8 py-10 md:flex-row md:items-center">
@@ -280,17 +280,10 @@ function ListCard({ item, lang, badgeText }: CardProps) {
                 />
             </div>
 
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
                 <TypeBadge text={resolvedBadgeText} lang={lang} />
 
-                {/* Card title: font-weight 600 */}
-                <h2
-                    className={`
-                        mt-2 text-2xl leading-tight tracking-tight text-slate-900
-                        ${fontClass}
-                    `}
-                    style={{ fontWeight: 600 }}
-                >
+                <h2 className={`mt-2 text-slate-900 ${mainTitleClass}`}>
                     {item.title}
                 </h2>
 
@@ -304,14 +297,7 @@ function ListCard({ item, lang, badgeText }: CardProps) {
                     {item.date || (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
                 </p>
 
-                {/* Description: font-weight 400 */}
-                <p
-                    className={`
-                        mt-4 line-clamp-3 text-[15px] leading-relaxed text-slate-600
-                        ${fontClass}
-                    `}
-                    style={{ fontWeight: 400 }}
-                >
+                <p className={`mt-4 line-clamp-3 text-slate-600 ${bodyClass}`}>
                     {item.description ||
                         (lang === "kh" ? "គ្មានការពិពណ៌នា" : "No description")}
                 </p>
@@ -325,6 +311,8 @@ function ListCard({ item, lang, badgeText }: CardProps) {
 function GridCard({ item, lang, badgeText }: CardProps) {
     const resolvedBadgeText = item.badgeText || badgeText;
     const fontClass = getFontClass(lang);
+    const mainTitleClass = getMainTitleClass(lang);
+    const bodyClass = getBodyClass(lang);
 
     return (
         <article className="group flex h-full flex-col overflow-hidden bg-[#e9ecef]">
@@ -333,7 +321,7 @@ function GridCard({ item, lang, badgeText }: CardProps) {
             </div>
 
             <div className="flex flex-1 flex-col justify-between px-3 py-4">
-                <div>
+                <div className="min-w-0">
                     <TypeBadge text={resolvedBadgeText} lang={lang} />
 
                     <div
@@ -347,25 +335,11 @@ function GridCard({ item, lang, badgeText }: CardProps) {
                             (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
                     </div>
 
-                    {/* Grid card title: font-weight 600 */}
-                    <h2
-                        className={`
-                            mt-1 line-clamp-2 text-[16px] leading-snug text-[#1a2b4b]
-                            ${fontClass}
-                        `}
-                        style={{ fontWeight: 600 }}
-                    >
+                    <h2 className={`mt-1 text-[#1a2b4b] ${mainTitleClass}`}>
                         {item.title}
                     </h2>
 
-                    {/* Grid description: font-weight 400 */}
-                    <p
-                        className={`
-                            mt-2 line-clamp-3 text-[14px] leading-relaxed text-slate-700
-                            ${fontClass}
-                        `}
-                        style={{ fontWeight: 400 }}
-                    >
+                    <p className={`mt-2 line-clamp-3 text-slate-700 ${bodyClass}`}>
                         {item.description ||
                             (lang === "kh"
                                 ? "គ្មានការពិពណ៌នា"
@@ -389,12 +363,12 @@ export default function PublicationDocumentsBrowser({
 }: PublicationDocumentsBrowserProps) {
     const { language } = useLanguage();
     const uiLang = normalizeLang(language);
-    const fontClass = getFontClass(uiLang);
+    const bodyClass = getBodyClass(uiLang);
 
     const [view, setView] = useState<ViewMode>("list");
 
     return (
-        <main className="bg-[#f5f7fb]">
+        <main className={`bg-[#f5f7fb] ${bodyClass}`}>
             <div className="mx-auto max-w-7xl px-4 py-12">
                 <Header
                     view={view}
@@ -404,28 +378,19 @@ export default function PublicationDocumentsBrowser({
                 />
 
                 {loading ? (
-                    <p
-                        className={`py-10 text-center ${fontClass}`}
-                        style={{ fontWeight: 400 }}
-                    >
+                    <p className={`py-10 text-center ${bodyClass}`}>
                         {uiLang === "kh" ? "កំពុងទាញទិន្នន័យ..." : "Loading..."}
                     </p>
                 ) : null}
 
                 {error ? (
-                    <p
-                        className={`py-10 text-center text-red-500 ${fontClass}`}
-                        style={{ fontWeight: 400 }}
-                    >
+                    <p className={`py-10 text-center text-red-500 ${bodyClass}`}>
                         {error}
                     </p>
                 ) : null}
 
                 {!loading && !error && items.length === 0 ? (
-                    <p
-                        className={`py-10 text-center text-slate-500 ${fontClass}`}
-                        style={{ fontWeight: 400 }}
-                    >
+                    <p className={`py-10 text-center text-slate-500 ${bodyClass}`}>
                         {uiLang === "kh" ? "មិនមានឯកសារ" : "No documents found."}
                     </p>
                 ) : null}

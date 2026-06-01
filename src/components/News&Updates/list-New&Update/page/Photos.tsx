@@ -63,10 +63,13 @@ type ApiBlock = {
 
 type PageSectionResponse = {
     data?: {
-        page?: {
-            title?: I18n | string | null;
-            description?: I18n | string | null;
-        } | I18n | null;
+        page?:
+            | {
+                  title?: I18n | string | null;
+                  description?: I18n | string | null;
+              }
+            | I18n
+            | null;
         title?: I18n | string | null;
         description?: I18n | string | null;
         blocks?: ApiBlock[];
@@ -90,8 +93,41 @@ type PhotoItem = {
 
 const PAGE_SLUG = "photos";
 
+function normalizeLang(language: unknown): UiLang {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
+function getFontClass(language: UiLang): string {
+    return language === "kh" ? "khmer-font" : "airbnb-font";
+}
+
+function getTitleClass(language: UiLang): string {
+    return language === "kh"
+        ? "title-km khmer-font"
+        : "title-en airbnb-font";
+}
+
+function getMainTitleClass(language: UiLang): string {
+    return language === "kh"
+        ? "main-title-km khmer-font"
+        : "main-title-en airbnb-font";
+}
+
+function getBodyClass(language: UiLang): string {
+    return language === "kh"
+        ? "body-km khmer-font"
+        : "body-en airbnb-font";
+}
+
 function getText(value?: string | null): string {
     const text = value?.trim() ?? "";
+
     return text === "." ? "" : text;
 }
 
@@ -153,6 +189,7 @@ function getPhotoSources(post: MediaPost, language: UiLang): string[] {
     }
 
     const blocks = getLocalizedBlocks(post, language);
+
     for (let index = 0; index < blocks.length; index += 1) {
         const block = blocks[index];
         const imageUrl =
@@ -181,7 +218,7 @@ function isPublishedPost(post: MediaPost): boolean {
 function getPrimaryPostListBlock(blocks: ApiBlock[]): ApiBlock | null {
     const sortedBlocks = [...blocks].sort(
         (leftBlock, rightBlock) =>
-            (leftBlock.orderIndex ?? 0) - (rightBlock.orderIndex ?? 0)
+            (leftBlock.orderIndex ?? 0) - (rightBlock.orderIndex ?? 0),
     );
 
     return (
@@ -190,10 +227,10 @@ function getPrimaryPostListBlock(blocks: ApiBlock[]): ApiBlock | null {
                 block.enabled !== false &&
                 block.type === "post_list" &&
                 Array.isArray(block.posts) &&
-                block.posts.length > 0
+                block.posts.length > 0,
         ) ||
         sortedBlocks.find(
-            (block) => block.enabled !== false && block.type === "post_list"
+            (block) => block.enabled !== false && block.type === "post_list",
         ) ||
         null
     );
@@ -214,7 +251,7 @@ function getPostsFromResponse(response: CategoryPostsResponse): MediaPost[] {
 function buildDetailHref(post: MediaPost): string {
     if (post.slug?.trim()) {
         return `/new-update/view-detail?slug=${encodeURIComponent(
-            post.slug.trim()
+            post.slug.trim(),
         )}&id=${encodeURIComponent(String(post.id))}`;
     }
 
@@ -225,14 +262,14 @@ function mapPhotoItems(posts: MediaPost[], language: UiLang): PhotoItem[] {
     return [...posts]
         .sort((leftPost, rightPost) => {
             const leftDate = new Date(
-                leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || ""
+                leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || "",
             ).getTime();
 
             const rightDate = new Date(
                 rightPost.publishedAt ||
                     rightPost.createdAt ||
                     rightPost.updatedAt ||
-                    ""
+                    "",
             ).getTime();
 
             return rightDate - leftDate;
@@ -249,7 +286,7 @@ function mapPhotoItems(posts: MediaPost[], language: UiLang): PhotoItem[] {
                 description: pickText(post.description, language),
                 date: formatLocalizedDate(
                     post.publishedAt || post.createdAt || post.updatedAt,
-                    language
+                    language,
                 ),
                 image: photoSources[0] || "",
                 extraImageCount: Math.max(photoSources.length - 1, 0),
@@ -274,6 +311,8 @@ function NewsImage({
 }) {
     const [failed, setFailed] = useState(false);
     const imageSrc = failed ? "" : src || "";
+    const fontClass = getFontClass(language);
+    const bodyClass = getBodyClass(language);
 
     return (
         <div className={`relative overflow-hidden bg-[#ECECEC] ${className}`}>
@@ -289,13 +328,13 @@ function NewsImage({
 
                     {extraImageCount > 0 ? (
                         <div
-                            className="
-                                absolute bottom-2 right-2
-                                z-10
+                            className={`
+                                absolute bottom-2 right-2 z-10
                                 flex h-[30px] min-w-[30px] items-center justify-center
                                 rounded-full bg-blue-600 px-2
                                 text-[12px] font-bold text-white shadow-md
-                            "
+                                ${fontClass}
+                            `}
                         >
                             +{extraImageCount}
                         </div>
@@ -333,7 +372,7 @@ function NewsImage({
                             </div>
                         </div>
 
-                        <p className="mt-6 text-center text-[12px] leading-[18px] text-[#777777]">
+                        <p className={`mt-6 text-center text-[#777777] ${bodyClass}`}>
                             {language === "kh" ? (
                                 <>
                                     រូបភាពឯកសារ
@@ -370,12 +409,16 @@ function Header({
     view: ViewMode;
     setView: (value: ViewMode) => void;
 }) {
+    const fontClass = getFontClass(language);
+    const titleClass = getTitleClass(language);
+
     return (
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-                <h1 className="mt-1 text-[44px] font-extrabold leading-none text-[#0B2C5F]">
+                <h1 className={`mt-1 text-[#0B2C5F] ${titleClass}`}>
                     {title}
                 </h1>
+
                 <div className="mt-4 h-[4px] w-[150px] bg-orange-500" />
             </div>
 
@@ -383,47 +426,46 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${fontClass} ${
                         view === "list"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
                     }`}
                 >
                     <List className="h-3.5 w-3.5" />
-                    <span className={language === "kh" ? "khmer-font" : ""}>
-                        {language === "kh" ? "បញ្ជី" : "List"}
-                    </span>
+                    <span>{language === "kh" ? "បញ្ជី" : "List"}</span>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${fontClass} ${
                         view === "grid"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
                     }`}
                 >
                     <LayoutGrid className="h-3.5 w-3.5" />
-                    <span className={language === "kh" ? "khmer-font" : ""}>
-                        {language === "kh" ? "ក្រឡា" : "Grid"}
-                    </span>
+                    <span>{language === "kh" ? "ក្រឡា" : "Grid"}</span>
                 </button>
             </div>
         </div>
     );
 }
 
-function DateRow({
-    date,
-    language,
-}: {
-    date: string;
-    language: UiLang;
-}) {
+function DateRow({ date, language }: { date: string; language: UiLang }) {
+    const fontClass = getFontClass(language);
+
     return (
-        <div className="mt-2 flex items-center gap-2 text-[13px] text-[#64748B]">
-            <CalendarDays className="h-4 w-4" />
+        <div
+            className={`
+                mt-2 flex items-center gap-2
+                text-[14px] leading-[20px] text-slate-800
+                ${fontClass}
+            `}
+            style={{ fontWeight: 600 }}
+        >
+            <CalendarDays className="h-4 w-4 shrink-0" />
             <span>
                 {date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}
             </span>
@@ -438,17 +480,20 @@ function ViewDetailButton({
     href: string;
     language: UiLang;
 }) {
+    const fontClass = getFontClass(language);
+
     return (
         <Link
             href={href}
-            className="
-                mt-5 inline-flex w-fit items-center gap-2
+            className={`
+                mt-3 inline-flex w-fit items-center gap-2
                 rounded-full border border-orange-500
-                px-3 py-1
-                text-[12px] font-bold text-orange-600
+                px-3 py-[4px]
+                text-[12px] font-bold leading-[18px] text-orange-600
                 no-underline transition
                 hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
-            "
+                ${fontClass}
+            `}
         >
             {language === "kh" ? "អានបន្ថែម" : "View details"}
             <FaArrowRight className="text-[12px]" />
@@ -463,9 +508,12 @@ function ListCard({
     item: PhotoItem;
     language: UiLang;
 }) {
+    const mainTitleClass = getMainTitleClass(language);
+    const bodyClass = getBodyClass(language);
+
     return (
-        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)]">
-            <Link href={item.href} className="block">
+        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)] md:items-center">
+            <Link href={item.href} className="block md:self-center">
                 <NewsImage
                     src={item.image}
                     alt={item.title}
@@ -475,15 +523,16 @@ function ListCard({
                 />
             </Link>
 
-            <div className="min-w-0">
-                <h2 className="mt-3 text-[18px] font-extrabold leading-[1.5] text-[#0B2C5F] md:text-[20px]">
+            <div className="flex min-w-0 flex-col justify-center">
+                <h2 className={`mt-0 text-[#0B2C5F] ${mainTitleClass}`}>
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
                 </h2>
+
                 <DateRow date={item.date} language={language} />
 
-                <p className="mt-3 line-clamp-2 text-[16px] leading-7 text-[#64748B]">
+                <p className={`mt-3 line-clamp-2 text-[#64748B] ${bodyClass}`}>
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
@@ -503,6 +552,9 @@ function GridCard({
     item: PhotoItem;
     language: UiLang;
 }) {
+    const mainTitleClass = getMainTitleClass(language);
+    const bodyClass = getBodyClass(language);
+
     return (
         <article className="overflow-hidden rounded-md border border-[#D9DEE7] bg-white transition hover:shadow-md">
             <Link href={item.href} className="block">
@@ -516,7 +568,7 @@ function GridCard({
             </Link>
 
             <div className="p-5">
-                <h2 className="mt-3 line-clamp-2 text-[20px] font-extrabold leading-snug text-[#0B2C5F]">
+                <h2 className={`mt-3 line-clamp-2 text-[#0B2C5F] ${mainTitleClass}`}>
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
@@ -524,14 +576,13 @@ function GridCard({
 
                 <DateRow date={item.date} language={language} />
 
-                <p className="mt-3 line-clamp-3 text-[16px] leading-7 text-[#64748B]">
+                <p className={`mt-3 line-clamp-3 text-[#64748B] ${bodyClass}`}>
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
                             : "No description available.")}
                 </p>
 
-                {/* Outline rounded button, no underline */}
                 <ViewDetailButton href={item.href} language={language} />
             </div>
         </article>
@@ -540,13 +591,21 @@ function GridCard({
 
 export default function PhotosPage() {
     const { language } = useLanguage();
-    const uiLanguage = language as UiLang;
+    const uiLanguage = normalizeLang(language);
+    const bodyClass = getBodyClass(uiLanguage);
 
     const [view, setView] = useState<ViewMode>("list");
     const [title, setTitle] = useState("");
     const [items, setItems] = useState<PhotoItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        const htmlLang = uiLanguage === "kh" ? "km" : "en";
+
+        document.documentElement.lang = htmlLang;
+        document.body.dataset.language = htmlLang;
+    }, [uiLanguage]);
 
     useEffect(() => {
         let active = true;
@@ -560,7 +619,7 @@ export default function PhotosPage() {
                     `/api/pages/section?slug=${encodeURIComponent(PAGE_SLUG)}`,
                     {
                         cache: "no-store",
-                    }
+                    },
                 );
 
                 if (!response.ok) {
@@ -578,7 +637,7 @@ export default function PhotosPage() {
                 const categoryIds = Array.isArray(primaryBlock?.settings?.categoryIds)
                     ? primaryBlock.settings.categoryIds.filter(
                           (categoryId): categoryId is number =>
-                              typeof categoryId === "number"
+                              typeof categoryId === "number",
                       )
                     : [];
 
@@ -591,8 +650,8 @@ export default function PhotosPage() {
                         categoryIds.map((categoryId) =>
                             fetch(`/api/posts/category/${categoryId}`, {
                                 cache: "no-store",
-                            })
-                        )
+                            }),
+                        ),
                     );
 
                     const mergedPosts: MediaPost[] = [];
@@ -637,11 +696,11 @@ export default function PhotosPage() {
                     pickText(
                         (pageData as { title?: I18n | string | null } | undefined)
                             ?.title,
-                        uiLanguage
+                        uiLanguage,
                     ) ||
                     pickText(
                         pageData as I18n | string | null | undefined,
-                        uiLanguage
+                        uiLanguage,
                     ) ||
                     pickText(json.data?.title, uiLanguage) ||
                     pickText(primaryBlock?.title, uiLanguage) ||
@@ -665,7 +724,7 @@ export default function PhotosPage() {
                 setError(
                     uiLanguage === "kh"
                         ? "មិនអាចទាញយកទំព័ររូបថតបានទេ។"
-                        : "Failed to load the photos page."
+                        : "Failed to load the photos page.",
                 );
             } finally {
                 if (active) {
@@ -682,7 +741,7 @@ export default function PhotosPage() {
     }, [uiLanguage]);
 
     return (
-        <main className="min-h-screen">
+        <main className={`min-h-screen ${bodyClass}`}>
             <section className="mx-auto max-w-7xl px-4 py-10 sm:px-4 lg:px-4">
                 <Header
                     language={uiLanguage}
@@ -692,19 +751,25 @@ export default function PhotosPage() {
                 />
 
                 {loading ? (
-                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B]">
+                    <div
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B] ${bodyClass}`}
+                    >
                         {uiLanguage === "kh" ? "កំពុងផ្ទុក..." : "Loading..."}
                     </div>
                 ) : null}
 
                 {!loading && error ? (
-                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600">
+                    <div
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600 ${bodyClass}`}
+                    >
                         {error}
                     </div>
                 ) : null}
 
                 {!loading && !error && items.length === 0 ? (
-                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B]">
+                    <div
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B] ${bodyClass}`}
+                    >
                         {uiLanguage === "kh"
                             ? "មិនមានអាល់ប៊ុមរូបថតទេ។"
                             : "No photo albums found."}

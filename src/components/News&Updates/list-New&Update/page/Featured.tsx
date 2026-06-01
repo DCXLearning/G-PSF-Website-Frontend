@@ -87,6 +87,18 @@ function getTitleFontClass(language: UiLang) {
         : "title-en airbnb-font";
 }
 
+function getMainTitleClass(language: UiLang) {
+    return language === "kh"
+        ? "main-title-km khmer-font"
+        : "main-title-en airbnb-font";
+}
+
+function getBodyClass(language: UiLang) {
+    return language === "kh"
+        ? "body-km khmer-font"
+        : "body-en airbnb-font";
+}
+
 function getText(value: LangText | undefined, language: UiLang): string {
     if (!value) {
         return "";
@@ -162,9 +174,9 @@ function mapFeaturedPosts(posts: PostItem[], language: UiLang): FeaturedItem[] {
 
             const rightDate = new Date(
                 rightPost.publishedAt ||
-                    rightPost.createdAt ||
-                    rightPost.updatedAt ||
-                    "",
+                rightPost.createdAt ||
+                rightPost.updatedAt ||
+                "",
             ).getTime();
 
             return rightDate - leftDate;
@@ -198,7 +210,7 @@ function NewsImage({
 }) {
     const [error, setError] = useState(false);
     const isValid = !!src && !error;
-    const fontClass = getFontClass(language);
+    const bodyClass = getBodyClass(language);
 
     return (
         <div className={`relative overflow-hidden bg-[#ECECEC] ${className}`}>
@@ -237,7 +249,7 @@ function NewsImage({
                         </div>
 
                         <p
-                            className={`mt-6 text-center text-[12px] leading-[18px] text-[#777777] ${fontClass}`}
+                            className={`mt-6 text-center text-[#777777] ${bodyClass}`}
                             style={{ fontWeight: 400 }}
                         >
                             {language === "kh" ? (
@@ -280,10 +292,7 @@ function Header({
     return (
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-                <h1
-                    className={`mt-1 leading-none text-[#0B2C5F] ${titleFontClass}`}
-                    style={{ fontWeight: 600 }}
-                >
+                <h1 className={`mt-1 text-[#0B2C5F] ${titleFontClass}`}>
                     {language === "kh" ? "ព័ត៌មានលេចធ្លោ" : "Featured News"}
                 </h1>
 
@@ -294,11 +303,10 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${
-                        view === "list"
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${view === "list"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                    }`}
+                        }`}
                     style={{ fontWeight: 600 }}
                 >
                     <List className="h-3.5 w-3.5" />
@@ -308,11 +316,10 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${
-                        view === "grid"
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${view === "grid"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                    }`}
+                        }`}
                     style={{ fontWeight: 600 }}
                 >
                     <LayoutGrid className="h-3.5 w-3.5" />
@@ -328,8 +335,8 @@ function DateRow({ date, language }: { date: string; language: UiLang }) {
 
     return (
         <div
-            className={`mt-2 flex items-center gap-2 text-[13px] text-[#64748B] ${fontClass}`}
-            style={{ fontWeight: 400 }}
+            className={`mt-2 flex items-center gap-2 text-[14px] text-slate-800 ${fontClass}`}
+            style={{ fontWeight: 600 }}
         >
             <CalendarDays className="h-4 w-4" />
             <span>{date}</span>
@@ -349,7 +356,7 @@ function ViewDetailButton({
     return (
         <Link
             href={href}
-            className={`mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-orange-500 px-3 py-1 text-[12px] text-orange-600 transition hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] ${fontClass}`}
+            className={`mt-3 inline-flex w-fit items-center gap-2 rounded-full border border-orange-500 px-3 py-[4px] text-[12px] leading-[18px] text-orange-600 transition hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] ${fontClass}`}
             style={{ fontWeight: 600 }}
         >
             {language === "kh" ? "អានបន្ថែម" : "View details"}
@@ -365,11 +372,12 @@ function ListCard({
     item: FeaturedItem;
     language: UiLang;
 }) {
-    const fontClass = getFontClass(language);
+    const mainTitleClass = getMainTitleClass(language);
+    const bodyClass = getBodyClass(language);
 
     return (
         <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[136px_minmax(0,1fr)] md:items-center">
-            <Link href={item.href} className="block">
+            <Link href={item.href} className="block md:self-center">
                 <NewsImage
                     src={item.image}
                     alt={item.title}
@@ -379,10 +387,7 @@ function ListCard({
             </Link>
 
             <div className="flex min-w-0 flex-col justify-center">
-                <h2
-                    className={`mt-0 line-clamp-1 text-[18px] leading-[1.5] text-[#0B2C5F] md:text-[20px] ${fontClass}`}
-                    style={{ fontWeight: 600 }}
-                >
+                <h2 className={`mt-0 text-[#0B2C5F] ${mainTitleClass}`}>
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
@@ -390,10 +395,7 @@ function ListCard({
 
                 <DateRow date={item.date} language={language} />
 
-                <p
-                    className={`mt-3 line-clamp-2 text-[16px] leading-7 text-[#64748B] ${fontClass}`}
-                    style={{ fontWeight: 400 }}
-                >
+                <p className={`mt-3 line-clamp-2 text-[#64748B] ${bodyClass}`}>
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
@@ -413,7 +415,8 @@ function GridCard({
     item: FeaturedItem;
     language: UiLang;
 }) {
-    const fontClass = getFontClass(language);
+    const mainTitleClass = getMainTitleClass(language);
+    const bodyClass = getBodyClass(language);
 
     return (
         <article className="overflow-hidden rounded-md border border-[#D9DEE7] bg-white transition hover:shadow-md">
@@ -427,10 +430,7 @@ function GridCard({
             </Link>
 
             <div className="p-5">
-                <h2
-                    className={`mt-3 line-clamp-2 text-[20px] leading-snug text-[#0B2C5F] ${fontClass}`}
-                    style={{ fontWeight: 600 }}
-                >
+                <h2 className={`mt-3 text-[#0B2C5F] ${mainTitleClass}`}>
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
@@ -438,10 +438,7 @@ function GridCard({
 
                 <DateRow date={item.date} language={language} />
 
-                <p
-                    className={`mt-3 line-clamp-3 text-[16px] leading-7 text-[#64748B] ${fontClass}`}
-                    style={{ fontWeight: 400 }}
-                >
+                <p className={`mt-3 line-clamp-3 text-[#64748B] ${bodyClass}`}>
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
@@ -457,12 +454,19 @@ function GridCard({
 export default function FeaturedPage() {
     const { language } = useLanguage();
     const uiLanguage = normalizeLang(language);
-    const fontClass = getFontClass(uiLanguage);
+    const bodyClass = getBodyClass(uiLanguage);
 
     const [view, setView] = useState<ViewMode>("list");
     const [items, setItems] = useState<PostItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        const htmlLang = uiLanguage === "kh" ? "km" : "en";
+
+        document.documentElement.lang = htmlLang;
+        document.body.dataset.language = htmlLang;
+    }, [uiLanguage]);
 
     useEffect(() => {
         let mounted = true;
@@ -485,8 +489,8 @@ export default function FeaturedPage() {
                 const posts = Array.isArray(json.data)
                     ? json.data
                     : Array.isArray(json.items)
-                      ? json.items
-                      : [];
+                        ? json.items
+                        : [];
 
                 if (mounted) {
                     setItems(posts);
@@ -518,23 +522,19 @@ export default function FeaturedPage() {
     const featuredItems = mapFeaturedPosts(items, uiLanguage);
 
     return (
-        <main className="min-h-screen">
+        <main className={`min-h-screen ${bodyClass}`}>
             <section className="mx-auto max-w-7xl px-4 py-10 sm:px-4 lg:px-4">
                 <Header language={uiLanguage} view={view} setView={setView} />
 
                 {loading ? (
-                    <div
-                        className={`py-8 text-center text-[#64748B] ${fontClass}`}
-                        style={{ fontWeight: 400 }}
-                    >
+                    <div className={`py-8 text-center text-[#64748B] ${bodyClass}`}>
                         {uiLanguage === "kh" ? "កំពុងផ្ទុក..." : "Loading..."}
                     </div>
                 ) : null}
 
                 {!loading && error ? (
                     <div
-                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600 ${fontClass}`}
-                        style={{ fontWeight: 400 }}
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600 ${bodyClass}`}
                     >
                         {error}
                     </div>
@@ -542,8 +542,7 @@ export default function FeaturedPage() {
 
                 {!loading && !error && featuredItems.length === 0 ? (
                     <div
-                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B] ${fontClass}`}
-                        style={{ fontWeight: 400 }}
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B] ${bodyClass}`}
                     >
                         {uiLanguage === "kh"
                             ? "មិនមានព័ត៌មានលេចធ្លោទេ។"

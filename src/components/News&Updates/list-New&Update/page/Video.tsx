@@ -86,6 +86,38 @@ type VideoItem = {
 
 const PAGE_SLUGS = ["video", "videos"];
 
+function normalizeLang(language: unknown): UiLang {
+    const value = String(language || "en").toLowerCase();
+
+    if (value === "kh" || value === "km") {
+        return "kh";
+    }
+
+    return "en";
+}
+
+function getFontClass(language: UiLang): string {
+    return language === "kh" ? "khmer-font" : "airbnb-font";
+}
+
+function getTitleClass(language: UiLang): string {
+    return language === "kh"
+        ? "title-km khmer-font"
+        : "title-en airbnb-font";
+}
+
+function getMainTitleClass(language: UiLang): string {
+    return language === "kh"
+        ? "main-title-km khmer-font"
+        : "main-title-en airbnb-font";
+}
+
+function getBodyClass(language: UiLang): string {
+    return language === "kh"
+        ? "body-km khmer-font"
+        : "body-en airbnb-font";
+}
+
 function getText(value?: string | null): string {
     const text = value?.trim() ?? "";
     return text === "." ? "" : text;
@@ -151,7 +183,7 @@ function hasVideoBlock(post: MediaPost, language: UiLang): boolean {
     const blocks = getLocalizedBlocks(post, language);
 
     return blocks.some(
-        (block) => block.type === "youtube" || block.type === "video"
+        (block) => block.type === "youtube" || block.type === "video",
     );
 }
 
@@ -224,7 +256,7 @@ function getVideoThumbnail(post: MediaPost, language: UiLang): string {
 function getPrimaryPostListBlock(blocks: ApiBlock[]): ApiBlock | null {
     const sortedBlocks = [...blocks].sort(
         (leftBlock, rightBlock) =>
-            (leftBlock.orderIndex ?? 0) - (rightBlock.orderIndex ?? 0)
+            (leftBlock.orderIndex ?? 0) - (rightBlock.orderIndex ?? 0),
     );
 
     return (
@@ -233,10 +265,10 @@ function getPrimaryPostListBlock(blocks: ApiBlock[]): ApiBlock | null {
                 block.enabled !== false &&
                 block.type === "post_list" &&
                 Array.isArray(block.posts) &&
-                block.posts.length > 0
+                block.posts.length > 0,
         ) ||
         sortedBlocks.find(
-            (block) => block.enabled !== false && block.type === "post_list"
+            (block) => block.enabled !== false && block.type === "post_list",
         ) ||
         null
     );
@@ -256,7 +288,9 @@ function getPostsFromResponse(response: CategoryPostsResponse): MediaPost[] {
 
 function buildDetailHref(post: MediaPost): string {
     if (post.slug?.trim()) {
-        return `/new-update/view-detail?slug=${encodeURIComponent(post.slug.trim())}&id=${encodeURIComponent(String(post.id))}`;
+        return `/new-update/view-detail?slug=${encodeURIComponent(
+            post.slug.trim(),
+        )}&id=${encodeURIComponent(String(post.id))}`;
     }
 
     return `/new-update/view-detail?id=${encodeURIComponent(String(post.id))}`;
@@ -267,10 +301,17 @@ function mapVideoItems(posts: MediaPost[], language: UiLang): VideoItem[] {
         .filter((post) => isPublishedPost(post) && hasVideoBlock(post, language))
         .sort((leftPost, rightPost) => {
             const leftDate = new Date(
-                leftPost.publishedAt || leftPost.createdAt || leftPost.updatedAt || ""
+                leftPost.publishedAt ||
+                leftPost.createdAt ||
+                leftPost.updatedAt ||
+                "",
             ).getTime();
+
             const rightDate = new Date(
-                rightPost.publishedAt || rightPost.createdAt || rightPost.updatedAt || ""
+                rightPost.publishedAt ||
+                rightPost.createdAt ||
+                rightPost.updatedAt ||
+                "",
             ).getTime();
 
             return rightDate - leftDate;
@@ -283,7 +324,7 @@ function mapVideoItems(posts: MediaPost[], language: UiLang): VideoItem[] {
             description: pickText(post.description, language),
             date: formatLocalizedDate(
                 post.publishedAt || post.createdAt || post.updatedAt,
-                language
+                language,
             ),
             image: getVideoThumbnail(post, language),
             href: buildDetailHref(post),
@@ -291,9 +332,12 @@ function mapVideoItems(posts: MediaPost[], language: UiLang): VideoItem[] {
 }
 
 async function fetchPageSection(slug: string): Promise<PageSectionResponse | null> {
-    const response = await fetch(`/api/pages/section?slug=${encodeURIComponent(slug)}`, {
-        cache: "no-store",
-    });
+    const response = await fetch(
+        `/api/pages/section?slug=${encodeURIComponent(slug)}`,
+        {
+            cache: "no-store",
+        },
+    );
 
     if (!response.ok) {
         return null;
@@ -309,17 +353,19 @@ function VideoMeta({
     language: UiLang;
     date: string;
 }) {
-    return (
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-[#64748B]">
-            {/*<span className="inline-flex items-center gap-2 font-semibold text-[#E11D48]">*/}
-            {/*    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E11D48] text-white">*/}
-            {/*        <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />*/}
-            {/*    </span>*/}
-            {/*    {language === "kh" ? "វីដេអូ" : "Video"}*/}
-            {/*</span>*/}
+    const fontClass = getFontClass(language);
 
+    return (
+        <div
+            className={`
+                mt-2 flex flex-wrap items-center gap-x-4 gap-y-2
+                text-[14px] leading-[20px] text-slate-800
+                ${fontClass}
+            `}
+            style={{ fontWeight: 600 }}
+        >
             <span className="inline-flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" />
+                <CalendarDays className="h-4 w-4 shrink-0" />
                 {date || (language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date")}
             </span>
         </div>
@@ -339,6 +385,7 @@ function NewsImage({
 }) {
     const [failed, setFailed] = useState(false);
     const imageSrc = failed ? "" : src || "";
+    const bodyClass = getBodyClass(language);
 
     return (
         <div className={`group relative overflow-hidden rounded-[20px] bg-[#ECECEC] ${className}`}>
@@ -351,12 +398,10 @@ function NewsImage({
                         className="object-cover transition duration-300 group-hover:scale-[1.03]"
                         onError={() => setFailed(true)}
                     />
+
                     <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        {/*<div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FF0033]/90 text-white shadow-lg transition duration-300 group-hover:scale-105">*/}
-                        {/*    <Play className="ml-1 h-7 w-7 fill-current" />*/}
-                        {/*</div>*/}
-                    </div>
+
+                    <div className="absolute inset-0 flex items-center justify-center" />
                 </>
             ) : (
                 <div className="flex h-full w-full items-center justify-center bg-[#ECECEC]">
@@ -371,14 +416,26 @@ function NewsImage({
                                     strokeWidth="1.7"
                                     className="h-7 w-7"
                                 >
-                                    <circle cx="8.5" cy="8.5" r="1.8" fill="white" stroke="none" />
+                                    <circle
+                                        cx="8.5"
+                                        cy="8.5"
+                                        r="1.8"
+                                        fill="white"
+                                        stroke="none"
+                                    />
                                     <path d="M4 17l4.5-4.5a1 1 0 011.5.08L13 16l2.2-2.8a1 1 0 011.62.04L20 17" />
-                                    <rect x="3.5" y="5" width="17" height="14" rx="1.5" />
+                                    <rect
+                                        x="3.5"
+                                        y="5"
+                                        width="17"
+                                        height="14"
+                                        rx="1.5"
+                                    />
                                 </svg>
                             </div>
                         </div>
 
-                        <p className="mt-6 text-center text-[12px] leading-[18px] text-[#777777]">
+                        <p className={`mt-6 text-center text-[#777777] ${bodyClass}`}>
                             {language === "kh" ? (
                                 <>
                                     រូបភាពវីដេអូ
@@ -415,12 +472,16 @@ function Header({
     view: ViewMode;
     setView: (value: ViewMode) => void;
 }) {
+    const fontClass = getFontClass(language);
+    const titleClass = getTitleClass(language);
+
     return (
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-                <h1 className="mt-1 text-[44px] font-extrabold leading-none text-[#0B2C5F]">
+                <h1 className={`mt-1 text-[#0B2C5F] ${titleClass}`}>
                     {title}
                 </h1>
+
                 <div className="mt-4 h-[4px] w-[150px] bg-orange-500" />
             </div>
 
@@ -428,32 +489,66 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "list"
-                        ? "bg-[#23395D] text-white"
-                        : "text-[#475569] hover:bg-slate-100"
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${fontClass} ${view === "list"
+                            ? "bg-[#23395D] text-white"
+                            : "text-[#475569] hover:bg-slate-100"
                         }`}
                 >
                     <List className="h-3.5 w-3.5" />
-                    <span className={language === "kh" ? "khmer-font" : ""}>
-                        {language === "kh" ? "បញ្ជី" : "List"}
-                    </span>
+                    <span>{language === "kh" ? "បញ្ជី" : "List"}</span>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${view === "grid"
-                        ? "bg-[#23395D] text-white"
-                        : "text-[#475569] hover:bg-slate-100"
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${fontClass} ${view === "grid"
+                            ? "bg-[#23395D] text-white"
+                            : "text-[#475569] hover:bg-slate-100"
                         }`}
                 >
                     <LayoutGrid className="h-3.5 w-3.5" />
-                    <span className={language === "kh" ? "khmer-font" : ""}>
-                        {language === "kh" ? "ក្រឡា" : "Grid"}
-                    </span>
+                    <span>{language === "kh" ? "ក្រឡា" : "Grid"}</span>
                 </button>
             </div>
         </div>
+    );
+}
+
+function WatchVideoButton({
+    href,
+    language,
+    size = "large",
+}: {
+    href: string;
+    language: UiLang;
+    size?: "large" | "small";
+}) {
+    const fontClass = getFontClass(language);
+    const isLarge = size === "large";
+
+    return (
+        <Link
+            href={href}
+            className={`
+                ${isLarge ? "mt-5 text-[15px]" : "mt-4 text-[12px]"}
+                inline-flex w-fit items-center gap-2
+                rounded-full border border-orange-500
+                px-3 py-[4px]
+                font-bold leading-[18px] text-orange-500
+                no-underline transition
+                hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
+                ${fontClass}
+            `}
+        >
+            {language === "kh" ? "មើលវីដេអូ" : "Watch video"}
+            <Play
+                className={
+                    isLarge
+                        ? "h-4 w-4 fill-current"
+                        : "h-3 w-3 fill-current"
+                }
+            />
+        </Link>
     );
 }
 
@@ -464,9 +559,12 @@ function ListCard({
     item: VideoItem;
     language: UiLang;
 }) {
+    const mainTitleClass = getMainTitleClass(language);
+    const bodyClass = getBodyClass(language);
+
     return (
-        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[320px_minmax(0,1fr)] md:gap-8">
-            <Link href={item.href} className="block">
+        <article className="grid grid-cols-1 gap-6 border-b border-[#D9DEE7] py-7 md:grid-cols-[320px_minmax(0,1fr)] md:items-center md:gap-8">
+            <Link href={item.href} className="block md:self-center">
                 <NewsImage
                     src={item.image}
                     alt={item.title}
@@ -475,8 +573,8 @@ function ListCard({
                 />
             </Link>
 
-            <div className="min-w-0">
-                <h2 className="text-[20px] font-extrabold line-clamp-1 leading-[1.45] text-[#0B2C5F] md:text-[24px]">
+            <div className="flex min-w-0 flex-col justify-center">
+                <h2 className={`line-clamp-1 text-[#0B2C5F] ${mainTitleClass}`}>
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
@@ -484,27 +582,18 @@ function ListCard({
 
                 <VideoMeta language={language} date={item.date} />
 
-                <p className="mt-4 line-clamp-3 text-[15px] leading-7 text-[#64748B]">
+                <p className={`mt-4 line-clamp-3 text-[#64748B] ${bodyClass}`}>
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
                             : "No description available.")}
                 </p>
 
-                <Link
+                <WatchVideoButton
                     href={item.href}
-                    className="
-                        mt-5 inline-flex w-fit items-center gap-2
-                        rounded-full border border-orange-500
-                        px-3 py-1
-                        text-[15px] font-bold text-orange-500
-                        no-underline transition
-                        hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
-                    "
-                >
-                    {language === "kh" ? "មើលវីដេអូ" : "Watch video"}
-                    <Play className="h-4 w-4 fill-current" />
-                </Link>
+                    language={language}
+                    size="large"
+                />
             </div>
         </article>
     );
@@ -517,6 +606,9 @@ function GridCard({
     item: VideoItem;
     language: UiLang;
 }) {
+    const mainTitleClass = getMainTitleClass(language);
+    const bodyClass = getBodyClass(language);
+
     return (
         <article className="group">
             <Link href={item.href} className="block">
@@ -529,7 +621,7 @@ function GridCard({
             </Link>
 
             <div className="px-1 pb-2 pt-4">
-                <h2 className="line-clamp-2 text-[17px] font-bold leading-6 text-[#0F172A] transition group-hover:text-[#1D4ED8]">
+                <h2 className={`line-clamp-2 text-[#0F172A] transition group-hover:text-[#1D4ED8] ${mainTitleClass}`}>
                     <Link href={item.href} className="hover:text-[#1D4ED8]">
                         {item.title}
                     </Link>
@@ -537,27 +629,18 @@ function GridCard({
 
                 <VideoMeta language={language} date={item.date} />
 
-                <p className="mt-3 line-clamp-2 text-[14px] leading-6 text-[#64748B]">
+                <p className={`mt-3 line-clamp-2 text-[#64748B] ${bodyClass}`}>
                     {item.description ||
                         (language === "kh"
                             ? "មិនមានការពិពណ៌នា។"
                             : "No description available.")}
                 </p>
 
-                <Link
+                <WatchVideoButton
                     href={item.href}
-                    className="
-                        mt-4 inline-flex w-fit items-center gap-2
-                        rounded-full border border-orange-500
-                        px-3 py-1
-                        text-[12px] font-bold text-orange-500
-                        no-underline transition
-                        hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
-                    "
-                >
-                    {language === "kh" ? "មើលវីដេអូ" : "Watch video"}
-                    <Play className="h-3 w-3 fill-current" />
-                </Link>
+                    language={language}
+                    size="small"
+                />
             </div>
         </article>
     );
@@ -565,12 +648,21 @@ function GridCard({
 
 export default function VideoPage() {
     const { language } = useLanguage();
-    const uiLanguage = language as UiLang;
+    const uiLanguage = normalizeLang(language);
+    const bodyClass = getBodyClass(uiLanguage);
+
     const [view, setView] = useState<ViewMode>("grid");
     const [title, setTitle] = useState("");
     const [items, setItems] = useState<VideoItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        const htmlLang = uiLanguage === "kh" ? "km" : "en";
+
+        document.documentElement.lang = htmlLang;
+        document.body.dataset.language = htmlLang;
+    }, [uiLanguage]);
 
     useEffect(() => {
         let active = true;
@@ -597,30 +689,38 @@ export default function VideoPage() {
                 const blocks = Array.isArray(pageJson.data.blocks)
                     ? pageJson.data.blocks
                     : [];
+
                 const primaryBlock = getPrimaryPostListBlock(blocks);
                 const pageData = pageJson.data.page;
+
                 const categoryIds = Array.isArray(primaryBlock?.settings?.categoryIds)
                     ? primaryBlock.settings.categoryIds.filter(
                         (categoryId): categoryId is number =>
-                            typeof categoryId === "number"
+                            typeof categoryId === "number",
                     )
                     : [];
 
-                let posts = Array.isArray(primaryBlock?.posts) ? primaryBlock.posts : [];
+                let posts = Array.isArray(primaryBlock?.posts)
+                    ? primaryBlock.posts
+                    : [];
 
                 if (categoryIds.length > 0) {
                     const categoryResponses = await Promise.all(
                         categoryIds.map((categoryId) =>
                             fetch(`/api/posts/category/${categoryId}`, {
                                 cache: "no-store",
-                            })
-                        )
+                            }),
+                        ),
                     );
 
                     const mergedPosts: MediaPost[] = [];
                     const seenPostIds = new Set<number>();
 
-                    for (let index = 0; index < categoryResponses.length; index += 1) {
+                    for (
+                        let index = 0;
+                        index < categoryResponses.length;
+                        index += 1
+                    ) {
                         const categoryResponse = categoryResponses[index];
 
                         if (!categoryResponse.ok) {
@@ -629,9 +729,14 @@ export default function VideoPage() {
 
                         const categoryData =
                             (await categoryResponse.json()) as CategoryPostsResponse;
+
                         const categoryPosts = getPostsFromResponse(categoryData);
 
-                        for (let postIndex = 0; postIndex < categoryPosts.length; postIndex += 1) {
+                        for (
+                            let postIndex = 0;
+                            postIndex < categoryPosts.length;
+                            postIndex += 1
+                        ) {
                             const post = categoryPosts[postIndex];
 
                             if (seenPostIds.has(post.id)) {
@@ -648,10 +753,14 @@ export default function VideoPage() {
 
                 const nextTitle =
                     pickText(
-                        (pageData as { title?: I18n | string | null } | undefined)?.title,
-                        uiLanguage
+                        (pageData as { title?: I18n | string | null } | undefined)
+                            ?.title,
+                        uiLanguage,
                     ) ||
-                    pickText(pageData as I18n | string | null | undefined, uiLanguage) ||
+                    pickText(
+                        pageData as I18n | string | null | undefined,
+                        uiLanguage,
+                    ) ||
                     pickText(pageJson.data.title, uiLanguage) ||
                     pickText(primaryBlock?.title, uiLanguage) ||
                     (uiLanguage === "kh" ? "វីដេអូ" : "Video");
@@ -674,7 +783,7 @@ export default function VideoPage() {
                 setError(
                     uiLanguage === "kh"
                         ? "មិនអាចទាញយកទំព័រវីដេអូបានទេ។"
-                        : "Failed to load the videos page."
+                        : "Failed to load the videos page.",
                 );
             } finally {
                 if (active) {
@@ -691,7 +800,7 @@ export default function VideoPage() {
     }, [uiLanguage]);
 
     return (
-        <main className="min-h-screen bg-[#FAFAFA]">
+        <main className={`min-h-screen bg-[#FAFAFA] ${bodyClass}`}>
             <section className="mx-auto max-w-7xl px-4 py-10 sm:px-4 lg:px-4">
                 <Header
                     language={uiLanguage}
@@ -701,19 +810,25 @@ export default function VideoPage() {
                 />
 
                 {loading ? (
-                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B]">
+                    <div
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B] ${bodyClass}`}
+                    >
                         {uiLanguage === "kh" ? "កំពុងផ្ទុក..." : "Loading..."}
                     </div>
                 ) : null}
 
                 {!loading && error ? (
-                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600">
+                    <div
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-red-600 ${bodyClass}`}
+                    >
                         {error}
                     </div>
                 ) : null}
 
                 {!loading && !error && items.length === 0 ? (
-                    <div className="rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B]">
+                    <div
+                        className={`rounded-md border border-[#D9DEE7] bg-white px-6 py-10 text-center text-[#64748B] ${bodyClass}`}
+                    >
                         {uiLanguage === "kh"
                             ? "មិនមានវីដេអូទេ។"
                             : "No videos found."}
@@ -724,13 +839,21 @@ export default function VideoPage() {
                     view === "list" ? (
                         <div>
                             {items.map((item) => (
-                                <ListCard key={item.id} item={item} language={uiLanguage} />
+                                <ListCard
+                                    key={item.id}
+                                    item={item}
+                                    language={uiLanguage}
+                                />
                             ))}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
                             {items.map((item) => (
-                                <GridCard key={item.id} item={item} language={uiLanguage} />
+                                <GridCard
+                                    key={item.id}
+                                    item={item}
+                                    language={uiLanguage}
+                                />
                             ))}
                         </div>
                     )
