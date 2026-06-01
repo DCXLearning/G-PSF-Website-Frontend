@@ -595,7 +595,7 @@ export default function EventsAndAnnouncements() {
 
                                         <div className="flex min-w-0 flex-1 flex-col">
                                             <span
-                                                className={`mb-1 text-[10px] font-bold text-[#1a2b4b] ${
+                                                className={`mb-1 text-[13px] font-bold text-[#1a2b4b] ${
                                                     useKhmerFont
                                                         ? "khmer-font normal-case"
                                                         : "airbnb-font uppercase tracking-wider"
@@ -626,14 +626,14 @@ export default function EventsAndAnnouncements() {
                                                     href={documentUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={`mt-auto flex items-center text-[10px] font-bold hover:text-orange-500 ${
+                                                    className={`mt-auto flex items-center text-[13px] font-bold hover:text-orange-500 ${
                                                         useKhmerFont
                                                             ? "khmer-font normal-case"
                                                             : "airbnb-font uppercase tracking-tighter"
                                                     }`}
                                                 >
                                                     {labels.download}
-                                                    <span className="ml-1 text-lg">›</span>
+                                                    <span className="ml-1 mb-[3px] text-lg">›</span>
                                                 </Link>
                                             )}
                                         </div>
