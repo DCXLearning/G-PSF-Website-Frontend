@@ -354,7 +354,7 @@ export function CaseStudiesSection({
                                             target="_blank"
                                             rel="noreferrer"
                                             className={`
-                                                flex items-center text-xs font-bold text-[#1a2b4b]
+                                                flex items-center text-[13px] font-bold text-[#1a2b4b]
                                                 transition-colors hover:text-orange-600
                                                 ${!pickDocUrl(featured, apiLanguage)
                                                     ? "pointer-events-none opacity-60"
@@ -366,13 +366,13 @@ export function CaseStudiesSection({
                                                 }
                                             `}
                                         >
-                                            {t.download} <span className="ml-2 text-lg">›</span>
+                                            {t.download} <span className="ml-2 mb-[3px] text-lg">›</span>
                                         </a>
 
                                         <Link
                                             href={buildDetailHref(featured)}
                                             className={`
-                                                flex items-center text-xs font-bold text-[#1a2b4b]
+                                                flex items-center text-[13px] font-bold text-[#1a2b4b]
                                                 transition-colors hover:text-orange-600
                                                 ${isKh
                                                     ? "khmer-font normal-case tracking-normal"
@@ -380,14 +380,13 @@ export function CaseStudiesSection({
                                                 }
                                             `}
                                         >
-                                            {t.viewDetail} <span className="ml-2 text-lg">›</span>
+                                            {t.viewDetail} <span className="ml-2 mb-[3px] text-lg">›</span>
                                         </Link>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* RIGHT: 2 small cards */}
                         <div className="flex flex-col gap-8">
                             {side.map((post) => {
                                 const docUrl = pickDocUrl(post, apiLanguage);
@@ -399,7 +398,7 @@ export function CaseStudiesSection({
                                     >
                                         <div
                                             className={`
-                                                mb-3 text-[10px] font-bold text-[#1a2b4b]
+                                                mb-3 text-[13px] font-bold text-[#1a2b4b]
                                                 ${isKh
                                                     ? "khmer-font normal-case tracking-normal"
                                                     : "airbnb-font uppercase tracking-wider"
@@ -431,7 +430,7 @@ export function CaseStudiesSection({
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className={`
-                                                    flex items-center text-xs font-bold text-[#1a2b4b]
+                                                    flex items-center text-[13px] font-bold text-[#1a2b4b]
                                                     transition-colors hover:text-orange-600
                                                     ${!docUrl ? "pointer-events-none opacity-60" : ""}
                                                     ${isKh
@@ -441,13 +440,13 @@ export function CaseStudiesSection({
                                                 `}
                                             >
                                                 {t.download}{" "}
-                                                <span className="ml-2 text-lg">›</span>
+                                                <span className="ml-2 mb-[3px] text-lg">›</span>
                                             </a>
 
                                             <Link
                                                 href={buildDetailHref(post)}
                                                 className={`
-                                                    flex items-center text-xs font-bold text-[#1a2b4b]
+                                                    flex items-center text-[13px] font-bold text-[#1a2b4b]
                                                     transition-colors hover:text-orange-600
                                                     ${isKh
                                                         ? "khmer-font normal-case tracking-normal"
@@ -456,7 +455,7 @@ export function CaseStudiesSection({
                                                 `}
                                             >
                                                 {t.viewDetail}{" "}
-                                                <span className="ml-2 text-lg">›</span>
+                                                <span className="ml-2 mb-[3px] text-lg">›</span>
                                             </Link>
                                         </div>
                                     </div>
