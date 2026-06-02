@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-// src/components/HomePage/WorkGroupsCarousel.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -65,28 +64,24 @@ function readCache(): { items: WorkGroupItem[]; total: number } | null {
 
 function writeCache(items: WorkGroupItem[], total: number) {
   try {
-    localStorage.setItem(
-      CACHE_KEY,
-      JSON.stringify({
-        items,
-        total,
-      })
-    );
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ items, total }));
   } catch {
-    // ignore cache errors
+
   }
 }
 
 function WorkGroupCardSkeleton() {
   return (
     <div
-      className="flex flex-col items-center justify-center
-      h-[210px] w-full px-4 py-6 rounded-2xl
-      bg-gray-50 border border-gray-100 shadow-sm animate-pulse"
+      className="
+        flex flex-col items-center justify-start
+        h-[230px] w-full px-4 pt-8 pb-6 rounded-2xl
+        bg-gray-50 border border-gray-100 shadow-sm animate-pulse
+      "
     >
-      <div className="w-20 h-20 rounded-full mb-4 bg-slate-200 shrink-0" />
+      <div className="w-20 h-20 rounded-full mb-6 bg-slate-200 shrink-0" />
 
-      <div className="h-[64px] flex flex-col items-center justify-center">
+      <div className="h-[84px] w-full flex flex-col items-center justify-start">
         <div className="h-4 w-24 bg-slate-200 rounded mb-2" />
         <div className="h-4 w-20 bg-slate-200 rounded" />
       </div>
@@ -172,7 +167,6 @@ export default function WorkGroupsCarousel() {
   return (
     <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-7xl px-4">
-        {/* Header */}
         <div className="text-center mb-10 md:mb-14">
           <h2 className={`text-blue-950 ${sectionTitleFontClass}`}>
             <span className="block">{titleRow1}</span>
@@ -180,14 +174,16 @@ export default function WorkGroupsCarousel() {
         </div>
 
         <div className="relative">
-          {/* Prev */}
           <button
             ref={prevRef}
             aria-label="Previous"
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20
-            w-14 md:w-6 h-[260px] flex items-center justify-center bg-transparent"
+            className="
+              absolute left-0 top-1/2 -translate-y-1/2 z-20
+              w-14 md:w-6 h-[230px]
+              flex items-center justify-center bg-transparent
+            "
           >
-            <span className="text-blue-900 text-5xl md:text-8xl cursor-pointer font-semibold">
+            <span className="text-blue-900 text-5xl md:text-8xl cursor-pointer font-semibold leading-none">
               ‹
             </span>
           </button>
@@ -196,10 +192,13 @@ export default function WorkGroupsCarousel() {
           <button
             ref={nextRef}
             aria-label="Next"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20
-            w-14 md:w-6 h-[260px] flex items-center justify-center bg-transparent"
+            className="
+              absolute right-0 top-1/2 -translate-y-1/2 z-20
+              w-14 md:w-6 h-[230px]
+              flex items-center justify-center bg-transparent
+            "
           >
-            <span className="text-blue-900 text-5xl md:text-8xl cursor-pointer font-semibold">
+            <span className="text-blue-900 text-5xl md:text-8xl cursor-pointer font-semibold leading-none">
               ›
             </span>
           </button>
@@ -246,14 +245,20 @@ export default function WorkGroupsCarousel() {
                     <SwiperSlide key={g.id} className="py-3">
                       <Link
                         href={buildWorkingGroupHref(g.slug)}
-                        className="flex flex-col items-center justify-center
-                        h-[210px] w-full px-4 py-6 rounded-2xl
-                        bg-gray-50 border border-gray-100 shadow-sm
-                        hover:shadow-md hover:-translate-y-1 hover:scale-[1.02]
-                        transition"
+                        className="
+                          flex flex-col items-center justify-start
+                          h-[230px] w-full px-4 pt-8 pb-6 rounded-2xl
+                          bg-gray-50 border border-gray-100 shadow-sm
+                          hover:shadow-md hover:-translate-y-1 hover:scale-[1.02]
+                          transition
+                        "
                       >
                         <div
-                          className="w-20 h-20 rounded-full flex items-center justify-center shrink-0 mb-4"
+                          className="
+                            w-20 h-20 rounded-full
+                            flex items-center justify-center
+                            shrink-0 mb-6
+                          "
                           style={{ backgroundColor: ICON_BG }}
                         >
                           <img
@@ -263,14 +268,14 @@ export default function WorkGroupsCarousel() {
                           />
                         </div>
 
-                        <div className="h-[64px] w-full flex items-center justify-center overflow-hidden">
+                        <div className="h-[84px] w-full flex items-start justify-center overflow-hidden">
                           <p
                             className={`
                               ${cardTitleFontClass}
-                              m-0 w-full max-w-[170px]
+                              m-0 w-full max-w-[175px]
                               text-center text-gray-900
                               font-bold
-                              leading-[30px]
+                              leading-[28px]
                               line-clamp-2
                               overflow-hidden
                               whitespace-normal

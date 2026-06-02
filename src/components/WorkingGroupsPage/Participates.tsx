@@ -59,20 +59,19 @@ const Participates: React.FC = () => {
     const titleFontClass = isKh ? "title-km" : "title-en";
     const mainTitleFontClass = isKh ? "main-title-km" : "main-title-en";
     const bodyFontClass = isKh ? "body-km" : "body-en";
-    const smallFontClass = isKh ? "khmer-font" : "airbnb-font";
 
     const fallback = useMemo(() => {
         return uiLang === "kh"
             ? {
-                  title: "អ្នកចូលរួម",
-                  subtitle:
-                      "អង្គប្រជុំក្រុមការងារ រួមបញ្ចូលភាគីពាក់ព័ន្ធជាច្រើនប្រភេទ។",
-              }
+                title: "អ្នកចូលរួម",
+                subtitle:
+                    "អង្គប្រជុំក្រុមការងារ រួមបញ្ចូលភាគីពាក់ព័ន្ធជាច្រើនប្រភេទ។",
+            }
             : {
-                  title: "Who Participates",
-                  subtitle:
-                      "Working Group meetings bring together a broad range of stakeholders.",
-              };
+                title: "Who Participates",
+                subtitle:
+                    "Working Group meetings bring together a broad range of stakeholders.",
+            };
     }, [uiLang]);
 
     useEffect(() => {
@@ -123,8 +122,7 @@ const Participates: React.FC = () => {
 
     return (
         <section className="relative cursor-pointer bg-white pt-16 pb-0">
-            {/* HEADER LEFT */}
-            <div className="mx-auto mb-12 max-w-7xl px-4 text-left">
+            <div className="mx-auto mb-12 w-full max-w-7xl px-4 text-left sm:px-6 lg:px-8">
                 <h2 className={`mb-4 text-gray-900 ${titleFontClass}`}>
                     {viewTitle}
                 </h2>
@@ -143,7 +141,7 @@ const Participates: React.FC = () => {
             <div className="relative">
                 <div className="absolute bottom-0 h-[150px] w-full bg-[#1e234a]" />
 
-                <div className="container relative z-10 mx-auto px-4">
+                <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-4 lg:px-4">
                     {loading ? (
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                             {Array.from({ length: 4 }).map((_, i) => (
@@ -151,7 +149,7 @@ const Participates: React.FC = () => {
                                     key={i}
                                     className="animate-pulse rounded-2xl border border-gray-100 bg-white p-8 shadow-2xl"
                                 >
-                                    <div className="mb-10 flex h-25 w-full justify-center -mt-12">
+                                    <div className="-mt-12 mb-10 flex h-25 w-full justify-center">
                                         <div className="h-[110px] w-[110px] rounded-t-sm rounded-b-[100px] bg-[#1e234a] p-8" />
                                     </div>
 
@@ -166,18 +164,17 @@ const Participates: React.FC = () => {
                             {items.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="flex h-full flex-col items-start overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 text-left shadow-2xl transition-all hover:translate-y-[-1.5%]"
+                                    className="flex h-full flex-col items-start overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 text-left shadow-2xl transition-all hover:-translate-y-1"
                                 >
-                                    <div className="mb-10 flex h-25 w-full justify-center -mt-12">
+                                    <div className="-mt-12 mb-10 flex h-25 w-full justify-center">
                                         <div className="rounded-t-sm rounded-b-[100px] bg-[#1e234a] p-8 shadow-md">
                                             <img
                                                 src={item.icon}
-                                                alt="icon"
-                                                className={`h-14 w-14 ${
-                                                    isSvg(item.icon)
+                                                alt={item.title}
+                                                className={`h-14 w-14 ${isSvg(item.icon)
                                                         ? "brightness-0 invert"
                                                         : ""
-                                                }`}
+                                                    }`}
                                             />
                                         </div>
                                     </div>

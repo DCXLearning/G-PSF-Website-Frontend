@@ -252,7 +252,6 @@ export function CaseStudiesSection({
     return (
         <section className="bg-white px-4 py-12 md:px-8">
             <div className="mx-auto max-w-7xl px-4">
-                {/* Header Section */}
                 <div className="mb-12">
                     <p className={`mb-1 text-[#1a2b4b] ${mainTitleClass}`}>
                         {t.header}
@@ -286,7 +285,6 @@ export function CaseStudiesSection({
                     </div>
                 ) : posts.length > 0 ? (
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                        {/* LEFT: Featured */}
                         {featured && (
                             <div className="flex h-full flex-col bg-[#e9ecef] shadow-sm">
                                 <div className="flex min-h-[390px] flex-1 flex-col items-center justify-center bg-gray-200/50 p-12">

@@ -1,8 +1,8 @@
 
 import { NextResponse } from "next/server";
 
-export const runtime = "nodejs"; // safer for remote fetch + images
-export const revalidate = 0;     // always fresh (no cache)
+export const runtime = "nodejs"; 
+export const revalidate = 0;    
 
 const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
 
@@ -10,7 +10,6 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug")?.trim() || "working-groups";
-    // Let the frontend ask for only the block types it needs.
     const types = (searchParams.get("types") ?? "")
       .split(",")
       .map((item) => item.trim())
@@ -19,7 +18,6 @@ export async function GET(request: Request) {
     const upstream = `${apiBase}/pages/${encodeURIComponent(slug)}/section`;
 
     const res = await fetch(upstream, {
-      // If upstream sends cache headers you don't want, keep no-store
       cache: "no-store",
       headers: { Accept: "application/json" },
     });
@@ -33,14 +31,12 @@ export async function GET(request: Request) {
 
     const data = await res.json();
 
-    // Allow components to request only the block types they need.
     if (types.length > 0 && Array.isArray(data?.data?.blocks)) {
       data.data.blocks = data.data.blocks.filter((block: { type?: string }) =>
         types.includes(block.type ?? "")
       );
     }
 
-    // Pass-through (you can also "shape" the response here if you want)
     return NextResponse.json(data, { status: 200 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Fetch failed";

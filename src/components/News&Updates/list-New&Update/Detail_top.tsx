@@ -81,7 +81,6 @@ export default function DetailPage({ data }: DetailPageProps) {
           <span className="mt-1 h-[3px] w-20 rounded-full bg-amber-500" />
         </div>
 
-        {/* Main title: global title size + font-semibold */}
         <h1
           className={`mt-4 max-w-5xl tracking-tight text-[#0f1637] ${titleFontClass}`}
           style={{ fontWeight: 600 }}
