@@ -29,6 +29,7 @@ export async function GET(request: Request) {
     const workingGroupIds = searchParams.get("workingGroupIds")?.trim() ?? "";
     const hasWorkingGroup = searchParams.get("hasWorkingGroup")?.trim() ?? "";
     const hasDocument = searchParams.get("hasDocument")?.trim() ?? "";
+    const excludeTemplateSections = searchParams.get("excludeTemplateSections")?.trim() ?? "";
     const pageSize = searchParams.get("pageSize")?.trim() ?? "";
     const types = (searchParams.get("types") ?? "")
       .split(",")
@@ -63,6 +64,8 @@ export async function GET(request: Request) {
       upstreamUrl.searchParams.set("hasWorkingGroup", hasWorkingGroup);
     if (hasDocument)
       upstreamUrl.searchParams.set("hasDocument", hasDocument);
+    if (excludeTemplateSections)
+      upstreamUrl.searchParams.set("excludeTemplateSections", excludeTemplateSections);
     if (pageSize) upstreamUrl.searchParams.set("pageSize", pageSize);
 
     const response = await fetch(upstreamUrl.toString(), {

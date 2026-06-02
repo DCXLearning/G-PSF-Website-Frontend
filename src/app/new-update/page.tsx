@@ -121,7 +121,7 @@ async function getNewAndUpdateSection(): Promise<NewUpdateData> {
   const [sectionResp, wgResp] = await Promise.all([
     fetchJson<SectionsResponse>(`${API_URL}/pages/news-and-updates/section`),
     fetchJson<PostsListResponse>(
-      `${API_URL}/posts?hasWorkingGroup=true&hasDocument=false&pageSize=50`
+      `${API_URL}/posts?hasWorkingGroup=true&hasDocument=false&excludeTemplateSections=true&pageSize=50`
     ),
   ]);
 

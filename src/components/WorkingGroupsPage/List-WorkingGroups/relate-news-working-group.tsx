@@ -352,10 +352,11 @@ export default function RelateNewsWorkingGroup({
             try {
                 setLoading(true);
 
-                // hasDocument=false keeps the strip news-only: posts with a PDF
-                // attached are documents and belong on the Publication page, not
-                // the WG "Related Content" carousel.
-                const url = `/api/posts?workingGroupIds=${workingGroupId}&hasDocument=false&pageSize=${RELATED_NEWS_LIMIT}`;
+                // hasDocument=false keeps the strip news-only (PDFs belong on
+                // Publication page). excludeTemplateSections=true hides posts
+                // attached to wg_template/hero_banner/etc. blocks — those are
+                // page-template content, not news.
+                const url = `/api/posts?workingGroupIds=${workingGroupId}&hasDocument=false&excludeTemplateSections=true&pageSize=${RELATED_NEWS_LIMIT}`;
                 const response = await fetch(url, {
                     cache: "no-store",
                     signal: controller.signal,

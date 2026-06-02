@@ -64,7 +64,7 @@ export async function GET() {
     const [sectionResp, wgResp] = await Promise.all([
       fetchJson(`${API_URL}/sections/${SECTION_ID}/posts?pageSize=${PAGE_SIZE}`),
       fetchJson(
-        `${API_URL}/posts?hasWorkingGroup=true&hasDocument=false&pageSize=${PAGE_SIZE}`
+        `${API_URL}/posts?hasWorkingGroup=true&hasDocument=false&excludeTemplateSections=true&pageSize=${PAGE_SIZE}`
       ),
     ]);
 
