@@ -554,17 +554,100 @@ function sanitizeTiptapNodes(content: TiptapJsonContent): TiptapJsonContent[] {
   }];
 }
 
+// If this node IS an image, or is a paragraph that wraps a single image,
+// return the underlying image node. Used to find consecutive image runs
+// even when each image sits in its own paragraph.
+function extractImageNode(node: TiptapJsonContent): TiptapJsonContent | null {
+  if (node?.type === "image" && typeof node.attrs?.src === "string") {
+    return node;
+  }
+  if (
+    (node?.type === "paragraph" || node?.type === "div") &&
+    Array.isArray(node.content) &&
+    node.content.length === 1 &&
+    node.content[0]?.type === "image" &&
+    typeof node.content[0]?.attrs?.src === "string"
+  ) {
+    return node.content[0];
+  }
+  return null;
+}
+
+// Walk an array of sibling nodes and replace any run of 2+ consecutive image
+// nodes with a single synthetic imageGallery node — so they render as the
+// Swiper carousel instead of stacked images. Recurses into children so nested
+// runs (e.g. inside a list item) also collapse.
+function groupConsecutiveImages(
+  nodes: TiptapJsonContent[]
+): TiptapJsonContent[] {
+  const result: TiptapJsonContent[] = [];
+  let imageRun: TiptapJsonContent[] = [];
+
+  const flushRun = () => {
+    if (imageRun.length === 0) return;
+    if (imageRun.length === 1) {
+      // Single image — leave as a normal image node.
+      result.push(imageRun[0]);
+    } else {
+      // 2+ consecutive images — turn into one gallery.
+      result.push({
+        type: "imageGallery",
+        attrs: {
+          images: imageRun
+            .map((img) => {
+              const src =
+                typeof img.attrs?.src === "string" ? img.attrs.src : "";
+              const alt =
+                typeof img.attrs?.alt === "string" ? img.attrs.alt : "";
+              return alt ? { src, alt } : { src };
+            })
+            .filter((img) => img.src),
+        },
+      });
+    }
+    imageRun = [];
+  };
+
+  for (const node of nodes) {
+    const innerImage = extractImageNode(node);
+    if (innerImage) {
+      imageRun.push(innerImage);
+      continue;
+    }
+
+    flushRun();
+
+    // Recurse into the node's content so nested runs also collapse.
+    if (Array.isArray(node?.content) && node.content.length > 0) {
+      result.push({
+        ...node,
+        content: groupConsecutiveImages(node.content),
+      });
+    } else {
+      result.push(node);
+    }
+  }
+
+  flushRun();
+  return result;
+}
+
 function normalizeTiptapContent(content: TiptapJsonContent): TiptapJsonContent {
   const normalizedNodes = sanitizeTiptapNodes(content);
   const normalizedDoc = normalizedNodes[0] ?? emptyDocument;
 
-  if (normalizedDoc.type === "doc") {
-    return normalizedDoc;
-  }
+  // Wrap loose nodes into a `doc` envelope so the grouping pass has a
+  // consistent shape to work with.
+  const baseDoc: TiptapJsonContent =
+    normalizedDoc.type === "doc"
+      ? normalizedDoc
+      : { type: "doc", content: normalizedNodes };
 
+  // Group consecutive image runs into imageGallery nodes so they render as
+  // the Swiper carousel rather than stacking on top of each other.
   return {
-    type: "doc",
-    content: normalizedNodes,
+    ...baseDoc,
+    content: groupConsecutiveImages(baseDoc.content ?? []),
   };
 }
 
