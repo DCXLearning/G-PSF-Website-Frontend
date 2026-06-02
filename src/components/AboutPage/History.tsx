@@ -65,7 +65,7 @@ function writeCache(blocks: Block[]) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
     } catch {
-
+        
     }
 }
 
@@ -133,7 +133,7 @@ function HistorySkeleton() {
 export default function History() {
     const { language } = useLanguage();
 
-    const uiLang: UiLang = (language as UiLang) || "en";
+    const uiLang: UiLang = language === "kh" ? "kh" : "en";
     const apiLang: ApiLang = uiLang === "kh" ? "km" : "en";
     const isKh = uiLang === "kh";
 
@@ -145,6 +145,10 @@ export default function History() {
     const titleFontClass = isKh
         ? "title-km khmer-font font-bold"
         : "title-en airbnb-font font-extrabold";
+
+    const mainTitleFontClass = isKh
+        ? "main-title-km khmer-font font-bold"
+        : "main-title-en airbnb-font font-extrabold";
 
     const bodyFontClass = isKh
         ? "body-km khmer-font"
@@ -258,7 +262,9 @@ export default function History() {
         <section className="bg-white py-16 md:py-24">
             <div className="mx-auto max-w-7xl px-4">
                 {showErrorOnly && (
-                    <div className={`mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 ${bodyFontClass}`}>
+                    <div
+                        className={`mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 ${bodyFontClass}`}
+                    >
                         {error}
                     </div>
                 )}
@@ -325,8 +331,9 @@ export default function History() {
                                         <div className="pt-1">
                                             <h3
                                                 className={`
-                                                    font-extrabold text-gray-900
-                                                    ${bodyFontClass}
+                                                    text-gray-900
+                                                    !whitespace-normal !overflow-visible !text-clip
+                                                    ${mainTitleFontClass}
                                                 `}
                                             >
                                                 {obj.title}
