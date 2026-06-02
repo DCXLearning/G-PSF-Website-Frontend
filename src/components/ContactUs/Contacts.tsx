@@ -383,7 +383,7 @@ export default function ContactSection() {
 
                   {settings?.desks.map((desk, index) => (
                     <div key={`${desk.label}-${index}`} className="pt-2">
-                      <p className={`mb-1 text-white ${mainTitleClass}`}>
+                      <p className={`mb-3 text-white ${mainTitleClass}`}>
                         {desk.label}
                       </p>
 
@@ -416,7 +416,7 @@ export default function ContactSection() {
                 </section>
 
                 <section>
-                  <h4 className={`mb-4 text-white ${mainTitleClass}`}>
+                  <h4 className={`mb-3 text-white ${mainTitleClass}`}>
                     {t.connected}
                   </h4>
 
