@@ -417,13 +417,18 @@ export default function RelateNewsWorkingGroup({
         <section className="bg-white py-10 sm:py-14">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="mb-10 text-center">
+                    {/* Sub-heading flipped to match the section title color
+                        (gray-900) — matches the rest of the site's section labels. */}
                     <p
-                        className={`mb-2 tracking-[0.025em] text-[#3f3cff] ${bodyFontClass} !font-semibold`}
+                        className={`mb-2 tracking-[0.025em] text-gray-900 ${bodyFontClass} !font-semibold`}
                     >
                         {subHeading}
                     </p>
 
-                    <h2 className={`text-[#312b85] ${titleFontClass}`}>
+                    {/* Title color now matches other section headings (text-gray-900
+                        used by Update_News, Benefits, etc.) instead of the
+                        previous indigo ink (#312b85). */}
+                    <h2 className={`text-gray-900 ${titleFontClass}`}>
                         {mainHeading}
                     </h2>
                 </div>
