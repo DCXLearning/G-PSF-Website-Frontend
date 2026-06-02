@@ -46,16 +46,18 @@
 ========================= */
 
 body {
-  font-family: "Airbnb Cereal", var(--font-kantumruy-pro), sans-serif;
+  font-family: "Airbnb Cereal", var(--font-kantumruy-pro), system-ui, sans-serif;
   letter-spacing: 0.5px;
 }
 
-.khmer-font {
-  font-family: var(--font-kantumruy-pro), sans-serif;
-}
-
+/* Auto mixed font:
+   - English uses Airbnb Cereal
+   - Khmer fallback uses Kantumruy Pro
+   - Works even when language switch and content language are different
+*/
+.khmer-font,
 .airbnb-font {
-  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-family: "Airbnb Cereal", var(--font-kantumruy-pro), system-ui, sans-serif;
 }
 
 .stroke-text {
@@ -72,6 +74,9 @@ body {
 ========================= */
 
 :root {
+  /* Auto mixed font stack */
+  --auto-font-stack: "Airbnb Cereal", var(--font-kantumruy-pro), system-ui, sans-serif;
+
   /* Main card title */
   --main-title-en-size: 21px;
   --main-title-km-size: 22px;
@@ -145,15 +150,17 @@ body {
   letter-spacing: var(--header-letter-spacing);
 }
 
+/* English class but Khmer content can fallback to Khmer font */
 .main-title-en {
-  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-family: var(--auto-font-stack);
   font-size: var(--main-title-en-size) !important;
   line-height: var(--main-title-line-height);
   font-weight: 800;
 }
 
+/* Khmer class but English content still uses Airbnb font */
 .main-title-km {
-  font-family: var(--font-kantumruy-pro), sans-serif;
+  font-family: var(--auto-font-stack);
   font-size: var(--main-title-km-size) !important;
   line-height: var(--main-title-line-height);
   font-weight: 700;
@@ -162,7 +169,7 @@ body {
 /* Auto main-title by language */
 html[lang="en"] .main-title,
 body[data-language="en"] .main-title {
-  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-family: var(--auto-font-stack);
   font-size: var(--main-title-en-size) !important;
   line-height: var(--main-title-line-height);
   font-weight: 800;
@@ -172,7 +179,7 @@ html[lang="km"] .main-title,
 html[lang="kh"] .main-title,
 body[data-language="km"] .main-title,
 body[data-language="kh"] .main-title {
-  font-family: var(--font-kantumruy-pro), sans-serif;
+  font-family: var(--auto-font-stack);
   font-size: var(--main-title-km-size) !important;
   line-height: var(--main-title-line-height);
   font-weight: 700;
@@ -182,7 +189,7 @@ body[data-language="kh"] .main-title {
 .title-en,
 .banner-title-en,
 .middle-title-en {
-  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-family: var(--auto-font-stack);
   font-size: var(--title-en-size);
   line-height: var(--title-en-line-height);
   letter-spacing: var(--header-letter-spacing);
@@ -193,7 +200,7 @@ body[data-language="kh"] .main-title {
 .title-km,
 .banner-title-km,
 .middle-title-km {
-  font-family: var(--font-kantumruy-pro), sans-serif;
+  font-family: var(--auto-font-stack);
   font-size: var(--title-km-size);
   line-height: var(--title-km-line-height);
   letter-spacing: var(--header-letter-spacing);
@@ -202,7 +209,7 @@ body[data-language="kh"] .main-title {
 
 /* English body text */
 .body-en {
-  font-family: "Airbnb Cereal", system-ui, sans-serif;
+  font-family: var(--auto-font-stack);
   font-size: var(--body-en-size);
   line-height: var(--body-line-height);
   letter-spacing: var(--text-letter-spacing);
@@ -211,7 +218,7 @@ body[data-language="kh"] .main-title {
 
 /* Khmer body text */
 .body-km {
-  font-family: var(--font-kantumruy-pro), sans-serif;
+  font-family: var(--auto-font-stack);
   font-size: var(--body-km-size);
   line-height: var(--body-line-height);
   letter-spacing: var(--text-letter-spacing);
