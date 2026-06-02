@@ -300,32 +300,21 @@ const Footer: React.FC = () => {
             className={`bg-white mt-0 shadow-[0_-6px_12px_rgba(0,0,0,0.08)] ${footerFontClass}`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-14 lg:gap-20">
-                {/* ========== LOGO + DESCRIPTION ========== */}
-                <div className="flex flex-col items-start text-left sm:items-center sm:text-center">
-                    <div className="relative w-55 h-28 mb-5 -mt-4">
+                {/* ========== LOGO ========== */}
+                {/* self-center makes this grid item collapse to the logo's size
+                    and sit at the vertical center of the row, instead of
+                    stretching to the tallest column and clinging to the top. */}
+                <div className="flex flex-col items-center self-center text-center">
+                    <div className="relative w-55 h-28">
                         <Image
                             src={logoSrc}
                             alt={title || "G-PSF Logo"}
                             fill
-                            className="object-cover object-left sm:object-center"
+                            className="object-cover object-center"
                             sizes="210px"
                             unoptimized
                         />
                     </div>
-
-                    {loading ? (
-                        <div className="space-y-3 flex flex-col items-start sm:items-center">
-                            <div className="h-5 w-56 bg-gray-200 animate-pulse rounded" />
-                            <div className="h-5 w-48 bg-gray-200 animate-pulse rounded" />
-                        </div>
-                    ) : (
-                        <p
-                            className={`${footerBodyTextClass} max-w-sm text-left sm:text-center`}
-                            style={{ fontWeight: 400 }}
-                        >
-                            {description}
-                        </p>
-                    )}
                 </div>
 
                 {/* ========== KEY UPDATES ========== */}
