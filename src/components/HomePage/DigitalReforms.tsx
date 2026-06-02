@@ -249,7 +249,7 @@ const LatestReport: React.FC = () => {
             <div className="mb-90 mt-4 md:mt-14 text-center">
                 <p
                     className={`
-                        text-indigo-400
+                        text-gray-900
                         !whitespace-normal !overflow-visible !text-clip
                         ${mainTitleFontClass}
                     `}
@@ -257,7 +257,7 @@ const LatestReport: React.FC = () => {
                     {subHeading}
                 </p>
 
-                <h1 className={`mt-2 text-blue-950 ${titleFontClass}`}>
+                <h1 className={`mt-2 text-gray-900 ${titleFontClass}`}>
                     {mainHeading}
                 </h1>
 
@@ -372,13 +372,17 @@ const LatestReport: React.FC = () => {
                                                     {desc}
                                                 </p>
 
+                                                {/* Download button — matches the publication-page card
+                                                    style (full-width orange pill) so report cards on the home
+                                                    page feel consistent with /publication. */}
                                                 <a
                                                     href={docUrl || "#"}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className={`
-                                                        mt-auto inline-flex items-center gap-2 self-start
-                                                        font-semibold text-[#1d3ea6] transition hover:text-[#16338a]
+                                                        mt-auto w-full inline-flex items-center justify-center gap-2
+                                                        px-10 py-2.5 rounded-md shrink-0
+                                                        bg-[#f5a20a] hover:bg-[#ea9805] text-white font-medium transition
                                                         ${smallFontClass}
                                                         ${!docUrl ? "pointer-events-none opacity-50" : ""}
                                                     `}
