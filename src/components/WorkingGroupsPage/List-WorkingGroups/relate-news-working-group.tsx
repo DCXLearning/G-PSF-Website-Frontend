@@ -36,6 +36,12 @@ type PostItem = {
     images?: Array<{ url?: string }>;
     status?: string;
     isPublished?: boolean;
+    // Posts attached to "structural" section types (wg_template, hero_banner,
+    // co-chairs, etc.) are page-template content, not news — we exclude them
+    // from the Related Content strip via isStructuralPost below.
+    section?: {
+        blockType?: string;
+    } | null;
     content?: {
         en?: {
             type?: string;
@@ -51,6 +57,20 @@ type PostItem = {
         };
     };
 };
+
+// Section block types that carry the WG's page template content rather than
+// news. A post attached to one of these is rendering part of the page itself,
+// not a standalone news item, so we hide it from the Related Content strip.
+const NEWS_SECTION_BLOCK_TYPES = new Set([
+    "post_list",
+    "announcement",
+]);
+
+function isStructuralPost(post: PostItem): boolean {
+    const blockType = post.section?.blockType;
+    if (!blockType) return false; // No section attached → not structural
+    return !NEWS_SECTION_BLOCK_TYPES.has(blockType);
+}
 
 type ApiResponse = {
     success?: boolean;
@@ -149,7 +169,11 @@ function buildDetailHref(post: PostItem) {
 
 function mapRelatedNews(posts: PostItem[], language: UiLang): RelatedNewsItem[] {
     return posts
-        .filter((post) => post.isPublished === true || post.status === "published")
+        .filter(
+            (post) =>
+                (post.isPublished === true || post.status === "published") &&
+                !isStructuralPost(post),
+        )
         .sort((a, b) => {
             const dateA = new Date(
                 a.publishedAt || a.createdAt || a.updatedAt || "",

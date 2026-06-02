@@ -16,7 +16,7 @@ export const revalidate = 0;
 //
 // Default cap when the admin hasn't set section 4's settings.limit. The strip
 // is a "Latest" carousel, not the full archive — users use "See More" for that.
-const DEFAULT_STRIP_LIMIT = 3; // DIAGNOSTIC — temporarily low to verify the cap path runs
+const DEFAULT_STRIP_LIMIT = 6;
 
 type ApiPostRaw = {
   id?: number;
@@ -173,11 +173,6 @@ async function getNewAndUpdateSection(): Promise<NewUpdateData> {
     cards.push(card);
     if (cards.length >= stripLimit) break;
   }
-
-  // eslint-disable-next-line no-console
-  console.log(
-    `[/new-update] stripLimit=${stripLimit} cards.length=${cards.length} configuredLimit=${configuredLimit}`,
-  );
 
   return cards;
 }
