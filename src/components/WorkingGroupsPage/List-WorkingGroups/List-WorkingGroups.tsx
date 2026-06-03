@@ -81,6 +81,19 @@ function getText(value?: string | null): string {
   return text === "." ? "" : text;
 }
 
+// Working groups are labelled A, B, C... in the public branding (matching the
+// "Working Group A: Agriculture" wording from the backend content). The DB
+// stores orderIndex as 1-indexed integers, so 1 → A, 2 → B, etc. Clamped to
+// A–Z so a malformed orderIndex can never escape the alphabet.
+function toAlpha(orderIndex: number | null | undefined): string {
+  const idx =
+    typeof orderIndex === "number" && Number.isFinite(orderIndex) && orderIndex >= 1
+      ? Math.floor(orderIndex)
+      : 1;
+  const clamped = Math.min(26, Math.max(1, idx));
+  return String.fromCharCode(64 + clamped); // 64 + 1 = 65 = 'A'
+}
+
 function pickI18nText(value: I18nText | undefined, apiLang: ApiLang): string {
   if (!value) return "";
 
@@ -123,9 +136,19 @@ function mapHeroData(
   const description = pickI18nText(heroBanner.description, apiLang);
   const ctaLabel = pickI18nText(cta?.label, apiLang);
   const ctaHref = getText(cta?.href);
-  const imageUrl = getText(heroBanner.backgroundImages?.[0]) || DEFAULT_IMAGE_URL;
+  // Track the raw upload URL separately from the resolved imageUrl. The
+  // resolved one falls back to DEFAULT_IMAGE_URL and is always truthy, so we
+  // can't use it for the "do we have a banner?" check below.
+  const rawImage = getText(heroBanner.backgroundImages?.[0]);
+  const imageUrl = rawImage || DEFAULT_IMAGE_URL;
 
-  const hasContent = Boolean(title || subtitle || description || ctaLabel || ctaHref);
+  // A WG with only a banner image (no title/subtitle/CTA configured) is still
+  // a valid banner — the page should show that image, not fall back to the
+  // generic /image/bannerpdf.bmp. Previously this returned null when every
+  // text field was empty, even though backgroundImages had a valid URL.
+  const hasContent = Boolean(
+    title || subtitle || description || ctaLabel || ctaHref || rawImage,
+  );
 
   if (!hasContent) return null;
 
@@ -233,7 +256,12 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
 
         const orderIndex = rawOrderIndex >= 0 ? rawOrderIndex : 0;
 
-        setWorkingGroupTitle(`WG: ${orderIndex} ${label}`);
+        // The Khmer label already carries its own native prefix
+        // ("ក្រុមការងារ គ៖ …"), so prepending an English "WG C:" would duplicate
+        // it. Only the English label needs the "WG <letter>:" prefix.
+        setWorkingGroupTitle(
+          apiLang === "km" ? label : `WG ${toAlpha(orderIndex)}: ${label}`,
+        );
       } catch (error) {
         if ((error as { name?: string })?.name !== "AbortError") {
           setWorkingGroupTitle("");
@@ -254,8 +282,8 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
   const fallbackTitle =
     workingGroupTitle ||
     (lang === "en"
-      ? "WG: 0 Lay, Tex & Governance"
-      : "WG: 0 ច្បាប់ បទប្បញ្ញត្តិ និងប្រព័ន្ធអភិបាលកិច្ច");
+      ? "WG D: Law, Tax & Governance"
+      : "ច្បាប់ បទប្បញ្ញត្តិ និងប្រព័ន្ធអភិបាលកិច្ច");
 
   const fallbackButtonLabel =
     lang === "en" ? "Download WG Brief" : "ទាញយកសង្ខេប WG";
@@ -300,6 +328,9 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
           </p>
         ) : null}
 
+        {/* Hide the CTA entirely when the WG template has no document/link to
+            point at — previously a greyed-out fake button still rendered,
+            which looked broken on WGs that haven't uploaded a brief yet. */}
         {buttonHref ? (
           <a
             href={buttonHref}
@@ -316,18 +347,7 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
           >
             {buttonLabel}
           </a>
-        ) : (
-          <span
-            className={`
-              inline-flex rounded-2xl bg-slate-500 px-4 py-2 text-white
-              sm:px-8 sm:py-3 md:px-12 md:py-4
-              ${bodyFontClass}
-            `}
-            style={{ fontWeight: 600 }}
-          >
-            {buttonLabel}
-          </span>
-        )}
+        ) : null}
 
         {loading ? (
           <p className={`mt-4 text-white/90 ${bodyFontClass}`}>

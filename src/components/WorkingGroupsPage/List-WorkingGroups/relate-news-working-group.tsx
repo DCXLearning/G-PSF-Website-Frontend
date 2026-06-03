@@ -400,9 +400,20 @@ export default function RelateNewsWorkingGroup({
         ? "ព័ត៌មានក្រុមការងារបន្ថែម"
         : "More Working Group Updates";
 
+    // Convert the 1-indexed orderIndex to an English letter to match the
+    // public branding ("Working Group A: …", "Working Group B: …") used in the
+    // banner section above. Kept inline here instead of imported from
+    // List-WorkingGroups to avoid coupling — same 1→A formula.
+    const workingGroupLetter =
+        workingGroupNumber !== null && Number.isFinite(workingGroupNumber)
+            ? String.fromCharCode(
+                  64 + Math.min(26, Math.max(1, Math.floor(workingGroupNumber))),
+              )
+            : null;
+
     const englishWorkingGroupLabel =
-        workingGroupNumber !== null
-            ? `WG: ${workingGroupNumber} ${workingGroupTitle}`
+        workingGroupLetter !== null
+            ? `WG ${workingGroupLetter}: ${workingGroupTitle}`
             : `WG: ${workingGroupTitle}`;
 
     const mainHeading = workingGroupTitle
