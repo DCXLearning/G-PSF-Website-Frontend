@@ -211,40 +211,50 @@ export function SemesterReportsSection({
     const showErrorOnly = !showSkeleton && !block && !!error;
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
-    // Header title: big title
-    const sectionTitleClass = uiLang === "kh" ? "title-km" : "title-en";
+    const isKhmer = uiLang === "kh";
 
-    // Card title: fixed small title EN 21px / KM 22px
-    const cardTitleClass = uiLang === "kh" ? "main-title-km" : "main-title-en";
-
-    // Body font
-    const bodyClass = uiLang === "kh" ? "body-km" : "body-en";
+    const fontStyle: React.CSSProperties = {
+        fontFamily: `"Airbnb Cereal", var(--font-kantumruy-pro), system-ui, sans-serif`,
+        letterSpacing: "0.5px",
+    };
 
     return (
-        <section className={`relative overflow-hidden ${fontClass || ""}`}>
+        <section className={`relative overflow-hidden ${fontClass || ""}`} style={fontStyle}>
             <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-[#3f5fa8]" />
 
             <div className="relative max-w-7xl mx-auto px-4 pt-10 pb-14">
-                {/* Header Section */}
                 <div className="mb-8 text-center">
-                    <h2 className={`${sectionTitleClass} text-[#1e2f5d]`}>
+                    <h2
+                        className="text-[#1e2f5d]"
+                        style={{
+                            ...fontStyle,
+                            fontSize: isKhmer ? "35px" : "32px",
+                            lineHeight: isKhmer ? "50px" : "42px",
+                            fontWeight: 800,
+                        }}
+                    >
                         {sectionTitle}
                     </h2>
 
                     {sectionDescription ? (
-                        <p className={`${bodyClass} max-w-4xl mx-auto mt-4 text-[#51607f]`}>
+                        <p
+                            className="max-w-4xl mx-auto mt-4 text-[#51607f]"
+                            style={{
+                                ...fontStyle,
+                                fontSize: isKhmer ? "17px" : "16px",
+                                lineHeight: "30px",
+                                fontWeight: 400,
+                            }}
+                        >
                             {sectionDescription}
                         </p>
                     ) : null}
                 </div>
 
                 {showErrorOnly ? (
-                    <div className="text-center text-red-500 mb-6 font-medium">
-                        {error}
-                    </div>
+                    <div className="text-center text-red-500 mb-6 font-medium">{error}</div>
                 ) : null}
 
-                {/* Loading Skeleton */}
                 {showSkeleton ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
                         {Array.from({ length: 5 }).map((_, index) => (
@@ -261,12 +271,18 @@ export function SemesterReportsSection({
                         ))}
                     </div>
                 ) : showEmpty ? (
-                    <div className={`${bodyClass} text-center text-slate-700 py-10`}>
+                    <div
+                        className="text-center text-slate-700 py-10"
+                        style={{
+                            ...fontStyle,
+                            fontSize: isKhmer ? "17px" : "16px",
+                            lineHeight: "30px",
+                        }}
+                    >
                         {uiLang === "kh" ? "មិនមានរបាយការណ៍ឆមាសទេ។" : "No semester reports found."}
                     </div>
                 ) : (
                     <>
-                        {/* Swiper Slider */}
                         <Swiper
                             modules={[Pagination, Autoplay]}
                             spaceBetween={24}
@@ -298,7 +314,6 @@ export function SemesterReportsSection({
                                     <SwiperSlide key={post.id} className="!h-auto">
                                         <div className="h-full w-full">
                                             <article className="bg-[#dfe3ea] p-4 shadow-sm h-full flex flex-col">
-                                                {/* Card Image */}
                                                 <div className="block shrink-0">
                                                     <div className="bg-[#d0d3d9] p-4 flex items-center justify-center h-[280px] mb-5">
                                                         <div className="relative w-[192px] h-[257px]">
@@ -317,36 +332,64 @@ export function SemesterReportsSection({
                                                     </div>
                                                 </div>
 
-                                                {/* Card Content */}
                                                 <div className="flex flex-col flex-1">
-                                                    {/* Date */}
-                                                    <p className={`${bodyClass} text-[#2f416b] font-medium mb-1 min-h-[24px] shrink-0`}>
+                                                    <p
+                                                        className="text-[#2f416b] mb-1 min-h-[24px] shrink-0"
+                                                        style={{
+                                                            ...fontStyle,
+                                                            fontSize: isKhmer ? "17px" : "16px",
+                                                            lineHeight: "28px",
+                                                            fontWeight: 500,
+                                                        }}
+                                                    >
                                                         {publishedDate}
                                                     </p>
 
-                                                    {/* Post Title */}
                                                     <div className="block shrink-0 mb-2">
                                                         <h3
-                                                            className={`${cardTitleClass} text-[#16264d] min-h-[32px]`}
+                                                            className="text-[#16264d] min-h-[32px]"
                                                             title={title}
+                                                            style={{
+                                                                ...fontStyle,
+                                                                display: "block",
+                                                                maxWidth: "100%",
+                                                                overflow: "hidden",
+                                                                textOverflow: "ellipsis",
+                                                                whiteSpace: "nowrap",
+                                                                fontSize: isKhmer ? "22px" : "21px",
+                                                                lineHeight: "32px",
+                                                                fontWeight: 800,
+                                                                letterSpacing: "0.7px",
+                                                            }}
                                                         >
                                                             {title}
                                                         </h3>
                                                     </div>
 
-                                                    {/* Post Description */}
-                                                    <p className={`${bodyClass} text-[#5e687b] line-clamp-2 min-h-[60px] mb-6`}>
+                                                    <p
+                                                        className="text-[#5e687b] line-clamp-2 min-h-[60px] mb-6"
+                                                        style={{
+                                                            ...fontStyle,
+                                                            fontSize: isKhmer ? "17px" : "16px",
+                                                            lineHeight: "30px",
+                                                            fontWeight: 400,
+                                                        }}
+                                                    >
                                                         {description}
                                                     </p>
 
-                                                    {/* Download Button */}
                                                     <a
                                                         href={docUrl || "#"}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className={`mt-auto w-full inline-flex items-center justify-center gap-2 px-10 bg-[#f5a20a] hover:bg-[#ea9805] text-white font-medium rounded-md py-2.5 transition shrink-0 ${
-                                                            uiLang === "kh" ? "khmer-font" : "airbnb-font"
-                                                        } ${!docUrl ? "pointer-events-none opacity-50" : ""}`}
+                                                        className={`mt-auto w-full inline-flex items-center justify-center gap-2 px-10 bg-[#f5a20a] hover:bg-[#ea9805] text-white rounded-md py-2.5 transition shrink-0 ${!docUrl ? "pointer-events-none opacity-50" : ""
+                                                            }`}
+                                                        style={{
+                                                            ...fontStyle,
+                                                            fontSize: isKhmer ? "16px" : "16px",
+                                                            lineHeight: "24px",
+                                                            fontWeight: 700,
+                                                        }}
                                                     >
                                                         <span>{uiLang === "kh" ? "ទាញយក" : "Download"}</span>
                                                         <ChevronRight className="w-4 h-4" />
@@ -359,14 +402,17 @@ export function SemesterReportsSection({
                             })}
                         </Swiper>
 
-                        {/* View More Button */}
                         {showSeeMoreButton && posts.length > 0 ? (
                             <div className="flex justify-center mt-2">
                                 <Link
                                     href="/publication/semester-reports/semester-view-more/17"
-                                    className={`inline-flex items-center gap-2 bg-[#f79a3b] hover:bg-[#ee8f2d] text-white font-semibold uppercase tracking-wide px-6 py-3 rounded-full shadow-md transition ${
-                                        uiLang === "kh" ? "khmer-font" : "airbnb-font"
-                                    }`}
+                                    className="inline-flex items-center gap-2 bg-[#f79a3b] hover:bg-[#ee8f2d] text-white uppercase tracking-wide px-6 py-3 rounded-full shadow-md transition"
+                                    style={{
+                                        ...fontStyle,
+                                        fontSize: isKhmer ? "16px" : "16px",
+                                        lineHeight: "24px",
+                                        fontWeight: 700,
+                                    }}
                                 >
                                     <span>{uiLang === "kh" ? "មើលបន្ថែម" : "View More"}</span>
                                     <ChevronRight className="w-4 h-4" />
@@ -378,30 +424,30 @@ export function SemesterReportsSection({
             </div>
 
             <style jsx global>{`
-                .semesterReportsSwiper .swiper-wrapper {
-                    align-items: stretch;
-                }
+        .semesterReportsSwiper .swiper-wrapper {
+          align-items: stretch;
+        }
 
-                .semesterReportsSwiper .swiper-slide {
-                    height: auto;
-                    display: flex;
-                }
+        .semesterReportsSwiper .swiper-slide {
+          height: auto;
+          display: flex;
+        }
 
-                .semesterReportsSwiper .swiper-pagination {
-                    bottom: 0 !important;
-                }
+        .semesterReportsSwiper .swiper-pagination {
+          bottom: 0 !important;
+        }
 
-                .semesterReportsSwiper .swiper-pagination-bullet {
-                    width: 16px;
-                    height: 16px;
-                    background: #c98c64;
-                    opacity: 1;
-                }
+        .semesterReportsSwiper .swiper-pagination-bullet {
+          width: 16px;
+          height: 16px;
+          background: #c98c64;
+          opacity: 1;
+        }
 
-                .semesterReportsSwiper .swiper-pagination-bullet-active {
-                    background: #f39c3d;
-                }
-            `}</style>
+        .semesterReportsSwiper .swiper-pagination-bullet-active {
+          background: #f39c3d;
+        }
+      `}</style>
         </section>
     );
 }

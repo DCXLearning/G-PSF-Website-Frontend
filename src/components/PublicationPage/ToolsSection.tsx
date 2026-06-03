@@ -46,17 +46,67 @@ type ApiResponse = {
 
 const CACHE_KEY_PREFIX = "tools-section-block-cache";
 
+const FONT_FAMILY =
+    '"Airbnb Cereal", var(--font-kantumruy-pro), "Kantumruy Pro", system-ui, sans-serif';
+
 function containsKhmer(value?: string | null): boolean {
     return /[\u1780-\u17FF]/.test(value ?? "");
 }
 
-function getFontClass(
+function fontStyle(
     value: string | null | undefined,
     uiLang: UiLang,
-    enClass: string,
-    kmClass: string
-) {
-    return uiLang === "kh" || containsKhmer(value) ? kmClass : enClass;
+    type: "mainTitle" | "sectionTitle" | "body" | "cardTitle" | "button" | "category"
+): React.CSSProperties {
+    const isKh = uiLang === "kh" || containsKhmer(value);
+
+    if (type === "sectionTitle") {
+        return {
+            fontFamily: FONT_FAMILY,
+            fontSize: isKh ? "35px" : "32px",
+            lineHeight: isKh ? "50px" : "42px",
+            fontWeight: isKh ? 700 : 800,
+            letterSpacing: "0.7px",
+        };
+    }
+
+    if (type === "mainTitle" || type === "cardTitle") {
+        return {
+            fontFamily: FONT_FAMILY,
+            fontSize: isKh ? "22px" : "21px",
+            lineHeight: "32px",
+            fontWeight: isKh ? 700 : 800,
+            letterSpacing: "0.7px",
+        };
+    }
+
+    if (type === "button") {
+        return {
+            fontFamily: FONT_FAMILY,
+            fontSize: "16px",
+            lineHeight: "24px",
+            fontWeight: 700,
+            letterSpacing: "0.4px",
+        };
+    }
+
+    if (type === "category") {
+        return {
+            fontFamily: FONT_FAMILY,
+            fontSize: isKh ? "17px" : "16px",
+            lineHeight: "30px",
+            fontWeight: 700,
+            letterSpacing: "0.5px",
+        };
+    }
+
+    return {
+        fontFamily: FONT_FAMILY,
+        fontSize: isKh ? "17px" : "16px",
+        lineHeight: "30px",
+        fontWeight: 400,
+        letterSpacing: "0.5px",
+    };
 }
 
 const pickText = (i18n: I18n | null | undefined, lang: UiLang) =>
@@ -87,7 +137,7 @@ function writeCache(apiLang: ApiLang, block: ApiBlock | null) {
     try {
         sessionStorage.setItem(getCacheKey(apiLang), JSON.stringify(block));
     } catch {
-        // ignore cache errors
+        // ignore
     }
 }
 
@@ -196,16 +246,14 @@ export function ToolsSectionContent({
     const posts = useMemo(() => {
         const postList = block?.posts || [];
 
-        if (showAllPosts) {
-            return postList;
-        }
+        if (showAllPosts) return postList;
 
         const limit = block?.settings?.limit ?? 3;
         return postList.slice(0, limit);
     }, [block, showAllPosts]);
 
     const sectionMainTitle =
-        pickText(block?.title, uiLang) || "Standerd Templates & Forms";
+        pickText(block?.title, uiLang) || "Standard Templates & Forms";
 
     const sectionTitle = uiLang === "kh" ? "បែបបទ" : "Tools";
 
@@ -217,50 +265,25 @@ export function ToolsSectionContent({
     const downloadText = uiLang === "kh" ? "ទាញយក" : "Download";
     const seeMoreText = uiLang === "kh" ? "មើលបន្ថែម" : "See More";
 
-    const sectionMainTitleClass = getFontClass(
-        sectionMainTitle,
-        uiLang,
-        "main-title-en",
-        "main-title-km"
-    );
-
-    const sectionTitleClass = getFontClass(
-        sectionTitle,
-        uiLang,
-        "title-en",
-        "title-km"
-    );
-
-    const sectionBodyClass = getFontClass(
-        sectionDescription,
-        uiLang,
-        "body-en",
-        "body-km"
-    );
-
-    const actionClass = getFontClass(downloadText, uiLang, "body-en", "body-km");
-
     const showSkeleton = !mounted || (loading && !block);
     const showErrorOnly = !showSkeleton && !block && !!error;
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
     return (
-        <section className={`bg-white pt-4 pb-12 px-4 ${fontClass || ""}`}>
+        <section
+            className={`bg-white pt-4 pb-12 px-4 ${fontClass || ""}`}
+            style={{ fontFamily: FONT_FAMILY }}
+        >
             <div className="max-w-7xl mx-auto text-center">
-                {/* Main title */}
-                <h2
-                    className={`font-bold text-[#1e1e4b] tracking-tight ${sectionMainTitleClass}`}
-                >
+                <h2 className="text-[#1e1e4b]" style={fontStyle(sectionMainTitle, uiLang, "mainTitle")}>
                     {sectionMainTitle}
                 </h2>
 
-                {/* Title */}
-                <h1 className={`font-bold text-[#1e1e4b] mt-2 mb-6 ${sectionTitleClass}`}>
+                <h1 className="text-[#1e1e4b] mt-2 mb-6" style={fontStyle(sectionTitle, uiLang, "sectionTitle")}>
                     {sectionTitle}
                 </h1>
 
-                {/* Body */}
-                <p className={`max-w-3xl mx-auto text-[#1e1e4b] mb-16 ${sectionBodyClass}`}>
+                <p className="max-w-3xl mx-auto text-[#1e1e4b] mb-16" style={fontStyle(sectionDescription, uiLang, "body")}>
                     {sectionDescription}
                 </p>
 
@@ -275,55 +298,24 @@ export function ToolsSectionContent({
                         <ToolCardSkeleton />
                     </div>
                 ) : showEmpty ? (
-                    <div
-                        className={`text-slate-600 ${getFontClass(
-                            emptyText,
-                            uiLang,
-                            "body-en",
-                            "body-km"
-                        )}`}
-                    >
+                    <div className="text-slate-600" style={fontStyle(emptyText, uiLang, "body")}>
                         {emptyText}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                         {posts.map((post) => {
                             const docUrl = pickDocUrl(post, currentApiLang);
-
-                            const category =
-                                pickText(post.category?.name, uiLang) || "Template";
-
+                            const category = pickText(post.category?.name, uiLang) || "Template";
                             const title = pickText(post.title, uiLang) || "Untitled";
-
                             const description = pickText(post.description, uiLang) || "—";
-
-                            const categoryClass = getFontClass(
-                                category,
-                                uiLang,
-                                "body-en",
-                                "body-km"
-                            );
-
-                            const cardTitleClass = getFontClass(
-                                title,
-                                uiLang,
-                                "main-title-en",
-                                "main-title-km"
-                            );
-
-                            const cardBodyClass = getFontClass(
-                                description,
-                                uiLang,
-                                "body-en",
-                                "body-km"
-                            );
 
                             return (
                                 <div
                                     key={post.id}
                                     className="flex flex-col items-center rounded-2xl p-6 transition hover:shadow-lg"
+                                    style={{ fontFamily: FONT_FAMILY }}
                                 >
-                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm overflow-hidden">
+                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm overflow-hidden bg-[#1e1e4b]">
                                         {post.coverImage ? (
                                             <Image
                                                 src={post.coverImage}
@@ -337,21 +329,28 @@ export function ToolsSectionContent({
                                         )}
                                     </div>
 
-                                    {/* Category */}
-                                    <span className={`text-slate-900 font-bold mb-2 ${categoryClass}`}>
+                                    <span className="text-slate-900 mb-2" style={fontStyle(category, uiLang, "category")}>
                                         {category}
                                     </span>
 
-                                    {/* Card title */}
                                     <h3
-                                        className={`font-bold text-slate-800 mb-4 tracking-tight ${cardTitleClass}`}
+                                        className="text-slate-800 mb-4"
                                         title={title}
+                                        style={{
+                                            ...fontStyle(title, uiLang, "cardTitle"),
+                                            maxWidth: "100%",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                        }}
                                     >
                                         {title}
                                     </h3>
 
-                                    {/* Card body */}
-                                    <p className={`text-[#1e1e4b] mb-8 px-2 line-clamp-4 ${cardBodyClass}`}>
+                                    <p
+                                        className="text-[#1e1e4b] mb-8 px-2 line-clamp-4"
+                                        style={fontStyle(description, uiLang, "body")}
+                                    >
                                         {description}
                                     </p>
 
@@ -359,9 +358,9 @@ export function ToolsSectionContent({
                                         href={docUrl || "#"}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className={`hover:underline flex items-center gap-2 px-8 py-2 border border-orange-400 text-slate-800 font-bold rounded-lg hover:bg-orange-50 transition-colors ${actionClass} ${
-                                            !docUrl ? "pointer-events-none opacity-50" : ""
-                                        }`}
+                                        className={`hover:underline flex items-center gap-2 px-8 py-2 border border-orange-400 text-slate-800 rounded-lg hover:bg-orange-50 transition-colors ${!docUrl ? "pointer-events-none opacity-50" : ""
+                                            }`}
+                                        style={fontStyle(downloadText, uiLang, "button")}
                                     >
                                         {downloadText} <span className="text-xs">›</span>
                                     </a>
@@ -375,12 +374,8 @@ export function ToolsSectionContent({
                     <div className="mt-12 flex justify-center">
                         <Link
                             href="/templates-and-forms"
-                            className={`bg-[#1e1e4b] hover:bg-[#15153a] text-white py-2 px-6 rounded-lg font-semibold transition-colors ${getFontClass(
-                                seeMoreText,
-                                uiLang,
-                                "body-en",
-                                "body-km"
-                            )}`}
+                            className="bg-[#1e1e4b] hover:bg-[#15153a] text-white py-2 px-6 rounded-lg transition-colors"
+                            style={fontStyle(seeMoreText, uiLang, "button")}
                         >
                             {seeMoreText}
                         </Link>

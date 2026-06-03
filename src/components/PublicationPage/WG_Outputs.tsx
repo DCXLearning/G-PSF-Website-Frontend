@@ -50,19 +50,16 @@ type ApiResponse = {
 
 const CACHE_KEY = "wg-outputs-block-cache";
 
+const FONT_FAMILY =
+    '"Airbnb Cereal", var(--font-kantumruy-pro), "Kantumruy Pro", system-ui, sans-serif';
+
 function containsKhmer(value?: string | null): boolean {
     return /[\u1780-\u17FF]/.test(value ?? "");
 }
 
-function pickText(
-    obj: I18n | null | undefined,
-    lang: "en" | "km",
-    fallback = ""
-) {
+function pickText(obj: I18n | null | undefined, lang: "en" | "km", fallback = "") {
     if (!obj) return fallback;
-
     const primary = lang === "km" ? obj.km : obj.en;
-
     return primary || obj.en || obj.km || fallback;
 }
 
@@ -92,9 +89,7 @@ function getWGBlock(json: ApiResponse): ApiBlock | null {
 function readCache(): ApiBlock | null {
     try {
         const raw = sessionStorage.getItem(CACHE_KEY);
-
         if (!raw) return null;
-
         return JSON.parse(raw) as ApiBlock;
     } catch {
         return null;
@@ -123,6 +118,57 @@ function sortPostsByLatest(posts: ApiPost[]) {
 
         return rightDate - leftDate;
     });
+}
+
+function textStyle(type: "main" | "title" | "body" | "small" | "button", hasKhmer: boolean): React.CSSProperties {
+    if (type === "main") {
+        return {
+            fontFamily: FONT_FAMILY,
+            fontSize: hasKhmer ? "22px" : "21px",
+            lineHeight: "32px",
+            fontWeight: hasKhmer ? 700 : 800,
+            letterSpacing: "0.7px",
+        };
+    }
+
+    if (type === "title") {
+        return {
+            fontFamily: FONT_FAMILY,
+            fontSize: hasKhmer ? "35px" : "32px",
+            lineHeight: hasKhmer ? "50px" : "42px",
+            fontWeight: hasKhmer ? 700 : 800,
+            letterSpacing: "0.7px",
+        };
+    }
+
+    if (type === "small") {
+        return {
+            fontFamily: FONT_FAMILY,
+            fontSize: hasKhmer ? "17px" : "16px",
+            lineHeight: "30px",
+            fontWeight: 700,
+            letterSpacing: "0.5px",
+        };
+    }
+
+    if (type === "button") {
+        return {
+            fontFamily: FONT_FAMILY,
+            fontSize: "16px",
+            lineHeight: "24px",
+            fontWeight: 700,
+            letterSpacing: "0.4px",
+            textTransform: hasKhmer ? "none" : "uppercase",
+        };
+    }
+
+    return {
+        fontFamily: FONT_FAMILY,
+        fontSize: hasKhmer ? "17px" : "16px",
+        lineHeight: "30px",
+        fontWeight: 400,
+        letterSpacing: "0.5px",
+    };
 }
 
 type WGOutputsSectionProps = {
@@ -186,11 +232,9 @@ export function WGOutputsSection({
                 }
             } catch (err: any) {
                 if (!alive) return;
-
                 setError(err?.message || "Fetch failed");
             } finally {
                 if (!alive) return;
-
                 setLoading(false);
             }
         }
@@ -220,10 +264,6 @@ export function WGOutputsSection({
     const title = pickText(block?.title, apiLang, "WG Outputs");
     const desc = pickText(block?.description, apiLang, "");
 
-    const sectionMainTitleClass = isKh ? "main-title-km" : "main-title-en";
-    const sectionTitleClass = isKh || containsKhmer(title) ? "title-km" : "title-en";
-    const sectionBodyClass = isKh || containsKhmer(desc) ? "body-km" : "body-en";
-
     const showSkeleton = !mounted || (loading && !block);
     const showErrorOnly = !showSkeleton && !block && !!error;
 
@@ -239,48 +279,44 @@ export function WGOutputsSection({
         ? pickText(featured.description || undefined, apiLang, "")
         : "";
 
-    const featuredCategoryClass =
-        isKh || containsKhmer(featuredCategory)
-            ? "body-km normal-case"
-            : "body-en uppercase";
-
-    const featuredTitleClass =
-        isKh || containsKhmer(featuredTitle) ? "title-km" : "title-en";
-
-    const featuredDescriptionClass =
-        isKh || containsKhmer(featuredDescription) ? "body-km" : "body-en";
-
-    const actionClass = isKh ? "body-km normal-case" : "body-en uppercase";
-
     return (
         <section
-            className={`mx-auto max-w-7xl bg-white px-4 py-16 ${
-                fontClass || ""
-            }`}
+            className={`mx-auto max-w-7xl bg-white px-4 py-16 ${fontClass || ""}`}
+            style={{
+                fontFamily: FONT_FAMILY,
+                letterSpacing: "0.5px",
+            }}
         >
-            {/* Header */}
             <div className="mb-12 text-center">
-                {/* Main title */}
-                <h3 className={`text-[#1e2756] ${sectionMainTitleClass}`}>
+                <h3
+                    className="text-[#1e2756]"
+                    style={textStyle("main", isKh)}
+                >
                     {isKh
                         ? "ការយល់ដឹង — របកគំហើញ — លទ្ធផល"
                         : "Insights — Findings — Results"}
                 </h3>
 
-                {/* Title */}
-                <h2 className={`mb-6 mt-2 text-[#1e2756] ${sectionTitleClass}`}>
+                <h2
+                    className="mb-6 mt-2 text-[#1e2756]"
+                    style={textStyle("title", isKh || containsKhmer(title))}
+                >
                     {title}
                 </h2>
 
-                {/* Body */}
                 {!!desc && (
-                    <p className={`mx-auto max-w-3xl text-gray-700 ${sectionBodyClass}`}>
+                    <p
+                        className="mx-auto max-w-3xl text-gray-700"
+                        style={textStyle("body", isKh || containsKhmer(desc))}
+                    >
                         {desc}
                     </p>
                 )}
 
                 {showErrorOnly ? (
-                    <p className="mt-4 text-red-600">{error}</p>
+                    <p className="mt-4 text-red-600" style={textStyle("body", isKh)}>
+                        {error}
+                    </p>
                 ) : null}
             </div>
 
@@ -288,19 +324,6 @@ export function WGOutputsSection({
                 <div className="grid animate-pulse grid-cols-1 gap-8 lg:grid-cols-2">
                     <div className="relative min-h-[500px] overflow-hidden rounded-sm border border-gray-100 bg-slate-100 lg:min-h-[600px]">
                         <div className="absolute inset-0 bg-slate-200" />
-
-                        <div className="relative z-10 mx-auto flex h-full max-w-md flex-col items-center justify-center p-8 text-center">
-                            <div className="mb-4 h-16 w-16 rounded-full bg-slate-300" />
-                            <div className="mb-3 h-4 w-28 rounded bg-slate-300" />
-                            <div className="mb-4 h-10 w-3/4 rounded bg-slate-300" />
-                            <div className="mb-2 h-4 w-full rounded bg-slate-300" />
-                            <div className="mb-8 h-4 w-5/6 rounded bg-slate-300" />
-
-                            <div className="flex gap-4">
-                                <div className="h-10 w-32 rounded bg-slate-300" />
-                                <div className="h-10 w-24 rounded bg-slate-300" />
-                            </div>
-                        </div>
                     </div>
 
                     <div className="flex flex-col gap-8">
@@ -313,26 +336,19 @@ export function WGOutputsSection({
                                 <div className="mb-2 h-4 w-24 rounded bg-slate-300" />
                                 <div className="mb-3 h-8 w-2/3 rounded bg-slate-300" />
                                 <div className="mb-2 h-4 w-4/5 rounded bg-slate-300" />
-                                <div className="mb-6 h-4 w-3/5 rounded bg-slate-300" />
-
-                                <div className="flex gap-5">
-                                    <div className="h-4 w-20 rounded bg-slate-300" />
-                                    <div className="h-4 w-16 rounded bg-slate-300" />
-                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                    {/* Left Featured */}
                     <div className="group relative flex min-h-[500px] items-center justify-center overflow-hidden rounded-sm border border-gray-100 p-8 text-center lg:min-h-[600px]">
                         <div className="absolute inset-0 z-0">
                             <Image
                                 src={
                                     featured
                                         ? pickThumbUrl(featured, apiLang) ||
-                                          "/image/resources_top.bmp"
+                                        "/image/resources_top.bmp"
                                         : "/image/resources_top.bmp"
                                 }
                                 alt="Featured"
@@ -356,20 +372,32 @@ export function WGOutputsSection({
                             </div>
 
                             <p
-                                className={`mb-2 font-bold tracking-wider text-[#1e2756] ${featuredCategoryClass}`}
+                                className="mb-2 tracking-wider text-[#1e2756]"
+                                style={textStyle(
+                                    "small",
+                                    isKh || containsKhmer(featuredCategory)
+                                )}
                             >
                                 {featuredCategory}
                             </p>
 
                             <h4
-                                className={`mb-4 line-clamp-3 text-[#1e2756] ${featuredTitleClass}`}
+                                className="mb-4 line-clamp-3 text-[#1e2756]"
                                 title={featuredTitle}
+                                style={textStyle(
+                                    "title",
+                                    isKh || containsKhmer(featuredTitle)
+                                )}
                             >
                                 {featuredTitle}
                             </h4>
 
                             <p
-                                className={`mb-8 line-clamp-4 font-medium text-gray-800 ${featuredDescriptionClass}`}
+                                className="mb-8 line-clamp-4 text-gray-800"
+                                style={textStyle(
+                                    "body",
+                                    isKh || containsKhmer(featuredDescription)
+                                )}
                             >
                                 {featuredDescription}
                             </p>
@@ -380,7 +408,8 @@ export function WGOutputsSection({
                                         href={pickDocUrl(featured, apiLang)}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className={`flex cursor-pointer items-center gap-2 rounded bg-[#f39c32] px-6 py-2 font-bold text-[#1e2756] transition-all hover:bg-[#e68a1e] ${actionClass}`}
+                                        className="flex cursor-pointer items-center gap-2 rounded bg-[#f39c32] px-6 py-2 text-[#1e2756] transition-all hover:bg-[#e68a1e]"
+                                        style={textStyle("button", isKh)}
                                     >
                                         {isKh ? "ទាញយក" : "Download"}
                                         <ChevronRight size={16} />
@@ -388,7 +417,8 @@ export function WGOutputsSection({
                                 ) : (
                                     <button
                                         disabled
-                                        className={`flex cursor-not-allowed items-center gap-2 rounded bg-gray-200 px-6 py-2 font-bold text-gray-500 ${actionClass}`}
+                                        className="flex cursor-not-allowed items-center gap-2 rounded bg-gray-200 px-6 py-2 text-gray-500"
+                                        style={textStyle("button", isKh)}
                                     >
                                         {isKh ? "ទាញយក" : "Download"}
                                         <ChevronRight size={16} />
@@ -398,7 +428,6 @@ export function WGOutputsSection({
                         </div>
                     </div>
 
-                    {/* Right Cards */}
                     <div className="flex flex-col gap-8">
                         {sidePosts.map((post) => (
                             <ArticleCard
@@ -437,7 +466,8 @@ export function WGOutputsSection({
                 <div className="mt-10 flex justify-center">
                     <Link
                         href="/wg-outputs"
-                        className={`rounded-md bg-[#1e2756] px-6 py-2 font-semibold text-white transition-colors hover:bg-[#161d44] ${actionClass}`}
+                        className="rounded-md bg-[#1e2756] px-6 py-2 text-white transition-colors hover:bg-[#161d44]"
+                        style={textStyle("button", isKh)}
                     >
                         {isKh ? "មើលបន្ថែម" : "See More"}
                     </Link>
@@ -462,23 +492,14 @@ function ArticleCard({
     downloadUrl?: string;
     isKh: boolean;
 }) {
-    const categoryClass =
-        isKh || containsKhmer(category)
-            ? "body-km normal-case"
-            : "body-en uppercase";
-
-    // This is the circled title in your screenshot.
-    // Use title-km/title-en, not main-title-km/main-title-en.
-    const headlineClass =
-        isKh || containsKhmer(headline) ? "title-km" : "title-en";
-
-    const descriptionClass =
-        isKh || containsKhmer(description || "") ? "body-km" : "body-en";
-
-    const actionClass = isKh ? "body-km normal-case" : "body-en uppercase";
-
     return (
-        <div className="flex flex-1 flex-col items-center justify-center border border-gray-200 p-10 text-center">
+        <div
+            className="flex flex-1 flex-col items-center justify-center border border-gray-200 p-10 text-center"
+            style={{
+                fontFamily: FONT_FAMILY,
+                letterSpacing: "0.5px",
+            }}
+        >
             <div className="mb-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[#1e2756]">
                 <Image
                     src={icon || "/icon_Resources_page/icon2.png"}
@@ -489,18 +510,25 @@ function ArticleCard({
                 />
             </div>
 
-            <p className={`mb-1 font-bold tracking-widest text-[#1e2756] ${categoryClass}`}>
+            <p
+                className="mb-1 tracking-widest text-[#1e2756]"
+                style={textStyle("small", isKh || containsKhmer(category))}
+            >
                 {category}
             </p>
 
             <h4
-                className={`mb-3 line-clamp-2 text-[#1e2756] ${headlineClass}`}
+                className="mb-3 line-clamp-2 text-[#1e2756]"
                 title={headline}
+                style={textStyle("main", isKh || containsKhmer(headline))}
             >
                 {headline}
             </h4>
 
-            <p className={`mb-6 line-clamp-3 max-w-sm text-gray-700 ${descriptionClass}`}>
+            <p
+                className="mb-6 line-clamp-3 max-w-sm text-gray-700"
+                style={textStyle("body", isKh || containsKhmer(description || ""))}
+            >
                 {description || ""}
             </p>
 
@@ -510,14 +538,16 @@ function ArticleCard({
                         href={downloadUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className={`flex cursor-pointer items-center gap-1 font-bold text-[#1e2756] hover:underline ${actionClass}`}
+                        className="flex cursor-pointer items-center gap-1 text-[#1e2756] hover:underline"
+                        style={textStyle("button", isKh)}
                     >
                         {isKh ? "ទាញយក" : "Download"}
                         <ChevronRight size={14} />
                     </a>
                 ) : (
                     <span
-                        className={`flex items-center gap-1 font-bold text-gray-400 ${actionClass}`}
+                        className="flex items-center gap-1 text-gray-400"
+                        style={textStyle("button", isKh)}
                     >
                         {isKh ? "ទាញយក" : "Download"}
                         <ChevronRight size={14} />
