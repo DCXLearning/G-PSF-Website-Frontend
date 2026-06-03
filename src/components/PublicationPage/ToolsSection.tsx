@@ -315,7 +315,7 @@ export function ToolsSectionContent({
                                     className="flex flex-col items-center rounded-2xl p-6 transition hover:shadow-lg"
                                     style={{ fontFamily: FONT_FAMILY }}
                                 >
-                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm overflow-hidden bg-[#1e1e4b]">
+                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm overflow-hidden">
                                         {post.coverImage ? (
                                             <Image
                                                 src={post.coverImage}

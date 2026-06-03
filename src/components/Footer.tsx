@@ -1,5 +1,6 @@
 "use client";
 
+import NextLink from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Mail, Phone, Globe } from "lucide-react";
@@ -301,20 +302,17 @@ const Footer: React.FC = () => {
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-14 lg:gap-20">
                 {/* ========== LOGO ========== */}
-                {/* self-center makes this grid item collapse to the logo's size
-                    and sit at the vertical center of the row, instead of
-                    stretching to the tallest column and clinging to the top. */}
                 <div className="flex flex-col items-center self-center text-center">
-                    <div className="relative w-55 h-28">
+                    <NextLink href="/" className="relative block w-55 h-28">
                         <Image
                             src={logoSrc}
                             alt={title || "G-PSF Logo"}
                             fill
-                            className="object-cover object-center"
+                            className="object-cover object-center cursor-pointer"
                             sizes="210px"
                             unoptimized
                         />
-                    </div>
+                    </NextLink>
                 </div>
 
                 {/* ========== KEY UPDATES ========== */}
