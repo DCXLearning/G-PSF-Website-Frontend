@@ -47,10 +47,26 @@ function getBodyFontClass(lang: UiLang) {
   return lang === "kh" ? "body-km khmer-font" : "body-en airbnb-font";
 }
 
+const detailText = {
+  en: {
+    pageTitle: "News & Updates",
+    share: "Share:",
+    shareFacebook: "Share on Facebook",
+    shareTelegram: "Share on Telegram",
+  },
+  kh: {
+    pageTitle: "ព័ត៌មាន និងបច្ចុប្បន្នភាព",
+    share: "ចែករំលែក៖",
+    shareFacebook: "ចែករំលែកតាម Facebook",
+    shareTelegram: "ចែករំលែកតាម Telegram",
+  },
+};
+
 export default function DetailPage({ data }: DetailPageProps) {
   const { language } = useLanguage();
 
   const dateLang = normalizeUiLang(language);
+  const t = detailText[dateLang];
   const contentLang: UiLang = shouldUseKhmerFont(data) ? "kh" : "en";
 
   const titleFontClass = getTitleFontClass(contentLang);
@@ -76,7 +92,7 @@ export default function DetailPage({ data }: DetailPageProps) {
             className={`text-slate-700 ${bodyFontClass}`}
             style={{ fontWeight: 600 }}
           >
-            {data.category}
+            {t.pageTitle}
           </span>
           <span className="mt-1 h-[3px] w-20 rounded-full bg-amber-500" />
         </div>
@@ -114,14 +130,14 @@ export default function DetailPage({ data }: DetailPageProps) {
             className={`text-[#2f2f2f] ${bodyFontClass}`}
             style={{ fontWeight: 600 }}
           >
-            Share:
+            {t.share}
           </span>
 
           <a
             href={facebookShareUrl}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Share ${data.title} on Facebook`}
+            aria-label={`${t.shareFacebook}: ${data.title}`}
             className="grid h-8 w-8 place-items-center rounded-full bg-[#1877F2] text-white transition hover:scale-105"
           >
             <FaFacebookF className="h-3.5 w-3.5" />
@@ -131,7 +147,7 @@ export default function DetailPage({ data }: DetailPageProps) {
             href={telegramShareUrl}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Share ${data.title} on Telegram`}
+            aria-label={`${t.shareTelegram}: ${data.title}`}
             className="grid h-8 w-8 place-items-center rounded-full bg-[#27A7E7] text-white transition hover:scale-105"
           >
             <FaTelegramPlane className="h-3.5 w-3.5" />

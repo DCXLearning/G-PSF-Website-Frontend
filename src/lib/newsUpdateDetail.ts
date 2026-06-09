@@ -9,6 +9,9 @@ import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type Locale = "en" | "km";
 
+const NEWS_SECTION_ID = 4;
+const NEWS_FEED_PAGE_SIZE = 50;
+
 export type CmsPost = {
     id?: number | string;
     slug?: string | null;
@@ -28,6 +31,14 @@ export type CmsPost = {
             kh?: string | null;
         } | null;
     } | null;
+    workingGroup?: {
+        id?: number;
+        title?: {
+            en?: string | null;
+            km?: string | null;
+            kh?: string | null;
+        } | null;
+    } | null;
 };
 
 type CmsResponse = {
@@ -40,8 +51,13 @@ type CmsResponse = {
                   enabled?: boolean;
                   posts?: CmsPost[];
               }>;
-          }
+        }
         | CmsPost;
+};
+
+type CmsPostsResponse = {
+    data?: CmsPost[];
+    items?: CmsPost[];
 };
 
 type LocalizedText = {
@@ -198,9 +214,20 @@ function mergePostWithFallback(
             : fallbackPost.images,
         description: primaryPost.description ?? fallbackPost.description,
         category: primaryPost.category ?? fallbackPost.category,
+        workingGroup: primaryPost.workingGroup ?? fallbackPost.workingGroup,
         title: primaryPost.title ?? fallbackPost.title,
         content: primaryPost.content ?? fallbackPost.content,
     };
+}
+
+function pickDetailCategory(post: CmsPost, locale: Locale): string {
+    const fallback = locale === "km" ? "សារព័ត៌មាន" : "Press";
+
+    return (
+        pickI18nText(post.workingGroup?.title, locale) ||
+        pickI18nText(post.category?.name, locale) ||
+        fallback
+    );
 }
 
 export function mapPostToDetail(
@@ -219,12 +246,7 @@ export function mapPostToDetail(
         cleanText(post.createdAt) ||
         cleanText(post.updatedAt);
 
-    const category =
-        pickI18nText(
-            post.category?.name,
-            locale,
-            locale === "km" ? "សារព័ត៌មាន" : "Press"
-        ) || (locale === "km" ? "សារព័ត៌មាន" : "Press");
+    const category = pickDetailCategory(post, locale);
 
     const title =
         pickI18nText(
@@ -295,7 +317,9 @@ function findPostBySlugOrId(
     return undefined;
 }
 
-async function fetchCmsResponse(url: string): Promise<CmsResponse | null> {
+async function fetchCmsResponse<TResponse = CmsResponse>(
+    url: string
+): Promise<TResponse | null> {
     try {
         const response = await fetch(url, { cache: "no-store" });
 
@@ -303,10 +327,80 @@ async function fetchCmsResponse(url: string): Promise<CmsResponse | null> {
             return null;
         }
 
-        return (await response.json()) as CmsResponse;
+        return (await response.json()) as TResponse;
     } catch {
         return null;
     }
+}
+
+function getPostsFromResponse(response: CmsPostsResponse | null): CmsPost[] {
+    if (Array.isArray(response?.data)) {
+        return response.data;
+    }
+
+    if (Array.isArray(response?.items)) {
+        return response.items;
+    }
+
+    return [];
+}
+
+function hasDocument(post: CmsPost): boolean {
+    const documents = post as {
+        documents?: {
+            en?: { url?: string | null } | null;
+            km?: { url?: string | null } | null;
+        } | null;
+    };
+
+    return Boolean(
+        cleanText(documents.documents?.en?.url) ||
+            cleanText(documents.documents?.km?.url)
+    );
+}
+
+function findPostInList(
+    posts: CmsPost[],
+    slug?: string,
+    id?: string
+): CmsPost | undefined {
+    const cleanId = cleanText(id);
+    const targetSlug = normalizeSlug(slug);
+
+    if (cleanId) {
+        return posts.find((post) => String(post.id ?? "") === cleanId);
+    }
+
+    if (targetSlug) {
+        return posts.find((post) => normalizeSlug(post.slug) === targetSlug);
+    }
+
+    return undefined;
+}
+
+async function getNewsFeedPost(
+    slug?: string,
+    id?: string
+): Promise<CmsPost | null> {
+    if (!API_URL) {
+        return null;
+    }
+
+    const [sectionResponse, workingGroupResponse] = await Promise.all([
+        fetchCmsResponse<CmsPostsResponse>(
+            `${API_URL}/sections/${NEWS_SECTION_ID}/posts?pageSize=${NEWS_FEED_PAGE_SIZE}`
+        ),
+        fetchCmsResponse<CmsPostsResponse>(
+            `${API_URL}/posts?hasWorkingGroup=true&hasDocument=false&excludeTemplateSections=true&pageSize=${NEWS_FEED_PAGE_SIZE}`
+        ),
+    ]);
+
+    const workingGroupPosts = getPostsFromResponse(workingGroupResponse);
+    const sectionPosts = getPostsFromResponse(sectionResponse).filter(
+        (post) => !hasDocument(post)
+    );
+
+    return findPostInList([...workingGroupPosts, ...sectionPosts], slug, id) ?? null;
 }
 
 async function getSectionPost(
@@ -368,7 +462,13 @@ export async function getNewsCmsPost(
         return null;
     }
 
-    const sectionPost = await getSectionPost(cleanSlug, cleanId);
+    const [sectionPost, newsFeedPost] = await Promise.all([
+        getSectionPost(cleanSlug, cleanId),
+        getNewsFeedPost(cleanSlug, cleanId),
+    ]);
+    const fallbackPost = newsFeedPost
+        ? mergePostWithFallback(newsFeedPost, sectionPost ?? undefined)
+        : sectionPost;
 
     if (cleanId) {
         const byIdResponse = await fetchCmsResponse(
@@ -383,7 +483,7 @@ export async function getNewsCmsPost(
             );
 
             if (byIdPost) {
-                return mergePostWithFallback(byIdPost, sectionPost ?? undefined);
+                return mergePostWithFallback(byIdPost, fallbackPost ?? undefined);
             }
         }
     }
@@ -401,13 +501,13 @@ export async function getNewsCmsPost(
             );
 
             if (bySlugPost) {
-                return mergePostWithFallback(bySlugPost, sectionPost ?? undefined);
+                return mergePostWithFallback(bySlugPost, fallbackPost ?? undefined);
             }
         }
     }
 
-    if (sectionPost) {
-        const sectionPostId = sectionPost.id ? String(sectionPost.id) : "";
+    if (fallbackPost) {
+        const sectionPostId = fallbackPost.id ? String(fallbackPost.id) : "";
 
         if (sectionPostId) {
             const fullResponse = await fetchCmsResponse(
@@ -422,12 +522,12 @@ export async function getNewsCmsPost(
                 );
 
                 if (fullPost) {
-                    return mergePostWithFallback(fullPost, sectionPost);
+                    return mergePostWithFallback(fullPost, fallbackPost);
                 }
             }
         }
 
-        return sectionPost;
+        return fallbackPost;
     }
 
     return null;
