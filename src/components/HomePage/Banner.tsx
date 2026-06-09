@@ -61,6 +61,14 @@ function HeroBannerSkeleton() {
 export default function HeroBanner() {
     const { language } = useLanguage();
 
+    const currentLanguage = String(language).toLowerCase();
+    const isKhmer = currentLanguage === "kh" || currentLanguage === "km";
+    const langKey: "en" | "km" = isKhmer ? "km" : "en";
+
+    const wrapperFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+    const titleFontClass = isKhmer ? "title-km" : "title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
+
     const [data, setData] = useState<HomePostApi | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -120,8 +128,6 @@ export default function HeroBanner() {
         };
     }, []);
 
-    const langKey: "en" | "km" = language === "kh" ? "km" : "en";
-
     const hero = data?.hero;
 
     const subtitle =
@@ -133,8 +139,7 @@ export default function HeroBanner() {
         hero?.description?.km ||
         "";
 
-    const bgImage =
-        hero?.backgroundImages?.find((image) => image?.trim())?.trim() || "";
+    const bgImage = hero?.backgroundImages?.find((image) => image?.trim())?.trim() || "";
 
     const cta = hero?.ctas?.[0];
     const ctaLabel = cta?.label?.[langKey] || cta?.label?.en || cta?.label?.km || "";
@@ -152,30 +157,26 @@ export default function HeroBanner() {
     }
 
     return (
-        <div className="relative flex min-h-[680px] flex-col overflow-hidden bg-gray-100 md:min-h-[500px] lg:min-h-[650px]">
-            {/* Background Image */}
+        <div
+            className={`relative flex min-h-[680px] flex-col overflow-hidden bg-gray-100 md:min-h-[500px] lg:min-h-[650px] ${wrapperFontClass}`}
+        >
             <div
-                className={`absolute inset-0 h-full w-full bg-cover bg-bottom bg-no-repeat ${
-                    bgImage ? "" : "bg-[#1e3a8a]"
-                }`}
+                className={`absolute inset-0 h-full w-full bg-cover bg-bottom bg-no-repeat ${bgImage ? "" : "bg-[#1e3a8a]"
+                    }`}
                 style={bgImage ? { backgroundImage: `url(${bgImage})` } : undefined}
             >
                 {bgImage ? <div className="absolute inset-0 bg-black/25" /> : null}
             </div>
-            
-            {/* Hero Content */}
-            <div
-                className={`relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-6 pb-20 pt-24 text-center md:pt-32 ${langKey === "km" ? "khmer-font" : ""
-                    }`}
-            >
+
+            <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-6 pb-20 pt-24 text-center md:pt-32">
                 {subtitle && (
-                    <p className="mb-5 whitespace-pre-line text-lg font-medium text-white md:text-5xl">
+                    <p className={`mb-5 whitespace-pre-line text-white ${titleFontClass}`}>
                         {subtitle}
                     </p>
                 )}
 
                 {description && (
-                    <p className="mb-8 max-w-4xl whitespace-pre-line text-base text-white md:text-2xl">
+                    <p className={`mb-8 max-w-4xl whitespace-pre-line !text-white ${bodyFontClass}`}>
                         {description}
                     </p>
                 )}
@@ -183,12 +184,7 @@ export default function HeroBanner() {
                 {!!ctaLabel && !loading && (
                     <div className="mt-4 flex justify-center">
                         {isExternal ? (
-                            <a
-                                href={ctaHref}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="hidden"
-                            >
+                            <a href={ctaHref} target="_blank" rel="noreferrer" className="hidden">
                                 {ctaLabel}
                             </a>
                         ) : (
@@ -200,7 +196,6 @@ export default function HeroBanner() {
                 )}
             </div>
 
-            {/* Stats Section */}
             <div className="relative z-20 mt-auto px-4 pb-8">
                 <div className="mx-auto max-w-6xl">
                     <div className="h-[2px] bg-white/80" />
@@ -241,10 +236,10 @@ export default function HeroBanner() {
 
                                     return (
                                         <div key={idx} className="px-2">
-                                            <div className="text-2xl font-bold md:text-4xl">
+                                            <div className={`!text-white ${titleFontClass}`}>
                                                 {formatNumber(rawValue)}
                                             </div>
-                                            <div className="mt-2 text-xs uppercase tracking-wider md:text-sm">
+                                            <div className={`mt-2 uppercase tracking-wider !text-white ${bodyFontClass}`}>
                                                 {label}
                                             </div>
                                         </div>
