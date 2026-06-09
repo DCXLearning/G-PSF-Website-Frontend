@@ -136,16 +136,10 @@ function mapHeroData(
   const description = pickI18nText(heroBanner.description, apiLang);
   const ctaLabel = pickI18nText(cta?.label, apiLang);
   const ctaHref = getText(cta?.href);
-  // Track the raw upload URL separately from the resolved imageUrl. The
-  // resolved one falls back to DEFAULT_IMAGE_URL and is always truthy, so we
-  // can't use it for the "do we have a banner?" check below.
+
   const rawImage = getText(heroBanner.backgroundImages?.[0]);
   const imageUrl = rawImage || DEFAULT_IMAGE_URL;
 
-  // A WG with only a banner image (no title/subtitle/CTA configured) is still
-  // a valid banner — the page should show that image, not fall back to the
-  // generic /image/bannerpdf.bmp. Previously this returned null when every
-  // text field was empty, even though backgroundImages had a valid URL.
   const hasContent = Boolean(
     title || subtitle || description || ctaLabel || ctaHref || rawImage,
   );
@@ -328,9 +322,6 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
           </p>
         ) : null}
 
-        {/* Hide the CTA entirely when the WG template has no document/link to
-            point at — previously a greyed-out fake button still rendered,
-            which looked broken on WGs that haven't uploaded a brief yet. */}
         {buttonHref ? (
           <a
             href={buttonHref}

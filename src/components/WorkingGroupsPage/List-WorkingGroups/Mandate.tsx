@@ -1137,20 +1137,8 @@ export default function MandateScopePage({
   const sections = mandateContent?.sections?.length
     ? mandateContent.sections
     : [
-        {
-          title: t.what,
-          description: {
-            text: t.whatDesc,
-            doc: null,
-          },
-        },
-        {
-          title: t.pathway,
-          description: {
-            text: t.pathwayDesc,
-            doc: null,
-          },
-        },
+        { title: t.what, description: { text: t.whatDesc, doc: null } },
+        { title: t.pathway, description: { text: t.pathwayDesc, doc: null } },
       ];
 
   const progressValue = mandateContent?.progress ?? 0;
@@ -1162,9 +1150,9 @@ export default function MandateScopePage({
   };
 
   return (
-    <main className="min-h-screen bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-8 md:px-4 lg:py-16">
-        <header className="mb-12">
+    <main className="bg-white">
+      <div className="mx-auto max-w-7xl px-4 pt-6 pb-4 md:px-4 lg:pt-8 lg:pb-6">
+        <header className="mb-6">
           <h1
             className={`tracking-tight text-slate-900 ${titleFontClass}`}
             style={{ fontWeight: 600 }}
@@ -1177,10 +1165,10 @@ export default function MandateScopePage({
           </h1>
         </header>
 
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
           <section className="lg:col-span-7">
-            <div className="rounded-[40px] border border-slate-100 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:p-12">
-              <div className="space-y-12">
+            <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:p-8">
+              <div className="space-y-6">
                 {sections.map((section, index) => {
                   const sectionTitleFontClass =
                     isKh || containsKhmer(section.title)
@@ -1211,7 +1199,7 @@ export default function MandateScopePage({
                         />
                       ) : (
                         <p
-                          className={`mt-5 whitespace-pre-line text-slate-500 ${sectionBodyFontClass}`}
+                          className={`mt-3 whitespace-pre-line text-slate-500 ${sectionBodyFontClass}`}
                           style={{ fontWeight: 400 }}
                         >
                           {section.description.text}
@@ -1224,8 +1212,8 @@ export default function MandateScopePage({
             </div>
           </section>
 
-          <aside className="flex flex-col gap-10 lg:col-span-5">
-            <div className="rounded-[40px] bg-[#F8FAFC] p-8 md:p-10">
+          <aside className="flex flex-col gap-6 lg:col-span-5">
+            <div className="rounded-[32px] bg-[#F8FAFC] p-6 md:p-8">
               <h2
                 className={`text-slate-900 ${mainTitleFontClass}`}
                 style={{ fontWeight: 600 }}
@@ -1233,7 +1221,7 @@ export default function MandateScopePage({
                 {t.progress}
               </h2>
 
-              <div className="mt-8 flex items-center gap-8">
+              <div className="mt-5 flex items-center gap-6">
                 <Donut value={progressValue} />
 
                 <div className="flex flex-col">
@@ -1258,13 +1246,13 @@ export default function MandateScopePage({
 
             <div className="px-2">
               <h2
-                className={`mb-6 text-slate-900 ${mainTitleFontClass}`}
+                className={`mb-4 text-slate-900 ${mainTitleFontClass}`}
                 style={{ fontWeight: 600 }}
               >
                 {t.issues}
               </h2>
 
-              <div className="rounded-[30px] border border-slate-100 bg-white p-6 shadow-sm">
+              <div className="rounded-[24px] border border-slate-100 bg-white p-4 shadow-sm">
                 <MiniBarChart lang={lang} counts={issueCounts} />
               </div>
             </div>

@@ -139,11 +139,11 @@ const Participates: React.FC = () => {
             </div>
 
             <div className="relative">
-                <div className="absolute bottom-0 h-[150px] w-full bg-[#1e234a]" />
+                <div className="absolute bottom-0 h-[190px] w-full bg-[#1e234a]" />
 
                 <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-4 lg:px-4">
                     {loading ? (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
                             {Array.from({ length: 4 }).map((_, i) => (
                                 <div
                                     key={i}
@@ -160,20 +160,24 @@ const Participates: React.FC = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                             {items.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="flex h-full flex-col items-start overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 text-left shadow-2xl transition-all hover:-translate-y-1"
+                                    className="
+                                    flex h-full min-h-[420px] flex-col
+                                    items-start overflow-hidden rounded-2xl
+                                    border border-gray-100 bg-white
+                                    px-8 pb-8 pt-8 text-left shadow-2xl
+                                    transition-all hover:-translate-y-1
+                                "
                                 >
                                     <div className="-mt-12 mb-10 flex h-25 w-full justify-center">
                                         <div className="rounded-t-sm rounded-b-[100px] bg-[#1e234a] p-8 shadow-md">
                                             <img
                                                 src={item.icon}
                                                 alt={item.title}
-                                                className={`h-14 w-14 ${isSvg(item.icon)
-                                                        ? "brightness-0 invert"
-                                                        : ""
+                                                className={`h-14 w-14 ${isSvg(item.icon) ? "brightness-0 invert" : ""
                                                     }`}
                                             />
                                         </div>
@@ -181,15 +185,33 @@ const Participates: React.FC = () => {
 
                                     <h3
                                         className={`
-                                            mb-4 min-h-[4rem] text-[#01265a]
-                                            !whitespace-normal !overflow-visible !text-clip
-                                            ${mainTitleFontClass}
-                                        `}
+                                        mb-6 min-h-[100px]
+                                        line-clamp-2
+                                        text-left text-[#01265a]
+                                        leading-[1.35] tracking-normal
+                                        !whitespace-normal !overflow-visible
+                                        ${mainTitleFontClass}
+                                    `}
                                     >
                                         {item.title}
                                     </h3>
 
-                                    <p className={`text-gray-600 ${bodyFontClass}`}>
+                                    <p
+                                        className={`
+                                            text-gray-600
+                                            line-clamp-6
+                                            leading-8 tracking-normal
+                                            text-justify hyphens-auto
+                                            ${bodyFontClass}
+                                        `}
+                                        style={{
+                                            textAlign: "justify",
+                                            textJustify: "inter-word",
+                                            wordSpacing: "-1px",
+                                            letterSpacing: "0px",
+                                            overflowWrap: "break-word",
+                                        }}
+                                    >
                                         {item.description}
                                     </p>
                                 </div>
