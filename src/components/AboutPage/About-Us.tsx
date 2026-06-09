@@ -302,7 +302,7 @@ const AboutUs: React.FC = () => {
                             className={`
                                 mt-8 max-w-md translate-x-0 text-[#1e3a8a]
                                 sm:translate-x-8 md:translate-x-25
-                                ${bodyFontClass} !font-bold
+                                ${bodyFontClass} 
                             `}
                         >
                             {view.desc}

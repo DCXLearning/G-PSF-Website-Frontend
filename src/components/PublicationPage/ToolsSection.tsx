@@ -46,69 +46,6 @@ type ApiResponse = {
 
 const CACHE_KEY_PREFIX = "tools-section-block-cache";
 
-const FONT_FAMILY =
-    '"Airbnb Cereal", var(--font-kantumruy-pro), "Kantumruy Pro", system-ui, sans-serif';
-
-function containsKhmer(value?: string | null): boolean {
-    return /[\u1780-\u17FF]/.test(value ?? "");
-}
-
-function fontStyle(
-    value: string | null | undefined,
-    uiLang: UiLang,
-    type: "mainTitle" | "sectionTitle" | "body" | "cardTitle" | "button" | "category"
-): React.CSSProperties {
-    const isKh = uiLang === "kh" || containsKhmer(value);
-
-    if (type === "sectionTitle") {
-        return {
-            fontFamily: FONT_FAMILY,
-            fontSize: isKh ? "35px" : "32px",
-            lineHeight: isKh ? "50px" : "42px",
-            fontWeight: isKh ? 700 : 800,
-            letterSpacing: "0.7px",
-        };
-    }
-
-    if (type === "mainTitle" || type === "cardTitle") {
-        return {
-            fontFamily: FONT_FAMILY,
-            fontSize: isKh ? "22px" : "21px",
-            lineHeight: "32px",
-            fontWeight: isKh ? 700 : 800,
-            letterSpacing: "0.7px",
-        };
-    }
-
-    if (type === "button") {
-        return {
-            fontFamily: FONT_FAMILY,
-            fontSize: "16px",
-            lineHeight: "24px",
-            fontWeight: 700,
-            letterSpacing: "0.4px",
-        };
-    }
-
-    if (type === "category") {
-        return {
-            fontFamily: FONT_FAMILY,
-            fontSize: isKh ? "17px" : "16px",
-            lineHeight: "30px",
-            fontWeight: 700,
-            letterSpacing: "0.5px",
-        };
-    }
-
-    return {
-        fontFamily: FONT_FAMILY,
-        fontSize: isKh ? "17px" : "16px",
-        lineHeight: "30px",
-        fontWeight: 400,
-        letterSpacing: "0.5px",
-    };
-}
-
 const pickText = (i18n: I18n | null | undefined, lang: UiLang) =>
     (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || "";
 
@@ -156,14 +93,14 @@ function pickToolsBlock(json: ApiResponse): ApiBlock | null {
 
 function ToolCardSkeleton() {
     return (
-        <div className="flex flex-col items-center rounded-2xl p-6 animate-pulse">
-            <div className="w-20 h-20 rounded-full mb-6 bg-slate-200" />
-            <div className="h-4 w-24 bg-slate-200 rounded mb-3" />
-            <div className="h-8 w-40 bg-slate-200 rounded mb-4" />
-            <div className="h-4 w-full max-w-[240px] bg-slate-200 rounded mb-2" />
-            <div className="h-4 w-5/6 max-w-[220px] bg-slate-200 rounded mb-2" />
-            <div className="h-4 w-2/3 max-w-[180px] bg-slate-200 rounded mb-8" />
-            <div className="h-10 w-32 bg-slate-200 rounded-lg" />
+        <div className="flex animate-pulse flex-col items-center rounded-2xl p-6">
+            <div className="mb-6 h-20 w-20 rounded-full bg-slate-200" />
+            <div className="mb-3 h-4 w-24 rounded bg-slate-200" />
+            <div className="mb-4 h-8 w-40 rounded bg-slate-200" />
+            <div className="mb-2 h-4 w-full max-w-[240px] rounded bg-slate-200" />
+            <div className="mb-2 h-4 w-5/6 max-w-[220px] rounded bg-slate-200" />
+            <div className="mb-8 h-4 w-2/3 max-w-[180px] rounded bg-slate-200" />
+            <div className="h-10 w-32 rounded-lg bg-slate-200" />
         </div>
     );
 }
@@ -181,13 +118,20 @@ export function ToolsSectionContent({
     showAllPosts = false,
     showSeeMoreButton = true,
 }: ToolsSectionProps = {}) {
-    const { language, apiLang, fontClass } = useLanguage();
+    const { language, apiLang } = useLanguage();
 
     const uiLang: UiLang =
         String(language) === "kh" || String(language) === "km" ? "kh" : "en";
 
     const currentApiLang: ApiLang =
         String(apiLang) === "km" || uiLang === "kh" ? "km" : "en";
+
+    const isKhmer = uiLang === "kh";
+
+    const wrapperFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+    const titleClass = isKhmer ? "title-km" : "title-en";
+    const mainTitleClass = isKhmer ? "main-title-km" : "main-title-en";
+    const bodyClass = isKhmer ? "body-km" : "body-en";
 
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -270,39 +214,34 @@ export function ToolsSectionContent({
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
     return (
-        <section
-            className={`bg-white pt-4 pb-12 px-4 ${fontClass || ""}`}
-            style={{ fontFamily: FONT_FAMILY }}
-        >
-            <div className="max-w-7xl mx-auto text-center">
-                <h2 className="text-[#1e1e4b]" style={fontStyle(sectionMainTitle, uiLang, "mainTitle")}>
+        <section className={`bg-white px-4 pb-12 pt-4 ${wrapperFontClass}`}>
+            <div className="mx-auto max-w-7xl text-center">
+                <h2 className={`text-[#1e1e4b] ${mainTitleClass}`}>
                     {sectionMainTitle}
                 </h2>
 
-                <h1 className="text-[#1e1e4b] mt-2 mb-6" style={fontStyle(sectionTitle, uiLang, "sectionTitle")}>
+                <h1 className={`mb-6 mt-2 text-[#1e1e4b] ${titleClass}`}>
                     {sectionTitle}
                 </h1>
 
-                <p className="max-w-3xl mx-auto text-[#1e1e4b] mb-16" style={fontStyle(sectionDescription, uiLang, "body")}>
+                <p className={`mx-auto mb-16 max-w-3xl text-[#1e1e4b] ${bodyClass}`}>
                     {sectionDescription}
                 </p>
 
                 {showErrorOnly ? (
-                    <div className="text-red-600 text-sm">Failed to load: {error}</div>
+                    <div className={`text-red-600 ${bodyClass}`}>Failed to load: {error}</div>
                 ) : null}
 
                 {showSkeleton ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
                         <ToolCardSkeleton />
                         <ToolCardSkeleton />
                         <ToolCardSkeleton />
                     </div>
                 ) : showEmpty ? (
-                    <div className="text-slate-600" style={fontStyle(emptyText, uiLang, "body")}>
-                        {emptyText}
-                    </div>
+                    <div className={`text-slate-600 ${bodyClass}`}>{emptyText}</div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
                         {posts.map((post) => {
                             const docUrl = pickDocUrl(post, currentApiLang);
                             const category = pickText(post.category?.name, uiLang) || "Template";
@@ -312,45 +251,40 @@ export function ToolsSectionContent({
                             return (
                                 <div
                                     key={post.id}
-                                    className="flex flex-col items-center rounded-2xl p-6 transition hover:shadow-lg"
-                                    style={{ fontFamily: FONT_FAMILY }}
+                                    className={`flex flex-col items-center rounded-2xl p-6 transition hover:shadow-lg ${wrapperFontClass}`}
                                 >
-                                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm overflow-hidden">
+                                    <div className="mb-6 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full shadow-sm">
                                         {post.coverImage ? (
                                             <Image
                                                 src={post.coverImage}
                                                 alt={title || "icon"}
                                                 width={56}
                                                 height={56}
-                                                className="w-12 h-12 object-contain"
+                                                className="h-12 w-12 object-contain"
                                             />
                                         ) : (
-                                            <span className="text-white text-xs font-bold">PDF</span>
+                                            <span className={`text-xs font-bold text-white ${bodyClass}`}>
+                                                PDF
+                                            </span>
                                         )}
                                     </div>
 
-                                    <span className="text-slate-900 mb-2" style={fontStyle(category, uiLang, "category")}>
+                                    <span className={`mb-2 text-slate-900 ${bodyClass} !font-bold`}>
                                         {category}
                                     </span>
 
                                     <h3
-                                        className="text-slate-800 mb-4"
+                                        className={`
+                      mb-4 max-w-full text-slate-800
+                      ${mainTitleClass}
+                      !block !overflow-hidden !text-ellipsis !whitespace-nowrap
+                    `}
                                         title={title}
-                                        style={{
-                                            ...fontStyle(title, uiLang, "cardTitle"),
-                                            maxWidth: "100%",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
-                                        }}
                                     >
                                         {title}
                                     </h3>
 
-                                    <p
-                                        className="text-[#1e1e4b] mb-8 px-2 line-clamp-4"
-                                        style={fontStyle(description, uiLang, "body")}
-                                    >
+                                    <p className={`mb-8 line-clamp-4 px-2 text-[#1e1e4b] ${bodyClass}`}>
                                         {description}
                                     </p>
 
@@ -358,9 +292,12 @@ export function ToolsSectionContent({
                                         href={docUrl || "#"}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className={`hover:underline flex items-center gap-2 px-8 py-2 border border-orange-400 text-slate-800 rounded-lg hover:bg-orange-50 transition-colors ${!docUrl ? "pointer-events-none opacity-50" : ""
-                                            }`}
-                                        style={fontStyle(downloadText, uiLang, "button")}
+                                        className={`
+                      flex items-center gap-2 rounded-lg border border-orange-400
+                      px-8 py-2 text-slate-800 transition-colors hover:bg-orange-50 hover:underline
+                      ${bodyClass} !font-bold
+                      ${!docUrl ? "pointer-events-none opacity-50" : ""}
+                    `}
                                     >
                                         {downloadText} <span className="text-xs">›</span>
                                     </a>
@@ -374,8 +311,11 @@ export function ToolsSectionContent({
                     <div className="mt-12 flex justify-center">
                         <Link
                             href="/templates-and-forms"
-                            className="bg-[#1e1e4b] hover:bg-[#15153a] text-white py-2 px-6 rounded-lg transition-colors"
-                            style={fontStyle(seeMoreText, uiLang, "button")}
+                            className={`
+                rounded-lg bg-[#1e1e4b] px-6 py-2 text-white
+                transition-colors hover:bg-[#15153a]
+                ${bodyClass} !font-bold !text-white
+              `}
                         >
                             {seeMoreText}
                         </Link>

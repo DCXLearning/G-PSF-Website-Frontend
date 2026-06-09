@@ -291,7 +291,7 @@ export default function Works() {
                                             className={[
                                                 mainTitleFontClass,
                                                 "!whitespace-normal !overflow-visible !text-clip",
-                                                isDark ? "text-white" : "text-gray-800",
+                                                isDark ? "!text-white" : "text-gray-800",
                                             ].join(" ")}
                                         >
                                             {card.title}
@@ -301,7 +301,7 @@ export default function Works() {
                                             className={[
                                                 "mt-4 space-y-1",
                                                 bodyFontClass,
-                                                isDark ? "text-white/90" : "text-gray-700",
+                                                isDark ? "!text-white/90" : "text-gray-700",
                                             ].join(" ")}
                                         >
                                             {card.lines.map((line, idx) => (

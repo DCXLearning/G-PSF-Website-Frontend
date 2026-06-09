@@ -48,12 +48,7 @@ const CACHE_KEY = "working_groups_grid_cache";
 
 function normalizeLang(language: unknown): Lang {
     const value = String(language || "en").toLowerCase();
-
-    if (value === "kh" || value === "km") {
-        return "kh";
-    }
-
-    return "en";
+    return value === "kh" || value === "km" ? "kh" : "en";
 }
 
 function toKhmerNumber(n: number) {
@@ -126,6 +121,12 @@ export default function WorkGroupsGrid() {
     const isKh = lang === "kh";
     const apiLang: ApiLang = isKh ? "km" : "en";
 
+    const wrapperFontClass = isKh ? "khmer-font" : "airbnb-font";
+    const titleFontClass = isKh ? "title-km" : "title-en";
+    const bodyFontClass = isKh ? "body-km" : "body-en";
+    const labelFontClass = isKh ? "body-km" : "body-en";
+    const cardTextFontClass = isKh ? "body-km" : "body-en";
+
     const [mounted, setMounted] = useState(false);
     const [loadingGrid, setLoadingGrid] = useState(true);
     const [loadingFlex, setLoadingFlex] = useState(true);
@@ -138,47 +139,6 @@ export default function WorkGroupsGrid() {
     const [flexTitle, setFlexTitle] = useState(
         "New Working Groups may be established, merged, or dissolved in response to changing economic conditions and sector needs."
     );
-
-    const titleFontClass = isKh
-        ? "title-km khmer-font !font-bold"
-        : "title-en airbnb-font !font-bold";
-
-    const bodyFontClass = isKh
-        ? "body-km khmer-font"
-        : "body-en airbnb-font";
-
-    const labelFontClass = isKh
-        ? "body-km khmer-font !font-bold"
-        : "body-en airbnb-font !font-bold";
-
-    const cardTextFontClass = isKh
-        ? "khmer-font"
-        : "airbnb-font";
-
-    const cardTextStyle: React.CSSProperties & {
-        WebkitBoxOrient?: "vertical";
-        WebkitLineClamp?: number;
-    } = {
-        display: "-webkit-box",
-        WebkitBoxOrient: "vertical",
-        WebkitLineClamp: 2,
-        width: "100%",
-        maxWidth: "92%",
-        height: "56px",
-        maxHeight: "56px",
-        margin: "0 auto",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "normal",
-        textAlign: "center",
-        wordBreak: "break-word",
-        overflowWrap: "break-word",
-        color: "#1a1a1a",
-        fontSize: isKh ? "17px" : "16px",
-        lineHeight: "28px",
-        fontWeight: 700,
-        letterSpacing: "var(--text-letter-spacing)",
-    };
 
     useEffect(() => {
         setMounted(true);
@@ -229,13 +189,10 @@ export default function WorkGroupsGrid() {
 
         async function loadFlexibleBlock() {
             try {
-                const res = await fetch(
-                    "/api/working-groups-page/section?slug=working-groups",
-                    {
-                        cache: "no-store",
-                        headers: { Accept: "application/json" },
-                    }
-                );
+                const res = await fetch("/api/working-groups-page/section?slug=working-groups", {
+                    cache: "no-store",
+                    headers: { Accept: "application/json" },
+                });
 
                 const json = (await res.json()) as SectionApiResponse;
 
@@ -281,9 +238,7 @@ export default function WorkGroupsGrid() {
 
     const count = total || workGroups.length;
 
-    const numberText = isKh
-        ? toKhmerNumber(count)
-        : count.toLocaleString("en-US");
+    const numberText = isKh ? toKhmerNumber(count) : count.toLocaleString("en-US");
 
     const headerTitle = isKh
         ? `ក្រុមការងារតាមវិស័យទាំង ${numberText}`
@@ -293,13 +248,11 @@ export default function WorkGroupsGrid() {
     const showErrorOnly = !showSkeleton && items.length === 0 && !!error;
 
     return (
-        <div className="bg-white">
+        <div className={`bg-white ${wrapperFontClass}`}>
             <div className="bg-gradient-to-br from-[#2B3175] to-[#3B55A4] px-4 py-10 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-7xl px-4">
                     <header className="mb-8 text-center md:mb-12">
-                        <h1 className={`text-white ${titleFontClass}`}>
-                            {headerTitle}
-                        </h1>
+                        <h1 className={`!text-white ${titleFontClass}`}>{headerTitle}</h1>
 
                         {showErrorOnly ? (
                             <div className={`mt-4 text-white/80 ${bodyFontClass}`}>
@@ -310,28 +263,24 @@ export default function WorkGroupsGrid() {
 
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-6 lg:gap-5">
                         {showSkeleton ? (
-                            Array.from({ length: 12 }).map((_, i) => (
-                                <WorkGroupCardSkeleton key={i} />
-                            ))
+                            Array.from({ length: 12 }).map((_, i) => <WorkGroupCardSkeleton key={i} />)
                         ) : workGroups.length > 0 ? (
                             workGroups.map((group, index) => {
-                                const isGray =
-                                    (Math.floor(index / 6) + (index % 6)) % 2 !== 0;
+                                const isGray = (Math.floor(index / 6) + (index % 6)) % 2 !== 0;
 
                                 return (
                                     <Link
                                         key={group.id}
                                         href={group.href}
                                         className={`
-                                            group flex aspect-square flex-col items-center rounded-2xl p-3 shadow-xl
-                                            transition-all duration-300 hover:scale-[1.03]
-                                            focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
-                                            md:rounded-[1.8rem]
-                                            ${isGray ? "bg-[#d1d5db]" : "bg-white"}
-                                        `}
+                      group flex aspect-square flex-col items-center rounded-2xl p-3 shadow-xl
+                      transition-all duration-300 hover:scale-[1.03]
+                      focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
+                      md:rounded-[1.8rem]
+                      ${isGray ? "bg-[#d1d5db]" : "bg-white"}
+                    `}
                                         aria-label={group.title}
                                     >
-                                        {/* Icon area fixed height */}
                                         <div className="flex h-[62%] w-full items-end justify-center pb-2">
                                             <div className="rounded-full bg-[#1E2257] p-2 text-white shadow-inner transition-transform duration-300 group-hover:scale-110 md:p-3">
                                                 <img
@@ -342,11 +291,16 @@ export default function WorkGroupsGrid() {
                                             </div>
                                         </div>
 
-                                        {/* Text area fixed height */}
                                         <div className="flex h-[38%] w-full items-start justify-center overflow-hidden pt-1">
                                             <p
-                                                className={cardTextFontClass}
-                                                style={cardTextStyle}
+                                                className={`
+                                                ${cardTextFontClass}
+                                                mx-auto w-full max-w-[92%]
+                                                text-center text-[#1a1a1a]
+                                                !font-medium !leading-[28px]
+                                                line-clamp-2 overflow-hidden
+                                                whitespace-normal break-words
+                                                `}
                                                 title={group.title}
                                             >
                                                 {group.title}
@@ -356,12 +310,7 @@ export default function WorkGroupsGrid() {
                                 );
                             })
                         ) : (
-                            <div
-                                className={`
-                                    col-span-full py-8 text-center text-white/90
-                                    ${bodyFontClass}
-                                `}
-                            >
+                            <div className={`col-span-full py-8 text-center text-white/90 ${bodyFontClass}`}>
                                 {isKh ? "មិនមានក្រុមការងារ" : "No work groups found"}
                             </div>
                         )}
@@ -370,19 +319,11 @@ export default function WorkGroupsGrid() {
             </div>
 
             <div className="mx-auto max-w-7xl px-4 py-8 md:px-4">
-                <p
-                    className={`mb-3 text-gray-900 ${labelFontClass}`}
-                    style={{ fontWeight: 700 }}
-                >
+                <p className={`mb-3 text-gray-900 ${labelFontClass} !font-bold`}>
                     {loadingFlex ? "..." : flexLabel}
                 </p>
 
-                <h2
-                    className={`
-                        max-w-[850px] text-gray-900
-                        ${titleFontClass}
-                    `}
-                >
+                <h2 className={`max-w-[850px] text-gray-900 ${titleFontClass}`}>
                     {loadingFlex ? "..." : flexTitle}
                 </h2>
 

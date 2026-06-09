@@ -268,7 +268,7 @@ export default function WorkingGroup() {
                                 <div className="max-w-5xl">
                                     <h1
                                         className={`
-                                            mx-auto max-w-5xl text-white
+                                            mx-auto max-w-5xl !text-white
                                             ${titleFontClass}
                                         `}
                                     >
@@ -280,7 +280,7 @@ export default function WorkingGroup() {
                                             href={slide.href}
                                             className={`
                                                 inline-flex items-center justify-center rounded-xl
-                                                bg-blue-500 px-6 py-3 text-white shadow-sm
+                                                bg-blue-500 px-6 py-3 !text-white shadow-sm
                                                 transition hover:bg-blue-800
                                                 focus:outline-none focus:ring-2
                                                 ${buttonFontClass}

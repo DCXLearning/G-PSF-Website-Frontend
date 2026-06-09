@@ -66,7 +66,7 @@ function writeCache(items: WorkGroupItem[], total: number) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ items, total }));
   } catch {
-
+    // ignore
   }
 }
 
@@ -96,7 +96,14 @@ export default function WorkGroupsCarousel() {
   const [loading, setLoading] = useState(true);
 
   const { language } = useLanguage();
-  const isKhmer = language === "kh";
+
+  const currentLanguage = String(language).toLowerCase();
+  const isKhmer = currentLanguage === "kh" || currentLanguage === "km";
+
+  const wrapperFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+  const sectionTitleFontClass = isKhmer ? "title-km" : "title-en";
+  const cardTitleFontClass = isKhmer ? "body-km" : "body-en";
+  const bodyFontClass = isKhmer ? "body-km" : "body-en";
 
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -159,13 +166,8 @@ export default function WorkGroupsCarousel() {
 
   const showSkeleton = !mounted || (loading && groups.length === 0);
 
-  const sectionTitleFontClass = isKhmer ? "title-km" : "title-en";
-  const cardTitleFontClass = isKhmer
-    ? "workgroup-card-title workgroup-card-title-km"
-    : "workgroup-card-title workgroup-card-title-en";
-
   return (
-    <section className="bg-white py-14 md:py-20">
+    <section className={`bg-white py-14 md:py-20 ${wrapperFontClass}`}>
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center mb-10 md:mb-14">
           <h2 className={`text-blue-950 ${sectionTitleFontClass}`}>
@@ -188,7 +190,6 @@ export default function WorkGroupsCarousel() {
             </span>
           </button>
 
-          {/* Next */}
           <button
             ref={nextRef}
             aria-label="Next"
@@ -235,23 +236,20 @@ export default function WorkGroupsCarousel() {
               >
                 {groups.map((g) => {
                   const title =
-                    (
-                      isKhmer
-                        ? g.title.km || g.title.en
-                        : g.title.en || g.title.km
-                    )?.trim() || "";
+                    (isKhmer ? g.title.km || g.title.en : g.title.en || g.title.km)?.trim() || "";
 
                   return (
                     <SwiperSlide key={g.id} className="py-3">
                       <Link
                         href={buildWorkingGroupHref(g.slug)}
-                        className="
+                        className={`
                           flex flex-col items-center justify-start
                           h-[230px] w-full px-4 pt-8 pb-6 rounded-2xl
                           bg-gray-50 border border-gray-100 shadow-sm
                           hover:shadow-md hover:-translate-y-1 hover:scale-[1.02]
                           transition
-                        "
+                          ${wrapperFontClass}
+                        `}
                       >
                         <div
                           className="
@@ -274,8 +272,8 @@ export default function WorkGroupsCarousel() {
                               ${cardTitleFontClass}
                               m-0 w-full max-w-[175px]
                               text-center text-gray-900
-                              font-bold
-                              leading-[28px]
+                              !font-medium
+                              !leading-[28px]
                               line-clamp-2
                               overflow-hidden
                               whitespace-normal
@@ -292,7 +290,7 @@ export default function WorkGroupsCarousel() {
                 })}
               </Swiper>
             ) : (
-              <div className="text-center text-gray-400 py-10">
+              <div className={`text-center text-gray-400 py-10 ${bodyFontClass}`}>
                 {isKhmer ? "មិនមានក្រុមការងារ" : "No work groups found"}
               </div>
             )}

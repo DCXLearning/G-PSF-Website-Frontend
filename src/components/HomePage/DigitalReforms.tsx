@@ -85,7 +85,7 @@ function writeCache(lang: Lang, block: PostListBlock | null) {
     try {
         localStorage.setItem(getCacheKey(lang), JSON.stringify(block));
     } catch {
-        // ignore cache errors
+
     }
 }
 
@@ -249,7 +249,7 @@ const LatestReport: React.FC = () => {
             <div className="mb-90 mt-4 md:mt-14 text-center">
                 <p
                     className={`
-                        text-gray-900
+                        text-blue-950
                         !whitespace-normal !overflow-visible !text-clip
                         ${mainTitleFontClass}
                     `}
@@ -257,7 +257,7 @@ const LatestReport: React.FC = () => {
                     {subHeading}
                 </p>
 
-                <h1 className={`mt-2 text-gray-900 ${titleFontClass}`}>
+                <h1 className={`mt-2 text-blue-950 ${titleFontClass}`}>
                     {mainHeading}
                 </h1>
 

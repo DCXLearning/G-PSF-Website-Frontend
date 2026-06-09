@@ -48,13 +48,6 @@ type ApiResponse = {
 const API_URL = "/api/resources/section";
 const CACHE_KEY = "policy-documents-block-cache";
 
-const FONT_FAMILY =
-    '"Airbnb Cereal", var(--font-kantumruy-pro), "Kantumruy Pro", system-ui, sans-serif';
-
-function containsKhmer(value?: string | null): boolean {
-    return /[\u1780-\u17FF]/.test(value ?? "");
-}
-
 function pickText(i18n: I18n | null | undefined, lang: UiLang, fallback = "") {
     return (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || fallback;
 }
@@ -104,17 +97,20 @@ function writeCachedBlock(block: ApiBlock | null) {
     try {
         sessionStorage.setItem(CACHE_KEY, JSON.stringify(block));
     } catch {
-        // ignore cache errors
+        // ignore
     }
 }
 
 export default function PolicyDocuments() {
-    const { language, fontClass } = useLanguage();
+    const { language } = useLanguage();
 
-    const uiLang: UiLang =
-        String(language) === "kh" || String(language) === "km" ? "kh" : "en";
-
+    const uiLang: UiLang = String(language) === "kh" || String(language) === "km" ? "kh" : "en";
     const isKh = uiLang === "kh";
+
+    const wrapperFontClass = isKh ? "khmer-font" : "airbnb-font";
+    const bodyClass = isKh ? "body-km" : "body-en";
+    const titleClass = isKh ? "title-km" : "title-en";
+    const mainTitleClass = isKh ? "main-title-km" : "main-title-en";
 
     const [block, setBlock] = useState<ApiBlock | null>(null);
     const [loading, setLoading] = useState(true);
@@ -187,93 +183,49 @@ export default function PolicyDocuments() {
     const showErrorOnly = !showSkeleton && !block && !!err;
 
     return (
-        <section
-            className={`relative bg-white overflow-hidden py-16 print:py-0 ${fontClass || ""}`}
-            style={{
-                fontFamily: FONT_FAMILY,
-                letterSpacing: "0.5px",
-            }}
-        >
-            <div className="max-w-5xl mx-auto text-center px-4 mb-16 relative z-10 print:mb-6 print:text-left print:max-w-none">
-                <p
-                    className="text-gray-900 mb-1"
-                    style={{
-                        fontFamily: FONT_FAMILY,
-                        fontSize: isKh ? "22px" : "21px",
-                        lineHeight: "32px",
-                        fontWeight: isKh ? 700 : 800,
-                        letterSpacing: "0.7px",
-                    }}
-                >
+        <section className={`relative overflow-hidden bg-white py-16 print:py-0 ${wrapperFontClass}`}>
+            <div className="relative z-10 mx-auto mb-16 max-w-5xl px-4 text-center print:mb-6 print:max-w-none print:text-left">
+                <p className={`mb-1 ${mainTitleClass}`}>
                     {isKh ? "គោលនយោបាយ និងក្របខ័ណ្ឌ" : "Core Policies & Frameworks"}
                 </p>
 
-                <h2
-                    className="text-[#1a2b4b] mb-4"
-                    style={{
-                        fontFamily: FONT_FAMILY,
-                        fontSize: isKh || containsKhmer(headerTitle) ? "35px" : "32px",
-                        lineHeight: isKh || containsKhmer(headerTitle) ? "50px" : "42px",
-                        fontWeight: isKh || containsKhmer(headerTitle) ? 700 : 800,
-                        letterSpacing: "0.7px",
-                    }}
-                >
-                    {headerTitle}
-                </h2>
+                <h2 className={`mb-4 ${titleClass}`}>{headerTitle}</h2>
 
                 {headerDesc ? (
-                    <p
-                        className="text-gray-900 font-semibold max-w-5xl mx-auto"
-                        style={{
-                            fontFamily: FONT_FAMILY,
-                            fontSize: isKh || containsKhmer(headerDesc) ? "17px" : "16px",
-                            lineHeight: "30px",
-                            fontWeight: 500,
-                            letterSpacing: "0.5px",
-                        }}
-                    >
-                        {headerDesc}
-                    </p>
+                    <p className={`mx-auto max-w-5xl !font-medium ${bodyClass}`}>{headerDesc}</p>
                 ) : null}
             </div>
 
-            <div className="absolute bottom-0 left-0 w-full h-[350px] bg-[#3b5998] z-0 print:hidden" />
+            <div className="absolute bottom-0 left-0 z-0 h-[350px] w-full bg-[#3b5998] print:hidden" />
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 print:max-w-none print:px-0">
+            <div className="relative z-10 mx-auto max-w-7xl px-4 print:max-w-none print:px-0">
                 {showSkeleton ? (
                     <div className="print:hidden">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                             {Array.from({ length: 3 }).map((_, index) => (
                                 <div
                                     key={index}
-                                    className="bg-[#e9ecef] flex flex-col shadow-xl min-h-[560px] animate-pulse overflow-hidden"
+                                    className="flex min-h-[560px] animate-pulse flex-col overflow-hidden bg-[#e9ecef] shadow-xl"
                                 >
-                                    <div className="m-4 h-[300px] bg-[#dfe3e6] rounded-sm" />
-                                    <div className="px-6 pb-8 pt-2 flex flex-col grow">
-                                        <div className="h-4 w-24 bg-slate-200 rounded mb-4" />
-                                        <div className="h-8 w-3/4 bg-slate-200 rounded mb-3" />
-                                        <div className="h-4 w-full bg-slate-200 rounded mb-2" />
-                                        <div className="h-4 w-5/6 bg-slate-200 rounded mb-6" />
-                                        <div className="mt-auto h-4 w-28 bg-slate-200 rounded" />
+                                    <div className="m-4 h-[300px] rounded-sm bg-[#dfe3e6]" />
+                                    <div className="flex grow flex-col px-6 pb-8 pt-2">
+                                        <div className="mb-4 h-4 w-24 rounded bg-slate-200" />
+                                        <div className="mb-3 h-8 w-3/4 rounded bg-slate-200" />
+                                        <div className="mb-2 h-4 w-full rounded bg-slate-200" />
+                                        <div className="mb-6 h-4 w-5/6 rounded bg-slate-200" />
+                                        <div className="mt-auto h-4 w-28 rounded bg-slate-200" />
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 ) : showErrorOnly ? (
-                    <div className="bg-white/70 rounded-xl p-8 text-center shadow print:shadow-none print:border print:rounded-none">
-                        <p className="text-red-600 font-semibold">Error: {err}</p>
+                    <div className="rounded-xl bg-white/70 p-8 text-center shadow print:rounded-none print:border print:shadow-none">
+                        <p className="font-semibold text-red-600">Error: {err}</p>
                     </div>
                 ) : showEmpty ? (
-                    <div className="bg-white/70 rounded-xl p-8 text-center shadow print:shadow-none print:border print:rounded-none">
-                        <p
-                            className="text-[#1a2b4b] font-semibold"
-                            style={{
-                                fontFamily: FONT_FAMILY,
-                                fontSize: isKh ? "17px" : "16px",
-                                lineHeight: "30px",
-                            }}
-                        >
+                    <div className="rounded-xl bg-white/70 p-8 text-center shadow print:rounded-none print:border print:shadow-none">
+                        <p className={`!font-semibold ${bodyClass}`}>
                             {isKh ? "មិនមានឯកសារ" : "No documents found."}
                         </p>
                     </div>
@@ -297,7 +249,7 @@ export default function PolicyDocuments() {
                                     768: { slidesPerView: 2 },
                                     1024: { slidesPerView: 3 },
                                 }}
-                                className="pb-20 equal-card-swiper"
+                                className="equal-card-swiper pb-20"
                             >
                                 {posts.map((post) => {
                                     const thumb = pickThumbnail(post);
@@ -316,6 +268,8 @@ export default function PolicyDocuments() {
                                                     dateText={dateText}
                                                     docUrl={docUrl}
                                                     isKh={isKh}
+                                                    bodyClass={bodyClass}
+                                                    mainTitleClass={mainTitleClass}
                                                 />
                                             </div>
                                         </SwiperSlide>
@@ -323,20 +277,12 @@ export default function PolicyDocuments() {
                                 })}
                             </Swiper>
 
-                            <div className="custom-pagination flex justify-center gap-3 mt-4" />
+                            <div className="custom-pagination mt-4 flex justify-center gap-3" />
 
-                            <div className="mt-8 -mb-[30px] flex justify-center">
+                            <div className="-mb-[30px] mt-8 flex justify-center">
                                 <Link
                                     href="/publication/detail"
-                                    className="inline-flex items-center justify-center rounded-full bg-[#fb923c] px-6 py-2 text-white shadow-md hover:opacity-90"
-                                    style={{
-                                        fontFamily: FONT_FAMILY,
-                                        fontSize: "16px",
-                                        lineHeight: "24px",
-                                        fontWeight: 700,
-                                        textTransform: isKh ? "none" : "uppercase",
-                                        letterSpacing: "0.5px",
-                                    }}
+                                    className={`inline-flex items-center justify-center rounded-full bg-[#fb923c] px-6 py-2 text-white shadow-md hover:opacity-90 ${bodyClass} !font-medium !text-white`}
                                 >
                                     {isKh ? "មើលបន្ថែម" : "View More"}
                                     <span className="ml-2 text-lg">›</span>
@@ -344,91 +290,27 @@ export default function PolicyDocuments() {
                             </div>
                         </div>
 
-                        <div className="hidden print:grid print:grid-cols-2 print:gap-3">
-                            {posts.map((post) => {
-                                const thumb = pickThumbnail(post);
-                                const title = pickText(post.title, uiLang, "Untitled");
-                                const desc = pickText(post.description, uiLang, "");
-                                const dateText = formatLocalizedDate(post.createdAt, uiLang);
-                                const docUrl = pickDocUrl(post);
-
-                                return (
-                                    <div
-                                        key={post.id}
-                                        className="border border-slate-300 p-3 break-inside-avoid"
-                                        style={{ fontFamily: FONT_FAMILY }}
-                                    >
-                                        <div className="text-[10pt] font-semibold text-slate-800">
-                                            {dateText}
-                                        </div>
-
-                                        <div className="mt-1 text-[11pt] font-bold text-[#1a2b4b] leading-snug">
-                                            {title}
-                                        </div>
-
-                                        {thumb ? (
-                                            <div className="mt-2 h-48 border bg-[#f4f4f4] flex items-center justify-center overflow-hidden">
-                                                <img
-                                                    src={thumb}
-                                                    alt={title}
-                                                    className="max-h-full max-w-full object-contain"
-                                                />
-                                            </div>
-                                        ) : null}
-
-                                        {desc ? (
-                                            <div className="mt-2 text-[10pt] text-slate-700 leading-snug">
-                                                {desc}
-                                            </div>
-                                        ) : null}
-
-                                        <div className="mt-2 text-[10pt] text-[#1a2b4b] font-semibold">
-                                            {docUrl
-                                                ? `${isKh ? "ឯកសារ" : "Document"}: ${docUrl}`
-                                                : isKh
-                                                    ? "មិនមានឯកសារ"
-                                                    : "No document"}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
                         <style jsx global>{`
-                            .equal-card-swiper .swiper-wrapper {
-                                align-items: stretch;
-                            }
+              .equal-card-swiper .swiper-wrapper {
+                align-items: stretch;
+              }
 
-                            .equal-card-swiper .swiper-slide {
-                                height: auto;
-                                display: flex;
-                            }
+              .equal-card-swiper .swiper-slide {
+                display: flex;
+                height: auto;
+              }
 
-                            .custom-pagination .swiper-pagination-bullet {
-                                width: 16px;
-                                height: 16px;
-                                background-color: #fb923c !important;
-                                opacity: 0.6;
-                            }
+              .custom-pagination .swiper-pagination-bullet {
+                width: 16px;
+                height: 16px;
+                background-color: #fb923c !important;
+                opacity: 0.6;
+              }
 
-                            .custom-pagination .swiper-pagination-bullet-active {
-                                opacity: 1;
-                            }
-
-                            @media print {
-                                @page {
-                                    size: A4;
-                                    margin: 12mm;
-                                }
-
-                                html,
-                                body {
-                                    background: #fff !important;
-                                    -webkit-print-color-adjust: exact;
-                                    print-color-adjust: exact;
-                                }
-                            }
-                        `}</style>
+              .custom-pagination .swiper-pagination-bullet-active {
+                opacity: 1;
+              }
+            `}</style>
                     </>
                 )}
             </div>
@@ -443,6 +325,8 @@ function Card({
     dateText,
     docUrl,
     isKh,
+    bodyClass,
+    mainTitleClass,
 }: {
     thumb: string;
     title: string;
@@ -450,21 +334,14 @@ function Card({
     dateText: string;
     docUrl: string;
     isKh: boolean;
+    bodyClass: string;
+    mainTitleClass: string;
 }) {
-    const titleHasKhmer = containsKhmer(title);
-    const descHasKhmer = containsKhmer(desc || title);
-
     return (
-        <div
-            className="bg-[#e9ecef] flex h-full min-h-[560px] flex-col shadow-xl overflow-hidden"
-            style={{
-                fontFamily: FONT_FAMILY,
-                letterSpacing: "0.5px",
-            }}
-        >
-            <div className="m-4 h-[300px] bg-[#dfe3e6] flex items-center justify-center overflow-hidden rounded-sm shrink-0">
+        <div className="flex h-full min-h-[560px] flex-col overflow-hidden bg-[#e9ecef] shadow-xl">
+            <div className="m-4 flex h-[300px] shrink-0 items-center justify-center overflow-hidden rounded-sm bg-[#dfe3e6]">
                 {thumb ? (
-                    <div className="w-full h-full flex items-center justify-center p-4">
+                    <div className="flex h-full w-full items-center justify-center p-4">
                         <img
                             src={thumb}
                             alt={title}
@@ -474,61 +351,30 @@ function Card({
                     </div>
                 ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center px-6 text-center">
-                        <span
-                            className="text-gray-500 font-medium"
-                            style={{
-                                fontFamily: FONT_FAMILY,
-                                fontSize: isKh ? "17px" : "16px",
-                                lineHeight: "30px",
-                            }}
-                        >
-                            {isKh ? "មិនមានរូបភាព" : "No thumbnail"}
-                        </span>
+                        <span className={`${bodyClass} text-gray-500`}>{isKh ? "មិនមានរូបភាព" : "No thumbnail"}</span>
                     </div>
                 )}
             </div>
 
-            <div className="px-6 pb-8 pt-2 flex flex-1 flex-col">
-                <span
-                    className="text-[#1a2b4b] mb-3 shrink-0"
-                    style={{
-                        fontFamily: FONT_FAMILY,
-                        fontSize: isKh ? "17px" : "16px",
-                        lineHeight: "30px",
-                        fontWeight: 400,
-                    }}
-                >
-                    {dateText}
-                </span>
+            <div className="flex flex-1 flex-col px-6 pb-8 pt-2">
+                <span className={`mb-3 shrink-0 !text-[#1a2b4b] ${bodyClass}`}>{dateText}</span>
 
                 <h3
-                    className="text-[#1a2b4b] mb-3 shrink-0"
+                    className={`
+                        mb-3 min-h-[32px] shrink-0
+                        ${mainTitleClass}
+                        !block
+                        !overflow-hidden
+                        !text-ellipsis
+                        !whitespace-nowrap
+                        !text-[#1a2b4b]
+                    `}
                     title={title}
-                    style={{
-                        fontFamily: FONT_FAMILY,
-                        fontSize: titleHasKhmer ? "22px" : "21px",
-                        lineHeight: "32px",
-                        fontWeight: titleHasKhmer ? 700 : 800,
-                        letterSpacing: "0.7px",
-                        display: "block",
-                        maxWidth: "100%",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                    }}
                 >
                     {title}
                 </h3>
 
-                <p
-                    className="text-gray-700 mb-6 min-h-[40px] line-clamp-2"
-                    style={{
-                        fontFamily: FONT_FAMILY,
-                        fontSize: descHasKhmer ? "17px" : "16px",
-                        lineHeight: "30px",
-                        fontWeight: 400,
-                    }}
-                >
+                <p className={`mb-6 min-h-[60px] line-clamp-2 text-gray-700 ${bodyClass}`}>
                     {desc || title}
                 </p>
 
@@ -538,14 +384,7 @@ function Card({
                             href={docUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#1a2b4b] flex items-center hover:underline tracking-wider font-bold"
-                            style={{
-                                fontFamily: FONT_FAMILY,
-                                fontSize: "16px",
-                                lineHeight: "24px",
-                                fontWeight: 700,
-                                textTransform: isKh ? "none" : "uppercase",
-                            }}
+                            className={`flex items-center tracking-wider text-[#1a2b4b] hover:underline ${bodyClass} !font-bold`}
                         >
                             {isKh ? "ទាញយក" : "Download"}
                             <span className="ml-1 text-lg">›</span>
@@ -553,14 +392,7 @@ function Card({
                     ) : (
                         <button
                             disabled
-                            className="text-gray-400 flex items-center tracking-wider cursor-not-allowed font-bold"
-                            style={{
-                                fontFamily: FONT_FAMILY,
-                                fontSize: "16px",
-                                lineHeight: "24px",
-                                fontWeight: 700,
-                                textTransform: isKh ? "none" : "uppercase",
-                            }}
+                            className={`flex cursor-not-allowed items-center tracking-wider text-gray-400 ${bodyClass} !font-bold`}
                         >
                             {isKh ? "មិនមានឯកសារ" : "No document"}
                         </button>

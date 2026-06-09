@@ -35,10 +35,6 @@ type ApiPost = {
     link?: string | null;
     publishedAt?: string | null;
     slug?: string | null;
-    category?: {
-        id: number;
-        name?: I18n;
-    } | null;
 };
 
 type ApiBlock = {
@@ -47,10 +43,6 @@ type ApiBlock = {
     title?: I18n;
     description?: I18n | null;
     enabled?: boolean;
-    settings?: {
-        limit?: number;
-        categoryIds?: number[];
-    } | null;
     posts?: ApiPost[];
 };
 
@@ -89,6 +81,7 @@ function readCache(apiLanguage: ApiLang): ApiBlock | null {
 
 function writeCache(apiLanguage: ApiLang, block: ApiBlock | null) {
     if (!block) return;
+
     try {
         sessionStorage.setItem(getCacheKey(apiLanguage), JSON.stringify(block));
     } catch {
@@ -98,6 +91,7 @@ function writeCache(apiLanguage: ApiLang, block: ApiBlock | null) {
 
 function pickSemesterReportsBlock(json: ApiResponse): ApiBlock | null {
     const blocks = json?.data?.blocks || [];
+
     return (
         blocks.find(
             (b) =>
@@ -140,10 +134,11 @@ export function SemesterReportsSection({
     showAllPosts = false,
     showSeeMoreButton = true,
 }: SemesterReportsSectionProps = {}) {
-    const { language, apiLang, fontClass } = useLanguage();
+    const { language, apiLang } = useLanguage();
 
     const uiLang = (language === "kh" ? "kh" : "en") as UiLang;
     const apiLanguage = (apiLang === "km" ? "km" : "en") as ApiLang;
+    const isKhmer = uiLang === "kh";
 
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -183,7 +178,6 @@ export function SemesterReportsSection({
                 }
             } catch (err: unknown) {
                 if (!alive) return;
-
                 const message = err instanceof Error ? err.message : "Fetch failed";
                 setError(message);
             } finally {
@@ -211,74 +205,45 @@ export function SemesterReportsSection({
     const showErrorOnly = !showSkeleton && !block && !!error;
     const showEmpty = !showSkeleton && !error && posts.length === 0;
 
-    const isKhmer = uiLang === "kh";
-
-    const fontStyle: React.CSSProperties = {
-        fontFamily: `"Airbnb Cereal", var(--font-kantumruy-pro), system-ui, sans-serif`,
-        letterSpacing: "0.5px",
-    };
+    const wrapperFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+    const bodyClass = isKhmer ? "body-km" : "body-en";
+    const titleClass = isKhmer ? "title-km" : "title-en";
+    const mainTitleClass = isKhmer ? "main-title-km" : "main-title-en";
 
     return (
-        <section className={`relative overflow-hidden ${fontClass || ""}`} style={fontStyle}>
+        <section className={`relative overflow-hidden ${wrapperFontClass}`}>
             <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-[#3f5fa8]" />
 
-            <div className="relative max-w-7xl mx-auto px-4 pt-10 pb-14">
+            <div className="relative mx-auto max-w-7xl px-4 pt-10 pb-14">
                 <div className="mb-8 text-center">
-                    <h2
-                        className="text-[#1e2f5d]"
-                        style={{
-                            ...fontStyle,
-                            fontSize: isKhmer ? "35px" : "32px",
-                            lineHeight: isKhmer ? "50px" : "42px",
-                            fontWeight: 800,
-                        }}
-                    >
-                        {sectionTitle}
-                    </h2>
+                    <h2 className={titleClass}>{sectionTitle}</h2>
 
                     {sectionDescription ? (
-                        <p
-                            className="max-w-4xl mx-auto mt-4 text-[#51607f]"
-                            style={{
-                                ...fontStyle,
-                                fontSize: isKhmer ? "17px" : "16px",
-                                lineHeight: "30px",
-                                fontWeight: 400,
-                            }}
-                        >
-                            {sectionDescription}
-                        </p>
+                        <p className={`mx-auto mt-4 max-w-4xl ${bodyClass}`}>{sectionDescription}</p>
                     ) : null}
                 </div>
 
                 {showErrorOnly ? (
-                    <div className="text-center text-red-500 mb-6 font-medium">{error}</div>
+                    <div className="mb-6 text-center font-medium text-red-500">{error}</div>
                 ) : null}
 
                 {showSkeleton ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
-                        {Array.from({ length: 5 }).map((_, index) => (
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        {Array.from({ length: 3 }).map((_, index) => (
                             <div key={index} className="h-full">
-                                <div className="bg-[#dfe3ea] p-4 animate-pulse h-full flex flex-col">
-                                    <div className="bg-[#cfd4db] h-[280px] w-full mb-5 shrink-0" />
-                                    <div className="h-5 w-32 bg-slate-300 rounded mb-3 shrink-0" />
-                                    <div className="h-7 w-full bg-slate-300 rounded mb-3 shrink-0" />
-                                    <div className="h-5 w-full bg-slate-300 rounded mb-2 shrink-0" />
-                                    <div className="h-5 w-4/5 bg-slate-300 rounded mb-6 shrink-0" />
-                                    <div className="mt-auto h-11 w-full bg-slate-300 rounded shrink-0" />
+                                <div className="flex h-full animate-pulse flex-col bg-[#dfe3ea] p-4">
+                                    <div className="mb-5 h-[280px] w-full shrink-0 bg-[#cfd4db]" />
+                                    <div className="mb-3 h-5 w-32 shrink-0 rounded bg-slate-300" />
+                                    <div className="mb-3 h-7 w-full shrink-0 rounded bg-slate-300" />
+                                    <div className="mb-2 h-5 w-full shrink-0 rounded bg-slate-300" />
+                                    <div className="mb-6 h-5 w-4/5 shrink-0 rounded bg-slate-300" />
+                                    <div className="mt-auto h-11 w-full shrink-0 rounded bg-slate-300" />
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : showEmpty ? (
-                    <div
-                        className="text-center text-slate-700 py-10"
-                        style={{
-                            ...fontStyle,
-                            fontSize: isKhmer ? "17px" : "16px",
-                            lineHeight: "30px",
-                        }}
-                    >
+                    <div className={`py-10 text-center ${bodyClass}`}>
                         {uiLang === "kh" ? "មិនមានរបាយការណ៍ឆមាសទេ។" : "No semester reports found."}
                     </div>
                 ) : (
@@ -287,7 +252,7 @@ export function SemesterReportsSection({
                             modules={[Pagination, Autoplay]}
                             spaceBetween={24}
                             slidesPerView={1}
-                            loop={posts.length > 5}
+                            loop={posts.length > 3}
                             autoplay={{
                                 delay: 3200,
                                 disableOnInteraction: false,
@@ -313,10 +278,10 @@ export function SemesterReportsSection({
                                 return (
                                     <SwiperSlide key={post.id} className="!h-auto">
                                         <div className="h-full w-full">
-                                            <article className="bg-[#dfe3ea] p-4 shadow-sm h-full flex flex-col">
-                                                <div className="block shrink-0">
-                                                    <div className="bg-[#d0d3d9] p-4 flex items-center justify-center h-[280px] mb-5">
-                                                        <div className="relative w-[192px] h-[257px]">
+                                            <article className="flex h-full flex-col bg-[#dfe3ea] p-4 shadow-sm">
+                                                <div className="shrink-0">
+                                                    <div className="mb-5 flex h-[280px] items-center justify-center bg-[#d0d3d9] p-4">
+                                                        <div className="relative h-[257px] w-[192px]">
                                                             {thumb ? (
                                                                 <Image
                                                                     src={thumb}
@@ -326,55 +291,39 @@ export function SemesterReportsSection({
                                                                     className="object-contain p-1"
                                                                 />
                                                             ) : (
-                                                                <div className="w-full h-full bg-white" />
+                                                                <div className="h-full w-full bg-white" />
                                                             )}
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex flex-col flex-1">
+                                                <div className="flex flex-1 flex-col">
                                                     <p
-                                                        className="text-[#2f416b] mb-1 min-h-[24px] shrink-0"
-                                                        style={{
-                                                            ...fontStyle,
-                                                            fontSize: isKhmer ? "17px" : "16px",
-                                                            lineHeight: "28px",
-                                                            fontWeight: 500,
-                                                        }}
+                                                        className={`
+                              mb-1 min-h-[24px] shrink-0
+                              ${bodyClass}
+                              !font-medium !text-[#2f416b]
+                            `}
                                                     >
                                                         {publishedDate}
                                                     </p>
 
-                                                    <div className="block shrink-0 mb-2">
-                                                        <h3
-                                                            className="text-[#16264d] min-h-[32px]"
-                                                            title={title}
-                                                            style={{
-                                                                ...fontStyle,
-                                                                display: "block",
-                                                                maxWidth: "100%",
-                                                                overflow: "hidden",
-                                                                textOverflow: "ellipsis",
-                                                                whiteSpace: "nowrap",
-                                                                fontSize: isKhmer ? "22px" : "21px",
-                                                                lineHeight: "32px",
-                                                                fontWeight: 800,
-                                                                letterSpacing: "0.7px",
-                                                            }}
-                                                        >
-                                                            {title}
-                                                        </h3>
-                                                    </div>
-
-                                                    <p
-                                                        className="text-[#5e687b] line-clamp-2 min-h-[60px] mb-6"
-                                                        style={{
-                                                            ...fontStyle,
-                                                            fontSize: isKhmer ? "17px" : "16px",
-                                                            lineHeight: "30px",
-                                                            fontWeight: 400,
-                                                        }}
+                                                    <h3
+                                                        className={`
+                              mb-2 min-h-[32px]
+                              ${mainTitleClass}
+                              !block
+                              !overflow-hidden
+                              !text-ellipsis
+                              !whitespace-nowrap
+                              text-left
+                            `}
+                                                        title={title}
                                                     >
+                                                        {title}
+                                                    </h3>
+
+                                                    <p className={`mb-6 min-h-[60px] line-clamp-2 ${bodyClass}`}>
                                                         {description}
                                                     </p>
 
@@ -382,17 +331,17 @@ export function SemesterReportsSection({
                                                         href={docUrl || "#"}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className={`mt-auto w-full inline-flex items-center justify-center gap-2 px-10 bg-[#f5a20a] hover:bg-[#ea9805] text-white rounded-md py-2.5 transition shrink-0 ${!docUrl ? "pointer-events-none opacity-50" : ""
-                                                            }`}
-                                                        style={{
-                                                            ...fontStyle,
-                                                            fontSize: isKhmer ? "16px" : "16px",
-                                                            lineHeight: "24px",
-                                                            fontWeight: 700,
-                                                        }}
+                                                        className={`
+                              mt-auto inline-flex w-full shrink-0 items-center justify-center gap-2
+                              rounded-md bg-[#f5a20a] px-10 py-2.5
+                              text-white transition hover:bg-[#ea9805]
+                              ${bodyClass}
+                              !font-bold !text-white
+                              ${!docUrl ? "pointer-events-none opacity-50" : ""}
+                            `}
                                                     >
                                                         <span>{uiLang === "kh" ? "ទាញយក" : "Download"}</span>
-                                                        <ChevronRight className="w-4 h-4" />
+                                                        <ChevronRight className="h-4 w-4" />
                                                     </a>
                                                 </div>
                                             </article>
@@ -403,19 +352,19 @@ export function SemesterReportsSection({
                         </Swiper>
 
                         {showSeeMoreButton && posts.length > 0 ? (
-                            <div className="flex justify-center mt-2">
+                            <div className="mt-2 flex justify-center">
                                 <Link
                                     href="/publication/semester-reports/semester-view-more/17"
-                                    className="inline-flex items-center gap-2 bg-[#f79a3b] hover:bg-[#ee8f2d] text-white uppercase tracking-wide px-6 py-3 rounded-full shadow-md transition"
-                                    style={{
-                                        ...fontStyle,
-                                        fontSize: isKhmer ? "16px" : "16px",
-                                        lineHeight: "24px",
-                                        fontWeight: 700,
-                                    }}
+                                    className={`
+                                        inline-flex items-center gap-2 rounded-full
+                                        bg-[#f79a3b] px-6 py-2 uppercase text-white
+                                        shadow-md transition hover:bg-[#ee8f2d]
+                                        ${bodyClass}
+                                        !font-medium !text-white
+                                    `}
                                 >
                                     <span>{uiLang === "kh" ? "មើលបន្ថែម" : "View More"}</span>
-                                    <ChevronRight className="w-4 h-4" />
+                                    <ChevronRight className="h-4 w-4" />
                                 </Link>
                             </div>
                         ) : null}
@@ -424,30 +373,30 @@ export function SemesterReportsSection({
             </div>
 
             <style jsx global>{`
-        .semesterReportsSwiper .swiper-wrapper {
-          align-items: stretch;
-        }
+                .semesterReportsSwiper .swiper-wrapper {
+                align-items: stretch;
+                }
 
-        .semesterReportsSwiper .swiper-slide {
-          height: auto;
-          display: flex;
-        }
+                .semesterReportsSwiper .swiper-slide {
+                display: flex;
+                height: auto;
+                }
 
-        .semesterReportsSwiper .swiper-pagination {
-          bottom: 0 !important;
-        }
+                .semesterReportsSwiper .swiper-pagination {
+                bottom: 0 !important;
+                }
 
-        .semesterReportsSwiper .swiper-pagination-bullet {
-          width: 16px;
-          height: 16px;
-          background: #c98c64;
-          opacity: 1;
-        }
+                .semesterReportsSwiper .swiper-pagination-bullet {
+                width: 16px;
+                height: 16px;
+                background: #c98c64;
+                opacity: 1;
+                }
 
-        .semesterReportsSwiper .swiper-pagination-bullet-active {
-          background: #f39c3d;
-        }
-      `}</style>
+                .semesterReportsSwiper .swiper-pagination-bullet-active {
+                background: #f39c3d;
+                }
+            `}</style>
         </section>
     );
 }

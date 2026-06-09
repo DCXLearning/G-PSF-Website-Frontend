@@ -351,104 +351,104 @@ export default function ContactSection() {
     </div>
 
     <div className="h-full xl:col-span-4">
-        <div className="flex h-full min-h-[380px] flex-col space-y-8 rounded-3xl bg-[#1e2653] p-6 text-white shadow-lg md:min-h-[520px] md:p-8 xl:min-h-[680px]">
-            {settingsLoading ? (
-              <div className={bodyClass}>{t.loadingInfo}</div>
-            ) : settingsError ? (
-              <div className={`text-red-400 ${bodyClass}`}>{settingsError}</div>
-            ) : (
-              <>
-                <section>
-                  <h4 className={`mb-3 text-white ${mainTitleClass}`}>
-                    {t.address}
-                  </h4>
+        <div className="flex h-full min-h-[380px] flex-col space-y-8 rounded-3xl bg-[#1e2653] p-6 shadow-lg md:min-h-[520px] md:p-8 xl:min-h-[680px]">
+  {settingsLoading ? (
+    <div className={`!text-gray-200 ${bodyClass}`}>{t.loadingInfo}</div>
+  ) : settingsError ? (
+    <div className={`!text-red-400 ${bodyClass}`}>{settingsError}</div>
+  ) : (
+    <>
+      <section>
+        <h4 className={`mb-3 !text-white ${mainTitleClass}`}>
+          {t.address}
+        </h4>
 
-                  <div className={`text-gray-300 ${bodyClass}`}>
-                    {settings?.addressLines.map((line, idx) => (
-                      <p key={idx}>{line}</p>
-                    ))}
-                  </div>
-                </section>
+        <div className={`!text-gray-200 ${bodyClass}`}>
+          {settings?.addressLines.map((line, idx) => (
+            <p key={idx}>{line}</p>
+          ))}
+        </div>
+      </section>
 
-                <section className="space-y-4">
-                  <h4 className={`text-white ${mainTitleClass}`}>
-                    {t.contact}
-                  </h4>
+      <section className="space-y-4">
+        <h4 className={`!text-white ${mainTitleClass}`}>
+          {t.contact}
+        </h4>
 
-                  <div className={`space-y-1 text-gray-200 ${bodyClass}`}>
-                    {settings?.phones.map((p, idx) => (
-                      <p key={idx}>{p}</p>
-                    ))}
-                  </div>
+        <div className={`space-y-1 !text-gray-200 ${bodyClass}`}>
+          {settings?.phones.map((p, idx) => (
+            <p key={idx}>{p}</p>
+          ))}
+        </div>
 
-                  {settings?.desks.map((desk, index) => (
-                    <div key={`${desk.label}-${index}`} className="pt-2">
-                      <p className={`mb-3 text-white ${mainTitleClass}`}>
-                        {desk.label}
-                      </p>
+        {settings?.desks.map((desk, index) => (
+          <div key={`${desk.label}-${index}`} className="pt-2">
+            <p className={`mb-3 !text-white ${mainTitleClass}`}>
+              {desk.label}
+            </p>
 
-                      <div className="space-y-1">
-                        {desk.emails.map((em) => (
-                          <p
-                            key={em}
-                            className={`break-all text-gray-300 ${enBodyClass}`}
-                          >
-                            {em}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </section>
-
-                <section>
-                  <h4 className={`mb-3 text-white ${mainTitleClass}`}>
-                    {t.openTime}
-                  </h4>
-
-                  <p className={`text-gray-300 ${bodyClass}`}>
-                    {settings?.openDaysText}
-                  </p>
-
-                  <p className={`whitespace-pre-line font-medium text-white ${bodyClass}`}>
-                    {settings?.openTimeText}
-                  </p>
-                </section>
-
-                <section>
-                  <h4 className={`mb-3 text-white ${mainTitleClass}`}>
-                    {t.connected}
-                  </h4>
-
-                  <div className="flex items-center gap-4">
-                    {settings?.social.facebook && (
-                      <a
-                        href={settings.social.facebook}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label="Facebook"
-                        className="rounded-full bg-[#f39233] p-3 transition hover:bg-orange-400"
-                      >
-                        <Facebook size={20} />
-                      </a>
-                    )}
-
-                    {settings?.social.telegram && (
-                      <a
-                        href={settings.social.telegram}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label="Telegram"
-                        className="rounded-full bg-[#f39233] p-3 transition hover:bg-orange-400"
-                      >
-                        <Send size={20} />
-                      </a>
-                    )}
-                  </div>
-                </section>
-              </>
-            )}
+            <div className="space-y-1">
+              {desk.emails.map((em) => (
+                <p
+                  key={em}
+                  className={`break-all !text-gray-200 ${enBodyClass}`}
+                >
+                  {em}
+                </p>
+              ))}
+            </div>
           </div>
+        ))}
+      </section>
+
+      <section>
+        <h4 className={`mb-3 !text-white ${mainTitleClass}`}>
+          {t.openTime}
+        </h4>
+
+        <p className={`!text-gray-200 ${bodyClass}`}>
+          {settings?.openDaysText}
+        </p>
+
+        <p className={`whitespace-pre-line font-medium !text-gray-100 ${bodyClass}`}>
+          {settings?.openTimeText}
+        </p>
+      </section>
+
+      <section>
+        <h4 className={`mb-3 !text-white ${mainTitleClass}`}>
+          {t.connected}
+        </h4>
+
+        <div className="flex items-center gap-4 !text-white">
+          {settings?.social.facebook && (
+            <a
+              href={settings.social.facebook}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Facebook"
+              className="rounded-full bg-[#f39233] p-3 !text-white transition hover:bg-orange-400"
+            >
+              <Facebook size={20} />
+            </a>
+          )}
+
+          {settings?.social.telegram && (
+            <a
+              href={settings.social.telegram}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Telegram"
+              className="rounded-full bg-[#f39233] p-3 !text-white transition hover:bg-orange-400"
+            >
+              <Send size={20} />
+            </a>
+          )}
+        </div>
+      </section>
+    </>
+  )}
+</div>
         </div>
       </div>
 

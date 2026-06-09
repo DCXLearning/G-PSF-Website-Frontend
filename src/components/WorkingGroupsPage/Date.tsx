@@ -477,43 +477,43 @@ export default function WorkingGroupsDate() {
                 <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 md:grid-cols-3">
                     {calendarMonths.length > 0
                         ? calendarMonths.map((month) => (
-                              <Calendar
-                                  key={month.key}
-                                  month={month}
-                                  lang={lang}
-                                  highlightedDates={highlightedDates}
-                              />
-                          ))
+                            <Calendar
+                                key={month.key}
+                                month={month}
+                                lang={lang}
+                                highlightedDates={highlightedDates}
+                            />
+                        ))
                         : Array.from({ length: 3 }).map((_, index) => (
-                              <div
-                                  key={`calendar-placeholder-${index}`}
-                                  className="flex h-full flex-col overflow-visible rounded-xl border border-gray-100 bg-[#f4f6f7] shadow-sm"
-                              >
-                                  <div className="py-3 text-center sm:py-4">
-                                      <div className="mx-auto h-7 w-24 rounded bg-gray-200/80" />
-                                  </div>
+                            <div
+                                key={`calendar-placeholder-${index}`}
+                                className="flex h-full flex-col overflow-visible rounded-xl border border-gray-100 bg-[#f4f6f7] shadow-sm"
+                            >
+                                <div className="py-3 text-center sm:py-4">
+                                    <div className="mx-auto h-7 w-24 rounded bg-gray-200/80" />
+                                </div>
 
-                                  <div className="grid grid-cols-7 bg-gray-200/50 py-2">
-                                      {Array.from({ length: 7 }).map((__, dayIndex) => (
-                                          <div
-                                              key={`placeholder-day-label-${index}-${dayIndex}`}
-                                              className="h-4"
-                                          />
-                                      ))}
-                                  </div>
+                                <div className="grid grid-cols-7 bg-gray-200/50 py-2">
+                                    {Array.from({ length: 7 }).map((__, dayIndex) => (
+                                        <div
+                                            key={`placeholder-day-label-${index}-${dayIndex}`}
+                                            className="h-4"
+                                        />
+                                    ))}
+                                </div>
 
-                                  <div className="grid flex-grow grid-cols-7 gap-y-2 p-3 auto-rows-[32px] sm:p-4">
-                                      {Array.from({ length: 35 }).map(
-                                          (__, dayIndex) => (
-                                              <div
-                                                  key={`placeholder-day-cell-${index}-${dayIndex}`}
-                                                  className="mx-auto h-6 w-6 rounded-full bg-gray-200/70"
-                                              />
-                                          )
-                                      )}
-                                  </div>
-                              </div>
-                          ))}
+                                <div className="grid flex-grow grid-cols-7 gap-y-2 p-3 auto-rows-[32px] sm:p-4">
+                                    {Array.from({ length: 35 }).map(
+                                        (__, dayIndex) => (
+                                            <div
+                                                key={`placeholder-day-cell-${index}-${dayIndex}`}
+                                                className="mx-auto h-6 w-6 rounded-full bg-gray-200/70"
+                                            />
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                 </div>
 
                 <div className="mt-8 flex justify-center sm:mt-12">
@@ -521,7 +521,7 @@ export default function WorkingGroupsDate() {
                         <Link
                             href={showMoreHref}
                             className={`
-                                rounded-md bg-[#2c3e50] px-8 py-3 text-white shadow-lg
+                                rounded-md bg-[#2c3e50] px-8 py-3 !text-white shadow-lg
                                 transition-colors hover:bg-[#34495e] sm:px-10
                                 ${buttonFontClass}
                             `}

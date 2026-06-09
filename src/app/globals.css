@@ -42,7 +42,7 @@
 }
 
 /* =========================
-   Base Font
+    Base Font
 ========================= */
 
 body {
@@ -50,11 +50,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Auto mixed font:
-   - English uses Airbnb Cereal
-   - Khmer fallback uses Kantumruy Pro
-   - Works even when language switch and content language are different
-*/
 .khmer-font,
 .airbnb-font {
   font-family: "Airbnb Cereal", var(--font-kantumruy-pro), system-ui, sans-serif;
@@ -74,23 +69,23 @@ body {
 ========================= */
 
 :root {
-  /* Auto mixed font stack */
+  /*====== Auto mixed font stack ======*/
   --auto-font-stack: "Airbnb Cereal", var(--font-kantumruy-pro), system-ui, sans-serif;
 
-  /* Main card title */
+  /*===== Main card title =====*/
   --main-title-en-size: 21px;
   --main-title-km-size: 22px;
   --main-title-line-height: 32px;
 
-  /* Banner title / middle title */
+  /*==== Banner title / middle title ====*/
   --title-en-size: 19px;
   --title-km-size: 22px;
 
-  /* Body text */
+  /*==== Body text ====*/
   --body-en-size: 14px;
   --body-km-size: 15px;
 
-  /* Line height */
+  /*==== Line height ====*/
   --body-line-height: 30px;
   --title-en-line-height: 42px;
   --title-km-line-height: 35px;
@@ -100,7 +95,7 @@ body {
   --header-letter-spacing: 0.7px;
 }
 
-/* Tablet */
+/*====== Tablet ======*/
 @media (min-width: 768px) {
   :root {
     --title-en-size: 28px;
@@ -113,7 +108,7 @@ body {
   }
 }
 
-/* Small Desktop */
+/*====== Small Desktop ======*/
 @media (min-width: 1024px) {
   :root {
     --title-en-size: 32px;
@@ -138,7 +133,7 @@ body {
    Utility Classes
 ========================= */
 
-/* Main title for card title: EN 21px / KM 22px */
+/*====== Main title for card title: EN 21px / KM 22px ======*/
 .main-title,
 .main-title-en,
 .main-title-km {
@@ -150,23 +145,26 @@ body {
   letter-spacing: var(--header-letter-spacing);
 }
 
-/* English class but Khmer content can fallback to Khmer font */
+/*==== English class but Khmer content can fallback to Khmer font ====*/
 .main-title-en {
   font-family: var(--auto-font-stack);
   font-size: var(--main-title-en-size) !important;
   line-height: var(--main-title-line-height);
   font-weight: 800;
+  color: #172554;
+
 }
 
-/* Khmer class but English content still uses Airbnb font */
+/*===== Khmer class but English content still uses Airbnb font =====*/
 .main-title-km {
   font-family: var(--auto-font-stack);
   font-size: var(--main-title-km-size) !important;
   line-height: var(--main-title-line-height);
   font-weight: 700;
+  color: #172554;
 }
 
-/* Auto main-title by language */
+/*====== Auto main-title by language ======*/
 html[lang="en"] .main-title,
 body[data-language="en"] .main-title {
   font-family: var(--auto-font-stack);
@@ -185,7 +183,7 @@ body[data-language="kh"] .main-title {
   font-weight: 700;
 }
 
-/* English banner title / middle title */
+/*====== English banner title / middle title ======*/
 .title-en,
 .banner-title-en,
 .middle-title-en {
@@ -194,9 +192,10 @@ body[data-language="kh"] .main-title {
   line-height: var(--title-en-line-height);
   letter-spacing: var(--header-letter-spacing);
   font-weight: 800;
+  color: #172554;
 }
 
-/* Khmer banner title / middle title */
+/*======= Khmer banner title / middle title =======*/
 .title-km,
 .banner-title-km,
 .middle-title-km {
@@ -205,15 +204,17 @@ body[data-language="kh"] .main-title {
   line-height: var(--title-km-line-height);
   letter-spacing: var(--header-letter-spacing);
   font-weight: 700;
+  color: #172554;
 }
 
-/* English body text */
+/*====== English body text ======*/
 .body-en {
   font-family: var(--auto-font-stack);
   font-size: var(--body-en-size);
   line-height: var(--body-line-height);
   letter-spacing: var(--text-letter-spacing);
   font-weight: 400;
+  color: #1F2937;
 }
 
 /* Khmer body text */
@@ -223,6 +224,7 @@ body[data-language="kh"] .main-title {
   line-height: var(--body-line-height);
   letter-spacing: var(--text-letter-spacing);
   font-weight: 400;
+  color: #1F2937;
 }
 
 /* Old class support */

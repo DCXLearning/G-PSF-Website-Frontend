@@ -61,7 +61,7 @@ function writeCache(blocks: Block[]) {
     if (typeof window === "undefined") return;
     localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
   } catch {
-    // ignore cache error
+    
   }
 }
 
@@ -107,8 +107,8 @@ export default function WorkingGroups16() {
     : "body-en airbnb-font !font-bold tracking-[0.7px]";
 
   const descriptionFontClass = isKh
-    ? "body-km khmer-font !font-bold"
-    : "body-en airbnb-font !font-bold tracking-[0.5px]";
+    ? "body-km khmer-font"
+    : "body-en airbnb-font tracking-[0.5px]";
 
   useEffect(() => {
     setMounted(true);

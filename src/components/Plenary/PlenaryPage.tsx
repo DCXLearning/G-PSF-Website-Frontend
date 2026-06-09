@@ -262,8 +262,7 @@ const PlenaryPage: React.FC = () => {
     const titleFontClass = isKh ? "title-km" : "title-en";
     const bodyFontClass = isKh ? "body-km" : "body-en";
 
-    // Timeline item title: use global body font, but bold.
-    const itemTitleFontClass = isKh ? "body-km !font-bold" : "body-en !font-bold";
+    const itemTitleFontClass = isKh ? "body-km" : "body-en";
 
     const [copy, setCopy] = useState(FALLBACK_COPY);
     const [objectivesTitle, setObjectivesTitle] = useState(FALLBACK_OBJECTIVES_TITLE);
@@ -398,7 +397,7 @@ const PlenaryPage: React.FC = () => {
                             className={`
                                 mt-8 max-w-md translate-x-0 whitespace-pre-line text-[#1e3a8a]
                                 sm:translate-x-8 md:translate-x-32
-                                ${bodyFontClass} !font-bold
+                                ${bodyFontClass}
                             `}
                         >
                             {t.desc}

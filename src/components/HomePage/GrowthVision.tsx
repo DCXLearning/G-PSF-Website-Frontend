@@ -140,7 +140,7 @@ function Card({
 
                     <h3
                         className={`
-                            mb-2 text-white
+                            mb-2 !text-white
                             !whitespace-normal !overflow-visible !text-clip
                             ${mainTitleFontClass}
                         `}
@@ -148,7 +148,7 @@ function Card({
                         {title}
                     </h3>
 
-                    <p className={`text-white/90 ${bodyFontClass}`}>
+                    <p className={`!text-white/90 ${bodyFontClass}`}>
                         {description}
                     </p>
                 </div>
@@ -180,7 +180,7 @@ function Card({
 
                 <h3
                     className={`
-                        mb-2 text-gray-900
+                        mb-2 text-blue-950
                         !whitespace-normal !overflow-visible !text-clip
                         ${mainTitleFontClass}
                     `}
@@ -365,7 +365,7 @@ export default function GrowthVision() {
         <div className="container relative mx-auto max-w-7xl px-4 py-16">
             <h2
                 className={`
-                    mb-12 whitespace-pre-line text-gray-900
+                    mb-12 whitespace-pre-line text-blue-950
                     ${titleFontClass}
                 `}
             >
