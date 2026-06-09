@@ -295,13 +295,13 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
       </div>
 
       <div className="relative z-10 flex w-full max-w-5xl flex-col items-center justify-center px-4 pt-68 pb-3 text-center sm:pb-2">
-        <p className={`mb-4 text-white sm:mb-6 ${bodyFontClass}`}>
+        <p className={`mb-4 !text-white sm:mb-6 ${bodyFontClass}`}>
           {titleLine}
         </p>
 
         <h1
           className={`
-            mb-4 max-w-5xl break-words text-white sm:mb-6
+            mb-4 max-w-5xl break-words !text-white sm:mb-6
             ${titleFontClass}
           `}
         >
@@ -311,7 +311,7 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
         {subtitle ? (
           <p
             className={`
-              mb-4 max-w-4xl break-words text-white sm:mb-6
+              mb-4 max-w-4xl break-words !text-white sm:mb-6
               ${bodyFontClass}
             `}
           >
@@ -325,7 +325,7 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             className={`
-              inline-flex rounded-2xl bg-blue-500 px-4 py-2 text-white shadow-xl
+              inline-flex rounded-2xl bg-blue-500 px-4 py-2 !text-white shadow-xl
               transition duration-300 hover:scale-105 hover:bg-blue-700
               focus:outline-none focus:ring-4 focus:ring-blue-500/50
               sm:px-8 sm:py-3 md:px-12 md:py-4
