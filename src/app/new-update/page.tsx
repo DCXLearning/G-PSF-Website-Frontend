@@ -18,19 +18,21 @@ export const revalidate = 0;
 // is a "Latest" carousel, not the full archive — users use "See More" for that.
 const DEFAULT_STRIP_LIMIT = 6;
 
+type ApiText = { en?: string; km?: string; kh?: string };
+
 type ApiPostRaw = {
   id?: number;
   slug?: string;
-  title?: { en?: string; km?: string };
-  description?: { en?: string; km?: string };
+  title?: ApiText;
+  description?: ApiText;
   status?: string;
   coverImage?: string | null;
   images?: Array<{ url?: string }>;
   publishedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
-  category?: { name?: { en?: string; km?: string } };
-  workingGroup?: { title?: { en?: string; km?: string } } | null;
+  category?: { name?: ApiText };
+  workingGroup?: { title?: ApiText } | null;
   documents?: {
     en?: { url?: string } | null;
     km?: { url?: string } | null;
@@ -70,10 +72,13 @@ function getText(value?: string | null): string {
   return text === "." ? "" : text;
 }
 
-function getLocalizedText(value?: { en?: string; km?: string }): LocalizedText {
+function getLocalizedText(value?: ApiText): LocalizedText {
+  const en = getText(value?.en);
+  const km = getText(value?.km) || getText(value?.kh) || en;
+
   return {
-    en: getText(value?.en),
-    km: getText(value?.km),
+    en: en || km,
+    km,
   };
 }
 
@@ -84,10 +89,42 @@ function timestamp(post: ApiPostRaw): number {
   return Number.isFinite(t) ? t : 0;
 }
 
-function toCard(post: ApiPostRaw, fallbackIndex: number): NewUpdateData[number] {
-  const title = getText(post.title?.en) || getText(post.title?.km);
+function mergeText(primary?: ApiText, fallback?: ApiText): ApiText {
+  const primaryText = getLocalizedText(primary);
+  const fallbackText = getLocalizedText(fallback);
+
   return {
-    id: post.id ?? fallbackIndex + 1,
+    en: primaryText.en || fallbackText.en || fallbackText.km,
+    km: primaryText.km || fallbackText.km || fallbackText.en,
+  };
+}
+
+function mergePost(primary: ApiPostRaw, fallback: ApiPostRaw): ApiPostRaw {
+  return {
+    ...fallback,
+    ...primary,
+    title: mergeText(primary.title, fallback.title),
+    description: mergeText(primary.description, fallback.description),
+    coverImage:
+      getText(primary.coverImage ?? undefined) ||
+      getText(fallback.coverImage ?? undefined) ||
+      null,
+    images:
+      Array.isArray(primary.images) && primary.images.length > 0
+        ? primary.images
+        : fallback.images,
+    category: primary.category ?? fallback.category,
+    workingGroup: primary.workingGroup ?? fallback.workingGroup,
+    documents: primary.documents ?? fallback.documents,
+  };
+}
+
+function toCard(post: ApiPostRaw, fallbackIndex: number): NewUpdateData[number] {
+    const titleText = getLocalizedText(post.title);
+    const descriptionText = getLocalizedText(post.description);
+
+    return {
+        id: post.id ?? fallbackIndex + 1,
     slug: getText(post.slug),
     createdAt:
       getText(post.publishedAt ?? undefined) ||
@@ -98,8 +135,8 @@ function toCard(post: ApiPostRaw, fallbackIndex: number): NewUpdateData[number] 
     category: post.workingGroup?.title
       ? getLocalizedText(post.workingGroup.title)
       : getLocalizedText(post.category?.name),
-    title,
-    excerpt: getText(post.description?.en) || getText(post.description?.km),
+    title: titleText,
+    excerpt: descriptionText,
     imageUrl:
       getText(post.coverImage ?? undefined) ||
       getText(post.images?.[0]?.url),
@@ -156,7 +193,15 @@ async function getNewAndUpdateSection(): Promise<NewUpdateData> {
     if (typeof post.id === "number") byId.set(post.id, post);
   }
   for (const post of sectionNewsOnly) {
-    if (typeof post.id === "number" && !byId.has(post.id)) {
+    if (typeof post.id !== "number") {
+      continue;
+    }
+
+    const existingPost = byId.get(post.id);
+
+    if (existingPost) {
+      byId.set(post.id, mergePost(existingPost, post));
+    } else {
       byId.set(post.id, post);
     }
   }
@@ -169,7 +214,7 @@ async function getNewAndUpdateSection(): Promise<NewUpdateData> {
   for (let index = 0; index < merged.length; index += 1) {
     const post = merged[index];
     const card = toCard(post, index);
-    if (!card.title) continue;
+    if (!card.title.en && !card.title.km) continue;
     cards.push(card);
     if (cards.length >= stripLimit) break;
   }

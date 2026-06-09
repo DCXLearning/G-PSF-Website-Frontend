@@ -21,20 +21,35 @@ const FETCH_POOL = 50; // pool we sample from before sorting/slicing to 6
 const HEADING = { en: "News & Updates", km: "ព័ត៌មាន និងបច្ចុប្បន្នភាព" };
 const DESCRIPTION = { en: "", km: "" };
 
+function cleanText(value: any) {
+    const text = typeof value === "string" ? value.trim() : "";
+    return text === "." ? "" : text;
+}
+
 function normalizeText(value: any) {
     if (!value) return { en: "", km: "" };
 
     if (typeof value === "string") {
-        const text = value.trim();
+        const text = cleanText(value);
         return { en: text, km: text };
     }
 
+    const en = cleanText(value?.en);
+    const km = cleanText(value?.km) || cleanText(value?.kh) || en;
+
     return {
-        en: typeof value?.en === "string" ? value.en.trim() : "",
-        km:
-            (typeof value?.km === "string" ? value.km.trim() : "") ||
-            (typeof value?.kh === "string" ? value.kh.trim() : "") ||
-            (typeof value?.en === "string" ? value.en.trim() : ""),
+        en: en || km,
+        km,
+    };
+}
+
+function mergeText(primary: any, fallback: any) {
+    const primaryText = normalizeText(primary);
+    const fallbackText = normalizeText(fallback);
+
+    return {
+        en: primaryText.en || fallbackText.en || fallbackText.km,
+        km: primaryText.km || fallbackText.km || fallbackText.en,
     };
 }
 
@@ -60,6 +75,23 @@ function timestamp(post: any): number {
     if (!value) return 0;
     const t = new Date(value).getTime();
     return Number.isFinite(t) ? t : 0;
+}
+
+function mergePost(primary: any, fallback: any) {
+    return {
+        ...fallback,
+        ...primary,
+        title: mergeText(primary?.title, fallback?.title),
+        description: mergeText(primary?.description, fallback?.description),
+        coverImage: cleanText(primary?.coverImage) || cleanText(fallback?.coverImage),
+        images:
+            Array.isArray(primary?.images) && primary.images.length > 0
+                ? primary.images
+                : fallback?.images,
+        category: primary?.category ?? fallback?.category,
+        workingGroup: primary?.workingGroup ?? fallback?.workingGroup,
+        documents: primary?.documents ?? fallback?.documents,
+    };
 }
 
 async function fetchJson(url: string): Promise<any | null> {
@@ -111,7 +143,15 @@ export async function GET() {
             if (typeof post?.id === "number") byId.set(post.id, post);
         }
         for (const post of sectionNewsOnly) {
-            if (typeof post?.id === "number" && !byId.has(post.id)) {
+            if (typeof post?.id !== "number") {
+                continue;
+            }
+
+            const existingPost = byId.get(post.id);
+
+            if (existingPost) {
+                byId.set(post.id, mergePost(existingPost, post));
+            } else {
                 byId.set(post.id, post);
             }
         }

@@ -72,6 +72,7 @@ async function getCurrentLocale(): Promise<Locale> {
     const cookieStore = await cookies();
 
     const locale =
+        cookieStore.get("app-language")?.value ||
         cookieStore.get("NEXT_LOCALE")?.value ||
         cookieStore.get("language")?.value ||
         cookieStore.get("locale")?.value ||

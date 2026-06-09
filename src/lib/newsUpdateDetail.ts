@@ -212,11 +212,61 @@ function mergePostWithFallback(
         images: primaryPost.images?.length
             ? primaryPost.images
             : fallbackPost.images,
-        description: primaryPost.description ?? fallbackPost.description,
+        description: mergeI18nText(primaryPost.description, fallbackPost.description),
         category: primaryPost.category ?? fallbackPost.category,
         workingGroup: primaryPost.workingGroup ?? fallbackPost.workingGroup,
-        title: primaryPost.title ?? fallbackPost.title,
-        content: primaryPost.content ?? fallbackPost.content,
+        title: mergeI18nText(primaryPost.title, fallbackPost.title),
+        content: mergeContent(primaryPost.content, fallbackPost.content),
+    };
+}
+
+function isLocalizedContent(value: CmsPost["content"]) {
+    return Boolean(
+        value &&
+            typeof value === "object" &&
+            !isTiptapDoc(value) &&
+            ("en" in value || "km" in value || "kh" in value)
+    );
+}
+
+function mergeContent(
+    primaryContent?: CmsPost["content"],
+    fallbackContent?: CmsPost["content"]
+): CmsPost["content"] {
+    if (!primaryContent) {
+        return fallbackContent;
+    }
+
+    if (!fallbackContent) {
+        return primaryContent;
+    }
+
+    if (isLocalizedContent(primaryContent) || isLocalizedContent(fallbackContent)) {
+        const primary = isLocalizedContent(primaryContent) ? primaryContent : {};
+        const fallback = isLocalizedContent(fallbackContent) ? fallbackContent : {};
+
+        return {
+            en: primary.en ?? fallback.en,
+            km: primary.km ?? primary.kh ?? fallback.km ?? fallback.kh,
+            kh: primary.kh ?? primary.km ?? fallback.kh ?? fallback.km,
+        };
+    }
+
+    return primaryContent;
+}
+
+function mergeI18nText(
+    primaryText?: LocalizedText | string | null,
+    fallbackText?: LocalizedText | string | null
+) {
+    const primaryEn = pickI18nText(primaryText, "en");
+    const primaryKm = pickI18nText(primaryText, "km");
+    const fallbackEn = pickI18nText(fallbackText, "en");
+    const fallbackKm = pickI18nText(fallbackText, "km");
+
+    return {
+        en: primaryEn || fallbackEn || fallbackKm,
+        km: primaryKm || fallbackKm || fallbackEn,
     };
 }
 
@@ -399,8 +449,28 @@ async function getNewsFeedPost(
     const sectionPosts = getPostsFromResponse(sectionResponse).filter(
         (post) => !hasDocument(post)
     );
+    const postsById = new Map<string, CmsPost>();
+    const postsWithoutId: CmsPost[] = [];
 
-    return findPostInList([...workingGroupPosts, ...sectionPosts], slug, id) ?? null;
+    for (const post of [...workingGroupPosts, ...sectionPosts]) {
+        const postId = cleanText(String(post.id ?? ""));
+
+        if (!postId) {
+            postsWithoutId.push(post);
+            continue;
+        }
+
+        const existingPost = postsById.get(postId);
+        postsById.set(
+            postId,
+            existingPost ? mergePostWithFallback(existingPost, post) : post
+        );
+    }
+
+    return (
+        findPostInList([...postsById.values(), ...postsWithoutId], slug, id) ??
+        null
+    );
 }
 
 async function getSectionPost(

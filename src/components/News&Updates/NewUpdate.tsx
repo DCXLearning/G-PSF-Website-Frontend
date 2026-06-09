@@ -22,8 +22,8 @@ export type NewsUpdateCard = {
     createdAt: string;
     category?: LocalizedText;
     group?: string;
-    title: string;
-    excerpt: string;
+    title: LocalizedText;
+    excerpt: LocalizedText;
     imageUrl: string;
 };
 
@@ -65,6 +65,9 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
     const titleClass = isKh ? "title-km" : "title-en";
     const mainTitleClass = isKh ? "main-title-km" : "main-title-en";
     const bodyClass = isKh ? "body-km" : "body-en";
+    const noDescriptionText = isKh
+        ? "មិនមានការពិពណ៌នា។"
+        : "No description available.";
 
     return (
         <section className="relative overflow-hidden bg-white py-16">
@@ -108,6 +111,21 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                 isKh,
                                 getCategoryFallback(item.group, isKh)
                             );
+                            const titleText = pickLocalizedText(
+                                item.title,
+                                isKh,
+                                isKh ? "គ្មានចំណងជើង" : "Untitled"
+                            );
+                            const cleanExcerpt = pickLocalizedText(
+                                item.excerpt,
+                                isKh,
+                                ""
+                            ).trim();
+                            const hasExcerpt =
+                                cleanExcerpt.length > 0 && cleanExcerpt !== ".";
+                            const descriptionText = hasExcerpt
+                                ? cleanExcerpt
+                                : noDescriptionText;
 
                             const detailHref = {
                                 pathname: "/new-update/view-detail",
@@ -133,7 +151,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                 {item.imageUrl ? (
                                                     <Image
                                                         src={item.imageUrl}
-                                                        alt={item.title}
+                                                        alt={titleText}
                                                         fill
                                                         className="object-cover transition duration-500 group-hover:scale-105"
                                                     />
@@ -168,9 +186,9 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                         group-hover:underline
                                                         ${mainTitleClass}
                                                     `}
-                                                    title={item.title}
+                                                    title={titleText}
                                                 >
-                                                    {item.title}
+                                                    {titleText}
                                                 </h3>
 
                                                 <p
@@ -179,7 +197,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                         ${bodyClass}
                                                     `}
                                                 >
-                                                    {item.excerpt || "No description available."}
+                                                    {descriptionText}
                                                 </p>
 
                                                 <div

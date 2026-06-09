@@ -93,15 +93,20 @@ function uiToApiLang(language: UiLang): ApiLang {
   return language === "kh" ? "km" : "en";
 }
 
+function cleanText(value?: string) {
+  const text = value?.trim() ?? "";
+  return text === "." ? "" : text;
+}
+
 function getText(value: LangText | undefined, language: UiLang) {
   if (!value) return "";
-  if (typeof value === "string") return value;
+  if (typeof value === "string") return cleanText(value);
 
   if (language === "kh") {
-    return value.km || value.kh || value.en || "";
+    return cleanText(value.km) || cleanText(value.kh) || cleanText(value.en);
   }
 
-  return value.en || value.km || value.kh || "";
+  return cleanText(value.en) || cleanText(value.km) || cleanText(value.kh);
 }
 
 function getContentBlocks(post: PostItem, language: UiLang): ContentBlock[] {
@@ -208,7 +213,7 @@ export default function NewsUpdateListPage() {
       return {
         ...item,
         title,
-        excerpt,
+        excerpt: excerpt.trim() === "." ? "" : excerpt.trim(),
         imageUrl,
         date,
         detailPath,

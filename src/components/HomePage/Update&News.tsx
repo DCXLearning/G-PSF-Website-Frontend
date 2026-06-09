@@ -36,13 +36,22 @@ interface ApiResponse {
   message?: string;
 }
 
+function cleanText(value?: string) {
+  const text = value?.trim() ?? "";
+  return text === "." ? "" : text;
+}
+
 function getText(value: MultiLangText, isKhmer: boolean) {
   if (!value) return "";
-  if (typeof value === "string") return value;
+  if (typeof value === "string") return cleanText(value);
 
   return isKhmer
-    ? value?.km || value?.kh || value?.en || ""
-    : value?.en || value?.km || value?.kh || "";
+    ? cleanText(value?.km) || cleanText(value?.kh) || cleanText(value?.en)
+    : cleanText(value?.en) || cleanText(value?.km) || cleanText(value?.kh);
+}
+
+function getDescriptionText(value: MultiLangText, isKhmer: boolean) {
+  return getText(value, isKhmer);
 }
 
 function NewsCardSkeleton() {
@@ -70,6 +79,9 @@ export default function Update_News() {
   const mainTitleFontClass = isKhmer ? "main-title-km" : "main-title-en";
   const bodyFontClass = isKhmer ? "body-km" : "body-en";
   const buttonFontClass = isKhmer ? "khmer-font" : "airbnb-font";
+  const noDescriptionText = isKhmer
+    ? "មិនមានការពិពណ៌នា។"
+    : "No description available.";
 
   const [heading, setHeading] = useState<MultiLangText>({
     en: "News & Updates",
@@ -183,62 +195,63 @@ export default function Update_News() {
               }}
               className="mb-6"
             >
-              {items.map((item) => (
-                <SwiperSlide key={item.id}>
-                  <Link href={item.link} className="group block h-full">
-                    <div
-                      className="flex h-[450px] flex-col overflow-hidden rounded-xl border border-gray-500 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-2"
-                      style={{ boxShadow: "0 10px 25px rgba(0,0,0,0.3)" }}
-                    >
-                      {/* Image */}
-                      <div className="h-[220px] w-full flex-shrink-0 overflow-hidden bg-slate-100">
-                        <img
-                          src={item.image || "/image/placeholder.png"}
-                          alt={getText(item.title, isKhmer) || "news"}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      </div>
+              {items.map((item) => {
+                const descriptionText = getDescriptionText(item.description, isKhmer);
 
-                      {/* Content */}
-                      <div className="flex flex-1 flex-col p-6">
-                        <h3
-                          className={`
-                            mb-3 h-[64px] line-clamp-2 text-gray-800
-                            !whitespace-normal !overflow-hidden !text-clip
-                            ${mainTitleFontClass}
-                          `}
-                        >
-                          {getText(item.title, isKhmer)}
-                        </h3>
+                return (
+                  <SwiperSlide key={item.id}>
+                    <Link href={item.link} className="group block h-full">
+                      <div
+                        className="flex h-[450px] flex-col overflow-hidden rounded-xl border border-gray-500 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-2"
+                        style={{ boxShadow: "0 10px 25px rgba(0,0,0,0.3)" }}
+                      >
+                        {/* Image */}
+                        <div className="h-[220px] w-full flex-shrink-0 overflow-hidden bg-slate-100">
+                          <img
+                            src={item.image || "/image/placeholder.png"}
+                            alt={getText(item.title, isKhmer) || "news"}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
 
-                        <p
-                          className={`
-                            mb-4 line-clamp-2 text-gray-600
-                            ${bodyFontClass}
-                          `}
-                        >
-                          {getText(item.description, isKhmer) ||
-                            (isKhmer
-                              ? "មិនមានការពិពណ៌នា"
-                              : "No description available.")}
-                        </p>
+                        {/* Content */}
+                        <div className="flex flex-1 flex-col p-6">
+                          <h3
+                            className={`
+                              mb-3 h-[64px] line-clamp-2 text-gray-800
+                              !whitespace-normal !overflow-hidden !text-clip
+                              ${mainTitleFontClass}
+                            `}
+                          >
+                            {getText(item.title, isKhmer)}
+                          </h3>
 
-                        <div
-                          className={`
-                            mt-auto flex items-center gap-2 font-bold text-[#1A1D42]
-                            ${buttonFontClass}
-                          `}
-                        >
-                          {isKhmer ? "មើលលម្អិត" : "View details"}
-                          <span className="transition-transform group-hover:translate-x-1">
-                            →
-                          </span>
+                          <p
+                            className={`
+                              mb-4 line-clamp-2 text-gray-600
+                              ${bodyFontClass}
+                            `}
+                          >
+                            {descriptionText || noDescriptionText}
+                          </p>
+
+                          <div
+                            className={`
+                              mt-auto flex items-center gap-2 font-bold text-[#1A1D42]
+                              ${buttonFontClass}
+                            `}
+                          >
+                            {isKhmer ? "មើលលម្អិត" : "View details"}
+                            <span className="transition-transform group-hover:translate-x-1">
+                              →
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                </SwiperSlide>
-              ))}
+                    </Link>
+                  </SwiperSlide>
+                );
+              })}
             </Swiper>
 
             {/* Pagination */}

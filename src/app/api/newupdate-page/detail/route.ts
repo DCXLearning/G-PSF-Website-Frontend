@@ -15,6 +15,38 @@ export const revalidate = 0;
 const SECTION_ID = 4;
 const PAGE_SIZE = 50;
 
+function cleanText(value: any) {
+  const text = typeof value === "string" ? value.trim() : "";
+  return text === "." ? "" : text;
+}
+
+function normalizeText(value: any) {
+  if (!value) return { en: "", km: "" };
+
+  if (typeof value === "string") {
+    const text = cleanText(value);
+    return { en: text, km: text };
+  }
+
+  const en = cleanText(value?.en);
+  const km = cleanText(value?.km) || cleanText(value?.kh) || en;
+
+  return {
+    en: en || km,
+    km,
+  };
+}
+
+function mergeText(primary: any, fallback: any) {
+  const primaryText = normalizeText(primary);
+  const fallbackText = normalizeText(fallback);
+
+  return {
+    en: primaryText.en || fallbackText.en || fallbackText.km,
+    km: primaryText.km || fallbackText.km || fallbackText.en,
+  };
+}
+
 function hasDocument(post: any): boolean {
   const en = post?.documents?.en?.url;
   const km = post?.documents?.km?.url;
@@ -22,6 +54,23 @@ function hasDocument(post: any): boolean {
     (typeof en === "string" && en.trim()) ||
       (typeof km === "string" && km.trim())
   );
+}
+
+function mergePost(primary: any, fallback: any) {
+  return {
+    ...fallback,
+    ...primary,
+    title: mergeText(primary?.title, fallback?.title),
+    description: mergeText(primary?.description, fallback?.description),
+    coverImage: cleanText(primary?.coverImage) || cleanText(fallback?.coverImage),
+    images:
+      Array.isArray(primary?.images) && primary.images.length > 0
+        ? primary.images
+        : fallback?.images,
+    category: primary?.category ?? fallback?.category,
+    workingGroup: primary?.workingGroup ?? fallback?.workingGroup,
+    documents: primary?.documents ?? fallback?.documents,
+  };
 }
 
 function timestamp(post: any): number {
@@ -86,7 +135,15 @@ export async function GET() {
       if (typeof post?.id === "number") byId.set(post.id, post);
     }
     for (const post of sectionNewsOnly) {
-      if (typeof post?.id === "number" && !byId.has(post.id)) {
+      if (typeof post?.id !== "number") {
+        continue;
+      }
+
+      const existingPost = byId.get(post.id);
+
+      if (existingPost) {
+        byId.set(post.id, mergePost(existingPost, post));
+      } else {
         byId.set(post.id, post);
       }
     }

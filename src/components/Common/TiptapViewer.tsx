@@ -680,7 +680,17 @@ export default function TiptapViewer({
   useEffect(() => {
     if (!editor) return;
 
-    editor.commands.setContent(viewerContent);
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled || editor.isDestroyed) return;
+
+      editor.commands.setContent(viewerContent);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [editor, viewerContent]);
 
   useEffect(() => {
