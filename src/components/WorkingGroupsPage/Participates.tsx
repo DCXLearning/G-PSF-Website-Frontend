@@ -165,12 +165,12 @@ const Participates: React.FC = () => {
                                 <div
                                     key={item.id}
                                     className="
-                                    flex h-full min-h-[420px] flex-col
-                                    items-start overflow-hidden rounded-2xl
-                                    border border-gray-100 bg-white
-                                    px-8 pb-8 pt-8 text-left shadow-2xl
-                                    transition-all hover:-translate-y-1
-                                "
+                                        flex h-full min-h-[420px] flex-col
+                                        items-center overflow-hidden rounded-2xl
+                                        border border-gray-100 bg-white
+                                        px-2 pb-8 pt-8 text-center shadow-2xl
+                                        transition-all hover:-translate-y-1
+                                    "
                                 >
                                     <div className="-mt-12 mb-10 flex h-25 w-full justify-center">
                                         <div className="rounded-t-sm rounded-b-[100px] bg-[#1e234a] p-8 shadow-md">
@@ -185,13 +185,13 @@ const Participates: React.FC = () => {
 
                                     <h3
                                         className={`
-                                        mb-6 min-h-[100px]
-                                        line-clamp-2
-                                        text-left text-[#01265a]
-                                        leading-[1.35] tracking-normal
-                                        !whitespace-normal !overflow-visible
-                                        ${mainTitleFontClass}
-                                    `}
+                                            mb-6 flex min-h-[100px] w-full
+                                            items-center justify-center
+                                            text-center text-[#01265a]
+                                            leading-[1.35] tracking-normal
+                                            !whitespace-normal !overflow-visible
+                                            ${mainTitleFontClass}
+                                        `}
                                     >
                                         {item.title}
                                     </h3>

@@ -250,9 +250,6 @@ const ListWorkingGroups: React.FC<ListWorkingGroupsProps> = ({
 
         const orderIndex = rawOrderIndex >= 0 ? rawOrderIndex : 0;
 
-        // The Khmer label already carries its own native prefix
-        // ("ក្រុមការងារ គ៖ …"), so prepending an English "WG C:" would duplicate
-        // it. Only the English label needs the "WG <letter>:" prefix.
         setWorkingGroupTitle(
           apiLang === "km" ? label : `WG ${toAlpha(orderIndex)}: ${label}`,
         );
