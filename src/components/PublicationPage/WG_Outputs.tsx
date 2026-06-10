@@ -351,7 +351,7 @@ export function WGOutputsSection({
                 <div className="mt-10 flex justify-center">
                     <Link
                         href="/wg-outputs"
-                        className={`rounded-md bg-blue-950 px-5 py-1.5 text-white transition-colors hover:bg-blue-900 ${bodyClass} !font-bold !text-white`}
+                        className={`rounded-md bg-blue-950 px-5 py-1.5 text-white transition-colors hover:bg-blue-900 ${bodyClass} !font-medium !text-white`}
                     >
                         {isKh ? "មើលបន្ថែម" : "See More"}
                     </Link>
