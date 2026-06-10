@@ -111,6 +111,7 @@ function getPostDate(post: ApiPost) {
 
 function buildDetailHref(post: ApiPost) {
     const slug = post.slug?.trim() || "";
+
     if (slug) {
         return `/new-update/view-detail?slug=${encodeURIComponent(slug)}&id=${post.id}`;
     }
@@ -417,7 +418,9 @@ export default function EventsAndAnnouncements() {
                                 <PostCardSkeleton />
                             </>
                         ) : eventPosts.length === 0 ? (
-                            <div className={`rounded-2xl border border-gray-200 bg-white p-8 text-gray-500 ${bodyClass}`}>
+                            <div
+                                className={`rounded-2xl border border-gray-200 bg-white p-8 text-gray-500 ${bodyClass}`}
+                            >
                                 {eventError || labels.noEvents}
                             </div>
                         ) : (
@@ -499,25 +502,6 @@ export default function EventsAndAnnouncements() {
                                                         >
                                                             {toLocalizedNumber(cell.day, apiLang)}
                                                         </div>
-
-                                                        {(highlightedDate.title ||
-                                                            highlightedDate.description) && (
-                                                            <div
-                                                                className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl bg-[#1f2937] px-3 py-2 text-left text-white shadow-xl group-hover:block ${smallFontClass}`}
-                                                            >
-                                                                {highlightedDate.title && (
-                                                                    <p className="whitespace-pre-line text-xs font-semibold sm:text-sm">
-                                                                        {highlightedDate.title}
-                                                                    </p>
-                                                                )}
-
-                                                                {highlightedDate.description && (
-                                                                    <p className="mt-2 whitespace-pre-line text-[11px] leading-5 text-white/85 sm:text-xs">
-                                                                        {highlightedDate.description}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        )}
                                                     </Link>
                                                 );
                                             }
@@ -563,7 +547,9 @@ export default function EventsAndAnnouncements() {
                                 <PostCardSkeleton />
                             </>
                         ) : announcementPosts.length === 0 ? (
-                            <div className={`min-h-[252px] border border-gray-200 p-6 text-gray-500 ${bodyClass}`}>
+                            <div
+                                className={`min-h-[252px] border border-gray-200 p-6 text-gray-500 ${bodyClass}`}
+                            >
                                 {announcementError || labels.noAnnouncements}
                             </div>
                         ) : (
@@ -603,7 +589,10 @@ export default function EventsAndAnnouncements() {
                                             >
                                                 {categoryName}
                                                 {post.publishedAt
-                                                    ? ` • ${formatLocalizedDate(post.publishedAt, apiLang)}`
+                                                    ? ` • ${formatLocalizedDate(
+                                                          post.publishedAt,
+                                                          apiLang
+                                                      )}`
                                                     : ""}
                                             </span>
 
@@ -626,14 +615,23 @@ export default function EventsAndAnnouncements() {
                                                     href={documentUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={`mt-auto flex items-center text-[13px] font-bold hover:text-orange-500 ${
-                                                        useKhmerFont
-                                                            ? "khmer-font normal-case"
-                                                            : "airbnb-font uppercase tracking-tighter"
-                                                    }`}
+                                                    className={`
+                                                        mt-auto inline-flex w-fit items-center justify-center gap-2
+                                                        rounded-md bg-[#f5a20a] px-5 py-2.5
+                                                        text-[13px] font-bold !text-white no-underline
+                                                        transition hover:bg-[#ea9805]
+                                                        hover:!text-white hover:no-underline
+                                                        ${
+                                                            useKhmerFont
+                                                                ? "khmer-font normal-case"
+                                                                : "airbnb-font uppercase tracking-tighter"
+                                                        }
+                                                    `}
                                                 >
-                                                    {labels.download}
-                                                    <span className="ml-1 mb-[3px] text-lg">›</span>
+                                                    <span>{labels.download}</span>
+                                                    <span className="mb-[2px] text-lg leading-none">
+                                                        ›
+                                                    </span>
                                                 </Link>
                                             )}
                                         </div>

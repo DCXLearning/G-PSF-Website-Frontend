@@ -293,7 +293,7 @@ export function WGOutputsSection({
                                 {featuredTitle}
                             </h4>
 
-                            <p className={`mb-8 line-clamp-4 text-gray-800 ${bodyClass}`}>
+                            <p className={`mb-8 line-clamp-6 text-gray-800 ${bodyClass}`}>
                                 {featuredDescription}
                             </p>
 
@@ -302,17 +302,29 @@ export function WGOutputsSection({
                                     href={pickDocUrl(featured, apiLang)}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className={`inline-flex items-center gap-2 rounded bg-[#f39c32] px-6 py-2 text-[#1e2756] transition-all hover:bg-[#e68a1e] ${bodyClass} !font-bold`}
+                                    className={`
+                                        inline-flex w-full max-w-[320px] items-center justify-center gap-2
+                                        rounded-md bg-[#f5a20a] px-6 py-2.5
+                                        text-center !text-white no-underline
+                                        transition hover:bg-[#ea9805] hover:no-underline
+                                        ${bodyClass} !font-bold
+                                    `}
                                 >
-                                    {isKh ? "ទាញយក" : "Download"}
+                                    <span>{isKh ? "ទាញយក" : "Downloadg"}</span>
                                     <ChevronRight size={16} />
                                 </a>
                             ) : (
                                 <button
+                                    type="button"
                                     disabled
-                                    className={`inline-flex cursor-not-allowed items-center gap-2 rounded bg-gray-200 px-6 py-2 text-gray-500 ${bodyClass} !font-bold`}
+                                    className={`
+                                        inline-flex w-full max-w-[320px] cursor-not-allowed items-center justify-center gap-2
+                                        rounded-md bg-gray-300 px-6 py-2.5
+                                        text-center !text-white
+                                        ${bodyClass} !font-bold
+                                    `}
                                 >
-                                    {isKh ? "ទាញយក" : "Download"}
+                                    <span>{isKh ? "មិនមានឯកសារ" : "No document"}</span>
                                     <ChevronRight size={16} />
                                 </button>
                             )}
@@ -400,22 +412,41 @@ function ArticleCard({
                 {description || ""}
             </p>
 
-            {downloadUrl ? (
-                <a
-                    href={downloadUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`flex items-center gap-1 text-[#1e2756] hover:underline ${bodyClass} !font-bold`}
-                >
-                    {isKh ? "ទាញយក" : "Download"}
-                    <ChevronRight size={14} />
-                </a>
-            ) : (
-                <span className={`flex items-center gap-1 text-gray-400 ${bodyClass} !font-bold`}>
-                    {isKh ? "ទាញយក" : "Download"}
-                    <ChevronRight size={14} />
-                </span>
-            )}
+            <div className="flex w-full justify-center">
+    {downloadUrl ? (
+        <a
+            href={downloadUrl}
+            target="_blank"
+            rel="noreferrer"
+            className={`
+                inline-flex w-full max-w-[320px]
+                items-center justify-center gap-2
+                rounded-md bg-[#f5a20a] px-6 py-2.5
+                text-center !text-white no-underline
+                transition hover:bg-[#ea9805] hover:no-underline
+                ${bodyClass} !font-bold
+            `}
+        >
+            <span>{isKh ? "ទាញយក" : "Download"}</span>
+            <ChevronRight size={16} />
+        </a>
+    ) : (
+        <button
+            type="button"
+            disabled
+            className={`
+                inline-flex w-full max-w-[320px]
+                cursor-not-allowed items-center justify-center gap-2
+                rounded-md bg-gray-300 px-6 py-2.5
+                text-center !text-white
+                ${bodyClass} !font-bold
+            `}
+        >
+            <span>{isKh ? "មិនមានឯកសារ" : "No document"}</span>
+            <ChevronRight size={16} />
+        </button>
+    )}
+</div>
         </div>
     );
 }

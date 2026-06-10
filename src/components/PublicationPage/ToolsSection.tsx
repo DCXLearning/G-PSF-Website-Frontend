@@ -73,9 +73,7 @@ function writeCache(apiLang: ApiLang, block: ApiBlock | null) {
 
     try {
         sessionStorage.setItem(getCacheKey(apiLang), JSON.stringify(block));
-    } catch {
-        // ignore
-    }
+    } catch {}
 }
 
 function pickToolsBlock(json: ApiResponse): ApiBlock | null {
@@ -275,10 +273,10 @@ export function ToolsSectionContent({
 
                                     <h3
                                         className={`
-                      mb-4 max-w-full text-slate-800
-                      ${mainTitleClass}
-                      !block !overflow-hidden !text-ellipsis !whitespace-nowrap
-                    `}
+                                            mb-4 max-w-full text-slate-800
+                                            ${mainTitleClass}
+                                            !block !overflow-hidden !text-ellipsis !whitespace-nowrap
+                                        `}
                                         title={title}
                                     >
                                         {title}
@@ -288,19 +286,46 @@ export function ToolsSectionContent({
                                         {description}
                                     </p>
 
-                                    <a
-                                        href={docUrl || "#"}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className={`
-                      flex items-center gap-2 rounded-lg border border-orange-400
-                      px-8 py-2 text-slate-800 transition-colors hover:bg-orange-50 hover:underline
-                      ${bodyClass} !font-bold
-                      ${!docUrl ? "pointer-events-none opacity-50" : ""}
-                    `}
-                                    >
-                                        {downloadText} <span className="text-xs">›</span>
-                                    </a>
+                                    <div className="mt-auto flex w-full justify-center pt-2">
+                                        {docUrl ? (
+                                            <a
+                                                href={docUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className={`
+                                                    inline-flex w-full max-w-[320px]
+                                                    items-center justify-center gap-2
+                                                    rounded-md bg-[#f5a20a]
+                                                    px-7 py-3
+                                                    text-center !text-white no-underline
+                                                    shadow-sm transition-all duration-200
+                                                    hover:bg-[#ea9805] hover:no-underline
+                                                    ${bodyClass} !font-bold
+                                                `}
+                                            >
+                                                <span>{downloadText}</span>
+                                                <span className="text-xl leading-none">›</span>
+                                            </a>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                disabled
+                                                className={`
+                                                    inline-flex w-full max-w-[320px]
+                                                    cursor-not-allowed items-center justify-center gap-2
+                                                    rounded-md bg-gray-300
+                                                    px-7 py-3
+                                                    text-center !text-white
+                                                    ${bodyClass} !font-bold
+                                                `}
+                                            >
+                                                <span>
+                                                    {uiLang === "kh" ? "មិនមានឯកសារ" : "No document"}
+                                                </span>
+                                                <span className="text-xl leading-none">›</span>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })}
@@ -312,10 +337,10 @@ export function ToolsSectionContent({
                         <Link
                             href="/templates-and-forms"
                             className={`
-                rounded-lg bg-[#1e1e4b] px-6 py-2 text-white
-                transition-colors hover:bg-[#15153a]
-                ${bodyClass} !font-bold !text-white
-              `}
+                                rounded-lg bg-[#1e1e4b] px-6 py-2 text-white
+                                transition-colors hover:bg-[#15153a]
+                                ${bodyClass} !font-bold !text-white
+                            `}
                         >
                             {seeMoreText}
                         </Link>

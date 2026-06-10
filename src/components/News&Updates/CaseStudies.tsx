@@ -85,9 +85,58 @@ function writeCache(block: ApiBlock | null) {
 
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(block));
-    } catch {
-        // ignore cache errors
-    }
+    } catch {}
+}
+
+function ButtonGroup({
+    post,
+    docUrl,
+    t,
+    isKh,
+}: {
+    post: ApiPost;
+    docUrl: string;
+    t: { download: string; viewDetail: string };
+    isKh: boolean;
+}) {
+    const fontClass = isKh
+        ? "khmer-font normal-case tracking-normal"
+        : "airbnb-font uppercase tracking-widest";
+
+    return (
+        <div className="mt-auto flex flex-wrap items-center gap-4">
+            <a
+                href={docUrl || "#"}
+                target="_blank"
+                rel="noreferrer"
+                className={`
+                    inline-flex items-center justify-center gap-2
+                    rounded-md bg-[#f5a20a] px-5 py-2.5
+                    text-[13px] font-bold !text-white no-underline
+                    transition hover:bg-[#ea9805] hover:no-underline
+                    ${!docUrl ? "pointer-events-none opacity-60" : ""}
+                    ${fontClass}
+                `}
+            >
+                <span>{t.download}</span>
+                <span className="text-lg leading-none">›</span>
+            </a>
+
+            <Link
+                href={buildDetailHref(post)}
+                className={`
+                    inline-flex items-center justify-center gap-2
+                    rounded-md bg-[#1a2b4b] px-5 py-2.5
+                    text-[13px] font-bold !text-white no-underline
+                    transition hover:bg-[#111d35] hover:no-underline
+                    ${fontClass}
+                `}
+            >
+                <span>{t.viewDetail}</span>
+                <span className="text-lg leading-none">›</span>
+            </Link>
+        </div>
+    );
 }
 
 function SideCardSkeleton() {
@@ -95,8 +144,8 @@ function SideCardSkeleton() {
         <div className="flex flex-1 animate-pulse flex-col justify-center bg-[#e9ecef] p-12">
             <div className="mb-3 h-4 w-32 rounded bg-slate-200" />
             <div className="mb-4 h-10 w-3/4 rounded bg-slate-200" />
-            <div className="mb-2 h-4 w-full max-w-sm rounded bg-slate-200" />
-            <div className="mb-8 h-4 w-5/6 max-w-xs rounded bg-slate-200" />
+            <div className="mb-2 h-4 w-full rounded bg-slate-200" />
+            <div className="mb-8 h-4 w-full rounded bg-slate-200" />
             <div className="flex gap-6">
                 <div className="h-4 w-20 rounded bg-slate-200" />
                 <div className="h-4 w-24 rounded bg-slate-200" />
@@ -117,8 +166,8 @@ function FeaturedSkeleton() {
             <div className="bg-[#eceff1] p-10">
                 <div className="mb-4 h-5 w-40 rounded bg-slate-200" />
                 <div className="mb-4 h-12 w-3/4 rounded bg-slate-200" />
-                <div className="mb-2 h-4 w-full max-w-md rounded bg-slate-200" />
-                <div className="mb-8 h-4 w-5/6 max-w-sm rounded bg-slate-200" />
+                <div className="mb-2 h-4 w-full rounded bg-slate-200" />
+                <div className="mb-8 h-4 w-full rounded bg-slate-200" />
                 <div className="flex gap-6">
                     <div className="h-4 w-20 rounded bg-slate-200" />
                     <div className="h-4 w-24 rounded bg-slate-200" />
@@ -200,9 +249,7 @@ export function CaseStudiesSection({
                 }
             } catch (error) {
                 if (!alive) return;
-
-                const message = error instanceof Error ? error.message : "Fetch failed";
-                setError(message);
+                setError(error instanceof Error ? error.message : "Fetch failed");
             } finally {
                 if (alive) setLoading(false);
             }
@@ -218,9 +265,7 @@ export function CaseStudiesSection({
     const posts = useMemo(() => {
         const p = block?.posts || [];
 
-        if (showAllPosts) {
-            return p;
-        }
+        if (showAllPosts) return p;
 
         const limit = block?.settings?.limit ?? 3;
         return p.slice(0, limit);
@@ -277,7 +322,6 @@ export function CaseStudiesSection({
                 {showSkeleton ? (
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                         <FeaturedSkeleton />
-
                         <div className="flex flex-col gap-8">
                             <SideCardSkeleton />
                             <SideCardSkeleton />
@@ -303,9 +347,10 @@ export function CaseStudiesSection({
                                                 <span
                                                     className={`
                                                         text-xs font-bold text-gray-400
-                                                        ${isKh
-                                                            ? "khmer-font normal-case tracking-normal"
-                                                            : "airbnb-font uppercase tracking-widest"
+                                                        ${
+                                                            isKh
+                                                                ? "khmer-font normal-case tracking-normal"
+                                                                : "airbnb-font uppercase tracking-widest"
                                                         }
                                                     `}
                                                 >
@@ -316,14 +361,15 @@ export function CaseStudiesSection({
                                     </div>
                                 </div>
 
-                                <div className="bg-[#eceff1] p-10">
+                                <div className="bg-[#eceff1] p-15">
                                     <span
                                         className={`
                                             mb-4 inline-block rounded-full bg-[#1a2b4b]
                                             px-3 py-1 text-[10px] font-bold text-white
-                                            ${isKh
-                                                ? "khmer-font normal-case tracking-normal"
-                                                : "airbnb-font uppercase tracking-wider"
+                                            ${
+                                                isKh
+                                                    ? "khmer-font normal-case tracking-normal"
+                                                    : "airbnb-font uppercase tracking-wider"
                                             }
                                         `}
                                     >
@@ -333,7 +379,7 @@ export function CaseStudiesSection({
 
                                     <h3
                                         className={`
-                                            mb-4 max-w-md text-[#1a2b4b]
+                                            mb-4 w-full text-[#1a2b4b]
                                             !whitespace-normal !overflow-visible !text-clip
                                             ${titleClass}
                                         `}
@@ -341,46 +387,24 @@ export function CaseStudiesSection({
                                         {pickText(featured.title, uiLang) || "—"}
                                     </h3>
 
-                                    <p className={`mb-8 max-w-md text-gray-700 ${bodyClass}`}>
+                                    <p
+                                        className={`
+                                            mb-8 w-full text-gray-700
+                                            text-justify [text-align-last:left]
+                                            leading-[1.75]
+                                            ${bodyClass}
+                                        `}
+                                    >
                                         {pickText(featured.description ?? undefined, uiLang) ||
                                             t.fallbackDesc}
                                     </p>
 
-                                    <div className="flex flex-wrap items-center gap-6">
-                                        <a
-                                            href={pickDocUrl(featured, apiLanguage) || "#"}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className={`
-                                                flex items-center text-[13px] font-bold text-[#1a2b4b]
-                                                transition-colors hover:text-orange-600
-                                                ${!pickDocUrl(featured, apiLanguage)
-                                                    ? "pointer-events-none opacity-60"
-                                                    : ""
-                                                }
-                                                ${isKh
-                                                    ? "khmer-font normal-case tracking-normal"
-                                                    : "airbnb-font uppercase tracking-widest"
-                                                }
-                                            `}
-                                        >
-                                            {t.download} <span className="ml-2 mb-[3px] text-lg">›</span>
-                                        </a>
-
-                                        <Link
-                                            href={buildDetailHref(featured)}
-                                            className={`
-                                                flex items-center text-[13px] font-bold text-[#1a2b4b]
-                                                transition-colors hover:text-orange-600
-                                                ${isKh
-                                                    ? "khmer-font normal-case tracking-normal"
-                                                    : "airbnb-font uppercase tracking-widest"
-                                                }
-                                            `}
-                                        >
-                                            {t.viewDetail} <span className="ml-2 mb-[3px] text-lg">›</span>
-                                        </Link>
-                                    </div>
+                                    <ButtonGroup
+                                        post={featured}
+                                        docUrl={pickDocUrl(featured, apiLanguage)}
+                                        t={t}
+                                        isKh={isKh}
+                                    />
                                 </div>
                             </div>
                         )}
@@ -392,14 +416,15 @@ export function CaseStudiesSection({
                                 return (
                                     <div
                                         key={post.id}
-                                        className="flex flex-1 flex-col justify-center bg-[#e9ecef] p-12"
+                                        className="flex flex-1 flex-col justify-center bg-[#e9ecef] p-15"
                                     >
                                         <div
                                             className={`
                                                 mb-3 text-[13px] font-bold text-[#1a2b4b]
-                                                ${isKh
-                                                    ? "khmer-font normal-case tracking-normal"
-                                                    : "airbnb-font uppercase tracking-wider"
+                                                ${
+                                                    isKh
+                                                        ? "khmer-font normal-case tracking-normal"
+                                                        : "airbnb-font uppercase tracking-wider"
                                                 }
                                             `}
                                         >
@@ -409,7 +434,7 @@ export function CaseStudiesSection({
 
                                         <h3
                                             className={`
-                                                mb-4 text-[#1a2b4b]
+                                                mb-4 w-full text-[#1a2b4b]
                                                 !whitespace-normal !overflow-visible !text-clip
                                                 ${titleClass}
                                             `}
@@ -417,45 +442,24 @@ export function CaseStudiesSection({
                                             {pickText(post.title, uiLang) || "—"}
                                         </h3>
 
-                                        <p className={`mb-8 max-w-sm text-gray-700 ${bodyClass}`}>
+                                        <p
+                                            className={`
+                                                mb-8 w-full text-gray-700
+                                                text-justify [text-align-last:left]
+                                                leading-[1.75]
+                                                ${bodyClass}
+                                            `}
+                                        >
                                             {pickText(post.description ?? undefined, uiLang) ||
                                                 t.fallbackDesc}
                                         </p>
 
-                                        <div className="mt-auto flex flex-wrap items-center gap-6">
-                                            <a
-                                                href={docUrl || "#"}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className={`
-                                                    flex items-center text-[13px] font-bold text-[#1a2b4b]
-                                                    transition-colors hover:text-orange-600
-                                                    ${!docUrl ? "pointer-events-none opacity-60" : ""}
-                                                    ${isKh
-                                                        ? "khmer-font normal-case tracking-normal"
-                                                        : "airbnb-font uppercase tracking-widest"
-                                                    }
-                                                `}
-                                            >
-                                                {t.download}{" "}
-                                                <span className="ml-2 mb-[3px] text-lg">›</span>
-                                            </a>
-
-                                            <Link
-                                                href={buildDetailHref(post)}
-                                                className={`
-                                                    flex items-center text-[13px] font-bold text-[#1a2b4b]
-                                                    transition-colors hover:text-orange-600
-                                                    ${isKh
-                                                        ? "khmer-font normal-case tracking-normal"
-                                                        : "airbnb-font uppercase tracking-widest"
-                                                    }
-                                                `}
-                                            >
-                                                {t.viewDetail}{" "}
-                                                <span className="ml-2 mb-[3px] text-lg">›</span>
-                                            </Link>
-                                        </div>
+                                        <ButtonGroup
+                                            post={post}
+                                            docUrl={docUrl}
+                                            t={t}
+                                            isKh={isKh}
+                                        />
                                     </div>
                                 );
                             })}

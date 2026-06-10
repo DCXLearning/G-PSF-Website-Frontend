@@ -52,9 +52,7 @@ function buildDetailHref(post: ApiPost): string {
 function readCache(): ApiBlock | null {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
-
         if (!raw) return null;
-
         return JSON.parse(raw) as ApiBlock;
     } catch {
         return null;
@@ -66,9 +64,7 @@ function writeCache(block: ApiBlock | null) {
 
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(block));
-    } catch {
-        
-    }
+    } catch {}
 }
 
 function getImageSrc(src?: string | null) {
@@ -147,6 +143,8 @@ const BenefitCard: React.FC<BenefitCardProps> = ({
                 <p
                     className={`
                         mb-4 whitespace-pre-line text-gray-600
+                        text-justify [text-align-last:left]
+                        leading-[1.7]
                         ${bodyFontClass}
                     `}
                 >
@@ -300,19 +298,22 @@ export default function Benefits() {
 
     return (
         <section className="bg-white px-4 py-12 sm:px-8 md:px-16 md:py-16 lg:px-34">
-            <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-15">
+            <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-13">
                 <div className="mb-32 sm:mb-25 md:mb-56">
                     <h2 className={`text-blue-950 ${titleFontClass}`}>
                         {heading.h || (isKhmer ? "អត្ថប្រយោជន៍ G-PSF" : "G-PSF Benefit")}
                     </h2>
 
                     <div className="relative mt-6 sm:mt-8">
-                        <div className="absolute left-0 top-0 mb-4 h-1 w-20 rounded-full bg-orange-500 sm:left-4 sm:w-24 md:left-22 md:w-72" />
+                        <div className="absolute left-0 top-0 mb-4 h-1 w-20 rounded-full bg-orange-500 sm:left-4 sm:w-24 md:left-19 md:w-72" />
 
                         <p
                             className={`
                                 absolute left-0 top-0 mt-6 text-gray-700
-                                sm:left-4 md:left-22
+                                sm:left-4 md:left-19
+                                max-w-[560px]
+                                text-justify [text-align-last:left]
+                                leading-[1.7]
                                 ${bodyFontClass}
                             `}
                         >

@@ -168,8 +168,8 @@ const Footer: React.FC = () => {
     const footerFontClass = isKhmer ? "khmer-font" : "airbnb-font";
 
     const footerMainTitleClass = isKhmer
-        ? "main-title-km !whitespace-normal !overflow-visible !text-clip !text-black !mb-4"
-        : "main-title-en !whitespace-normal !overflow-visible !text-clip !text-black !mb-4";
+        ? "main-title-km !whitespace-normal !overflow-visible !text-clip !mb-4"
+        : "main-title-en !whitespace-normal !overflow-visible !text-clip !mb-4";
 
     const footerBodyTitleClass = isKhmer
         ? "body-km text-gray-700 hover:text-[#0808e1] transition-colors"

@@ -282,7 +282,7 @@ export default function PolicyDocuments() {
                             <div className="-mb-[30px] mt-8 flex justify-center">
                                 <Link
                                     href="/publication/detail"
-                                    className={`inline-flex items-center justify-center rounded-full bg-[#fb923c] px-6 py-2 text-white shadow-md hover:opacity-90 ${bodyClass} !font-medium !text-white`}
+                                    className={`inline-flex items-center justify-center rounded-full bg-[#f79a3b] uppercase px-6 py-2 text-white shadow-md hover:opacity-90 ${bodyClass} !font-medium !text-white`}
                                 >
                                     {isKh ? "មើលបន្ថែម" : "View More"}
                                     <span className="ml-2 text-lg">›</span>
@@ -291,26 +291,26 @@ export default function PolicyDocuments() {
                         </div>
 
                         <style jsx global>{`
-              .equal-card-swiper .swiper-wrapper {
-                align-items: stretch;
-              }
+                            .equal-card-swiper .swiper-wrapper {
+                                align-items: stretch;
+                            }
 
-              .equal-card-swiper .swiper-slide {
-                display: flex;
-                height: auto;
-              }
+                            .equal-card-swiper .swiper-slide {
+                                display: flex;
+                                height: auto;
+                            }
 
-              .custom-pagination .swiper-pagination-bullet {
-                width: 16px;
-                height: 16px;
-                background-color: #fb923c !important;
-                opacity: 0.6;
-              }
+                            .custom-pagination .swiper-pagination-bullet {
+                                width: 16px;
+                                height: 16px;
+                                background-color: #fb923c !important;
+                                opacity: 0.6;
+                            }
 
-              .custom-pagination .swiper-pagination-bullet-active {
-                opacity: 1;
-              }
-            `}</style>
+                            .custom-pagination .swiper-pagination-bullet-active {
+                                opacity: 1;
+                            }
+                        `}</style>
                     </>
                 )}
             </div>
@@ -384,15 +384,25 @@ function Card({
                             href={docUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`flex items-center tracking-wider text-[#1a2b4b] hover:underline ${bodyClass} !font-bold`}
+                            className={`
+                                flex w-full items-center justify-center gap-2
+                                rounded-md bg-[#f5a20a] px-6 py-2.5
+                                !text-white transition hover:bg-[#ea9805]
+                                ${bodyClass} !font-bold
+                            `}
                         >
                             {isKh ? "ទាញយក" : "Download"}
-                            <span className="ml-1 text-lg">›</span>
+                            <span className="text-xl leading-none">›</span>
                         </a>
                     ) : (
                         <button
                             disabled
-                            className={`flex cursor-not-allowed items-center tracking-wider text-gray-400 ${bodyClass} !font-bold`}
+                            className={`
+                                flex w-full cursor-not-allowed items-center justify-center gap-2
+                                rounded-md bg-gray-300 px-6 py-3
+                                text-white
+                                ${bodyClass} !font-bold
+                            `}
                         >
                             {isKh ? "មិនមានឯកសារ" : "No document"}
                         </button>
