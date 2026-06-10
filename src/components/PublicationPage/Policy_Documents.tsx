@@ -282,10 +282,9 @@ export default function PolicyDocuments() {
                             <div className="-mb-[30px] mt-8 flex justify-center">
                                 <Link
                                     href="/publication/detail"
-                                    className={`inline-flex items-center justify-center rounded-full bg-[#f79a3b] uppercase px-6 py-2 text-white shadow-md hover:opacity-90 ${bodyClass} !font-medium !text-white`}
+                                    className={`inline-flex items-center justify-center rounded-md bg-blue-950 hover:bg-blue-900 px-5 py-1.5 text-white shadow-md hover:opacity-90 ${bodyClass} !font-medium !text-white`}
                                 >
-                                    {isKh ? "មើលបន្ថែម" : "View More"}
-                                    <span className="ml-2 text-lg">›</span>
+                                    {isKh ? "មើលបន្ថែម" : "See More"}
                                 </Link>
                             </div>
                         </div>

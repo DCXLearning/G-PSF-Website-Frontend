@@ -337,8 +337,8 @@ export function ToolsSectionContent({
                         <Link
                             href="/templates-and-forms"
                             className={`
-                                rounded-lg bg-[#1e1e4b] px-6 py-2 text-white
-                                transition-colors hover:bg-[#15153a]
+                                rounded-lg bg-blue-950 px-5 py-1.5 text-white
+                                transition-colors hover:bg-blue-900
                                 ${bodyClass} !font-bold !text-white
                             `}
                         >

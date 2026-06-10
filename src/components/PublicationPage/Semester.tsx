@@ -356,15 +356,14 @@ export function SemesterReportsSection({
                                 <Link
                                     href="/publication/semester-reports/semester-view-more/17"
                                     className={`
-                                        inline-flex items-center gap-2 rounded-full
-                                        bg-[#f79a3b] px-6 py-2 uppercase text-white
-                                        shadow-md transition hover:bg-[#ee8f2d]
+                                        inline-flex items-center gap-2 rounded-md
+                                        bg-blue-950 px-5 py-1.5 text-white
+                                        shadow-md transition hover:bg-blue-900
                                         ${bodyClass}
                                         !font-medium !text-white
                                     `}
                                 >
-                                    <span>{uiLang === "kh" ? "មើលបន្ថែម" : "View More"}</span>
-                                    <ChevronRight className="h-4 w-4" />
+                                    <span>{uiLang === "kh" ? "មើលបន្ថែម" : "See More"}</span>
                                 </Link>
                             </div>
                         ) : null}
