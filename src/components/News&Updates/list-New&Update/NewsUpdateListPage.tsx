@@ -11,11 +11,12 @@ import { formatLocalizedDate } from "@/utils/localizedDate";
 import Pagination from "@/components/Pagination";
 import SocialShareButtons from "./SocialShareButtons";
 
-// Same items-per-page as Publication so the two pages feel consistent.
 const ITEMS_PER_PAGE = 6;
+const API_URL = "/api/newupdate-page/detail";
 
 type UiLang = "en" | "kh";
 type ApiLang = "en" | "km";
+type ViewMode = "list" | "grid";
 
 type LangText = string | { en?: string; km?: string; kh?: string };
 
@@ -37,18 +38,9 @@ type PostItem = {
   status?: string;
   isPublished?: boolean;
   content?: {
-    en?: {
-      type?: string;
-      content?: ContentBlock[];
-    };
-    km?: {
-      type?: string;
-      content?: ContentBlock[];
-    };
-    kh?: {
-      type?: string;
-      content?: ContentBlock[];
-    };
+    en?: { type?: string; content?: ContentBlock[] };
+    km?: { type?: string; content?: ContentBlock[] };
+    kh?: { type?: string; content?: ContentBlock[] };
   };
 };
 
@@ -58,11 +50,7 @@ type ApiResponse = {
   data: PostItem[];
 };
 
-type ViewMode = "list" | "grid";
-
-const API_URL = "/api/newupdate-page/detail";
-
-const text = {
+const pageText = {
   en: {
     latest: "Latest",
     title: "News & Updates",
@@ -94,37 +82,29 @@ function uiToApiLang(language: UiLang): ApiLang {
 }
 
 function cleanText(value?: string) {
-  const text = value?.trim() ?? "";
-  return text === "." ? "" : text;
+  const txt = value?.trim() ?? "";
+  return txt === "." ? "" : txt;
 }
 
 function getText(value: LangText | undefined, language: UiLang) {
   if (!value) return "";
   if (typeof value === "string") return cleanText(value);
 
-  if (language === "kh") {
-    return cleanText(value.km) || cleanText(value.kh) || cleanText(value.en);
-  }
-
-  return cleanText(value.en) || cleanText(value.km) || cleanText(value.kh);
+  return language === "kh"
+    ? cleanText(value.km) || cleanText(value.kh) || cleanText(value.en)
+    : cleanText(value.en) || cleanText(value.km) || cleanText(value.kh);
 }
 
 function getContentBlocks(post: PostItem, language: UiLang): ContentBlock[] {
-  if (language === "kh") {
-    return (
-      post.content?.km?.content ||
-      post.content?.kh?.content ||
-      post.content?.en?.content ||
-      []
-    );
-  }
-
-  return (
-    post.content?.en?.content ||
-    post.content?.km?.content ||
-    post.content?.kh?.content ||
-    []
-  );
+  return language === "kh"
+    ? post.content?.km?.content ||
+        post.content?.kh?.content ||
+        post.content?.en?.content ||
+        []
+    : post.content?.en?.content ||
+        post.content?.km?.content ||
+        post.content?.kh?.content ||
+        [];
 }
 
 function getThumbnail(post: PostItem, language: UiLang) {
@@ -140,20 +120,24 @@ function getThumbnail(post: PostItem, language: UiLang) {
 
 export default function NewsUpdateListPage() {
   const { language } = useLanguage();
-  const uiLanguage = (language as UiLang) || "en";
-  const t = text[uiLanguage];
+
+  const currentLang = String(language || "en").toLowerCase();
+  const isKh =
+    currentLang === "kh" || currentLang === "km" || currentLang === "khmer";
+
+  const uiLanguage: UiLang = isKh ? "kh" : "en";
+  const apiLang = uiToApiLang(uiLanguage);
+  const t = pageText[uiLanguage];
+
+  const mainTitleFontClass = isKh ? "main-title-km" : "main-title-en";
+  const titleFontClass = isKh ? "title-km" : "title-en";
+  const bodyFontClass = isKh ? "body-km" : "body-en";
 
   const [items, setItems] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [hasError, setHasError] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Reset to first page when the underlying data or the view mode changes so
-  // the user doesn't land on a now-empty page after filtering / refetching.
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [items, viewMode]);
 
   useEffect(() => {
     let mounted = true;
@@ -161,12 +145,9 @@ export default function NewsUpdateListPage() {
     async function loadData() {
       try {
         setLoading(true);
-        setError("");
+        setHasError(false);
 
-        const res = await fetch(API_URL, {
-          cache: "no-store",
-        });
-
+        const res = await fetch(API_URL, { cache: "no-store" });
         const json: ApiResponse = await res.json();
 
         if (!res.ok) {
@@ -177,12 +158,20 @@ export default function NewsUpdateListPage() {
           (item) => item.isPublished === true || item.status === "published"
         );
 
-        if (mounted) setItems(publishedOnly);
+        if (mounted) {
+          setItems(publishedOnly);
+        }
       } catch (err) {
         console.error(err);
-        if (mounted) setError(t.error);
+
+        if (mounted) {
+          setItems([]);
+          setHasError(true);
+        }
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
 
@@ -191,24 +180,27 @@ export default function NewsUpdateListPage() {
     return () => {
       mounted = false;
     };
-  }, [t.error]);
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [items.length, viewMode]);
 
   const content = useMemo(() => {
     return items.map((item) => {
       const title = getText(item.title, uiLanguage);
       const excerpt = getText(item.description, uiLanguage);
       const imageUrl = getThumbnail(item, uiLanguage);
+
       const date = formatLocalizedDate(
         item.publishedAt || item.createdAt,
-        uiLanguage
+        apiLang
       );
 
       const detailPath = buildNewsDetailPath({
         id: item.id,
         slug: item.slug,
       });
-
-      const shareUrl = buildAbsoluteUrl(detailPath);
 
       return {
         ...item,
@@ -217,14 +209,13 @@ export default function NewsUpdateListPage() {
         imageUrl,
         date,
         detailPath,
-        shareUrl,
+        shareUrl: buildAbsoluteUrl(detailPath),
       };
     });
-  }, [items, uiLanguage]);
+  }, [items, uiLanguage, apiLang]);
 
-  // Paginated slice (window of ITEMS_PER_PAGE) plus a guard that snaps the page
-  // back into range if the data shrinks while the user is on a high page.
   const totalPages = Math.max(1, Math.ceil(content.length / ITEMS_PER_PAGE));
+
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
@@ -238,6 +229,7 @@ export default function NewsUpdateListPage() {
 
   function handlePageChange(nextPage: number) {
     setCurrentPage(nextPage);
+
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -246,113 +238,139 @@ export default function NewsUpdateListPage() {
   return (
     <section className="min-h-screen bg-[#eef0f3] py-10 md:py-14">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="mb-10 center flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-2xl font-bold text-gray-900 md:text-3xl">
+            <p className={`${mainTitleFontClass} text-[#0f2347]`}>
               {t.latest}
             </p>
-            <h1 className="mt-1 text-4xl font-extrabold text-[#0f2347] md:text-5xl">
+
+            <h1 className={`${titleFontClass} mt-1 text-[#0f2347]`}>
               {t.title}
             </h1>
+
             <div className="mt-4 h-1.5 w-60 bg-orange-500" />
           </div>
 
-          <div className="mt-10 flex items-center gap-2 self-start rounded-lg bg-white p-1 shadow-sm">
+          <div className="mt-10 flex items-center gap-1 self-start rounded-lg bg-white p-1 shadow-sm">
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition ${viewMode === "list"
-                ? "bg-[#273650] text-white"
-                : "text-[#273650] hover:bg-gray-100"
-                }`}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                viewMode === "list"
+                  ? "bg-[#273650] text-white"
+                  : "text-[#273650] hover:bg-gray-100"
+              }`}
             >
-              <List size={18} />
+              <List size={15} />
               {t.list}
             </button>
 
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition ${viewMode === "grid"
-                ? "bg-[#273650] text-white"
-                : "text-[#273650] hover:bg-gray-100"
-                }`}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                viewMode === "grid"
+                  ? "bg-[#273650] text-white"
+                  : "text-[#273650] hover:bg-gray-100"
+              }`}
             >
-              <Grid3X3 size={18} />
+              <Grid3X3 size={15} />
               {t.grid}
             </button>
           </div>
         </div>
 
-        {loading && <div className="py-2 text-center">{t.loading}</div>}
-
-        {error && !loading && (
-          <div className="rounded bg-white px-6 py-10 text-center text-red-600 shadow-sm">
-            {error}
+        {loading && (
+          <div
+            className={`${bodyFontClass} rounded bg-white px-6 py-10 text-center shadow-sm`}
+          >
+            {t.loading}
           </div>
         )}
 
-        {!loading && !error && content.length === 0 && (
-          <div className="rounded bg-white px-6 py-10 text-center shadow-sm">
+        {hasError && !loading && (
+          <div
+            className={`${bodyFontClass} rounded bg-white px-6 py-10 text-center text-red-600 shadow-sm`}
+          >
+            {t.error}
+          </div>
+        )}
+
+        {!loading && !hasError && content.length === 0 && (
+          <div
+            className={`${bodyFontClass} rounded bg-white px-6 py-10 text-center shadow-sm`}
+          >
             {t.empty}
           </div>
         )}
 
-        {!loading && !error && viewMode === "list" && (
+        {!loading && !hasError && viewMode === "list" && (
           <div>
             {paginatedContent.map((item, index) => (
               <article
                 key={item.id}
-                className={`grid grid-cols-1 gap-6 pb-10 md:grid-cols-[200px_minmax(0,1fr)] md:items-center md:gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10 ${index !== paginatedContent.length - 1
-                  ? "mb-10 border-b border-gray-300"
-                  : ""
-                  }`}
+                className={`grid grid-cols-1 gap-6 pb-10 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10 ${
+                  index !== paginatedContent.length - 1
+                    ? "mb-10 border-b border-gray-300"
+                    : ""
+                }`}
               >
                 <Link href={item.detailPath} className="group block">
-                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-white shadow-md md:h-[260px] md:aspect-auto">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-white shadow-md md:h-[270px] md:aspect-auto">
                     {item.imageUrl ? (
                       <Image
                         src={item.imageUrl}
-                        alt={item.title}
+                        alt={item.title || t.cover}
                         fill
+                        unoptimized
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-white px-4 text-center text-xl font-semibold text-[#0f2347] md:text-2xl">
+                      <div
+                        className={`${bodyFontClass} flex h-full w-full items-center justify-center bg-gray-100 text-gray-400`}
+                      >
                         {t.cover}
                       </div>
                     )}
                   </div>
                 </Link>
 
-                <div className="flex min-w-0 flex-col justify-center pt-1">
-                  <Link href={item.detailPath} className="block">
-                    <h2 className="mt-3 text-xl khmer-font font-bold leading-tight text-[#0f2347] hover:underline md:text-xl lg:text-[25px]">
+                <div className="flex min-w-0 flex-col justify-between pt-1">
+                  <div>
+                    <h2
+                      className={`${mainTitleFontClass} line-clamp-2 !whitespace-normal text-[#0f2347]`}
+                    >
                       {item.title}
                     </h2>
-                  </Link>
 
-                  <p className="mt-4 max-w-4xl text-sm leading-7 khmer-font text-[#4f6482] md:text-base md:leading-8 lg:text-[19px]">
-                    {item.excerpt || t.noDescription}
-                  </p>
+                    <p
+                      className={`${bodyFontClass} mt-4 max-w-4xl line-clamp-3 text-[#4f6482]`}
+                    >
+                      {item.excerpt || t.noDescription}
+                    </p>
+                  </div>
 
                   <div className="mt-6 flex flex-col gap-3 pt-4">
-                    <Link
-                      href={item.detailPath}
-                      className="inline-block w-fit text-base font-bold text-[#0f2347] underline md:text-lg lg:text-[18px]"
+                    <div
+                      className={`${bodyFontClass} flex items-center gap-2 text-[#6a7b96]`}
                     >
-                      {t.viewDetails}
-                    </Link>
-
-                    <div className="flex items-center gap-2 text-sm text-[#6b7890]">
-                      <CalendarDays className="h-4 w-4" />
+                      <CalendarDays className="h-4 w-4 shrink-0" />
                       <span>{item.date}</span>
                     </div>
 
-                    <SocialShareButtons
-                      shareUrl={item.shareUrl}
-                      title={item.title}
-                    />
+                    <div className="flex items-center justify-between gap-4">
+                      <Link
+                        href={item.detailPath}
+                        className={`${bodyFontClass} font-bold text-[#0f2347] underline transition hover:text-blue-700`}
+                      >
+                        {t.viewDetails}
+                      </Link>
+
+                      <SocialShareButtons
+                        shareUrl={item.shareUrl}
+                        title={item.title}
+                      />
+                    </div>
                   </div>
                 </div>
               </article>
@@ -360,58 +378,69 @@ export default function NewsUpdateListPage() {
           </div>
         )}
 
-        {!loading && !error && viewMode === "grid" && (
-          <div className="grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
+        {!loading && !hasError && viewMode === "grid" && (
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
             {paginatedContent.map((item) => (
               <article
                 key={item.id}
-                className="overflow-hidden rounded bg-white shadow-sm"
+                className="group flex h-full flex-col overflow-hidden bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
-                <Link href={item.detailPath} className="group block">
-                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-white">
+                <Link href={item.detailPath} className="block">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
                     {item.imageUrl ? (
                       <Image
                         src={item.imageUrl}
-                        alt={item.title}
+                        alt={item.title || t.cover}
                         fill
+                        unoptimized
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-white px-4 text-center text-xl font-semibold text-[#0f2347]">
+                      <div
+                        className={`${bodyFontClass} flex h-full w-full items-center justify-center text-gray-400`}
+                      >
                         {t.cover}
                       </div>
                     )}
                   </div>
                 </Link>
 
-                <div className="p-5">
-                  <Link href={item.detailPath} className="block">
-                    <h2 className="line-clamp-2 khmer-font text-xl font-bold leading-tight text-[#0f2347] hover:underline">
+                <div className="flex h-full grow flex-col justify-between p-5">
+                  <div>
+                    <h2
+                      className={`${mainTitleFontClass} line-clamp-2 !whitespace-normal text-[#0f2347]`}
+                    >
                       {item.title}
                     </h2>
-                  </Link>
 
-                  <p className="mt-3 line-clamp-2 khmer-font text-sm leading-7 text-[#4f6482]">
-                    {item.excerpt || t.noDescription}
-                  </p>
-
-                  <Link
-                    href={item.detailPath}
-                    className="mt-5 block text-base font-bold text-[#0f2347] underline"
-                  >
-                    {t.viewDetails}
-                  </Link>
-
-                  <div className="mt-4 flex items-center gap-2 text-sm text-[#6b7890]">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{item.date}</span>
+                    <p
+                      className={`${bodyFontClass} mt-4 line-clamp-4 text-[#4f6482]`}
+                    >
+                      {item.excerpt || t.noDescription}
+                    </p>
                   </div>
 
-                  <div className="mt-4">
-                    <SocialShareButtons
-                      shareUrl={item.shareUrl}
-                      title={item.title}
-                    />
+                  <div className="mt-6 flex flex-col gap-3 pt-5">
+                    <div
+                      className={`${bodyFontClass} flex items-center gap-2 text-[#6a7b96]`}
+                    >
+                      <CalendarDays className="h-4 w-4 shrink-0" />
+                      <span>{item.date}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4">
+                      <Link
+                        href={item.detailPath}
+                        className={`${bodyFontClass} font-bold text-[#0f2347] underline transition hover:text-blue-700`}
+                      >
+                        {t.viewDetails}
+                      </Link>
+
+                      <SocialShareButtons
+                        shareUrl={item.shareUrl}
+                        title={item.title}
+                      />
+                    </div>
                   </div>
                 </div>
               </article>
@@ -419,14 +448,16 @@ export default function NewsUpdateListPage() {
           </div>
         )}
 
-        {!loading && !error && content.length > ITEMS_PER_PAGE ? (
-          <Pagination
-            currentPage={currentPage}
-            totalItems={content.length}
-            itemsPerPage={ITEMS_PER_PAGE}
-            onPageChange={handlePageChange}
-          />
-        ) : null}
+        {!loading && !hasError && content.length > ITEMS_PER_PAGE && (
+          <div className="mt-10">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={content.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,14 +1,15 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
+import { FaArrowRight } from "react-icons/fa";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
-import { FaArrowRight } from "react-icons/fa";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -19,9 +20,7 @@ type LangText = string | { en?: string; km?: string; kh?: string };
 
 type ContentBlock = {
     type?: string;
-    attrs?: {
-        src?: string;
-    };
+    attrs?: { src?: string };
 };
 
 type PostItem = {
@@ -37,18 +36,9 @@ type PostItem = {
     status?: string;
     isPublished?: boolean;
     content?: {
-        en?: {
-            type?: string;
-            content?: ContentBlock[];
-        };
-        km?: {
-            type?: string;
-            content?: ContentBlock[];
-        };
-        kh?: {
-            type?: string;
-            content?: ContentBlock[];
-        };
+        en?: { type?: string; content?: ContentBlock[] };
+        km?: { type?: string; content?: ContentBlock[] };
+        kh?: { type?: string; content?: ContentBlock[] };
     };
 };
 
@@ -77,10 +67,7 @@ const RELATED_NEWS_ENDPOINT = "/api/posts?pageId=6";
 
 function getText(value: LangText | undefined, language: UiLang): string {
     if (!value) return "";
-
-    if (typeof value === "string") {
-        return value.trim();
-    }
+    if (typeof value === "string") return value.trim();
 
     if (language === "kh") {
         return value.km?.trim() || value.kh?.trim() || value.en?.trim() || "";
@@ -176,10 +163,12 @@ function NewsImage({
     src,
     alt,
     language,
+    bodyFontClass,
 }: {
     src?: string | null;
     alt: string;
     language: UiLang;
+    bodyFontClass: string;
 }) {
     const [error, setError] = useState(false);
     const isValid = !!src && !error;
@@ -198,7 +187,7 @@ function NewsImage({
                 />
             ) : (
                 <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                    <p className="text-center text-sm text-slate-500">
+                    <p className={`${bodyFontClass} text-center text-slate-500`}>
                         {language === "kh" ? "មិនមានរូបភាព" : "No image"}
                     </p>
                 </div>
@@ -207,9 +196,17 @@ function NewsImage({
     );
 }
 
-function FeatureDate({ date }: { date: string }) {
+function FeatureDate({
+    date,
+    bodyFontClass,
+}: {
+    date: string;
+    bodyFontClass: string;
+}) {
     return (
-        <div className="mb-3 flex items-center gap-2 text-[13px] font-bold text-[#1a2b4b]">
+        <div
+            className={`${bodyFontClass} mb-3 flex items-center gap-2 !text-[13px] font-bold text-[#1a2b4b]`}
+        >
             <CalendarDays size={16} className="shrink-0 text-[#3f51b5]" />
             <span className="leading-none">{date}</span>
         </div>
@@ -218,8 +215,17 @@ function FeatureDate({ date }: { date: string }) {
 
 export default function Slider({ currentId, currentSlug }: SliderProps) {
     const { language } = useLanguage();
-    const lang: UiLang = language === "kh" ? "kh" : "en";
-    const isKhmer = lang === "kh";
+
+    const currentLang = String(language || "en").toLowerCase();
+    const isKhmer =
+        currentLang === "kh" || currentLang === "km" || currentLang === "khmer";
+
+    const lang: UiLang = isKhmer ? "kh" : "en";
+
+    const titleFontClass = isKhmer ? "title-km" : "title-en";
+    const mainTitleFontClass = isKhmer ? "main-title-km" : "main-title-en";
+    const bodyFontClass = isKhmer ? "body-km" : "body-en";
+    const buttonFontClass = isKhmer ? "khmer-font" : "airbnb-font";
 
     const [posts, setPosts] = useState<PostItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -234,9 +240,7 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
                 const response = await fetch(RELATED_NEWS_ENDPOINT, {
                     cache: "no-store",
                     signal: controller.signal,
-                    headers: {
-                        Accept: "application/json",
-                    },
+                    headers: { Accept: "application/json" },
                 });
 
                 if (!response.ok) {
@@ -280,17 +284,11 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
         <section className="py-4 sm:py-10">
             <div className="mx-auto max-w-7xl px-4 sm:px-4 lg:px-4">
                 <div className="mb-14 text-center">
-                    <p
-                        className={`mb-2 text-lg font-semibold tracking-[0.025em] text-[#3f3cff] ${isKhmer ? "khmer-font" : ""
-                            }`}
-                    >
+                    <p className={`${mainTitleFontClass} mb-2 text-[#3f3cff]`}>
                         {subHeading}
                     </p>
 
-                    <h2
-                        className={`text-4xl font-extrabold leading-tight text-[#312b85] md:text-5xl ${isKhmer ? "khmer-font" : ""
-                            }`}
-                    >
+                    <h2 className={`${titleFontClass} text-[#312b85]`}>
                         {mainHeading}
                     </h2>
                 </div>
@@ -329,24 +327,30 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
                             <SwiperSlide key={item.id} className="!flex h-auto">
                                 <article className="group flex h-full min-h-[500px] w-full flex-col overflow-hidden rounded-3xl bg-white shadow-md ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-xl">
                                     <Link href={item.href} aria-label={item.title}>
-                                        <NewsImage src={item.image} alt={item.title} language={lang} />
+                                        <NewsImage
+                                            src={item.image}
+                                            alt={item.title}
+                                            language={lang}
+                                            bodyFontClass={bodyFontClass}
+                                        />
                                     </Link>
 
                                     <div className="flex flex-1 flex-col p-6">
-                                        <FeatureDate date={item.date} />
+                                        <FeatureDate
+                                            date={item.date}
+                                            bodyFontClass={bodyFontClass}
+                                        />
 
                                         <Link href={item.href} className="mb-2 block">
                                             <h3
-                                                className={`line-clamp-2 min-h-[56px] text-xl font-bold leading-7 text-[#0B2C5F] transition group-hover:text-[#3f51b5] ${isKhmer ? "khmer-font" : ""
-                                                    }`}
+                                                className={`${mainTitleFontClass} line-clamp-2 min-h-[64px] text-[#0B2C5F] transition group-hover:text-[#3f51b5]`}
                                             >
                                                 {item.title}
                                             </h3>
                                         </Link>
 
                                         <p
-                                            className={`mb-2 line-clamp-2 min-h-[56px] text-sm leading-7 text-slate-600 ${isKhmer ? "khmer-font" : ""
-                                                }`}
+                                            className={`${bodyFontClass} mb-2 line-clamp-2 min-h-[60px] text-slate-600`}
                                         >
                                             {item.description ||
                                                 (isKhmer ? "មិនមានការពិពណ៌នា" : "No description")}
@@ -355,16 +359,18 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
                                         <Link
                                             href={item.href}
                                             className={`
-                                            mt-auto inline-flex w-fit items-center gap-2
-                                            rounded-full border border-orange-500
-                                            px-3 py-1
-                                            text-[12px] font-bold text-orange-600
-                                            no-underline transition
-                                            hover:border-[#1D4ED8] hover:bg-[#EFF6FF] hover:text-[#1D4ED8]
-                                            ${isKhmer ? "khmer-font" : ""}
-                                        `}
+                                                mt-auto inline-flex w-fit items-center gap-2
+                                                rounded-full border border-orange-500
+                                                px-3 py-1
+                                                text-[12px] font-bold text-orange-600
+                                                no-underline transition
+                                                hover:border-[#1D4ED8]
+                                                hover:bg-[#EFF6FF]
+                                                hover:text-[#1D4ED8]
+                                                ${buttonFontClass}
+                                            `}
                                         >
-                                            {isKhmer ? "អានបន្ថែម" : "View details"}
+                                            {isKhmer ? "អានបន្ថែម" : "View Detail"}
                                             <FaArrowRight className="text-[12px]" />
                                         </Link>
                                     </div>
@@ -373,10 +379,7 @@ export default function Slider({ currentId, currentSlug }: SliderProps) {
                         ))}
                     </Swiper>
                 ) : (
-                    <p
-                        className={`text-center text-sm text-slate-500 ${isKhmer ? "khmer-font" : ""
-                            }`}
-                    >
+                    <p className={`${bodyFontClass} text-center text-slate-500`}>
                         {isKhmer ? "មិនមានព័ត៌មានដែលពាក់ព័ន្ធ" : "No related news"}
                     </p>
                 )}
