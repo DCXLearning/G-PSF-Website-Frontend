@@ -8,7 +8,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { Grid3X3, List, CalendarDays, Download } from "lucide-react";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
-type I18n = { en?: string; km?: string };
+type I18n = { en?: string; km?: string; kh?: string };
 
 type DocFile = {
     url?: string;
@@ -28,10 +28,12 @@ type EventPost = {
     documents?: {
         en?: DocFile;
         km?: DocFile;
+        kh?: DocFile;
     } | null;
     documentThumbnails?: {
         en?: string | null;
         km?: string | null;
+        kh?: string | null;
     } | null;
 };
 
@@ -43,7 +45,19 @@ type ApiResponse = {
 
 export default function EventsListPage() {
     const { language } = useLanguage();
-    const apiLang: "en" | "km" = language === "kh" ? "km" : "en";
+
+    const currentLang = String(language || "en").toLowerCase();
+
+    const isKh =
+        currentLang === "kh" ||
+        currentLang === "km" ||
+        currentLang === "khmer";
+
+    const apiLang: "en" | "km" = isKh ? "km" : "en";
+
+    const mainTitleFontClass = isKh ? "main-title-km" : "main-title-en";
+    const titleFontClass = isKh ? "title-km" : "title-en";
+    const bodyClass = isKh ? "body-km" : "body-en";
 
     const [events, setEvents] = useState<EventPost[]>([]);
     const [loading, setLoading] = useState(true);
@@ -82,36 +96,59 @@ export default function EventsListPage() {
     }, []);
 
     const labels = {
-        headerMain: language === "kh" ? "ព្រឹត្តិការណ៍" : "Latest",
-        headerSub: language === "kh" ? "កាលវិភាគប្រជុំ" : "Events & Meetings",
-        download: language === "kh" ? "ទាញយកឯកសារ" : "Download PDF",
-        empty: language === "kh" ? "មិនមានព្រឹត្តិការណ៍ទេ។" : "No events found at the moment.",
-        loading: language === "kh" ? "កំពុងទាញយកទិន្នន័យ..." : "Loading events...",
-        error: language === "kh" ? "មិនអាចទាញយកទិន្នន័យបានទេ។" : "Failed to load events.",
-        noDate: language === "kh" ? "មិនមានកាលបរិច្ឆេទ" : "No date",
-        noDescription: language === "kh" ? "មិនមានការពិពណ៌នា។" : "No description available.",
+        headerMain: isKh ? "ព្រឹត្តិការណ៍" : "Latest",
+        headerSub: isKh ? "កាលវិភាគប្រជុំ" : "Events & Meetings",
+        download: isKh ? "ទាញយកឯកសារ" : "Download PDF",
+        empty: isKh ? "មិនមានព្រឹត្តិការណ៍ទេ។" : "No events found at the moment.",
+        loading: isKh ? "កំពុងទាញយកទិន្នន័យ..." : "Loading events...",
+        error: isKh ? "មិនអាចទាញយកទិន្នន័យបានទេ។" : "Failed to load events.",
+        noDate: isKh ? "មិនមានកាលបរិច្ឆេទ" : "No date",
+        noDescription: isKh ? "មិនមានការពិពណ៌នា។" : "No description available.",
+        list: isKh ? "បញ្ជី" : "List",
+        grid: isKh ? "ក្រឡា" : "Grid",
+        event: isKh ? "ព្រឹត្តិការណ៍" : "EVENT",
     };
 
     const content = useMemo(() => {
         return events.map((item) => {
-            const title = item.title?.[apiLang] || item.title?.en || "Untitled";
-            const desc = item.description?.[apiLang] || item.description?.en || "";
+            const title = isKh
+                ? item.title?.km || item.title?.kh || item.title?.en || "Untitled"
+                : item.title?.en || item.title?.km || item.title?.kh || "Untitled";
 
-            const docUrl =
-                item.documents?.[apiLang]?.url ||
+            const desc = isKh
+                ? item.description?.km || item.description?.kh || item.description?.en || ""
+                : item.description?.en || item.description?.km || item.description?.kh || "";
+
+            const docUrl = isKh
+                ? item.documents?.km?.url ||
+                item.documents?.kh?.url ||
                 item.documents?.en?.url ||
+                ""
+                : item.documents?.en?.url ||
+                item.documents?.km?.url ||
+                item.documents?.kh?.url ||
                 "";
 
-            const imageUrl =
-                item.coverImage ||
-                item.documentThumbnails?.[apiLang] ||
+            const imageUrl = isKh
+                ? item.coverImage ||
+                item.documentThumbnails?.km ||
+                item.documentThumbnails?.kh ||
                 item.documentThumbnails?.en ||
-                item.documents?.[apiLang]?.thumbnailUrl ||
+                item.documents?.km?.thumbnailUrl ||
+                item.documents?.kh?.thumbnailUrl ||
                 item.documents?.en?.thumbnailUrl ||
+                "/image/no-image.png"
+                : item.coverImage ||
+                item.documentThumbnails?.en ||
+                item.documentThumbnails?.km ||
+                item.documentThumbnails?.kh ||
+                item.documents?.en?.thumbnailUrl ||
+                item.documents?.km?.thumbnailUrl ||
+                item.documents?.kh?.thumbnailUrl ||
                 "/image/no-image.png";
 
             const dateValue = item.publishedAt || item.createdAt || "";
-            const date = formatLocalizedDate(dateValue, apiLang);
+            const date = dateValue ? formatLocalizedDate(dateValue, apiLang) : "";
 
             return {
                 ...item,
@@ -122,64 +159,65 @@ export default function EventsListPage() {
                 date,
             };
         });
-    }, [events, apiLang]);
+    }, [events, isKh, apiLang]);
 
     return (
         <section className="min-h-screen bg-[#eef0f3] py-10 md:py-14">
             <div className="mx-auto max-w-7xl px-4">
-                {/* Header */}
                 <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                     <div>
-                        <p className="text-2xl font-bold text-gray-900 md:text-3xl khmer-font">
+                        <p className={`${titleFontClass} !text-[30px] !leading-[38px] text-[#0f2347]`}>
                             {labels.headerMain}
                         </p>
-                        <h1 className="mt-1 text-4xl font-extrabold text-[#0f2347] md:text-5xl khmer-font">
+
+                        <h1 className={`${mainTitleFontClass} mt-1 !text-[20px] !leading-[28px] text-[#0f2347]`}>
                             {labels.headerSub}
                         </h1>
+
                         <div className="mt-4 h-1.5 w-60 bg-orange-500" />
                     </div>
 
-                    <div className="mt-12 flex items-center gap-2 self-start rounded-lg bg-white p-1 shadow-sm">
+                    <div className="mt-12 flex items-center gap-1 self-start rounded-lg bg-white p-1 shadow-sm">
                         <button
                             type="button"
                             onClick={() => setView("list")}
-                            className={`flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition ${view === "list"
+                            className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${view === "list"
                                     ? "bg-[#273650] text-white"
                                     : "text-[#273650] hover:bg-gray-100"
                                 }`}
                         >
-                            <List size={18} />
-                            List
+                            <List size={15} />
+                            {labels.list}
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setView("grid")}
-                            className={`flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition ${view === "grid"
+                            className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${view === "grid"
                                     ? "bg-[#273650] text-white"
                                     : "text-[#273650] hover:bg-gray-100"
                                 }`}
                         >
-                            <Grid3X3 size={18} />
-                            Grid
+                            <Grid3X3 size={15} />
+                            {labels.grid}
                         </button>
                     </div>
                 </div>
 
                 {loading && (
-                    <div className="rounded bg-white px-6 py-10 text-center shadow-sm">
+                    <div className={`${bodyClass} rounded bg-white px-6 py-10 text-center shadow-sm`}>
                         {labels.loading}
                     </div>
                 )}
 
                 {error && !loading && (
-                    <div className="rounded bg-white px-6 py-10 text-center text-red-600 shadow-sm">
+                    <div className={`${bodyClass} rounded bg-white px-6 py-10 text-center text-red-600 shadow-sm`}>
                         {error || labels.error}
                     </div>
                 )}
 
                 {!loading && !error && content.length === 0 && (
-                    <div className="rounded bg-white px-6 py-10 text-center shadow-sm">
+                    <div className={`${bodyClass} rounded bg-white px-6 py-10 text-center shadow-sm`}>
                         {labels.empty}
                     </div>
                 )}
@@ -189,7 +227,9 @@ export default function EventsListPage() {
                         {content.map((item, index) => (
                             <article
                                 key={item.id}
-                                className={`grid grid-cols-1 gap-6 pb-10 md:grid-cols-[200px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10 ${index !== content.length - 1 ? "mb-10 border-b border-gray-300" : ""
+                                className={`grid grid-cols-1 gap-6 pb-10 md:grid-cols-[200px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10 ${index !== content.length - 1
+                                        ? "mb-10 border-b border-gray-300"
+                                        : ""
                                     }`}
                             >
                                 <div className="group block">
@@ -201,7 +241,8 @@ export default function EventsListPage() {
                                             onError={(e) => {
                                                 const target = e.target as HTMLImageElement;
                                                 target.src = "/image/no-image.png";
-                                                target.className = "h-full w-full object-contain opacity-30 p-6";
+                                                target.className =
+                                                    "h-full w-full object-contain opacity-30 p-6";
                                             }}
                                         />
                                     </div>
@@ -210,14 +251,14 @@ export default function EventsListPage() {
                                 <div className="flex min-w-0 flex-col justify-between pt-1">
                                     <div>
                                         <span className="inline-block rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
-                                            EVENT
+                                            {labels.event}
                                         </span>
 
-                                        <h2 className="mt-3 text-xl khmer-font font-bold leading-tight text-[#0f2347] md:text-xl lg:text-[25px]">
+                                        <h2 className={`${mainTitleFontClass} mt-3 line-clamp-1 text-[#0f2347]`}>
                                             {item.title}
                                         </h2>
 
-                                        <p className="mt-4 max-w-4xl text-sm leading-7 khmer-font text-[#4f6482] md:text-base md:leading-8 lg:text-[19px]">
+                                        <p className={`${bodyClass} mt-4 max-w-4xl line-clamp-2 text-[#4f6482]`}>
                                             {item.desc || labels.noDescription}
                                         </p>
                                     </div>
@@ -227,16 +268,16 @@ export default function EventsListPage() {
                                             <Link
                                                 href={item.docUrl}
                                                 target="_blank"
-                                                className="inline-flex items-center gap-2 text-base font-bold text-[#0f2347] underline transition hover:text-blue-700 md:text-lg lg:text-[18px]"
+                                                className={`${bodyClass} inline-flex items-center gap-2 font-bold text-[#0f2347] underline transition hover:text-blue-700`}
                                             >
                                                 <Download size={18} />
                                                 {labels.download}
                                             </Link>
                                         )}
 
-                                        <div className="flex items-center gap-2 text-sm font-medium text-[#6a7b96] md:text-base">
+                                        <div className={`${bodyClass} flex items-center gap-2 text-[#6a7b96]`}>
                                             <CalendarDays className="h-4 w-4 shrink-0" />
-                                            <span className="khmer-font">{item.date || labels.noDate}</span>
+                                            <span>{item.date || labels.noDate}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -261,7 +302,8 @@ export default function EventsListPage() {
                                             onError={(e) => {
                                                 const target = e.target as HTMLImageElement;
                                                 target.src = "/image/no-image.png";
-                                                target.className = "h-full w-full object-contain opacity-30 p-6";
+                                                target.className =
+                                                    "h-full w-full object-contain opacity-30 p-6";
                                             }}
                                         />
                                     </div>
@@ -270,14 +312,14 @@ export default function EventsListPage() {
                                 <div className="flex h-full grow flex-col justify-between p-5">
                                     <div>
                                         <span className="inline-block w-fit rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
-                                            EVENT
+                                            {labels.event}
                                         </span>
 
-                                        <h2 className="mt-3 line-clamp-2 text-xl khmer-font font-bold leading-tight text-[#0f2347]">
+                                        <h2 className={`${mainTitleFontClass} mt-3 line-clamp-2 text-[#0f2347]`}>
                                             {item.title}
                                         </h2>
 
-                                        <p className="mt-4 line-clamp-4 khmer-font text-sm leading-7 text-[#4f6482]">
+                                        <p className={`${bodyClass} mt-4 line-clamp-4 text-[#4f6482]`}>
                                             {item.desc || labels.noDescription}
                                         </p>
                                     </div>
@@ -287,16 +329,16 @@ export default function EventsListPage() {
                                             <Link
                                                 href={item.docUrl}
                                                 target="_blank"
-                                                className="inline-flex items-center gap-2 text-base font-bold text-[#0f2347] underline transition hover:text-blue-700"
+                                                className={`${bodyClass} inline-flex items-center gap-2 font-bold text-[#0f2347] underline transition hover:text-blue-700`}
                                             >
                                                 <Download size={16} />
                                                 {labels.download}
                                             </Link>
                                         )}
 
-                                        <div className="flex items-center gap-2 text-sm font-medium text-[#6a7b96]">
+                                        <div className={`${bodyClass} flex items-center gap-2 text-[#6a7b96]`}>
                                             <CalendarDays className="h-4 w-4 shrink-0" />
-                                            <span className="khmer-font">{item.date || labels.noDate}</span>
+                                            <span>{item.date || labels.noDate}</span>
                                         </div>
                                     </div>
                                 </div>
