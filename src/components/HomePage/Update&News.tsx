@@ -8,6 +8,7 @@ import { Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { FaArrowRight } from "react-icons/fa6";
 
 const DARK_BLUE = "#1A1D42";
 
@@ -143,22 +144,12 @@ export default function Update_News() {
 
   return (
     <section className="relative overflow-hidden bg-white pb-8 pt-10">
-      {/* Header Section */}
       <div className="relative z-10 mb-16 text-center">
         <h2 className={`text-gray-900 ${titleFontClass}`}>
           {getText(heading, isKhmer) ||
             (isKhmer ? "ព័ត៌មាន និងបច្ចុប្បន្នភាព" : "News & Updates")}
         </h2>
-
-        {/* Description hidden by design */}
-        {/* {getText(description, isKhmer) && (
-          <p className={`mx-auto mt-4 max-w-5xl px-3 text-gray-600 ${bodyFontClass}`}>
-            {getText(description, isKhmer)}
-          </p>
-        )} */}
       </div>
-
-      {/* Blue Background Layer */}
       <div
         className="absolute bottom-0 left-0 h-[48.99%] w-full -z-0"
         style={{ backgroundColor: DARK_BLUE }}
@@ -205,7 +196,6 @@ export default function Update_News() {
                         className="flex h-[450px] flex-col overflow-hidden rounded-xl border border-gray-500 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-2"
                         style={{ boxShadow: "0 10px 25px rgba(0,0,0,0.3)" }}
                       >
-                        {/* Image */}
                         <div className="h-[220px] w-full flex-shrink-0 overflow-hidden bg-slate-100">
                           <img
                             src={item.image || "/image/placeholder.png"}
@@ -213,8 +203,6 @@ export default function Update_News() {
                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         </div>
-
-                        {/* Content */}
                         <div className="flex flex-1 flex-col p-6">
                           <h3
                             className={`
@@ -237,15 +225,20 @@ export default function Update_News() {
 
                           <div
                             className={`
-                              mt-auto flex items-center gap-2 font-bold text-[#1A1D42]
-                              ${buttonFontClass}
+                              mt-auto inline-flex w-fit items-center gap-2
+                              rounded-full border border-orange-500
+                              px-3 py-1
+                              text-[12px] font-bold text-orange-600
+                              no-underline transition
+                              hover:border-[#1D4ED8]
+                              hover:bg-[#EFF6FF]
+                              hover:text-[#1D4ED8]
+                              ${isKhmer ? "khmer-font" : "airbnb-font"}
                             `}
-                          >
-                            {isKhmer ? "មើលលម្អិត" : "View details"}
-                            <span className="transition-transform group-hover:translate-x-1">
-                              →
-                            </span>
-                          </div>
+                            >
+                            {isKhmer ? "អានបន្ថែម" : "View Detail"}
+                            <FaArrowRight className="h-3 w-3" />
+                        </div>
                         </div>
                       </div>
                     </Link>
@@ -254,10 +247,8 @@ export default function Update_News() {
               })}
             </Swiper>
 
-            {/* Pagination */}
             <div className="custom-news-pagination mb-10 flex h-6 items-center justify-center" />
 
-            {/* See More Button */}
             <div className="relative z-20 flex justify-center">
               <Link
                 href="/new-update/see-more"

@@ -91,7 +91,7 @@ function writeCache(blocks: Block[]) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
     } catch {
-        // ignore cache write errors
+        
     }
 }
 
@@ -221,7 +221,7 @@ export default function Flow() {
                 <div className="text-center mb-8 md:mb-10">
                     <p
                         className={`
-                            mt-2 max-w-2xl mx-auto text-gray-900
+                            mt-2 max-w-2xl uppercase !font-bold mx-auto text-gray-900
                             ${subtitleFontClass}
                         `}
                     >

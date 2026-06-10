@@ -310,7 +310,7 @@ export function WGOutputsSection({
                                         ${bodyClass} !font-bold
                                     `}
                                 >
-                                    <span>{isKh ? "ទាញយក" : "Downloadg"}</span>
+                                    <span>{isKh ? "ទាញយក" : "Download"}</span>
                                     <ChevronRight size={16} />
                                 </a>
                             ) : (

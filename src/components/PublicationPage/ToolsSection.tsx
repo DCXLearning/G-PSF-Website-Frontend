@@ -339,7 +339,7 @@ export function ToolsSectionContent({
                             className={`
                                 rounded-lg bg-blue-950 px-5 py-1.5 text-white
                                 transition-colors hover:bg-blue-900
-                                ${bodyClass} !font-bold !text-white
+                                ${bodyClass} !font-medium !text-white
                             `}
                         >
                             {seeMoreText}

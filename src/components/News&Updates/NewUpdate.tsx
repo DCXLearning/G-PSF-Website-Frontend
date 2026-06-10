@@ -213,7 +213,7 @@ const NewUpdateSection = ({ data }: NewUpdateSectionProps) => {
                                                         ${isKh ? "khmer-font" : "airbnb-font"}
                                                     `}
                                                 >
-                                                    {isKh ? "អានបន្ថែម" : "View details"}
+                                                    {isKh ? "អានបន្ថែម" : "View Detail"}
                                                     <FaArrowRight className="h-3 w-3" />
                                                 </div>
                                             </div>
