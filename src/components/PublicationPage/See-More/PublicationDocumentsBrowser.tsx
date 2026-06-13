@@ -297,7 +297,7 @@ function ListCard({ item, lang, badgeText }: CardProps) {
                     {item.date || (lang === "kh" ? "គ្មានកាលបរិច្ឆេទ" : "No date")}
                 </p>
 
-                <p className={`mt-4 line-clamp-3 text-slate-600 ${bodyClass}`}>
+                <p className={`mt-4 line-clamp-2 text-slate-600 ${bodyClass}`}>
                     {item.description ||
                         (lang === "kh" ? "គ្មានការពិពណ៌នា" : "No description")}
                 </p>

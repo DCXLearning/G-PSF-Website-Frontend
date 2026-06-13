@@ -1,4 +1,3 @@
-// page.tsx
 import RouterNewUpdate from "@/components/UI-Router/RouterNewUpdate";
 import { API_URL } from "@/config/api";
 import type { NewUpdateSectionProps } from "@/components/News&Updates/NewUpdate";
