@@ -313,8 +313,8 @@ const Header: FC = () => {
                 const posts = Array.isArray(json.data)
                     ? json.data
                     : Array.isArray(json.items)
-                      ? json.items
-                      : [];
+                        ? json.items
+                        : [];
 
                 const mappedResults = posts
                     .slice(0, 5)
@@ -464,16 +464,14 @@ const Header: FC = () => {
     return (
         <section className="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300 ease-out">
             <nav
-                className={`max-w-7xl mx-auto px-4 md:px-2 transition-all duration-300 ease-out ${
-                    isScrolled ? "py-1.5" : "py-3"
-                }`}
+                className={`max-w-7xl mx-auto px-4 md:px-2 transition-all duration-300 ease-out ${isScrolled ? "py-1.5" : "py-3"
+                    }`}
             >
                 <div className="grid grid-cols-[150px_1fr_auto] items-center gap-5">
                     <Link
                         href="/"
-                        className={`flex w-[150px] shrink-0 items-center overflow-hidden transition-all duration-300 ease-out ${
-                            isScrolled ? "h-[52px]" : "h-[64px]"
-                        }`}
+                        className={`flex w-[150px] shrink-0 items-center overflow-hidden transition-all duration-300 ease-out ${isScrolled ? "h-[52px]" : "h-[64px]"
+                            }`}
                     >
                         <Image
                             src={logoSrc}
@@ -500,9 +498,8 @@ const Header: FC = () => {
                                         <Link
                                             href={item.href || "#"}
                                             {...getExternalLinkProps(item.href)}
-                                            className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap pt-[5px] pb-1 transition-colors ${
-                                                isActive ? "text-black" : "text-gray-600 hover:text-black"
-                                            } ${language === "kh" ? "khmer-font" : ""}`}
+                                            className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap pt-[5px] pb-1 transition-colors ${isActive ? "text-black" : "text-gray-600 hover:text-black"
+                                                } ${language === "kh" ? "khmer-font" : ""}`}
                                         >
                                             <span className="block text-lg font-medium leading-none">
                                                 {item.label}
@@ -511,9 +508,8 @@ const Header: FC = () => {
                                             <ChevronDown className="h-3.5 w-3.5 shrink-0 text-gray-400" />
 
                                             <span
-                                                className={`absolute left-0 -bottom-1 h-[2px] bg-orange-500 transition-all duration-300 ${
-                                                    isActive ? "w-full" : "w-0 group-hover:w-full"
-                                                }`}
+                                                className={`absolute left-0 -bottom-1 h-[2px] bg-orange-500 transition-all duration-300 ${isActive ? "w-full" : "w-0 group-hover:w-full"
+                                                    }`}
                                             />
                                         </Link>
 
@@ -528,11 +524,10 @@ const Header: FC = () => {
                                                         return (
                                                             <div key={child.label} className="relative group/sub">
                                                                 <div
-                                                                    className={`flex items-center justify-between px-4 py-3 text-base font-medium cursor-pointer transition-colors ${
-                                                                        isChildActive
+                                                                    className={`flex items-center justify-between px-4 py-3 text-base font-medium cursor-pointer transition-colors ${isChildActive
                                                                             ? "bg-gray-50 text-black font-semibold"
                                                                             : "text-gray-700 hover:bg-gray-50 hover:text-black"
-                                                                    } ${language === "kh" ? "khmer-font" : ""}`}
+                                                                        } ${language === "kh" ? "khmer-font" : ""}`}
                                                                 >
                                                                     <span>{child.label}</span>
                                                                     <ChevronRight className="w-4 h-4" />
@@ -548,13 +543,11 @@ const Header: FC = () => {
                                                                                     key={sub.href}
                                                                                     href={sub.href}
                                                                                     {...getExternalLinkProps(sub.href)}
-                                                                                    className={`block px-4 py-3 text-sm transition-colors ${
-                                                                                        isSubActive
+                                                                                    className={`block px-4 py-3 text-sm transition-colors ${isSubActive
                                                                                             ? "bg-gray-50 text-black font-semibold"
                                                                                             : "text-gray-700 hover:bg-gray-50 hover:text-black"
-                                                                                    } ${
-                                                                                        language === "kh" ? "khmer-font" : ""
-                                                                                    }`}
+                                                                                        } ${language === "kh" ? "khmer-font" : ""
+                                                                                        }`}
                                                                                 >
                                                                                     {sub.label}
                                                                                 </Link>
@@ -571,11 +564,10 @@ const Header: FC = () => {
                                                             key={child.href}
                                                             href={child.href || "#"}
                                                             {...getExternalLinkProps(child.href)}
-                                                            className={`block px-4 py-3 text-base font-medium transition-colors ${
-                                                                isChildActive
+                                                            className={`block px-4 py-3 text-base font-medium transition-colors ${isChildActive
                                                                     ? "bg-gray-50 text-black font-semibold"
                                                                     : "text-gray-700 hover:bg-gray-50 hover:text-black"
-                                                            } ${language === "kh" ? "khmer-font" : ""}`}
+                                                                } ${language === "kh" ? "khmer-font" : ""}`}
                                                         >
                                                             {child.label}
                                                         </Link>
@@ -592,16 +584,14 @@ const Header: FC = () => {
                                     key={`${item.href}-${index}`}
                                     href={item.href || "#"}
                                     {...getExternalLinkProps(item.href)}
-                                    className={`relative shrink-0 whitespace-nowrap pt-[5px] pb-1 transition-colors ${
-                                        isActive ? "text-black" : "text-gray-600 hover:text-black"
-                                    } ${language === "kh" ? "khmer-font" : ""}`}
+                                    className={`relative shrink-0 whitespace-nowrap pt-[5px] pb-1 transition-colors ${isActive ? "text-black" : "text-gray-600 hover:text-black"
+                                        } ${language === "kh" ? "khmer-font" : ""}`}
                                 >
                                     <span className="block text-lg font-medium leading-none">{item.label}</span>
 
                                     <span
-                                        className={`absolute left-0 -bottom-1 h-[2px] bg-orange-400 transition-all duration-300 ${
-                                            isActive ? "w-full" : "w-0"
-                                        }`}
+                                        className={`absolute left-0 -bottom-1 h-[2px] bg-orange-400 transition-all duration-300 ${isActive ? "w-full" : "w-0"
+                                            }`}
                                     />
                                 </Link>
                             );
@@ -670,9 +660,8 @@ const Header: FC = () => {
                     <div className="relative w-full max-w-xl rounded-2xl bg-white p-4 shadow-2xl">
                         <div className="mb-4 flex items-center justify-between">
                             <h3
-                                className={`text-lg font-semibold text-gray-900 ${
-                                    language === "kh" ? "khmer-font" : ""
-                                }`}
+                                className={`text-lg font-semibold text-gray-900 ${language === "kh" ? "khmer-font" : ""
+                                    }`}
                             >
                                 {searchTitle}
                             </h3>
@@ -697,9 +686,8 @@ const Header: FC = () => {
                                 onChange={(e) => setSearchValue(e.target.value)}
                                 placeholder={searchPlaceholder}
                                 autoFocus
-                                className={`h-full min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400 ${
-                                    language === "kh" ? "khmer-font" : ""
-                                }`}
+                                className={`h-full min-w-0 flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400 ${language === "kh" ? "khmer-font" : ""
+                                    }`}
                             />
 
                             <button
@@ -714,9 +702,8 @@ const Header: FC = () => {
 
                         {popupLoading && searchValue.trim() && (
                             <div
-                                className={`mt-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500 ${
-                                    language === "kh" ? "khmer-font" : ""
-                                }`}
+                                className={`mt-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500 ${language === "kh" ? "khmer-font" : ""
+                                    }`}
                             >
                                 {language === "kh" ? "កំពុងស្វែងរក..." : "Searching..."}
                             </div>
@@ -729,9 +716,8 @@ const Header: FC = () => {
                                         key={result.id}
                                         type="button"
                                         onClick={goToSearchPage}
-                                        className={`flex w-full items-center cursor-pointer gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100 transition ${
-                                            language === "kh" ? "khmer-font" : ""
-                                        }`}
+                                        className={`flex w-full items-center cursor-pointer gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100 transition ${language === "kh" ? "khmer-font" : ""
+                                            }`}
                                     >
                                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#060b3f]">
                                             <Search className="h-4 w-4" />
@@ -794,15 +780,13 @@ const Header: FC = () => {
                                                     onClick={() =>
                                                         setOpenMobileDropdown(isOpen ? null : item.label || null)
                                                     }
-                                                    className={`w-full flex items-center justify-between px-4 py-3 text-gray-800 ${
-                                                        language === "kh" ? "khmer-font" : ""
-                                                    }`}
+                                                    className={`w-full flex items-center justify-between px-4 py-3 text-gray-800 ${language === "kh" ? "khmer-font" : ""
+                                                        }`}
                                                 >
                                                     <span className="font-medium">{item.label}</span>
                                                     <ChevronDown
-                                                        className={`w-4 h-4 transition-transform ${
-                                                            isOpen ? "rotate-180" : ""
-                                                        }`}
+                                                        className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""
+                                                            }`}
                                                     />
                                                 </button>
 
@@ -817,9 +801,8 @@ const Header: FC = () => {
                                                                     setOpenMobileDropdown(null);
                                                                     setOpenMobileSubDropdown(null);
                                                                 }}
-                                                                className={`block px-6 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 ${
-                                                                    language === "kh" ? "khmer-font" : ""
-                                                                }`}
+                                                                className={`block px-6 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
+                                                                    }`}
                                                             >
                                                                 {item.label}
                                                             </Link>
@@ -839,15 +822,13 @@ const Header: FC = () => {
                                                                                     isSubOpen ? null : subKey
                                                                                 )
                                                                             }
-                                                                            className={`w-full flex items-center justify-between rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 ${
-                                                                                language === "kh" ? "khmer-font" : ""
-                                                                            }`}
+                                                                            className={`w-full flex items-center justify-between rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
+                                                                                }`}
                                                                         >
                                                                             <span>{child.label}</span>
                                                                             <ChevronDown
-                                                                                className={`w-4 h-4 transition-transform ${
-                                                                                    isSubOpen ? "rotate-180" : ""
-                                                                                }`}
+                                                                                className={`w-4 h-4 transition-transform ${isSubOpen ? "rotate-180" : ""
+                                                                                    }`}
                                                                             />
                                                                         </button>
 
@@ -863,11 +844,10 @@ const Header: FC = () => {
                                                                                             setOpenMobileDropdown(null);
                                                                                             setOpenMobileSubDropdown(null);
                                                                                         }}
-                                                                                        className={`block px-4 py-2 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg ${
-                                                                                            language === "kh"
+                                                                                        className={`block px-4 py-2 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg ${language === "kh"
                                                                                                 ? "khmer-font"
                                                                                                 : ""
-                                                                                        }`}
+                                                                                            }`}
                                                                                     >
                                                                                         {sub.label}
                                                                                     </Link>
@@ -888,9 +868,8 @@ const Header: FC = () => {
                                                                         setOpenMobileDropdown(null);
                                                                         setOpenMobileSubDropdown(null);
                                                                     }}
-                                                                    className={`block px-6 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-50 ${
-                                                                        language === "kh" ? "khmer-font" : ""
-                                                                    }`}
+                                                                    className={`block px-6 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
+                                                                        }`}
                                                                 >
                                                                     {child.label}
                                                                 </Link>
@@ -908,9 +887,8 @@ const Header: FC = () => {
                                             href={item.href || "#"}
                                             {...getExternalLinkProps(item.href)}
                                             onClick={() => setIsMenuOpen(false)}
-                                            className={`flex items-center justify-between rounded-xl px-4 py-3 text-gray-800 hover:bg-gray-100 ${
-                                                language === "kh" ? "khmer-font" : ""
-                                            }`}
+                                            className={`flex items-center justify-between rounded-xl px-4 py-3 text-gray-800 hover:bg-gray-100 ${language === "kh" ? "khmer-font" : ""
+                                                }`}
                                         >
                                             <span className="font-medium">{item.label}</span>
                                             <span className="text-gray-400">›</span>
@@ -923,9 +901,8 @@ const Header: FC = () => {
                                 <button
                                     onClick={toggleLanguage}
                                     type="button"
-                                    className={`w-full flex items-center justify-center gap-2 rounded-xl border px-4 py-3 hover:bg-gray-50 ${
-                                        language === "kh" ? "khmer-font" : ""
-                                    }`}
+                                    className={`w-full flex items-center justify-center gap-2 rounded-xl border px-4 py-3 hover:bg-gray-50 ${language === "kh" ? "khmer-font" : ""
+                                        }`}
                                 >
                                     <Image
                                         src={translateFlagSrc}

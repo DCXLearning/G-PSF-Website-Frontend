@@ -1,11 +1,27 @@
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
-const FOOTER_API_URL =
-    "https://api-gpsf.datacolabx.com/api/v1/menus/slug/key-update/tree";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function GET() {
     try {
-        const response = await fetch(FOOTER_API_URL, {
+        const apiBase = (API_URL ?? "").replace(/\/$/, "");
+
+        if (!apiBase) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "NEXT_PUBLIC_API_URL is not configured",
+                    data: null,
+                },
+                { status: 500 }
+            );
+        }
+
+        const footerApiUrl = `${apiBase}/menus/slug/key-update/tree`;
+
+        const response = await fetch(footerApiUrl, {
             method: "GET",
             cache: "no-store",
             headers: {

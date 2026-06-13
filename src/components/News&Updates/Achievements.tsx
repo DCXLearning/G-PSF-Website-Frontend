@@ -27,7 +27,7 @@ const Achievements: React.FC = () => {
         <section className="bg-white py-8 md:py-12 overflow-hidden">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="flex flex-col items-start">
-                    {/* HEADER SECTION */}
+
                     <div className="w-full">
                         <p
                             className={`text-gray-900 font-bold text-xl mb-1 ${isKh ? "khmer-font normal-case" : ""
@@ -44,10 +44,8 @@ const Achievements: React.FC = () => {
                         </h1>
                     </div>
 
-                    {/* LINE */}
                     <div className="mt-5 mb-12 h-1.5 apsolute left- top-0 bg-orange-500 w-3/4 sm:w-full max-w-[440px] sm:ml-8 md:ml-20" />
 
-                    {/* SQUARE CONTENT CARD */}
                     <div className="w-full flex justify-center sm:justify-start">
                         <div className="bg-[#A3C1AD] sm:ml-8 md:ml-20 rounded-[40px] aspect-square w-full h-110 max-w-[1090px] flex items-center justify-center p-6 md:p-30 shadow-sm">
                             <h3

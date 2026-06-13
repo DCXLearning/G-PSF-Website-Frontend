@@ -1,12 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
 export const runtime = "nodejs";
 export const revalidate = 0;
 
 export async function GET() {
-    const url =
-        "https://api-gpsf.datacolabx.com/api/v1/pages/mis-dashboard/section";
+    const apiBase = (API_URL ?? "").replace(/\/$/, "");
+
+    if (!apiBase) {
+        return NextResponse.json(
+            { success: false, message: "NEXT_PUBLIC_API_URL is not configured" },
+            { status: 500 }
+        );
+    }
+
+    const url = `${apiBase}/pages/mis-dashboard/section`;
 
     try {
         const res = await fetch(url, {
@@ -34,15 +43,14 @@ export async function GET() {
             post?.content?.km?.backgroundImages?.[0] ||
             null;
 
-        const title =
-            post?.title?.en || post?.title?.km || "MIS Dashboard";
+        const title = post?.title?.en || post?.title?.km || "MIS Dashboard";
 
         return NextResponse.json({
             success: true,
             image,
             title,
         });
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { success: false, message: "Server error" },
             { status: 500 }

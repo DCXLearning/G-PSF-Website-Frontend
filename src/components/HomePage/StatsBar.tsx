@@ -69,7 +69,7 @@ function writeCache(data: StatsApiResponse) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(data));
     } catch {
-        // ignore cache errors
+        
     }
 }
 

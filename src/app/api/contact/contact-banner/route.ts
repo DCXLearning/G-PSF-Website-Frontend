@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
-const API_URL =
-    "https://api-gpsf.datacolabx.com/api/v1/pages/contact-us/section";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 function cleanText(v: any) {
     const s = typeof v === "string" ? v.trim() : "";
@@ -15,7 +16,16 @@ function pickLang(obj: any) {
 
 export async function GET() {
     try {
-        const res = await fetch(API_URL, {
+        const apiBase = (API_URL ?? "").replace(/\/$/, "");
+
+        if (!apiBase) {
+            return NextResponse.json(
+                { success: false, message: "NEXT_PUBLIC_API_URL is not configured" },
+                { status: 500 }
+            );
+        }
+
+        const res = await fetch(`${apiBase}/pages/contact-us/section`, {
             cache: "no-store",
             headers: { Accept: "application/json" },
         });
@@ -30,9 +40,7 @@ export async function GET() {
         const json = await res.json();
 
         const block = json?.data?.blocks?.find(
-            (b: any) =>
-                b?.enabled === true &&
-                b?.type === "hero_banner"
+            (b: any) => b?.enabled === true && b?.type === "hero_banner"
         );
 
         const post = block?.posts?.[0];

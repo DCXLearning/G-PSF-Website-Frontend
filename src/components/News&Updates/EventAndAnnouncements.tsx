@@ -444,11 +444,10 @@ export default function EventsAndAnnouncements() {
                                                 key={month.key}
                                                 type="button"
                                                 onClick={() => setSelectedMonthIndex(month.realIndex)}
-                                                className={`h-10 flex-1 cursor-pointer whitespace-nowrap rounded-full px-2 text-center text-sm font-bold transition ${
-                                                    isActive
+                                                className={`h-10 flex-1 cursor-pointer whitespace-nowrap rounded-full px-2 text-center text-sm font-bold transition ${isActive
                                                         ? "bg-white text-gray-700 shadow-sm"
                                                         : "text-gray-400"
-                                                } ${smallFontClass}`}
+                                                    } ${smallFontClass}`}
                                             >
                                                 {formatMonthLabel(month, apiLang)}
                                             </button>
@@ -581,18 +580,17 @@ export default function EventsAndAnnouncements() {
 
                                         <div className="flex min-w-0 flex-1 flex-col">
                                             <span
-                                                className={`mb-1 text-[13px] font-bold text-[#1a2b4b] ${
-                                                    useKhmerFont
+                                                className={`mb-1 text-[13px] font-bold text-[#1a2b4b] ${useKhmerFont
                                                         ? "khmer-font normal-case"
                                                         : "airbnb-font uppercase tracking-wider"
-                                                }`}
+                                                    }`}
                                             >
                                                 {categoryName}
                                                 {post.publishedAt
                                                     ? ` • ${formatLocalizedDate(
-                                                          post.publishedAt,
-                                                          apiLang
-                                                      )}`
+                                                        post.publishedAt,
+                                                        apiLang
+                                                    )}`
                                                     : ""}
                                             </span>
 
@@ -621,10 +619,9 @@ export default function EventsAndAnnouncements() {
                                                         text-[13px] font-bold !text-white no-underline
                                                         transition hover:bg-[#ea9805]
                                                         hover:!text-white hover:no-underline
-                                                        ${
-                                                            useKhmerFont
-                                                                ? "khmer-font normal-case"
-                                                                : "airbnb-font uppercase tracking-tighter"
+                                                        ${useKhmerFont
+                                                            ? "khmer-font normal-case"
+                                                            : "airbnb-font uppercase tracking-tighter"
                                                         }
                                                     `}
                                                 >

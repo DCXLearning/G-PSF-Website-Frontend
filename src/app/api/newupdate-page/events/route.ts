@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { API_URL } from "@/config/api";
 
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 type I18n = {
     en?: string;
     km?: string;
@@ -26,8 +29,6 @@ type SectionResponse = {
     };
 };
 
-const FALLBACK_API_URL = "https://api-gpsf.datacolabx.com/api/v1";
-
 function normalizeText(value?: string) {
     return value?.trim().toLowerCase() || "";
 }
@@ -43,8 +44,23 @@ function isEventBlock(block: EventBlock) {
 }
 
 export async function GET() {
+    const apiBase = (API_URL ?? "").replace(/\/$/, "");
 
-    const url = `${API_URL || FALLBACK_API_URL}/pages/working-groups/section`;
+    if (!apiBase) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: "NEXT_PUBLIC_API_URL is not configured",
+                sectionId: null,
+                sectionTitle: null,
+                limit: null,
+                data: [],
+            },
+            { status: 500 }
+        );
+    }
+
+    const url = `${apiBase}/pages/working-groups/section`;
 
     try {
         const res = await fetch(url, {
@@ -60,7 +76,7 @@ export async function GET() {
         }
 
         const json = (await res.json()) as SectionResponse;
-        const blocks = Array.isArray(json.data?.blocks) ? json.data?.blocks : [];
+        const blocks = Array.isArray(json.data?.blocks) ? json.data.blocks : [];
 
         const eventBlock = blocks.find(isEventBlock);
 
@@ -71,12 +87,13 @@ export async function GET() {
                 sectionId: eventBlock?.id ?? null,
                 sectionTitle: eventBlock?.title ?? null,
                 limit: eventBlock?.settings?.limit ?? null,
-                data: Array.isArray(eventBlock?.posts) ? eventBlock?.posts : [],
+                data: Array.isArray(eventBlock?.posts) ? eventBlock.posts : [],
             },
             { status: 200 }
         );
     } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to fetch events";
+        const message =
+            error instanceof Error ? error.message : "Failed to fetch events";
 
         return NextResponse.json(
             {

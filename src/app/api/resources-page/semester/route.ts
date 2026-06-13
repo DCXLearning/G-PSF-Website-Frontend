@@ -1,19 +1,26 @@
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
-const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function GET() {
   try {
-    const apiBase =
-      process.env.API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      FALLBACK_API_BASE;
-    const res = await fetch(
-      `${apiBase}/posts/category/17`,
-      {
-        cache: "no-store",
-      }
-    );
+    const apiBase = (API_URL ?? "").replace(/\/$/, "");
+
+    if (!apiBase) {
+      return NextResponse.json(
+        { error: "NEXT_PUBLIC_API_URL is not configured" },
+        { status: 500 }
+      );
+    }
+
+    const res = await fetch(`${apiBase}/posts/category/17`, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
+    });
 
     if (!res.ok) {
       return NextResponse.json(
@@ -26,9 +33,6 @@ export async function GET() {
 
     return NextResponse.json(json);
   } catch {
-    return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

@@ -1,4 +1,3 @@
-// src/Components/UI-Homepage/GrowthVision.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";

@@ -46,7 +46,6 @@ function buildDetailHref(post: SectionPost): string {
         return "#";
     }
 
-    // Reuse the existing News & Updates detail page route.
     const slug = cleanText(post.slug);
 
     if (slug) {
@@ -59,7 +58,6 @@ function buildDetailHref(post: SectionPost): string {
 async function getSectionPosts(sectionId: string): Promise<SectionPost[]> {
     const apiBase = API_URL || FALLBACK_API_BASE;
 
-    // Load all posts that belong to the selected section id.
     const response = await fetch(
         `${apiBase}/sections/${encodeURIComponent(sectionId)}/posts`,
         {
@@ -112,7 +110,6 @@ export default async function Page({ params }: PageProps) {
                 {posts.length > 0 ? (
                     <div className="space-y-5">
                         {posts.map((post, index) => {
-                            // Build simple text values for each card in the list.
                             const title = pickText(post.title) || `Post ${index + 1}`;
                             const description = pickText(post.description);
                             const dateText =

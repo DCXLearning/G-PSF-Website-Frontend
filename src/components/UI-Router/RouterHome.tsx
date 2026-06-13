@@ -6,13 +6,11 @@ import DigitalReforms from '../HomePage/DigitalReforms';
 import GrowthVision from '../HomePage/GrowthVision';
 import StatsBar from '../HomePage/StatsBar';
 import WorkGroupsCarousel from '../HomePage/WorkGroupsCarousel';
-// import MembersSaySwiperSlider from '../HomePage/MembersSay_Swiper';
 import TrustedByCarousel from '../HomePage/TrustedBy';
 
 function RouterHome() {
   return (
     <>
-    {/* banner error */}
       <HeroBanner />
       <Benefits />
       <Update_News />
@@ -20,7 +18,6 @@ function RouterHome() {
       <GrowthVision />
       <DigitalReforms />
       <WorkGroupsCarousel />
-      {/* <MembersSaySwiperSlider /> */}
       <TrustedByCarousel />
     </>
   )

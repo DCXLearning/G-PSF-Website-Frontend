@@ -3,19 +3,9 @@ import RouterNewUpdate from "@/components/UI-Router/RouterNewUpdate";
 import { API_URL } from "@/config/api";
 import type { NewUpdateSectionProps } from "@/components/News&Updates/NewUpdate";
 
-// Always render fresh — the underlying data (section settings, post tags) is
-// edited from the admin and we don't want stale Next.js caching.
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// /new-update landing page merges two sources (same logic as the see-more page):
-//   1. Posts surfaced by the "News & Updates" section (id 4) — admin controls
-//      this via section.settings.categoryIds in the dashboard.
-//   2. Any post tagged with a Working Group.
-// Documents (PDFs) are excluded — those belong on the Publication page.
-//
-// Default cap when the admin hasn't set section 4's settings.limit. The strip
-// is a "Latest" carousel, not the full archive — users use "See More" for that.
 const DEFAULT_STRIP_LIMIT = 6;
 
 type ApiText = { en?: string; km?: string; kh?: string };
@@ -45,8 +35,6 @@ type SectionsResponse = {
       type?: string;
       enabled?: boolean;
       settings?: {
-        // Admin-controlled cap for how many cards the strip shows. Set this
-        // on section 4 in the dashboard to override the default.
         limit?: number;
       } | null;
       posts?: ApiPostRaw[];
@@ -130,8 +118,6 @@ function toCard(post: ApiPostRaw, fallbackIndex: number): NewUpdateData[number] 
       getText(post.publishedAt ?? undefined) ||
       getText(post.createdAt) ||
       getText(post.updatedAt),
-    // Prefer the Working Group name as the badge when set, falling back to the
-    // post's category. Matches the badge logic on the Publication page.
     category: post.workingGroup?.title
       ? getLocalizedText(post.workingGroup.title)
       : getLocalizedText(post.category?.name),
@@ -154,7 +140,7 @@ async function fetchJson<T>(url: string): Promise<T | null> {
 }
 
 async function getNewAndUpdateSection(): Promise<NewUpdateData> {
-  // Run both upstream calls in parallel — no point waiting on either alone.
+
   const [sectionResp, wgResp] = await Promise.all([
     fetchJson<SectionsResponse>(`${API_URL}/pages/news-and-updates/section`),
     fetchJson<PostsListResponse>(
@@ -167,8 +153,6 @@ async function getNewAndUpdateSection(): Promise<NewUpdateData> {
   );
   const sectionPosts: ApiPostRaw[] = postListBlock?.posts ?? [];
 
-  // Admin-controlled cap from section 4's settings.limit in the dashboard.
-  // Falls back to DEFAULT_STRIP_LIMIT (6) when not set or invalid.
   const configuredLimit = postListBlock?.settings?.limit;
   const stripLimit =
     typeof configuredLimit === "number" && configuredLimit > 0
@@ -177,8 +161,6 @@ async function getNewAndUpdateSection(): Promise<NewUpdateData> {
 
   const wgPosts: ApiPostRaw[] = Array.isArray(wgResp?.data) ? wgResp.data : [];
 
-  // Section feed may include documents — strip them. WG feed already excludes
-  // them server-side via hasDocument=false.
   const sectionNewsOnly = sectionPosts.filter(
     (post) => post.status === "published" && !isDocumentPost(post)
   );
@@ -186,8 +168,6 @@ async function getNewAndUpdateSection(): Promise<NewUpdateData> {
     (post) => post.status === "published"
   );
 
-  // Merge dedupe by id; prefer the WG-feed copy if both contain the same post
-  // (the WG copy is the one with workingGroup populated for the badge).
   const byId = new Map<number, ApiPostRaw>();
   for (const post of wgPublishedOnly) {
     if (typeof post.id === "number") byId.set(post.id, post);

@@ -49,10 +49,7 @@ export async function GET(req: Request) {
                 { status: 500 }
             );
         }
-
-        // Your backend endpoint (choose the correct one)
-        // If your API is: https://api-gpsf.datacolabx.com/api/v1/pages/working-groups
-        // then API_URL already includes /api/v1
+        
         const upstream = await fetch(`${API_URL}/pages/working-groups/section`, {
             cache: "no-store",
             headers: { Accept: "application/json" },

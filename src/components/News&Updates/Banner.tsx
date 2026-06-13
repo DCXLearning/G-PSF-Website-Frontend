@@ -69,7 +69,7 @@ function writeCache(apiLang: ApiLang, hero: HeroContent | null) {
     try {
         localStorage.setItem(getCacheKey(apiLang), JSON.stringify(hero));
     } catch {
-        // ignore cache errors
+    
     }
 }
 
@@ -130,7 +130,7 @@ export default function NewUpdate() {
                 }
             } catch {
                 if (!alive) return;
-                // keep old cached hero, do not clear state
+
             } finally {
                 if (alive) setLoading(false);
             }

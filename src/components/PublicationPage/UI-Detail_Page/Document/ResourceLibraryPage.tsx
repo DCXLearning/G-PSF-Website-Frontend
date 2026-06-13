@@ -155,8 +155,8 @@ function mapCategoryItems(response: CategoryResponse, apiLang: ApiLang): Categor
     const categoryList = Array.isArray(response.data)
         ? response.data
         : Array.isArray(response.items)
-          ? response.items
-          : [];
+            ? response.items
+            : [];
 
     const items: CategoryOption[] = [];
 
@@ -342,8 +342,8 @@ function mapResourcePosts(response: ResourcePostResponse, apiLang: ApiLang): Res
     const posts = Array.isArray(response.data)
         ? response.data
         : Array.isArray(response.items)
-          ? response.items
-          : [];
+            ? response.items
+            : [];
 
     const resources: Resource[] = [];
 
@@ -788,12 +788,12 @@ export default function ResourceLibraryPage({
                         selectedCategoryIds.length === 0
                             ? pageResources
                             : pageResources.filter((item) => {
-                                  if (typeof item.categoryId !== "number") {
-                                      return false;
-                                  }
+                                if (typeof item.categoryId !== "number") {
+                                    return false;
+                                }
 
-                                  return selectedCategoryIds.includes(item.categoryId);
-                              });
+                                return selectedCategoryIds.includes(item.categoryId);
+                            });
 
                     setResources(nextResources);
                     return;

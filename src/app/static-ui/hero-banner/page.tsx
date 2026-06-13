@@ -32,7 +32,6 @@ export default function HeroBanner() {
 
     return (
         <section className="relative min-h-[620px] w-full overflow-hidden bg-slate-900 md:min-h-[720px] lg:min-h-[790px]">
-            {/* Background Image */}
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
@@ -40,13 +39,10 @@ export default function HeroBanner() {
                 }}
             />
 
-            {/* Dark Overlay */}
             <div className="absolute inset-0 bg-black/30" />
 
-            {/* Bottom Soft Shadow */}
             <div className="absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-t from-black/45 via-black/15 to-transparent" />
 
-            {/* Center Content */}
             <div className="relative z-10 mx-auto flex min-h-[620px] max-w-7xl flex-col items-center justify-center px-4 text-center sm:px-6 md:min-h-[720px] lg:min-h-[790px] lg:px-8">
                 <h1
                     className={`max-w-5xl font-extrabold text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.55)] ${titleFontClass}`}

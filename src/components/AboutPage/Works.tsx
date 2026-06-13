@@ -76,7 +76,7 @@ function writeCache(blocks: Block[]) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
     } catch {
-        // ignore cache errors
+    
     }
 }
 

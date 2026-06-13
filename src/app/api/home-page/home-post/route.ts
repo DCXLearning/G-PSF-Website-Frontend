@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-// better to use server env first, then fallback to NEXT_PUBLIC
 const API_BASE_URL =
   process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -52,7 +51,6 @@ export async function GET() {
       },
     });
 
-    // do not directly call res.json() first
     const rawText = await res.text();
 
     let json: any = null;

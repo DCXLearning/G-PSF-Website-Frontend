@@ -1,16 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
-
 export async function GET() {
-    const apiBase =
-        process.env.API_URL ||
-        process.env.NEXT_PUBLIC_API_URL ||
-        FALLBACK_API_BASE;
+    const apiBase = (API_URL ?? "").replace(/\/$/, "");
+
+    if (!apiBase) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: "NEXT_PUBLIC_API_URL is not configured",
+            },
+            { status: 500 }
+        );
+    }
+
     const url = `${apiBase}/pages/publication/section`;
 
     try {
@@ -27,6 +34,7 @@ export async function GET() {
         }
 
         const data = await res.json();
+
         return NextResponse.json(data, { status: 200 });
     } catch (e: any) {
         return NextResponse.json(

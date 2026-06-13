@@ -83,43 +83,6 @@ const Navbar = () => {
                         </MenuItem>
                     </div>
 
-                    {/* ==========form search============ */}
-
-                    {/* <div className="w-full md:w-auto">
-                        <div className="relative w-full md:w-[300px] bg-gray-100 shadow-md rounded-full overflow-hidden">
-                            <input
-                                type="text"
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") handleSearch();
-                                }}
-                                placeholder="Search News & Updates"
-                                className="w-full pr-12 pl-4 py-2 bg-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            />
-
-                            <button
-                                type="button"
-                                onClick={handleSearch}
-                                className="absolute right-0 cursor-pointer top-1/2 -translate-y-1/2 bg-white pt-[9.95px] pb-[9.95px] px-4 rounded-br-full rounded-tr-full shadow hover:bg-gray-100 transition"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 text-gray-600"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div> */}
                 </div>
             </div>
         </nav>

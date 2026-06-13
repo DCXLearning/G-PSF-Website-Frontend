@@ -372,9 +372,6 @@ const LatestReport: React.FC = () => {
                                                     {desc}
                                                 </p>
 
-                                                {/* Download button — matches the publication-page card
-                                                    style (full-width orange pill) so report cards on the home
-                                                    page feel consistent with /publication. */}
                                                 <a
                                                     href={docUrl || "#"}
                                                     target="_blank"

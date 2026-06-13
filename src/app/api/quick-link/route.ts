@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
-const QUICK_LINK_API_URL =
-    "https://api-gpsf.datacolabx.com/api/v1/menus/slug/quick-link/tree";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 function normalizeHref(url?: string) {
     if (!url) return "#";
@@ -14,7 +15,25 @@ function normalizeHref(url?: string) {
 
 export async function GET() {
     try {
-        const response = await fetch(QUICK_LINK_API_URL, {
+        const apiBase = (API_URL ?? "").replace(/\/$/, "");
+
+        if (!apiBase) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "NEXT_PUBLIC_API_URL is not configured",
+                    data: {
+                        menu: null,
+                        items: [],
+                    },
+                },
+                { status: 500 }
+            );
+        }
+
+        const quickLinkApiUrl = `${apiBase}/menus/slug/quick-link/tree`;
+
+        const response = await fetch(quickLinkApiUrl, {
             method: "GET",
             cache: "no-store",
             headers: {
@@ -26,30 +45,30 @@ export async function GET() {
 
         const items = Array.isArray(result?.data?.items)
             ? result.data.items
-                  .sort(
-                      (a: { orderIndex?: number }, b: { orderIndex?: number }) =>
-                          (a.orderIndex ?? 0) - (b.orderIndex ?? 0)
-                  )
-                  .map(
-                      (item: {
-                          id: number;
-                          label?: { en?: string; km?: string };
-                          url?: string;
-                          orderIndex?: number;
-                          parentId?: number | null;
-                          children?: unknown[];
-                      }) => ({
-                          id: item.id,
-                          label: {
-                              en: item.label?.en || "Untitled",
-                              km: item.label?.km || item.label?.en || "Untitled",
-                          },
-                          url: normalizeHref(item.url),
-                          orderIndex: item.orderIndex ?? 0,
-                          parentId: item.parentId ?? null,
-                          children: item.children ?? [],
-                      })
-                  )
+                .sort(
+                    (a: { orderIndex?: number }, b: { orderIndex?: number }) =>
+                        (a.orderIndex ?? 0) - (b.orderIndex ?? 0)
+                )
+                .map(
+                    (item: {
+                        id: number;
+                        label?: { en?: string; km?: string };
+                        url?: string;
+                        orderIndex?: number;
+                        parentId?: number | null;
+                        children?: unknown[];
+                    }) => ({
+                        id: item.id,
+                        label: {
+                            en: item.label?.en || "Untitled",
+                            km: item.label?.km || item.label?.en || "Untitled",
+                        },
+                        url: normalizeHref(item.url),
+                        orderIndex: item.orderIndex ?? 0,
+                        parentId: item.parentId ?? null,
+                        children: item.children ?? [],
+                    })
+                )
             : [];
 
         return NextResponse.json(

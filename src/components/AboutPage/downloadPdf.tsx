@@ -1,4 +1,3 @@
-// components/HeroBanner.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -53,7 +52,7 @@ function pickText(i18n: I18n | null | undefined, lang: UiLang) {
 
 function cleanHref(href?: string) {
     if (!href) return "";
-    // API gives "/https://...." => fix
+
     if (href.startsWith("/https://")) return href.slice(1);
     return href;
 }
@@ -73,8 +72,6 @@ export default function Bannerpdf() {
             try {
                 setLoading(true);
 
-                // About Us endpoint (via your Next.js proxy route)
-                // create: app/api/pages/about-us/section/route.ts
                 const res = await fetch("/api/about-us-page/section", {
                     cache: "no-store",
                     headers: { Accept: "application/json" },
@@ -134,7 +131,7 @@ export default function Bannerpdf() {
 
     return (
         <div className={`relative mb-0 opacity-110 min-h-[520px] flex flex-col items-center justify-start overflow-hidden bg-gray-100 ${fontClass}`}>
-            {/* Background Image */}
+
             <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: `url(${hero.bg})` }}
@@ -142,9 +139,7 @@ export default function Bannerpdf() {
                 <div className="absolute inset-0 bg-gray-900/50" />
             </div>
 
-            {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-65 pb-6 sm:pb-6 max-w-5xl w-full">
-                {/* Top line */}
                 <p
                     className={`text-base sm:text-lg md:text-5xl text-white font-medium tracking-wide mb-4 sm:mb-6 ${uiLang === "kh" ? "khmer-font" : ""
                         }`}
@@ -152,7 +147,6 @@ export default function Bannerpdf() {
                     {hero.topLine}
                 </p>
 
-                {/* Button */}
                 <a
                     href={hero.href || "#"}
                     target="_blank"

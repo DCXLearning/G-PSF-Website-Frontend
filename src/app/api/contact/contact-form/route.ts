@@ -1,21 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/contact/route.ts
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "https://api-gpsf.datacolabx.com/api/v1").replace(
-    /\/$/,
-    ""
-);
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 const CONTACT_PATH = "/contact";
 
-// GET /api/contact?page=1&limit=10&search=...
+function getApiBase() {
+    return (API_URL ?? "").replace(/\/$/, "");
+}
+
 export async function GET(req: Request) {
     try {
+        const apiBase = getApiBase();
+
+        if (!apiBase) {
+            return NextResponse.json(
+                { success: false, message: "NEXT_PUBLIC_API_URL is not configured" },
+                { status: 500 }
+            );
+        }
+
         const url = new URL(req.url);
         const qs = url.searchParams.toString();
 
-        const upstream = `${API_BASE}${CONTACT_PATH}${qs ? `?${qs}` : ""}`;
+        const upstream = `${apiBase}${CONTACT_PATH}${qs ? `?${qs}` : ""}`;
 
         const res = await fetch(upstream, {
             method: "GET",
@@ -24,10 +34,12 @@ export async function GET(req: Request) {
         });
 
         const text = await res.text();
+
         return new NextResponse(text, {
             status: res.status,
             headers: {
-                "Content-Type": res.headers.get("content-type") || "application/json; charset=utf-8",
+                "Content-Type":
+                    res.headers.get("content-type") || "application/json; charset=utf-8",
             },
         });
     } catch (err: any) {
@@ -38,12 +50,20 @@ export async function GET(req: Request) {
     }
 }
 
-// POST /api/contact
 export async function POST(req: Request) {
     try {
+        const apiBase = getApiBase();
+
+        if (!apiBase) {
+            return NextResponse.json(
+                { success: false, message: "NEXT_PUBLIC_API_URL is not configured" },
+                { status: 500 }
+            );
+        }
+
         const body = await req.json();
 
-        const upstream = `${API_BASE}${CONTACT_PATH}`;
+        const upstream = `${apiBase}${CONTACT_PATH}`;
 
         const res = await fetch(upstream, {
             method: "POST",
@@ -55,10 +75,12 @@ export async function POST(req: Request) {
         });
 
         const text = await res.text();
+
         return new NextResponse(text, {
             status: res.status,
             headers: {
-                "Content-Type": res.headers.get("content-type") || "application/json; charset=utf-8",
+                "Content-Type":
+                    res.headers.get("content-type") || "application/json; charset=utf-8",
             },
         });
     } catch (err: any) {

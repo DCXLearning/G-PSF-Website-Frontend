@@ -9,8 +9,6 @@ import { formatLocalizedDate } from "@/utils/localizedDate";
 import { FaArrowRight } from "react-icons/fa";
 import Pagination from "@/components/Pagination";
 
-// Same items-per-page as Publication and /new-update/see-more so the three
-// pages feel consistent.
 const ITEMS_PER_PAGE = 6;
 
 type UiLang = "en" | "kh";
@@ -38,7 +36,7 @@ type PostItem = {
     status?: string;
     isPublished?: boolean;
     isFeatured?: boolean;
-    // Posts with a document attached are publications, not news — filtered out below.
+
     documents?: {
         en?: { url?: string } | null;
         km?: { url?: string } | null;
@@ -59,7 +57,7 @@ type PostItem = {
     };
 };
 
-// A post is a "document" (publication) if it has a downloadable file attached.
+
 function isDocumentPost(post: PostItem): boolean {
     const enUrl = post.documents?.en?.url?.trim() ?? "";
     const kmUrl = post.documents?.km?.url?.trim() ?? "";
@@ -82,9 +80,6 @@ type FeaturedItem = {
     href: string;
 };
 
-// Pull every featured post site-wide (any page, any category, any WG). The
-// document/draft filters live in mapFeaturedPosts below so the page is honest
-// about what it shows — featured news posts, not publications.
 const FEATURED_POSTS_ENDPOINT =
     "/api/posts?isFeatured=true&hasDocument=false&pageSize=100";
 
@@ -326,8 +321,8 @@ function Header({
                     type="button"
                     onClick={() => setView("list")}
                     className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${view === "list"
-                            ? "bg-[#23395D] text-white"
-                            : "text-[#475569] hover:bg-slate-100"
+                        ? "bg-[#23395D] text-white"
+                        : "text-[#475569] hover:bg-slate-100"
                         }`}
                     style={{ fontWeight: 600 }}
                 >
@@ -339,8 +334,8 @@ function Header({
                     type="button"
                     onClick={() => setView("grid")}
                     className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${view === "grid"
-                            ? "bg-[#23395D] text-white"
-                            : "text-[#475569] hover:bg-slate-100"
+                        ? "bg-[#23395D] text-white"
+                        : "text-[#475569] hover:bg-slate-100"
                         }`}
                     style={{ fontWeight: 600 }}
                 >
@@ -550,8 +545,6 @@ export default function FeaturedPage() {
 
     const featuredItems = mapFeaturedPosts(items, uiLanguage);
 
-    // Pagination math + a guard that snaps the page back into range if the
-    // list shrinks while the user is on a high page.
     const totalPages = Math.max(
         1,
         Math.ceil(featuredItems.length / ITEMS_PER_PAGE),

@@ -1,12 +1,18 @@
 import path from "path";
 import { readFile } from "fs/promises";
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
-const FALLBACK_LOGO_PATH = path.join(process.cwd(), "public", "image", "logo2.png");
+const FALLBACK_LOGO_PATH = path.join(
+    process.cwd(),
+    "public",
+    "image",
+    "logo2.png"
+);
+
 const CACHE_CONTROL_HEADER = "no-store, max-age=0";
 
 type SiteSettingsResponse = {
@@ -16,11 +22,7 @@ type SiteSettingsResponse = {
 };
 
 function buildApiBaseUrl() {
-    return (
-        process.env.API_URL ||
-        process.env.NEXT_PUBLIC_API_URL ||
-        FALLBACK_API_BASE
-    ).replace(/\/$/, "");
+    return (API_URL ?? "").replace(/\/$/, "");
 }
 
 function buildLogoUrl(logo: string, apiBase: string) {
@@ -45,15 +47,25 @@ async function createFallbackLogoResponse() {
 export async function GET() {
     try {
         const apiBase = buildApiBaseUrl();
-        const siteSettingsResponse = await fetch(`${apiBase}/site-settings/current`, {
-            cache: "no-store",
-        });
+
+        if (!apiBase) {
+            return createFallbackLogoResponse();
+        }
+
+        const siteSettingsResponse = await fetch(
+            `${apiBase}/site-settings/current`,
+            {
+                cache: "no-store",
+            }
+        );
 
         if (!siteSettingsResponse.ok) {
             return createFallbackLogoResponse();
         }
 
-        const siteSettings: SiteSettingsResponse = await siteSettingsResponse.json();
+        const siteSettings: SiteSettingsResponse =
+            await siteSettingsResponse.json();
+
         const backendLogo = siteSettings.data?.logo?.trim() || "";
 
         if (!backendLogo) {
@@ -75,7 +87,8 @@ export async function GET() {
         }
 
         const logoBuffer = await logoResponse.arrayBuffer();
-        const contentType = logoResponse.headers.get("content-type") || "image/png";
+        const contentType =
+            logoResponse.headers.get("content-type") || "image/png";
 
         return new NextResponse(logoBuffer, {
             headers: {

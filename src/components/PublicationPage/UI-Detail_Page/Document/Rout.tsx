@@ -69,8 +69,8 @@ function mapFeaturedPosts(response: FeaturedPostsResponse): Publication[] {
     const postList = Array.isArray(response.data)
         ? response.data
         : Array.isArray(response.items)
-          ? response.items
-          : [];
+            ? response.items
+            : [];
     const posts = [...postList]
         .filter((post) => post.status === "published" && post.isFeatured === true)
         .sort((firstPost, secondPost) => getPostTimestamp(secondPost) - getPostTimestamp(firstPost))

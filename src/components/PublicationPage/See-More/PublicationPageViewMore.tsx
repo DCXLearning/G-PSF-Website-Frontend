@@ -128,15 +128,15 @@ function buildLanguages(post: ApiPost, lang: UiLang): PublicationDocumentLanguag
     return [
         buildDownloadHref(post.documents?.km?.url)
             ? {
-                  label: getContentLanguageLabel("km", lang),
-                  href: buildDownloadHref(post.documents?.km?.url),
-              }
+                label: getContentLanguageLabel("km", lang),
+                href: buildDownloadHref(post.documents?.km?.url),
+            }
             : null,
         buildDownloadHref(post.documents?.en?.url)
             ? {
-                  label: getContentLanguageLabel("en", lang),
-                  href: buildDownloadHref(post.documents?.en?.url),
-              }
+                label: getContentLanguageLabel("en", lang),
+                href: buildDownloadHref(post.documents?.en?.url),
+            }
             : null,
     ].filter(Boolean) as PublicationDocumentLanguage[];
 }
@@ -274,9 +274,9 @@ export default function PublicationPageViewMore({
                 const primaryBlock = getPrimaryPostListBlock(blocks);
                 const categoryIds = Array.isArray(primaryBlock?.settings?.categoryIds)
                     ? primaryBlock.settings.categoryIds.filter(
-                          (categoryId): categoryId is number =>
-                              typeof categoryId === "number"
-                      )
+                        (categoryId): categoryId is number =>
+                            typeof categoryId === "number"
+                    )
                     : [];
                 const pageData = json.data?.page;
 

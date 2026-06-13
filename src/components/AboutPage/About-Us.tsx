@@ -74,7 +74,7 @@ function writeCache(blocks: Block[]) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
     } catch {
-        // ignore cache errors
+        
     }
 }
 
@@ -309,7 +309,6 @@ const AboutUs: React.FC = () => {
                         </p>
                     </div>
 
-                    {/* RIGHT */}
                     <div className="lg:pt-24 xl:pt-80">
                         <h2 className={`mb-10 text-gray-900 ${titleFontClass}`}>
                             {view.objectivesTitle}

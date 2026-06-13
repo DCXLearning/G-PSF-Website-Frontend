@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
+import { API_URL } from "@/config/api";
 
 export const runtime = "nodejs";
 export const revalidate = 0;
-
-const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
 
 const ROUTE_OVERRIDES: Record<string, string> = {
     "/home": "/",
@@ -17,7 +16,6 @@ const ROUTE_OVERRIDES: Record<string, string> = {
     "/decisions": "/publication/decisions",
     "/reports": "/publication/reports",
     "/reform-tracker": "/publication/reform-tracker",
-
     "/press": "/new-update/media/press",
     "/photos": "/new-update/photos",
     "/videos": "/new-update/video",
@@ -69,11 +67,21 @@ function normalizeMenuItems(items: ApiMenuItem[] = []): ApiMenuItem[] {
 
 export async function GET() {
     try {
-        const apiBase = (
-            process.env.API_URL ||
-            process.env.NEXT_PUBLIC_API_URL ||
-            FALLBACK_API_BASE
-        ).replace(/\/$/, "");
+        const apiBase = (API_URL ?? "").replace(/\/$/, "");
+
+        if (!apiBase) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "NEXT_PUBLIC_API_URL is not configured",
+                    data: {
+                        menu: null,
+                        items: [],
+                    },
+                },
+                { status: 500 }
+            );
+        }
 
         const response = await fetch(`${apiBase}/menus/slug/main-nav/tree`, {
             method: "GET",

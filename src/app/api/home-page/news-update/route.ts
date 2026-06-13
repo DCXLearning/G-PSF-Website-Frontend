@@ -8,15 +8,9 @@ export const revalidate = 0;
 const API_BASE = API_URL || "";
 const BASE_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, "");
 
-// Home page "News & Updates" strip — show the latest 6 news posts from both
-// the configured "News & Updates" section (id 4) AND any post tagged with a
-// Working Group. Posts with a document file are excluded — they belong on the
-// Publication page, not the news feed.
-// This mirrors /api/newupdate-page/detail's merge logic so the home strip and
-// the see-more page stay in lockstep.
 const SECTION_ID = 4;
 const PAGE_SIZE = 6;
-const FETCH_POOL = 50; // pool we sample from before sorting/slicing to 6
+const FETCH_POOL = 50; 
 
 const HEADING = { en: "News & Updates", km: "ព័ត៌មាន និងបច្ចុប្បន្នភាព" };
 const DESCRIPTION = { en: "", km: "" };
@@ -134,10 +128,8 @@ export async function GET() {
             : [];
         const wgPosts: any[] = Array.isArray(wgResp?.data) ? wgResp.data : [];
 
-        // Section posts may contain documents — strip them. WG fetch already excludes via hasDocument=false.
         const sectionNewsOnly = sectionPosts.filter((post) => !hasDocument(post));
 
-        // Merge dedupe by id, sort newest-first, take top N.
         const byId = new Map<number, any>();
         for (const post of wgPosts) {
             if (typeof post?.id === "number") byId.set(post.id, post);

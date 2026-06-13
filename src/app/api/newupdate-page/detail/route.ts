@@ -5,13 +5,6 @@ import { API_URL } from "@/config/api";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-// /new-update/see-more shows BOTH sources, deduped and sorted newest-first:
-//   1. Posts surfaced by the "News & Updates" section (id 4) — admin controls
-//      this via the section's settings.categoryIds in the dashboard.
-//   2. Any post tagged with a Working Group — so WG news automatically appears
-//      here without re-tagging or section reconfiguration.
-// Posts with a document file attached are excluded — those belong on the
-// Publication page, not the news feed.
 const SECTION_ID = 4;
 const PAGE_SIZE = 50;
 
@@ -117,19 +110,13 @@ export async function GET() {
       ),
     ]);
 
-    // /sections/:id/posts returns posts at .data (array); /posts also returns
-    // an array at .data thanks to the global response interceptor.
     const sectionPosts: any[] = Array.isArray(sectionResp?.data)
       ? sectionResp.data
       : [];
     const wgPosts: any[] = Array.isArray(wgResp?.data) ? wgResp.data : [];
 
-    // Drop documents from the section feed — the WG feed already excludes them
-    // server-side via hasDocument=false.
     const sectionNewsOnly = sectionPosts.filter((post) => !hasDocument(post));
 
-    // Merge dedupe by id, prefer the WG-feed copy if both contain the same post
-    // (it's the same record, but inserting WG-first means the order below is stable).
     const byId = new Map<number, any>();
     for (const post of wgPosts) {
       if (typeof post?.id === "number") byId.set(post.id, post);

@@ -64,12 +64,12 @@ type ApiBlock = {
 type PageSectionResponse = {
     data?: {
         page?:
-            | {
-                  title?: I18n | string | null;
-                  description?: I18n | string | null;
-              }
-            | I18n
-            | null;
+        | {
+            title?: I18n | string | null;
+            description?: I18n | string | null;
+        }
+        | I18n
+        | null;
         title?: I18n | string | null;
         description?: I18n | string | null;
         blocks?: ApiBlock[];
@@ -267,9 +267,9 @@ function mapPhotoItems(posts: MediaPost[], language: UiLang): PhotoItem[] {
 
             const rightDate = new Date(
                 rightPost.publishedAt ||
-                    rightPost.createdAt ||
-                    rightPost.updatedAt ||
-                    "",
+                rightPost.createdAt ||
+                rightPost.updatedAt ||
+                "",
             ).getTime();
 
             return rightDate - leftDate;
@@ -426,11 +426,10 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("list")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${fontClass} ${
-                        view === "list"
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${fontClass} ${view === "list"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                    }`}
+                        }`}
                 >
                     <List className="h-3.5 w-3.5" />
                     <span>{language === "kh" ? "បញ្ជី" : "List"}</span>
@@ -439,11 +438,10 @@ function Header({
                 <button
                     type="button"
                     onClick={() => setView("grid")}
-                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${fontClass} ${
-                        view === "grid"
+                    className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-semibold transition sm:flex-none sm:px-3 ${fontClass} ${view === "grid"
                             ? "bg-[#23395D] text-white"
                             : "text-[#475569] hover:bg-slate-100"
-                    }`}
+                        }`}
                 >
                     <LayoutGrid className="h-3.5 w-3.5" />
                     <span>{language === "kh" ? "ក្រឡា" : "Grid"}</span>
@@ -636,9 +634,9 @@ export default function PhotosPage() {
 
                 const categoryIds = Array.isArray(primaryBlock?.settings?.categoryIds)
                     ? primaryBlock.settings.categoryIds.filter(
-                          (categoryId): categoryId is number =>
-                              typeof categoryId === "number",
-                      )
+                        (categoryId): categoryId is number =>
+                            typeof categoryId === "number",
+                    )
                     : [];
 
                 let posts = Array.isArray(primaryBlock?.posts)

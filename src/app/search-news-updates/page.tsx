@@ -152,12 +152,10 @@ function collectAllowedPosts(
 
     const nodeType = getBlockType(node, fallbackType);
 
-    // When a block is allowed, collect each post under that block.
     if (Array.isArray(node.posts)) {
         collectAllowedPosts(node.posts, bucket, nodeType);
     }
 
-    // Some tree responses can already contain post objects directly.
     if (looksLikePost(node) && ALLOWED_BLOCK_TYPES.has(nodeType)) {
         bucket.push({
             post: node as CmsPost,
@@ -221,7 +219,6 @@ function mapSearchItems(response: CmsTreeResponse): SearchNewsItem[] {
         });
     }
 
-    // The posts were already sorted before mapping.
     return items;
 }
 

@@ -1,10 +1,9 @@
-// src/app/api/working-groups/route.ts
 import { NextResponse } from "next/server";
 import { API_URL } from "@/config/api";
 
-const FALLBACK_API_BASE = "https://api-gpsf.datacolabx.com/api/v1";
-const API_BASE = API_URL || FALLBACK_API_BASE;
-const EXTERNAL_URL = `${API_BASE}/working-groups`;
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type I18nRaw = {
   en?: unknown;
@@ -31,11 +30,7 @@ type WorkingGroupsUpstreamResponse = {
 
 function cleanText(v: unknown): string {
   const s = typeof v === "string" ? v.trim() : "";
-  if (!s || s === ".") {
-    return "";
-  }
-
-  return s;
+  return !s || s === "." ? "" : s;
 }
 
 function cleanI18n(obj: I18nRaw | undefined) {
@@ -47,22 +42,37 @@ function cleanI18n(obj: I18nRaw | undefined) {
 
 export async function GET() {
   try {
-    const res = await fetch(EXTERNAL_URL, { cache: "no-store" });
+    if (!API_URL) {
+      return NextResponse.json(
+        { error: "API_URL is not configured" },
+        { status: 500 }
+      );
+    }
+
+    const externalUrl = `${API_URL.replace(/\/$/, "")}/working-groups`;
+
+    const res = await fetch(externalUrl, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: "Failed to fetch working groups" },
-        { status: res.status }
+        {
+          error: "Failed to fetch working groups",
+          upstreamStatus: res.status,
+          url: externalUrl,
+        },
+        { status: 502 }
       );
     }
 
     const json = (await res.json()) as WorkingGroupsUpstreamResponse;
 
-    //total from API (example: 2 -> show "2 Work Groups...")
     const total = Number(json?.data?.total ?? 0);
 
     const rawItems: WorkingGroupRaw[] = Array.isArray(json?.data?.items)
-      ? (json.data?.items as WorkingGroupRaw[])
+      ? (json.data.items as WorkingGroupRaw[])
       : [];
 
     const items = rawItems
@@ -79,11 +89,15 @@ export async function GET() {
       }));
 
     return NextResponse.json({ total, items });
-  } catch (err) {
-    console.error(err);
+  } catch (err: any) {
+    console.error("working-groups proxy error:", err);
+
     return NextResponse.json(
-      { error: "Failed to fetch working groups" },
-      { status: 500 }
+      {
+        error: "Backend API not reachable",
+        detail: err?.message || "Unknown error",
+      },
+      { status: 502 }
     );
   }
 }
