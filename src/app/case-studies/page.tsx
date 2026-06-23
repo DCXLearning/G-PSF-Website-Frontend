@@ -1,5 +1,5 @@
-import { CaseStudiesSection } from "@/components/News&Updates/CaseStudies";
+import CaseStudiesViewMore from "@/components/News&Updates/CaseStudiesViewMore";
 
 export default function CaseStudiesPage() {
-    return <CaseStudiesSection showAllPosts showSeeMoreButton={false} />;
+    return <CaseStudiesViewMore />;
 }
