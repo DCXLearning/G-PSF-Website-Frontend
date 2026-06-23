@@ -89,7 +89,7 @@ function writeCache(blocks: Block[]) {
 
         localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
     } catch {
-        // ignore cache error
+        
     }
 }
 
@@ -262,7 +262,7 @@ export default function Engage() {
                     {view.sectionTitle}
                 </h2>
 
-                <div className="mb-12 mt-5 h-1.5 w-3/4 max-w-[300px] bg-orange-500 sm:w-full" />
+                <div className="mb-12 mt-5 h-1.5 w-3/4 max-w-[292px] bg-orange-500 sm:w-full" />
 
                 <ol className="m-0 grid list-none grid-cols-1 gap-5 p-0 lg:grid-cols-3">
                     {view.items.map((item, index) => (

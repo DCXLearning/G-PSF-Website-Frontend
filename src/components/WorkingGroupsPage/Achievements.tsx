@@ -45,7 +45,6 @@ const Achievements: React.FC = () => {
         <section className="overflow-hidden bg-white py-8 md:py-12">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="flex flex-col items-start">
-                    {/* HEADER SECTION */}
                     <div className="w-full">
                         <p
                             className={`mb-2 text-gray-900 ${labelFontClass}`}
@@ -59,7 +58,7 @@ const Achievements: React.FC = () => {
                         </h1>
                     </div>
 
-                    <div className="mt-5 mb-12 h-1.5 w-3/4 max-w-[300px] bg-orange-500 sm:w-full" />
+                    <div className="mt-5 mb-12 h-[7px] w-3/4 max-w-[300px] bg-orange-500 sm:w-full" />
 
                     <div className="flex w-full justify-center">
                         <div className="flex aspect-square h-120 w-full max-w-[850px] items-center justify-center rounded-[40px] bg-[#A3C1AD] p-6 shadow-sm sm:ml-8 md:ml-20 md:p-30">

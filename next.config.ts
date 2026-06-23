@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -45,6 +46,13 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+  },
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
+  experimental: {
+    preloadEntriesOnStart: false,
+    turbopackFileSystemCacheForDev: false,
   },
 };
 

@@ -61,7 +61,7 @@ function writeCache(blocks: Block[]) {
     if (typeof window === "undefined") return;
     localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
   } catch {
-    
+
   }
 }
 
@@ -218,7 +218,7 @@ export default function WorkingGroups16() {
 
   return (
     <section className="w-full overflow-hidden bg-white py-10 sm:py-14 md:py-20 lg:py-24">
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-4 lg:px-4">
         {error && blocks.length === 0 && (
           <div
             className={`
@@ -231,7 +231,7 @@ export default function WorkingGroups16() {
         )}
 
         <div className="w-full min-w-0">
-          <div className="w-full min-w-0 max-w-6xl">
+          <div className="w-full min-w-0 max-w-7xl">
             <p
               className={`
                 mb-2 text-gray-900
@@ -250,17 +250,19 @@ export default function WorkingGroups16() {
               {titleParts.main}
             </h1>
 
-            <div className="mt-4 h-1.5 w-full max-w-[220px] rounded-full bg-orange-500 sm:max-w-[320px] sm:translate-x-8 md:mt-5 md:max-w-[520px] md:translate-x-52 lg:max-w-[756px]" />
+            <div className="mt-4 h-1.5 w-full max-w-[205px] rounded-full bg-orange-500 sm:max-w-[320px] sm:translate-x-8 md:mt-5 md:max-w-[520px] md:translate-x-37 lg:max-w-[756px]" />
 
-            <p
-              className={`
-                mt-6 w-full max-w-4xl whitespace-pre-line break-words text-[#1e3a8a]
-                sm:translate-x-8 md:translate-x-52
-                ${descriptionFontClass}
-              `}
-            >
-              {view.description}
-            </p>
+<p
+  className={`
+    mt-6 w-full max-w-full text-[#1e3a8a]
+    sm:max-w-[calc(100%-32px)] sm:translate-x-8
+    md:max-w-[calc(100%-148px)] md:translate-x-37
+    text-justify break-words
+    ${descriptionFontClass}
+  `}
+>
+  {view.description}
+</p>
           </div>
         </div>
       </div>
