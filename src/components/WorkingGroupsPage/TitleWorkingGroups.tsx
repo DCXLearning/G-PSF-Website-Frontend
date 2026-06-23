@@ -252,17 +252,17 @@ export default function WorkingGroups16() {
 
             <div className="mt-4 h-1.5 w-full max-w-[205px] rounded-full bg-orange-500 sm:max-w-[320px] sm:translate-x-8 md:mt-5 md:max-w-[520px] md:translate-x-37 lg:max-w-[756px]" />
 
-<p
-  className={`
-    mt-6 w-full max-w-full text-[#1e3a8a]
-    sm:max-w-[calc(100%-32px)] sm:translate-x-8
-    md:max-w-[calc(100%-148px)] md:translate-x-37
-    text-justify break-words
-    ${descriptionFontClass}
-  `}
->
-  {view.description}
-</p>
+            <p
+              className={`
+                mt-6 w-full max-w-full whitespace-pre-line break-words text-[#1e3a8a]
+                sm:max-w-[calc(100%-32px)] sm:translate-x-8
+                md:max-w-[calc(100%-148px)] md:translate-x-37
+                text-justify break-words
+                ${descriptionFontClass}
+              `}
+            >
+              {view.description}
+            </p>
           </div>
         </div>
       </div>
