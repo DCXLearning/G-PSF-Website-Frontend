@@ -25,9 +25,14 @@ const kantumruyPro = Kantumruy_Pro({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://gpsf.datacolabx.com"
+).replace(/\/$/, "");
+
 export const metadata: Metadata = {
-  title: "G-PSF Website",
-  description: "Government-Private Sector Forum",
+  metadataBase: new URL(SITE_URL),
+  title: "Government-Private Sector Forum Cambodia (GPSF)",
+  description: "GPSF Cambodia official website",
   icons: {
     icon: "/api/site-logo",
     shortcut: "/api/site-logo",
