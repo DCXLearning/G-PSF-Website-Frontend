@@ -79,15 +79,15 @@ export default function AnnouncementsPage() {
                 if (!res.ok) {
                     throw new Error(
                         (result as ApiResponse)?.message ||
-                            "Failed to fetch announcements"
+                        "Failed to fetch announcements"
                     );
                 }
 
                 const rawData = Array.isArray((result as ApiResponse)?.data)
                     ? (result as ApiResponse).data || []
                     : Array.isArray(result)
-                      ? result
-                      : [];
+                        ? result
+                        : [];
 
                 const publishedOnly = rawData.filter(
                     (item) =>
@@ -140,49 +140,49 @@ export default function AnnouncementsPage() {
         return announcements.map((item) => {
             const title = isKh
                 ? item.title?.km ||
-                  item.title?.kh ||
-                  item.title?.en ||
-                  "Untitled"
+                item.title?.kh ||
+                item.title?.en ||
+                "Untitled"
                 : item.title?.en ||
-                  item.title?.km ||
-                  item.title?.kh ||
-                  "Untitled";
+                item.title?.km ||
+                item.title?.kh ||
+                "Untitled";
 
             const desc = isKh
                 ? item.description?.km ||
-                  item.description?.kh ||
-                  item.description?.en ||
-                  ""
+                item.description?.kh ||
+                item.description?.en ||
+                ""
                 : item.description?.en ||
-                  item.description?.km ||
-                  item.description?.kh ||
-                  "";
+                item.description?.km ||
+                item.description?.kh ||
+                "";
 
             const docUrl = isKh
                 ? item.documents?.km?.url ||
-                  item.documents?.kh?.url ||
-                  item.documents?.en?.url ||
-                  ""
+                item.documents?.kh?.url ||
+                item.documents?.en?.url ||
+                ""
                 : item.documents?.en?.url ||
-                  item.documents?.km?.url ||
-                  item.documents?.kh?.url ||
-                  "";
+                item.documents?.km?.url ||
+                item.documents?.kh?.url ||
+                "";
 
             const imageUrl =
                 item.coverImage ||
                 (isKh
                     ? item.documentThumbnails?.km ||
-                      item.documentThumbnails?.kh ||
-                      item.documentThumbnails?.en ||
-                      item.documents?.km?.thumbnailUrl ||
-                      item.documents?.kh?.thumbnailUrl ||
-                      item.documents?.en?.thumbnailUrl
+                    item.documentThumbnails?.kh ||
+                    item.documentThumbnails?.en ||
+                    item.documents?.km?.thumbnailUrl ||
+                    item.documents?.kh?.thumbnailUrl ||
+                    item.documents?.en?.thumbnailUrl
                     : item.documentThumbnails?.en ||
-                      item.documentThumbnails?.km ||
-                      item.documentThumbnails?.kh ||
-                      item.documents?.en?.thumbnailUrl ||
-                      item.documents?.km?.thumbnailUrl ||
-                      item.documents?.kh?.thumbnailUrl) ||
+                    item.documentThumbnails?.km ||
+                    item.documentThumbnails?.kh ||
+                    item.documents?.en?.thumbnailUrl ||
+                    item.documents?.km?.thumbnailUrl ||
+                    item.documents?.kh?.thumbnailUrl) ||
                 "/image/no-image.png";
 
             const dateValue = item.publishedAt || item.createdAt || "";
@@ -212,11 +212,10 @@ export default function AnnouncementsPage() {
                         <button
                             type="button"
                             onClick={() => setView("list")}
-                            className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 py-1.5 text-xs transition sm:flex-none ${
-                                view === "list"
+                            className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 py-1.5 text-xs transition sm:flex-none ${view === "list"
                                     ? "bg-[#23395D] text-white"
                                     : "text-gray-600 hover:bg-gray-100"
-                            }`}
+                                }`}
                         >
                             <List size={15} />
                             {labels.list}
@@ -225,11 +224,10 @@ export default function AnnouncementsPage() {
                         <button
                             type="button"
                             onClick={() => setView("grid")}
-                            className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 py-1.5 text-xs transition sm:flex-none ${
-                                view === "grid"
+                            className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 py-1.5 text-xs transition sm:flex-none ${view === "grid"
                                     ? "bg-[#23395D] text-white"
                                     : "text-gray-600 hover:bg-gray-100"
-                            }`}
+                                }`}
                         >
                             <Grid3X3 size={15} />
                             {labels.grid}
@@ -283,7 +281,7 @@ export default function AnnouncementsPage() {
                                 </div>
 
                                 <div className="min-w-0 flex-1">
-                                    <span className="inline-block rounded bg-[#3f51b5] px-2 py-[1px] text-[10px] uppercase text-white">
+                                    <span className="inline-block rounded bg-[#3f51b5] font-semibold px-2 py-[1px] text-[12px] uppercase text-white">
                                         {labels.announcement}
                                     </span>
 
@@ -342,7 +340,7 @@ export default function AnnouncementsPage() {
 
                                 <div className="flex flex-1 flex-col justify-between px-3 py-4">
                                     <div className="min-w-0">
-                                        <span className="inline-block rounded bg-[#3f51b5] px-2 py-[1px] text-[10px] uppercase text-white">
+                                        <span className="inline-block rounded bg-[#3f51b5] px-2 py-[1px] font-semibold text-[12px] uppercase text-white">
                                             {labels.announcement}
                                         </span>
 

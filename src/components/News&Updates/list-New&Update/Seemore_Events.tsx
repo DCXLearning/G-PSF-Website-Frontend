@@ -239,7 +239,7 @@ export default function EventsListPage() {
 
                                 <div className="min-w-0 flex-1">
                                     <span
-                                        className={`inline-block rounded bg-[#3f51b5] px-2 py-[1px] text-[10px] uppercase text-white ${fontClass}`}
+                                        className={`inline-block rounded bg-[#3f51b5] px-2 py-[1px] font-semibold text-[12px] uppercase text-white ${fontClass}`}
                                         style={{ fontWeight: 700 }}
                                     >
                                         {labels.event}
@@ -302,7 +302,7 @@ export default function EventsListPage() {
                                 <div className="flex flex-1 flex-col justify-between px-3 py-4">
                                     <div className="min-w-0">
                                         <span
-                                            className={`inline-block rounded bg-[#3f51b5] px-2.5 py-0.5 text-[12px] uppercase text-white ${fontClass}`}
+                                            className={`inline-block rounded bg-[#3f51b5] font-semibold px-2.5 py-0.5 text-[12px] uppercase text-white ${fontClass}`}
                                             style={{ fontWeight: 700 }}
                                         >
                                             {labels.event}
