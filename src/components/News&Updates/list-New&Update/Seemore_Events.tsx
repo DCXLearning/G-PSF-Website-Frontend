@@ -5,7 +5,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { Grid3X3, List, CalendarDays, Download } from "lucide-react";
+import { LayoutGrid, List, CalendarDays, Download } from "lucide-react";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
 type I18n = { en?: string; km?: string; kh?: string };
@@ -47,17 +47,13 @@ export default function EventsListPage() {
     const { language } = useLanguage();
 
     const currentLang = String(language || "en").toLowerCase();
-
-    const isKh =
-        currentLang === "kh" ||
-        currentLang === "km" ||
-        currentLang === "khmer";
-
+    const isKh = currentLang === "kh" || currentLang === "km" || currentLang === "khmer";
     const apiLang: "en" | "km" = isKh ? "km" : "en";
 
-    const mainTitleFontClass = isKh ? "main-title-km" : "main-title-en";
-    const titleFontClass = isKh ? "title-km" : "title-en";
-    const bodyClass = isKh ? "body-km" : "body-en";
+    const fontClass = isKh ? "khmer-font" : "airbnb-font";
+    const mainTitleFontClass = isKh ? "main-title-km khmer-font" : "main-title-en airbnb-font";
+    const titleFontClass = isKh ? "title-km khmer-font" : "title-en airbnb-font";
+    const bodyClass = isKh ? "body-km khmer-font" : "body-en airbnb-font";
 
     const [events, setEvents] = useState<EventPost[]>([]);
     const [loading, setLoading] = useState(true);
@@ -98,7 +94,7 @@ export default function EventsListPage() {
     const labels = {
         headerMain: isKh ? "ព្រឹត្តិការណ៍" : "Latest",
         headerSub: isKh ? "កាលវិភាគប្រជុំ" : "Events & Meetings",
-        download: isKh ? "ទាញយកឯកសារ" : "Download PDF",
+        download: isKh ? "ទាញយកឯកសារ" : "Download",
         empty: isKh ? "មិនមានព្រឹត្តិការណ៍ទេ។" : "No events found at the moment.",
         loading: isKh ? "កំពុងទាញយកទិន្នន័យ..." : "Loading events...",
         error: isKh ? "មិនអាចទាញយកទិន្នន័យបានទេ។" : "Failed to load events.",
@@ -120,14 +116,8 @@ export default function EventsListPage() {
                 : item.description?.en || item.description?.km || item.description?.kh || "";
 
             const docUrl = isKh
-                ? item.documents?.km?.url ||
-                item.documents?.kh?.url ||
-                item.documents?.en?.url ||
-                ""
-                : item.documents?.en?.url ||
-                item.documents?.km?.url ||
-                item.documents?.kh?.url ||
-                "";
+                ? item.documents?.km?.url || item.documents?.kh?.url || item.documents?.en?.url || ""
+                : item.documents?.en?.url || item.documents?.km?.url || item.documents?.kh?.url || "";
 
             const imageUrl = isKh
                 ? item.coverImage ||
@@ -162,139 +152,139 @@ export default function EventsListPage() {
     }, [events, isKh, apiLang]);
 
     return (
-        <section className="min-h-screen bg-[#eef0f3] py-10 md:py-14">
-            <div className="mx-auto max-w-7xl px-4">
-                <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <main className={`bg-[#f5f7fb] ${bodyClass}`}>
+            <div className="mx-auto max-w-7xl px-4 py-12">
+                <div className="mb-10 -mt-2 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <p className={`${titleFontClass} !text-[30px] !leading-[38px] text-[#0f2347]`}>
+                        <p className={`text-[#0B2C5F] ${mainTitleFontClass}`}>
                             {labels.headerMain}
                         </p>
 
-                        <h1 className={`${mainTitleFontClass} mt-1 !text-[20px] !leading-[28px] text-[#0f2347]`}>
+                        <h1 className={`mt-1 text-[#0B2C5F] ${titleFontClass}`}>
                             {labels.headerSub}
                         </h1>
-
-                        <div className="mt-4 h-1.5 w-60 bg-orange-500" />
                     </div>
 
-                    <div className="mt-12 flex items-center gap-1 self-start rounded-lg bg-white p-1 shadow-sm">
+                    <div className="flex w-full max-w-sm gap-1 rounded-sm border border-gray-300 bg-white p-1 shadow-sm sm:w-auto">
                         <button
                             type="button"
                             onClick={() => setView("list")}
-                            className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${view === "list"
-                                    ? "bg-[#273650] text-white"
-                                    : "text-[#273650] hover:bg-gray-100"
+                            className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2.5 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${view === "list"
+                                    ? "bg-[#23395D] text-white"
+                                    : "text-gray-600 hover:bg-gray-100"
                                 }`}
+                            style={{ fontWeight: 600 }}
                         >
                             <List size={15} />
-                            {labels.list}
+                            <span>{labels.list}</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setView("grid")}
-                            className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${view === "grid"
-                                    ? "bg-[#273650] text-white"
-                                    : "text-[#273650] hover:bg-gray-100"
+                            className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2.5 py-1.5 text-xs transition sm:flex-none sm:px-3 ${fontClass} ${view === "grid"
+                                    ? "bg-[#23395D] text-white"
+                                    : "text-gray-600 hover:bg-gray-100"
                                 }`}
+                            style={{ fontWeight: 600 }}
                         >
-                            <Grid3X3 size={15} />
-                            {labels.grid}
+                            <LayoutGrid size={15} />
+                            <span>{labels.grid}</span>
                         </button>
                     </div>
                 </div>
 
                 {loading && (
-                    <div className={`${bodyClass} rounded bg-white px-6 py-10 text-center shadow-sm`}>
+                    <p className={`py-10 text-center ${bodyClass}`}>
                         {labels.loading}
-                    </div>
+                    </p>
                 )}
 
                 {error && !loading && (
-                    <div className={`${bodyClass} rounded bg-white px-6 py-10 text-center text-red-600 shadow-sm`}>
+                    <p className={`py-10 text-center text-red-500 ${bodyClass}`}>
                         {error || labels.error}
-                    </div>
+                    </p>
                 )}
 
                 {!loading && !error && content.length === 0 && (
-                    <div className={`${bodyClass} rounded bg-white px-6 py-10 text-center shadow-sm`}>
+                    <p className={`py-10 text-center text-slate-500 ${bodyClass}`}>
                         {labels.empty}
-                    </div>
+                    </p>
                 )}
 
-                {!loading && !error && view === "list" && (
-                    <div>
-                        {content.map((item, index) => (
+                {!loading && !error && content.length > 0 && view === "list" && (
+                    <div className="divide-y divide-gray-300">
+                        {content.map((item) => (
                             <article
                                 key={item.id}
-                                className={`grid grid-cols-1 gap-6 pb-10 md:grid-cols-[200px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10 ${index !== content.length - 1
-                                        ? "mb-10 border-b border-gray-300"
-                                        : ""
-                                    }`}
+                                className="flex flex-col gap-8 py-10 md:flex-row md:items-center"
                             >
-                                <div className="group block">
-                                    <div className="relative aspect-[3/4] w-full overflow-hidden bg-white shadow-md md:h-[260px] md:aspect-auto">
-                                        <img
-                                            src={item.imageUrl}
-                                            alt={item.title}
-                                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = "/image/no-image.png";
-                                                target.className =
-                                                    "h-full w-full object-contain opacity-30 p-6";
-                                            }}
-                                        />
+                                <div className="w-full flex-shrink-0 md:w-44">
+                                    <div className="overflow-hidden border border-gray-100 bg-white shadow-xl ring-1 ring-black/5">
+                                        <div className="relative aspect-[210/297] w-full overflow-hidden bg-white">
+                                            <img
+                                                src={item.imageUrl}
+                                                alt={item.title}
+                                                className="h-full w-full object-cover"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = "/image/no-image.png";
+                                                    target.className =
+                                                        "h-full w-full object-contain p-6 opacity-30";
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="flex min-w-0 flex-col justify-between pt-1">
-                                    <div>
-                                        <span className="inline-block rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
-                                            {labels.event}
-                                        </span>
+                                <div className="min-w-0 flex-1">
+                                    <span
+                                        className={`inline-block rounded bg-[#3f51b5] px-2 py-[1px] text-[10px] uppercase text-white ${fontClass}`}
+                                        style={{ fontWeight: 700 }}
+                                    >
+                                        {labels.event}
+                                    </span>
 
-                                        <h2 className={`${mainTitleFontClass} mt-3 line-clamp-1 text-[#0f2347]`}>
-                                            {item.title}
-                                        </h2>
+                                    <h2 className={`mt-2 text-slate-900 ${mainTitleFontClass}`}>
+                                        {item.title}
+                                    </h2>
 
-                                        <p className={`${bodyClass} mt-4 max-w-4xl line-clamp-2 text-[#4f6482]`}>
-                                            {item.desc || labels.noDescription}
-                                        </p>
-                                    </div>
+                                    <p
+                                        className={`mt-1 text-sm text-slate-800 ${fontClass}`}
+                                        style={{ fontWeight: 600 }}
+                                    >
+                                        {item.date || labels.noDate}
+                                    </p>
 
-                                    <div className="mt-6 flex flex-col gap-3 pt-4">
-                                        {item.docUrl && (
-                                            <Link
-                                                href={item.docUrl}
-                                                target="_blank"
-                                                className={`${bodyClass} inline-flex items-center gap-2 font-bold text-[#0f2347] underline transition hover:text-blue-700`}
-                                            >
-                                                <Download size={18} />
-                                                {labels.download}
-                                            </Link>
-                                        )}
+                                    <p className={`mt-4 line-clamp-2 text-slate-600 ${bodyClass}`}>
+                                        {item.desc || labels.noDescription}
+                                    </p>
 
-                                        <div className={`${bodyClass} flex items-center gap-2 text-[#6a7b96]`}>
-                                            <CalendarDays className="h-4 w-4 shrink-0" />
-                                            <span>{item.date || labels.noDate}</span>
-                                        </div>
-                                    </div>
+                                    {item.docUrl && (
+                                        <Link
+                                            href={item.docUrl}
+                                            target="_blank"
+                                            className={`${bodyClass} mt-3 inline-flex min-h-[24px] items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] text-slate-500 shadow-sm transition hover:border-[#23395D] hover:bg-white hover:text-slate-500`}
+                                        >
+                                            <Download size={16} />
+                                            {labels.download}
+                                        </Link>
+                                    )}
                                 </div>
                             </article>
                         ))}
                     </div>
                 )}
 
-                {!loading && !error && view === "grid" && (
-                    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
+                {!loading && !error && content.length > 0 && view === "grid" && (
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-9">
                         {content.map((item) => (
                             <article
                                 key={item.id}
-                                className="group flex h-full flex-col overflow-hidden bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                className="group flex h-full flex-col overflow-hidden bg-[#e9ecef]"
                             >
-                                <div className="block">
-                                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                                <div className="border-b border-slate-200 bg-white">
+                                    <div className="relative aspect-[210/297] w-full overflow-hidden bg-white">
                                         <img
                                             src={item.imageUrl}
                                             alt={item.title}
@@ -303,50 +293,55 @@ export default function EventsListPage() {
                                                 const target = e.target as HTMLImageElement;
                                                 target.src = "/image/no-image.png";
                                                 target.className =
-                                                    "h-full w-full object-contain opacity-30 p-6";
+                                                    "h-full w-full object-contain p-6 opacity-30";
                                             }}
                                         />
                                     </div>
                                 </div>
 
-                                <div className="flex h-full grow flex-col justify-between p-5">
-                                    <div>
-                                        <span className="inline-block w-fit rounded bg-[#4b5dbb] px-3 py-1 text-[10px] font-bold uppercase text-white">
+                                <div className="flex flex-1 flex-col justify-between px-3 py-4">
+                                    <div className="min-w-0">
+                                        <span
+                                            className={`inline-block rounded bg-[#3f51b5] px-2.5 py-0.5 text-[12px] uppercase text-white ${fontClass}`}
+                                            style={{ fontWeight: 700 }}
+                                        >
                                             {labels.event}
                                         </span>
 
-                                        <h2 className={`${mainTitleFontClass} mt-3 line-clamp-2 text-[#0f2347]`}>
+                                        <div
+                                            className={`mt-2 flex items-center gap-1.5 text-[10px] text-[#1a2b4b] ${fontClass}`}
+                                            style={{ fontWeight: 600 }}
+                                        >
+                                            <CalendarDays size={13} />
+                                            {item.date || labels.noDate}
+                                        </div>
+
+                                        <h2 className={`mt-1 text-[#1a2b4b] ${mainTitleFontClass}`}>
                                             {item.title}
                                         </h2>
 
-                                        <p className={`${bodyClass} mt-4 line-clamp-4 text-[#4f6482]`}>
+                                        <p className={`mt-2 line-clamp-3 text-slate-700 ${bodyClass}`}>
                                             {item.desc || labels.noDescription}
                                         </p>
                                     </div>
 
-                                    <div className="mt-6 flex flex-col gap-3 pt-5">
-                                        {item.docUrl && (
-                                            <Link
-                                                href={item.docUrl}
-                                                target="_blank"
-                                                className={`${bodyClass} inline-flex items-center gap-2 font-bold text-[#0f2347] underline transition hover:text-blue-700`}
-                                            >
-                                                <Download size={16} />
-                                                {labels.download}
-                                            </Link>
-                                        )}
-
-                                        <div className={`${bodyClass} flex items-center gap-2 text-[#6a7b96]`}>
-                                            <CalendarDays className="h-4 w-4 shrink-0" />
-                                            <span>{item.date || labels.noDate}</span>
-                                        </div>
-                                    </div>
+                                    {item.docUrl && (
+                                        <Link
+                                            href={item.docUrl}
+                                            target="_blank"
+                                            className={`mt-3 inline-flex min-h-[24px] items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] text-slate-500 shadow-sm transition hover:border-[#23395D] hover:bg-[#23395D] hover:text-white ${fontClass}`}
+                                            style={{ fontWeight: 600 }}
+                                        >
+                                            <Download size={13} />
+                                            {labels.download}
+                                        </Link>
+                                    )}
                                 </div>
                             </article>
                         ))}
                     </div>
                 )}
             </div>
-        </section>
+        </main>
     );
 }

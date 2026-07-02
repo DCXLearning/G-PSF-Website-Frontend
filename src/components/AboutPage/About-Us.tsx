@@ -40,30 +40,20 @@ const CACHE_KEY = "about-us-blocks-cache";
 
 function normalizeLang(language: unknown): UiLang {
     const value = String(language || "en").toLowerCase();
-
-    if (value === "kh" || value === "km") {
-        return "kh";
-    }
-
-    return "en";
+    return value === "kh" || value === "km" ? "kh" : "en";
 }
 
 function pickText(obj: I18n | undefined, lang: ApiLang, fallback = "") {
     if (!obj) return fallback;
-
     const primary = lang === "km" ? obj.km : obj.en;
-
     return primary || obj.en || obj.km || fallback;
 }
 
 function readCache(): Block[] {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
-
         if (!raw) return [];
-
         const parsed = JSON.parse(raw);
-
         return Array.isArray(parsed) ? parsed : [];
     } catch {
         return [];
@@ -74,7 +64,7 @@ function writeCache(blocks: Block[]) {
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(blocks));
     } catch {
-        
+        // ignore
     }
 }
 
@@ -97,7 +87,7 @@ function AboutUsSkeleton() {
     return (
         <section className="bg-white py-16 md:py-24">
             <div className="mx-auto max-w-7xl px-4">
-                <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
+                <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
                     <div className="animate-pulse lg:sticky lg:top-10">
                         <div className="mb-3 h-4 w-24 rounded bg-slate-200" />
                         <div className="mb-5 h-12 w-3/4 rounded bg-slate-200" />
@@ -114,15 +104,18 @@ function AboutUsSkeleton() {
 
                             <div className="space-y-12">
                                 {Array.from({ length: 3 }).map((_, i) => (
-                                    <div key={i} className="relative flex items-start gap-6">
+                                    <div
+                                        key={i}
+                                        className="relative flex items-start gap-6"
+                                    >
                                         <div className="relative z-10">
                                             <HexNode />
                                         </div>
 
-                                        <div className="w-full pt-1">
-                                            <div className="mb-3 h-7 w-56 rounded bg-slate-200" />
-                                            <div className="mb-2 h-5 w-full max-w-sm rounded bg-slate-200" />
-                                            <div className="h-5 w-5/6 max-w-xs rounded bg-slate-200" />
+                                        <div className="w-full max-w-[760px] pt-1">
+                                            <div className="mb-3 h-7 w-72 rounded bg-slate-200" />
+                                            <div className="mb-2 h-5 w-full max-w-[720px] rounded bg-slate-200" />
+                                            <div className="h-5 w-5/6 max-w-[620px] rounded bg-slate-200" />
                                         </div>
                                     </div>
                                 ))}
@@ -180,9 +173,11 @@ const AboutUs: React.FC = () => {
 
                 if (!contentType.includes("application/json")) {
                     const text = await res.text();
-
                     throw new Error(
-                        `Expected JSON but got: ${text.slice(0, 80)}... (check /api/about route)`
+                        `Expected JSON but got: ${text.slice(
+                            0,
+                            80
+                        )}... (check /api/about route)`
                     );
                 }
 
@@ -191,7 +186,9 @@ const AboutUs: React.FC = () => {
                 if (!alive) return;
 
                 if (!res.ok || !json?.success) {
-                    throw new Error(json?.message || "Failed to load About Us data.");
+                    throw new Error(
+                        json?.message || "Failed to load About Us data."
+                    );
                 }
 
                 const nextBlocks = json?.data?.blocks || [];
@@ -200,11 +197,9 @@ const AboutUs: React.FC = () => {
                 writeCache(nextBlocks);
             } catch (e: any) {
                 if (!alive) return;
-
                 setError(e?.message || "Failed to load About Us data.");
             } finally {
                 if (!alive) return;
-
                 setLoading(false);
             }
         }
@@ -286,7 +281,6 @@ const AboutUs: React.FC = () => {
                 )}
 
                 <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
-                    {/* LEFT */}
                     <div className="lg:sticky lg:top-10">
                         <p className={`mb-2 text-gray-700 ${labelFontClass}`}>
                             {view.badge}
@@ -300,10 +294,11 @@ const AboutUs: React.FC = () => {
 
                         <p
                             className={`
-                                mt-8 max-w-md translate-x-0 text-[#1e3a8a]
+                                mt-8 max-w-md translate-x-0 text-justify text-[#1e3a8a]
                                 sm:translate-x-8 md:translate-x-25
-                                ${bodyFontClass} 
+                                ${bodyFontClass}
                             `}
+                            style={{ textAlignLast: "left" }}
                         >
                             {view.desc}
                         </p>
@@ -327,12 +322,15 @@ const AboutUs: React.FC = () => {
                                 )}
 
                                 {view.objectives.map((obj) => (
-                                    <div key={obj.id} className="relative flex items-start gap-6">
+                                    <div
+                                        key={obj.id}
+                                        className="relative flex items-start gap-6"
+                                    >
                                         <div className="relative z-10">
                                             <HexNode />
                                         </div>
 
-                                        <div className="pt-1">
+                                        <div className="w-full max-w-[760px] pt-1">
                                             <h3
                                                 className={`
                                                     text-blue-900
@@ -345,9 +343,10 @@ const AboutUs: React.FC = () => {
 
                                             <p
                                                 className={`
-                                                    mt-2 max-w-sm line-clamp-3 text-gray-600
+                                                    mt-2 max-w-[720px] text-justify text-gray-600
                                                     ${bodyFontClass}
                                                 `}
+                                                style={{ textAlignLast: "left" }}
                                             >
                                                 {obj.description}
                                             </p>

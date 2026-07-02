@@ -285,7 +285,7 @@ export default function History() {
 
                 <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
                     <div className="lg:sticky lg:top-1">
-                        <div className="mt-20 h-1.5 w-72 bg-orange-500 sm:w-[520px] lg:w-[528px]" />
+                        <div className="mt-8 h-1.5 w-72 bg-orange-500 sm:w-[520px] lg:w-[528px]" />
 
                         <ul className="mt-8 list-disc space-y-7 pl-4">
                             {view.paras.map((p, i) => (
