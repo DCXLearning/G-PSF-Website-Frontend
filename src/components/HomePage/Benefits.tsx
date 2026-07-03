@@ -39,6 +39,22 @@ function pickText(i18n: I18n | null | undefined, lang: UiLang) {
     return (lang === "kh" ? i18n?.km : i18n?.en) || i18n?.en || i18n?.km || "";
 }
 
+function renderHeadingText(text: string) {
+    const normalizedText = text.replace(/\s+/g, " ").trim();
+    const match = normalizedText.match(/^(.*?)(\s*\([^)]*\))$/);
+
+    if (!match) return normalizedText;
+
+    const title = match[1].trim();
+    const shortName = match[2].trim();
+
+    return (
+        <>
+            {title} <span className="inline-block">{shortName}</span>
+        </>
+    );
+}
+
 function buildDetailHref(post: ApiPost): string {
     const slug = post.slug?.trim() || "";
 
@@ -49,35 +65,12 @@ function buildDetailHref(post: ApiPost): string {
     return `/new-update/view-detail?id=${post.id}`;
 }
 
-function readCache(): ApiBlock | null {
-    try {
-        const raw = localStorage.getItem(CACHE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw) as ApiBlock;
-    } catch {
-        return null;
-    }
-}
-
-function writeCache(block: ApiBlock | null) {
-    if (!block) return;
-
-    try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(block));
-    } catch {}
-}
-
 function getImageSrc(src?: string | null) {
     if (!src || !src.trim()) return FALLBACK_ICON;
     return src;
 }
 
-type SafeBenefitImageProps = {
-    src?: string | null;
-    alt: string;
-};
-
-function SafeBenefitImage({ src, alt }: SafeBenefitImageProps) {
+function SafeBenefitImage({ src, alt }: { src?: string | null; alt: string }) {
     const [imgSrc, setImgSrc] = useState(getImageSrc(src));
 
     useEffect(() => {
@@ -222,12 +215,13 @@ export default function Benefits() {
     useEffect(() => {
         setMounted(true);
 
-        const cached = readCache();
-
-        if (cached) {
-            setBlock(cached);
-            setLoading(false);
-        }
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if (raw) {
+                setBlock(JSON.parse(raw) as ApiBlock);
+                setLoading(false);
+            }
+        } catch {}
 
         let alive = true;
 
@@ -260,13 +254,14 @@ export default function Benefits() {
 
                 if (picked) {
                     setBlock(picked);
-                    writeCache(picked);
+
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(picked));
+                    } catch {}
                 }
             } catch (err) {
                 if (!alive) return;
-
-                const message = err instanceof Error ? err.message : "Fetch failed";
-                setError(message);
+                setError(err instanceof Error ? err.message : "Fetch failed");
             } finally {
                 if (alive) setLoading(false);
             }
@@ -282,8 +277,7 @@ export default function Benefits() {
     const limit = block?.settings?.limit ?? 4;
 
     const posts = useMemo(() => {
-        const p = block?.posts || [];
-        return p.slice(0, limit);
+        return (block?.posts || []).slice(0, limit);
     }, [block, limit]);
 
     const heading = useMemo(() => {
@@ -297,11 +291,25 @@ export default function Benefits() {
     const showErrorOnly = !showSkeleton && !block && !!error;
 
     return (
-        <section className="bg-white px-4 py-12 sm:px-8 md:px-16 md:py-16 lg:px-34">
-            <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-13">
+        <section className="bg-white py-12 md:py-16">
+            <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 md:grid-cols-2 md:gap-13">
                 <div className="mb-32 sm:mb-25 md:mb-56">
-                    <h2 className={`text-blue-950 ${titleFontClass}`}>
-                        {heading.h || (isKhmer ? "អត្ថប្រយោជន៍ G-PSF" : "G-PSF Benefit")}
+                    <h2
+                        className={`
+                            text-blue-950
+                            max-w-[560px]
+                            !text-left
+                            !leading-[1.25]
+                            break-words
+                            ${titleFontClass}
+                        `}
+                    >
+                        {renderHeadingText(
+                            heading.h ||
+                                (isKhmer
+                                    ? "អត្ថប្រយោជន៍ G-PSF"
+                                    : "G-PSF Benefit")
+                        )}
                     </h2>
 
                     <div className="relative mt-6 sm:mt-8">
@@ -334,7 +342,8 @@ export default function Benefits() {
                                 icon={p.coverImage}
                                 title={pickText(p.title, uiLang) || "\u00A0"}
                                 description={
-                                    pickText(p.description ?? undefined, uiLang) || "\u00A0"
+                                    pickText(p.description ?? undefined, uiLang) ||
+                                    "\u00A0"
                                 }
                                 isKhmer={isKhmer}
                                 href={buildDetailHref(p)}

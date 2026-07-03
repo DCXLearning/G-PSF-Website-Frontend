@@ -4,7 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, Download, Grid3X3, List } from "lucide-react";
+import { CalendarDays, Grid3X3, List } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { formatLocalizedDate } from "@/utils/localizedDate";
 
@@ -117,7 +117,10 @@ export default function AnnouncementsPage() {
     const labels = {
         headerMain: isKh ? "សេចក្តីជូនដំណឹង" : "Latest",
         headerSub: isKh ? "សេចក្តីប្រកាស" : "Announcements",
-        download: isKh ? "ទាញយកឯកសារ" : "Download",
+        language: isKh ? "ភាសា:" : "Language:",
+        khmer: isKh ? "ខ្មែរ" : "Khmer",
+        english: isKh ? "អង់គ្លេស" : "English",
+        noFile: isKh ? "គ្មានឯកសារ" : "No file",
         empty: isKh
             ? "មិនមានសេចក្តីជូនដំណឹងទេ។"
             : "No announcements available right now.",
@@ -139,14 +142,8 @@ export default function AnnouncementsPage() {
     const content = useMemo(() => {
         return announcements.map((item) => {
             const title = isKh
-                ? item.title?.km ||
-                item.title?.kh ||
-                item.title?.en ||
-                "Untitled"
-                : item.title?.en ||
-                item.title?.km ||
-                item.title?.kh ||
-                "Untitled";
+                ? item.title?.km || item.title?.kh || item.title?.en || "Untitled"
+                : item.title?.en || item.title?.km || item.title?.kh || "Untitled";
 
             const desc = isKh
                 ? item.description?.km ||
@@ -158,15 +155,23 @@ export default function AnnouncementsPage() {
                 item.description?.kh ||
                 "";
 
-            const docUrl = isKh
-                ? item.documents?.km?.url ||
-                item.documents?.kh?.url ||
-                item.documents?.en?.url ||
-                ""
-                : item.documents?.en?.url ||
-                item.documents?.km?.url ||
-                item.documents?.kh?.url ||
-                "";
+            const documents = [
+                item.documents?.km?.url || item.documents?.kh?.url
+                    ? {
+                        label: labels.khmer,
+                        href:
+                            item.documents?.km?.url ||
+                            item.documents?.kh?.url ||
+                            "",
+                    }
+                    : null,
+                item.documents?.en?.url
+                    ? {
+                        label: labels.english,
+                        href: item.documents.en.url,
+                    }
+                    : null,
+            ].filter(Boolean) as { label: string; href: string }[];
 
             const imageUrl =
                 item.coverImage ||
@@ -186,13 +191,48 @@ export default function AnnouncementsPage() {
                 "/image/no-image.png";
 
             const dateValue = item.publishedAt || item.createdAt || "";
-            const date = dateValue
-                ? formatLocalizedDate(dateValue, apiLang)
-                : "";
+            const date = dateValue ? formatLocalizedDate(dateValue, apiLang) : "";
 
-            return { ...item, title, desc, docUrl, imageUrl, date };
+            return { ...item, title, desc, documents, imageUrl, date };
         });
-    }, [announcements, isKh, apiLang]);
+    }, [announcements, isKh, apiLang, labels.khmer, labels.english]);
+
+    const renderLanguageLinks = (
+    documents: { label: string; href: string }[],
+    compact = false
+) => (
+    <div
+        className={`${bodyClass} flex flex-wrap items-center ${
+            compact ? "mt-3 gap-1 text-[9px]" : "mt-6 gap-1 text-[10px]"
+        }`}
+    >
+        <span className="!text-slate-400 !text-[15px]" style={{ fontWeight: 600 }}>
+            {labels.language}
+        </span>
+
+        {documents.length > 0 ? (
+            documents.map((doc) => (
+                <Link
+                    key={doc.label}
+                    href={doc.href}
+                    target="_blank"
+                    download
+                    className={`${bodyClass} inline-flex h-[24px] min-w-[38px] items-center justify-center rounded border border-slate-200 bg-white px-2 !text-[10px] leading-none !text-[#64748B] shadow-sm transition hover:border-[#23395D] hover:!bg-[#23395D] hover:!text-white`}
+                    style={{ fontWeight: 600 }}
+                >
+                    {doc.label}
+                </Link>
+            ))
+        ) : (
+            <span
+                className={`${bodyClass} inline-flex h-[16px] min-w-[38px] items-center justify-center rounded border border-slate-200 bg-white px-1.5 !text-[5px] leading-none text-slate-400 shadow-sm`}
+                style={{ fontWeight: 600 }}
+            >
+                {labels.noFile}
+            </span>
+        )}
+    </div>
+);
 
     return (
         <main className={`${bodyClass} bg-[#f5f7fb]`}>
@@ -270,8 +310,7 @@ export default function AnnouncementsPage() {
                                                 onError={(e) => {
                                                     const target =
                                                         e.target as HTMLImageElement;
-                                                    target.src =
-                                                        "/image/no-image.png";
+                                                    target.src = "/image/no-image.png";
                                                     target.className =
                                                         "h-full w-full object-contain p-6 opacity-30";
                                                 }}
@@ -281,32 +320,29 @@ export default function AnnouncementsPage() {
                                 </div>
 
                                 <div className="min-w-0 flex-1">
-                                    <span className="inline-block rounded bg-[#3f51b5] font-semibold px-2 py-[1px] text-[12px] uppercase text-white">
+                                    <span className="inline-block rounded bg-[#3f51b5] px-2 py-[1px] text-[12px] font-semibold uppercase text-white">
                                         {labels.announcement}
                                     </span>
 
-                                    <h2 className={`${mainTitleFontClass} mt-2 text-slate-900`}>
+                                    <h2
+                                        className={`${mainTitleFontClass} mt-2 text-slate-900`}
+                                    >
                                         {item.title}
                                     </h2>
 
-                                    <p className={`${bodyClass} mt-1 text-sm text-slate-800`}>
+                                    <p
+                                        className={`${bodyClass} mt-1 !text-[14px] font-semibold text-slate-800`} style={{ fontWeight: 600 }}
+                                    >
                                         {item.date || labels.noDate}
                                     </p>
 
-                                    <p className={`${bodyClass} mt-4 line-clamp-2 text-slate-600`}>
+                                    <p
+                                        className={`${bodyClass} mt-4 line-clamp-2 text-slate-600`}
+                                    >
                                         {item.desc || labels.noDescription}
                                     </p>
 
-                                    {item.docUrl && (
-                                        <Link
-                                            href={item.docUrl}
-                                            target="_blank"
-                                            className={`${bodyClass} mt-3 inline-flex min-h-[24px] items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] text-slate-500 shadow-sm transition hover:border-[#23395D] hover:bg-white hover:text-slate-500`}
-                                        >
-                                            <Download size={16} />
-                                            {labels.download}
-                                        </Link>
-                                    )}
+                                    {renderLanguageLinks(item.documents)}
                                 </div>
                             </article>
                         ))}
@@ -329,8 +365,7 @@ export default function AnnouncementsPage() {
                                             onError={(e) => {
                                                 const target =
                                                     e.target as HTMLImageElement;
-                                                target.src =
-                                                    "/image/no-image.png";
+                                                target.src = "/image/no-image.png";
                                                 target.className =
                                                     "h-full w-full object-contain p-6 opacity-30";
                                             }}
@@ -340,34 +375,31 @@ export default function AnnouncementsPage() {
 
                                 <div className="flex flex-1 flex-col justify-between px-3 py-4">
                                     <div className="min-w-0">
-                                        <span className="inline-block rounded bg-[#3f51b5] px-2 py-[1px] font-semibold text-[12px] uppercase text-white">
+                                        <span className="inline-block rounded bg-[#3f51b5] px-2 py-[1px] text-[12px] font-semibold uppercase text-white">
                                             {labels.announcement}
                                         </span>
 
-                                        <div className={`${bodyClass} mt-2 flex items-center gap-1.5 text-[10px] text-[#1a2b4b]`}>
+                                        <div
+                                            className={`${bodyClass} mt-2 flex items-center gap-1.5 text-[10px] text-[#1a2b4b]`}
+                                        >
                                             <CalendarDays size={13} />
                                             {item.date || labels.noDate}
                                         </div>
 
-                                        <h2 className={`${mainTitleFontClass} mt-1 line-clamp-2 text-[#1a2b4b]`}>
+                                        <h2
+                                            className={`${mainTitleFontClass} mt-1 line-clamp-2 text-[#1a2b4b]`}
+                                        >
                                             {item.title}
                                         </h2>
 
-                                        <p className={`${bodyClass} mt-2 line-clamp-3 text-slate-700`}>
+                                        <p
+                                            className={`${bodyClass} mt-2 line-clamp-3 text-slate-700`}
+                                        >
                                             {item.desc || labels.noDescription}
                                         </p>
                                     </div>
 
-                                    {item.docUrl && (
-                                        <Link
-                                            href={item.docUrl}
-                                            target="_blank"
-                                            className={`${bodyClass} mt-3 inline-flex min-h-[24px] items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] text-slate-500 shadow-sm transition hover:border-[#23395D] hover:bg-white hover:text-slate-500`}
-                                        >
-                                            <Download size={13} />
-                                            {labels.download}
-                                        </Link>
-                                    )}
+                                    {renderLanguageLinks(item.documents, true)}
                                 </div>
                             </article>
                         ))}
