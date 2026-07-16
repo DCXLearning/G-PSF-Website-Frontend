@@ -168,7 +168,7 @@ const Participates: React.FC = () => {
                                         flex h-full min-h-[420px] flex-col
                                         items-center overflow-hidden rounded-2xl
                                         border border-gray-100 bg-white
-                                        px-2 pb-8 pt-8 text-center shadow-2xl
+                                        px-4 pb-8 pt-8 text-center shadow-2xl
                                         transition-all hover:-translate-y-1
                                     "
                                 >
@@ -201,15 +201,14 @@ const Participates: React.FC = () => {
                                             text-gray-600
                                             line-clamp-6
                                             leading-8 tracking-normal
-                                            text-justify hyphens-auto
+                                            text-left
                                             ${bodyFontClass}
                                         `}
                                         style={{
-                                            textAlign: "justify",
-                                            textJustify: "inter-word",
-                                            wordSpacing: "-1px",
+                                            textAlign: "left",
                                             letterSpacing: "0px",
                                             overflowWrap: "break-word",
+                                            hyphens: "none",
                                         }}
                                     >
                                         {item.description}
